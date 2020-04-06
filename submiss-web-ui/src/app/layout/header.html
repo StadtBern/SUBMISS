@@ -1,0 +1,106 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<header ng-controller="HeaderController as headerCtrl">
+	<nav class="navbar navbar-default toolbar">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed pull-right"
+					data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+					aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span> <i
+						class="fa fa-bars"></i>
+				</button>
+				<a class="navbar-brand" href="#"> <img
+					ng-if="headerCtrl.tenantLogo"
+					ng-style="headerCtrl.logoDimensions"
+					ng-src="data:image/png;base64, {{headerCtrl.tenantLogo}}">
+				</a>
+			</div>
+			<ul class="nav navbar-nav navbar-right secNav" ng-if="appCtrl.getLoggedUser()">
+				<li class="user"><i class="fa fa-user-circle-o"
+					aria-hidden="true"></i> <span>{{appCtrl.getLoggedUser().firstName}} {{appCtrl.getLoggedUser().lastName}}<br />
+						{{appCtrl.getLoggedUser().userGroup.description}}
+				</span></li>
+			</ul>
+		</div>
+		<!-- /.container -->
+	</nav>
+	<!-- /.header with logo -->
+	<nav class="navbar navbar-default main-nav ">
+		<div class="container" ng-if="appCtrl.getLoggedUser()">
+			<div class="collapse navbar-collapse"
+				id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+          <li ng-show="appCtrl.getPermOpsMenu()[6]" data-ng-class="{'active' : headerCtrl.currentState().startsWith('tasksView')}"
+            data-ng-mouseleave="headerCtrl.resetMenu()">
+            <a ng-click="headerCtrl.navigateTo('tasksView')">Pendenzen</a></li>
+					<li ng-show="appCtrl.getPermOpsMenu()[5] && appCtrl.getPermOpsMenu()[7]" class="dropdown"
+						data-ng-class="{'active' : headerCtrl.projectTabActive(), 'open' : headerCtrl.expandedMenu == 1}"
+						data-ng-mouseleave="headerCtrl.resetMenu()"><a
+						class="dropdown-toggle"
+						data-ng-mouseover="headerCtrl.expandMenu(1)"
+						aria-expanded="{{headerCtrl.expandedMenu == 1}}">Projekt<span
+							class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li ng-show="appCtrl.getPermOpsMenu()[3]"><a ng-click="headerCtrl.navigateTo('project.search')">Suche</a></li>
+							<li ng-show="appCtrl.getPermOpsMenu()[4]"><a ng-click="headerCtrl.navigateTo('project.create')">Projekt
+									eröffnen</a></li>
+							<li ng-show="appCtrl.getPermOpsMenu()[8]"><a ng-click="headerCtrl.navigateTo('auditView', 'PROJECT_LEVEL')">Verlauf</a></li>
+						</ul></li>
+					<li class="dropdown"
+						data-ng-class="{'active' : headerCtrl.companyTabActive(), 'open' : headerCtrl.expandedMenu == 2}"
+						data-ng-mouseleave="headerCtrl.resetMenu()"><a
+						class="dropdown-toggle"
+						data-ng-mouseover="headerCtrl.expandMenu(2)"
+						aria-expanded="{{headerCtrl.expandedMenu == 2}}">Firmen<span
+							class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li ng-show="appCtrl.getPermOpsMenu()[2]"><a ng-click="headerCtrl.navigateTo('company.search')">Suche</a></li>
+							<li ng-show="appCtrl.getPermOpsMenu()[1]"><a ng-click="headerCtrl.navigateTo('company.create')">Firma
+									eröffnen</a></li>
+							<li ng-show="appCtrl.getPermOpsMenu()[8]"><a ng-click="headerCtrl.navigateTo('auditView', 'COMPANY_LEVEL')">Verlauf</a></li>
+						</ul></li>
+
+					<li class="dropdown" ng-show="appCtrl.getPermOpsMenu()[9] && appCtrl.getPermOpsMenu()[5]"
+						data-ng-class="{'active' : headerCtrl.currentState().startsWith('report'), 'open' : headerCtrl.expandedMenu == 3}"
+						data-ng-mouseleave="headerCtrl.resetMenu()"><a
+						class="dropdown-toggle"
+						data-ng-mouseover="headerCtrl.expandMenu(3)"
+						aria-expanded="{{headerCtrl.expandedMenu == 3}}">Auswertungen<span
+							class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li ng-show="appCtrl.getPermOpsMenu()[10]"><a ng-click="headerCtrl.navigateTo('report.generateOperationReport')">GeKo Auswertungen</a></li>
+							<li><a ng-click="headerCtrl.navigateTo('report.generateReport')">Auswertungen</a></li>
+						</ul>
+					</li>
+					<li class="dropdown" ng-show="appCtrl.getPermOpsMenu()[6]"
+						data-ng-class="{'active' : headerCtrl.currentState().startsWith('user') || headerCtrl.currentState().startsWith('stammdaten'), 'open' : headerCtrl.expandedMenu == 4}"
+						data-ng-mouseleave="headerCtrl.resetMenu()"><a
+						class="dropdown-toggle"
+						data-ng-mouseover="headerCtrl.expandMenu(4)"
+						aria-expanded="{{headerCtrl.expandedMenu == 4}}">Administration<span
+							class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li ng-show="appCtrl.getPermOpsMenu()[0]"><a ng-click="headerCtrl.navigateTo('users.search')">Benutzersuche</a> </li>
+							<li ng-show="appCtrl.getPermOpsMenu()[11]"><a ng-click="headerCtrl.navigateTo('users.export')">Export der Benutzerübersicht</a> </li>
+							<li><a ng-click="headerCtrl.navigateTo('stammdaten.overview')">Stammdaten verwalten</a></li>
+						</ul>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<!-- /.main-menu navigation -->
+</header>
+<!-- /.header -->

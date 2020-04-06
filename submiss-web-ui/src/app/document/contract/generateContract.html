@@ -1,0 +1,52 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+	<button type="button" class="close" aria-label="Close"
+		ng-click="$close()">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<h4 class="modal-title">Vertrag</h4>
+</div>
+<form name="generateContractCtrl.requestForm" id=requestForm
+	data-ng-submit="generateContractCtrl.generateContract()"
+	shows-validation-errors>
+	<div class="modal-body">
+		<div class="alert alert-danger"
+			ng-if="generateContractCtrl.requestForm.$invalid" role="alert">
+
+		</div>
+		<div class="form-group"
+			ng-if="generateContractCtrl.templates.length > 0">
+			<label for="template">Vertragsvorlage<span class="mandatory">*</span></label>
+			<ui-select name="template" id="template"
+				ng-model="generateContractCtrl.contractTemplate" theme="select2">
+			<ui-select-match allow-clear="true"> <span
+				ng-bind="$select.selected.value1"></span> </ui-select-match> <ui-select-choices
+				repeat="template in (generateContractCtrl.templates | filter: {value1: $select.search})">
+			<span ng-bind="template.value1"></span> </ui-select-choices> </ui-select>
+		</div>
+		<div class="form-group"
+			ng-if="generateContractCtrl.templates.length <= 0">
+			<p>Für diese Submission liegt keine Vertragsvorlage vor. Ein
+				Vertrag kann nicht generiert werden.</p>
+		</div>
+		<div class="modal-footer">
+			<button type="submit" class="btn btn-primary"
+				ng-if="generateContractCtrl.templates.length > 0"
+				data-dismiss="modal">Generieren</button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"
+				ng-click="$close()">Abbrechen</button>
+		</div>
+	</div>
+</form>

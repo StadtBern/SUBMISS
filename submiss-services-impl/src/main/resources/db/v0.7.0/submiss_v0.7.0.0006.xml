@@ -1,0 +1,32 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="European Dynamics SA" id="submiss_v0.7.0.0006">
+		<addColumn tableName="SUB_TENDER">
+        	<column name="IS_PM_DEPARTMENT_NAME_UPDATED" type="BOOLEAN" defaultValueBoolean="false"
+        	 remarks="Markiert ob das Feld PM_DEPARTMENT_NAME von der Submission angepasst wurde.">
+        		<constraints nullable="false" />
+			</column>
+     	</addColumn>
+		<addColumn tableName="SUB_TENDER">
+        	<column name="IS_FK_PM_EXTERNAL_UPDATED" type="BOOLEAN" defaultValueBoolean="false"
+        	 remarks="Markiert ob das Feld FK_PM_EXTERNAL von der Submission angepasst wurde.">
+        		<constraints nullable="false" />
+			</column>
+     	</addColumn>
+     	<addColumn tableName="SUB_TENDER">
+        	<column name="IS_FK_PM_ADMIN_UPDATED" type="BOOLEAN" defaultValueBoolean="false"
+        	 remarks="Markiert ob das Feld FK_PM_ADMIN von der Submission angepasst wurde.">
+        		<constraints nullable="false" />
+			</column>
+     	</addColumn>
+     	<addColumn tableName="SUB_TENDER">
+        	<column name="IS_GATT_WTO_UPDATED" type="BOOLEAN" defaultValueBoolean="false"
+        	 remarks="Markiert ob das Feld GATT_WTO von der Submission angepasst wurde.">
+        		<constraints nullable="false" />
+			</column>
+     	</addColumn>
+	</changeSet>
+</databaseChangeLog>

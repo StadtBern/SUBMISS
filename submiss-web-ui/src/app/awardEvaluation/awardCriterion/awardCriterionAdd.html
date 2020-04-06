@@ -1,0 +1,46 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="$close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title">Zuschlagskriterium hinzufügen</h4>
+</div>
+<form name="awardCriterionAddCtrl.criterionForm" id="criterionForm" data-ng-submit="awardCriterionAddCtrl.criterionSave(awardCriterionAddCtrl.criterion.criterionText)"
+  shows-validation-errors>
+  <div class="modal-body">
+    <div class="alert alert-danger" ng-if="awardCriterionAddCtrl.criterionForm.$invalid" role="alert">
+      <field-error form-element-name="errorField" translate name="error"></field-error>
+    </div>
+    <div class="form-group">
+      <input name="errorField" ng-hide="true" data-ng-model="fd"></input> <label for="user">Kriterium<span class="mandatory">*</span></label>
+      <input ng-if="!awardCriterionAddCtrl.isOperatingCost" autofocus data-ng-model="awardCriterionAddCtrl.criterion.criterionText"
+        class="form-control" id="criterionText" name="criterionText" type="text">
+      <input ng-if="awardCriterionAddCtrl.isOperatingCost" autofocus ng-init="awardCriterionAddCtrl.criterion.criterionText = 'Betriebskosten'"
+        data-ng-model="awardCriterionAddCtrl.criterion.criterionText" class="form-control" id="criterionText" name="criterionText"
+        type="text">
+    </div>
+    <div class="form-group">
+      <label for="">Gewichtung<span class="mandatory">*</span> </label>
+      <div class="input-group">
+        <input ng-model="awardCriterionAddCtrl.criterion.weighting" name="weighting" min="0" type="number" step=".01"
+          class="form-control" placeholder="" id="weighting"> <span class="input-group-addon" id="basic-addon1">%</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary">Speichern</button>
+      <button type="button" class="btn btn-default" ng-click="$close()">Abbrechen</button>
+    </div>
+  </div>
+</form>

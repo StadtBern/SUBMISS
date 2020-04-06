@@ -1,0 +1,334 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{companyDocumentAreaCtrl.data.company.companyName}},<small>&nbsp;{{companyDocumentAreaCtrl.data.company.address1}}</small>
+    </h2>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="col-sm-6 pull-left">
+        <div class="">
+          <label>Nachweisstatus:</label> <span> <text ng-if="companyDocumentAreaCtrl.data.company.proofStatus === 1">
+              <img src="../../../assets/images/greenFlag.png" alt="Alle Nachweise" /> Alle Nachweise vorhanden</text>
+            <text ng-if="companyDocumentAreaCtrl.data.company.proofStatus === 2">
+              <img src="../../../assets/images/redFlag.png" alt="nicht aktuell" />
+              Nachweise nicht mehr aktuell, nicht vollständig, oder nicht
+              vorhanden</text> <text ng-if="companyDocumentAreaCtrl.data.company.proofStatus === 3">
+              <img src="../../../assets/images/flagBan.png" alt="Fachstelle" />
+              Rücksprache mit der Fachstelle Beschaffungswesen</text> <text
+              ng-if="companyDocumentAreaCtrl.data.company.proofStatus === 4">
+              <img src="../../../assets/images/ban.png" alt="KAIO" />
+              Rücksprache mit KAIO ZKB / FaBe</text>
+          </span>
+        </div>
+        <div class="" ng-if="companyDocumentAreaCtrl.data.company.proofDocModOn!=null">
+          <label> Nachweise bestellt durch
+            {{companyDocumentAreaCtrl.data.company.proofDocModBy.name}} am
+            {{companyDocumentAreaCtrl.data.company.proofDocModOn |
+            date:"dd.MM.yyyy"}} </label>
+        </div>
+        <div class="" ng-if="companyDocumentAreaCtrl.data.company.proofDocSubmitDate!=null
+						&& companyDocumentAreaCtrl.data.company.proofDocModBy.name != 'Kanton Bern'">
+          <label> Einreichefrist der Nachweise am
+            {{companyDocumentAreaCtrl.data.company.proofDocSubmitDate |
+            date:"dd.MM.yyyy"}} </label>
+        </div>
+        <div ng-if="companyDocumentAreaCtrl.data.company.certificateDate!=null">
+          <label>Firma zertifiziert am
+            {{companyDocumentAreaCtrl.data.company.certificateDate |
+            date:"dd.MM.yyyy"}}, gültig bis
+            {{companyDocumentAreaCtrl.data.company.certDocExpirationDate |
+            date:"dd.MM.yyyy"}}</label>
+        </div>
+        <div class="" ng-hide="companyDocumentAreaCtrl.data.company.modificationDate==null">
+          <label
+            ng-show="companyDocumentAreaCtrl.data.company.modUserName!=null || companyDocumentAreaCtrl.data.company.modUserName==''">Firma
+            bearbeitet am {{companyDocumentAreaCtrl.data.company.modifiedOn |
+            date:"dd.MM.yyyy"}} durch
+            {{companyDocumentAreaCtrl.data.company.modUserName}}
+            {{companyDocumentAreaCtrl.data.company.modUserLastName}}/{{companyDocumentAreaCtrl.data.company.modUserTenant}}</label>
+        </div>
+
+      </div>
+      <div class="col-sm-6 pull-left">
+        <div class="btn-toolbar pull-right" role="toolbar">
+          <button ng-click="companyDocumentAreaCtrl.requestProofs()"
+            ng-show="companyDocumentAreaCtrl.secProofVerificationRequest"
+            ng-disabled="companyDocumentAreaCtrl.data.company.proofStatus === 1" type="submit"
+            class="btn btn-primary">Nachweisaufforderung
+            gewünscht</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <div class="col-sm-12">
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation"><a ui-sref="company.view({id: companyDocumentAreaCtrl.data.company.id})"
+            aria-controls="Firmendetails" role="tab" data-toggle="tab">Firmendetails</a></li>
+        <li role="presentation" ng-show="companyDocumentAreaCtrl.secCompanyProofsView"><a
+            ui-sref="company.proofs({id: companyDocumentAreaCtrl.data.company.id})" aria-controls="CompanyProofs"
+            role="tab" data-toggle="tab">Nachweise</a></li>
+        <li role="presentation" ng-show="companyDocumentAreaCtrl.secCompanyOffersView"><a
+            ui-sref="company.offers({id: companyDocumentAreaCtrl.data.company.id})" aria-controls="eingereichte"
+            role="tab" data-toggle="tab">Eingereichte
+            Offerten</a></li>
+        <li role="presentation" class="active"><a aria-controls="documents" role="tab"
+            data-toggle="tab">Dokumentenbereich</a></li>
+      </ul>
+    </div>
+    <div class="row"></div>
+    <div role="tabpanel" class="tab-pane" id="docs">
+      <form name="companyDocumentAreaCtrl.template" data-ng-submit="companyDocumentAreaCtrl.createDocument()"
+        id="templateForm" shows-validation-errors>
+        <div class="alert alert-danger" ng-if="companyDocumentAreaCtrl.template.templateNotSelectedError.$invalid"
+          role="alert">
+          <field-error form-element-name="templateNotSelectedError" translate name="error"></field-error>
+        </div>
+        <div class="alert alert-danger" ng-if="companyDocumentAreaCtrl.uploadError != null" role="alert" translate>
+          {{companyDocumentAreaCtrl.uploadError}}</div>
+        <div class="alert alert-danger" ng-if="companyDocumentAreaCtrl.errorMessage" role="alert">
+          <ul ng-if="companyDocumentAreaCtrl.errorMessage">
+            <li translate>
+              invalid_open_email_to
+            </li>
+          </ul>
+        </div>
+        <input name="templateNotSelectedError" ng-hide="true" data-ng-model="fd">
+
+        <div class="col-sm-12 section-card-item">
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <ui-select name="template" id="template" ng-model="companyDocumentAreaCtrl.chosenTemplate"
+                    theme="select2" on-select="companyDocumentAreaCtrl.onTemplateSelection($item)">
+                    <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.value1"></span>
+                    </ui-select-match>
+                    <ui-select-choices
+                      repeat="template in (companyDocumentAreaCtrl.templates | filter: {value1: $select.search})">
+                      <span ng-bind="template.value1"></span></ui-select-choices>
+                  </ui-select>
+                </div>
+              </div>
+              <div class="col-sm-1 versionieren">
+                <div class="checkbox">
+                  <label> <input type="checkbox" id="selective"
+                      data-ng-model="companyDocumentAreaCtrl.templateForm.createVersion"
+                      ng-disabled="companyDocumentAreaCtrl.disableVersion" />Versionieren
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-sm-7">
+                <button type="submit" class="btn btn-primary"
+                  ng-click="companyDocumentAreaCtrl.createAndPrintDocument = false">Erstellen</button>
+                <button type="submit" class="btn btn-primary" ng-disabled="companyDocumentAreaCtrl.chosenTemplate.shortCode === 'FT05'"
+                  ng-click="companyDocumentAreaCtrl.createAndPrintDocument = true">Erstellen
+                  und Drucken</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="col-sm-12 marginTop">
+        <div class="row">
+          <div class="col-sm-12 ToolbarContainer">
+            <div class="btn-toolbar pull-right" role="toolbar">
+              <div flow-init flow-name="companyDocumentAreaCtrl.files" class="btn btn-primary" style="display: inline;"
+                flow-name="obj.flow" flow-files-submitted="companyDocumentAreaCtrl.uploadMultipleDocuments($flow)"
+                flow-file-error="companyDocumentAreaCtrl.uploadErrorFunction($file, $message, $flow )"
+                title="Dokument(e) hochladen">
+                <span flow-btn flow-attrs="{accept:'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
+														,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+														,image/jpeg,image/png,text/plain,application/rtf,text/html, application/vnd.openxmlformats-officedocument.presentationml.presentation,
+														 application/vnd.ms-powerpoint, application/vnd.ms-outlook'}"
+                  flow-complete="companyDocumentAreaCtrl.uploadedMultipleDocuments($flow);"
+                  class=" action  multipleUpload  fa-upload">
+                  <div class="multipleUpload">Dokument(e) hochladen</div>
+                </span>
+              </div>
+              <button type="submit" class="btn btn-primary" ng-disabled="!companyDocumentAreaCtrl.multipleFilesDownload"
+                ng-click="companyDocumentAreaCtrl.downloadMultipleDocuments()">
+                <span class="fa fa-download" aria-hidden="true"></span> Mehrere
+                Dokumente herunterladen
+              </button>
+            </div>
+          </div>
+        </div>
+        <div ng-table-pagination="companyDocumentAreaCtrl.tableParams" template-url="'app/layout/pager.html'"></div>
+        <div class="table-responsive" ng-style="companyDocumentAreaCtrl.divTableHeight">
+          <table ng-table="companyDocumentAreaCtrl.tableParams" class="table table-striped" show-filter="true">
+            <tr ng-repeat="document in $data">
+              <td header="'headerCheckbox.html'"><input type="checkbox"
+                  ng-change="companyDocumentAreaCtrl.seperateCheckboxFunctionality()" ng-model="document.checkbox" />
+              </td>
+              <td title="'Icon'">
+                <div ng-switch="document.mimetype ">
+                  <div ng-switch-when="application/pdf">
+                    <div class="fa fa-file-pdf-o" aria-hidden="true" title="pdf"></div>
+                  </div>
+                  <div ng-switch-when="application/vnd.ms-excel">
+                    <div class="fa fa-file-excel-o" aria-hidden="true" title="excel"></div>
+                  </div>
+                  <div ng-switch-when="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                    <div class="fa fa-file-excel-o" aria-hidden="true" title="sheet"></div>
+                  </div>
+                  <div ng-switch-when="text/csv">
+                    <div class="fa fa-file-text-o" aria-hidden="true" title="csv"></div>
+                  </div>
+                  <div ng-switch-when="image/png">
+                    <div class="fa fa-file-image-o" aria-hidden="true" title="png"></div>
+                  </div>
+                  <div ng-switch-when="image/jpeg">
+                    <div class="fa fa-file-image-o" aria-hidden="true" title="jpeg"></div>
+                  </div>
+                  <div ng-switch-when="text/plain">
+                    <div class="fa fa-file-text-o" aria-hidden="true" title="txt"></div>
+                  </div>
+                  <div ng-switch-when="application/rtf">
+                    <div class="fa fa-file-text-o" aria-hidden="true" title="rtf"></div>
+                  </div>
+                  <div ng-switch-when="text/html">
+                    <div class="fa fa-file-text-o" aria-hidden="true" title="html"></div>
+                  </div>
+                  <div ng-switch-when="application/vnd.ms-powerpoint">
+                    <div class="fa fa-file-powerpoint-o" aria-hidden="true" title="ppt"></div>
+                  </div>
+                  <div ng-switch-when="application/vnd.openxmlformats-officedocument.presentationml.presentation">
+                    <div class="fa fa-file-powerpoint-o" aria-hidden="true" title="presentation"></div>
+                  </div>
+                  <div ng-switch-when="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                    <div class="fa fa-file-word-o" aria-hidden="true" title="doc"></div>
+                  </div>
+                  <div ng-switch-when="application/msword">
+                    <div class="fa fa-file-word-o" aria-hidden="true" title="word"></div>
+                  </div>
+                  <div ng-switch-default>
+                    <!-- Default icon to be set -->
+                    <div class="fa fa-file-text-o" aria-hidden="true" title="text"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="w110" title="'Titel'" filter="{ 'title' : 'text'}" sortable="'title'"><span
+                  ng-if="document.privateDocument" class="fa fa-lock" title="{{document.privateGroup}}"
+                  aria-hidden="true"></span> {{document.title}}</td>
+              <td title="'Dateiname'" filter="{ 'filename' : 'text'}" sortable="'filename'">{{document.filename}}</td>
+              <td title="'Typ'" filter="{ 'documentCreationType' : 'select'}"
+                filter-data="companyDocumentAreaCtrl.documentCreationType" sortable="'documentCreationType'" translate>
+                {{document.documentCreationType}}</td>
+              <td title="'Erstellung'" filter="{'createdOn': 'createdOnDateFilter' }" sortable="'createdOn'">{{document.createdOn
+                |date:'dd.MM.yyyy'}}</td>
+              <td title="'Änderung'" filter="{'lastModifiedOn': 'lastModifiedOnDateFilter' }"
+                sortable="'lastModifiedOn'">{{document.lastModifiedOn
+                ==
+                document.createdOn ? '' :
+                document.lastModifiedOn|date:'dd.MM.yyyy'}}</td>
+              <td title="'Version'" filter="{ 'versionName' : 'text'}" sortable="'versionName'">{{document.versionName}}
+              </td>
+              <td title="'Benutzername'" filter="{ 'createdBy'  : 'text'}" sortable="'createdBy'">{{document.createdBy}}
+              </td>
+              <td title="'Aktiv'" filter="{ 'active': 'select'}" filter-data="companyDocumentAreaCtrl.active"
+                sortable="'active'">
+                {{companyDocumentAreaCtrl.showActiveOrInactive(document.active)}}</td>
+              <td class="w110" title="'Aktion'">
+                <button type="button" class="btn action btn-primary"
+                  ng-click="companyDocumentAreaCtrl.seperateDocumentDownload(document.id)"
+                  ng-disabled="!(companyDocumentAreaCtrl.secCompanyDocumentDownload && document.canBeDownloaded)"
+                  title="Herunterladen">
+                  <div class="fa fa-download"></div>
+                </button>
+                <div flow-init flow-name="companyDocumentAreaCtrl.files" style="display: inline;" flow-name="obj.flow"
+                  flow-files-submitted="companyDocumentAreaCtrl.uploadSelectedDocument($flow, document)"
+                  flow-file-error="companyDocumentAreaCtrl.uploadErrorFunction($file, $message, $flow )"
+                  title="Hochladen">
+                  <span flow-btn flow-attrs="{accept:'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
+														,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+														,image/jpeg,image/png,text/plain,application/rtf,text/html, application/vnd.openxmlformats-officedocument.presentationml.presentation,
+														 application/vnd.ms-powerpoint, application/vnd.ms-outlook'}"
+                    ng-style="{'pointer-events': (!(companyDocumentAreaCtrl.secCompanyDocumentUpload && document.canBeUploaded) || !document.active) ? 'none' : 'auto'}"
+                    flow-complete="companyDocumentAreaCtrl.uploaded($flow);" class="btn action btn-primary fa fa-upload"
+                    ng-disabled="!(companyDocumentAreaCtrl.secCompanyDocumentUpload && document.canBeUploaded) || !document.active">
+                    <div ng-if="main.spinner" class="fa fa-upload"></div>
+                  </span>
+                </div>
+                <button type="button" class="btn action btn-primary"
+                  ng-click="companyDocumentAreaCtrl.deleteDocument(document.templateId, document.id, document.filename)"
+                  ng-disabled="!(companyDocumentAreaCtrl.secCompanyDocumentDelete && document.canBeDeleted) || !document.active"
+                  title="Löschen">
+                  <div class="fa fa-trash-o"></div>
+                </button>
+                <button type="button" class="btn action btn-primary"
+                  ng-if="companyDocumentAreaCtrl.secCompanyDocumentEditProperties && document.canPropertiesBeEdited && document.active"
+                  ng-disabled="false" ng-click="companyDocumentAreaCtrl.editDocumentProperties(document,true)"
+                  title="Eigenschaften bearbeiten" data-toggle="modal" data-target="#editDoc">
+                  <div class="fa fa-edit"></div>
+                </button>
+                <button type="button" class="btn action btn-primary"
+                  ng-if="!(companyDocumentAreaCtrl.secCompanyDocumentEditProperties && document.canPropertiesBeEdited && document.active)"
+                  ng-click="companyDocumentAreaCtrl.editDocumentProperties(document,false)"
+                  title="Eigenschaften ansehen">
+                  <span class="fa fa-eye" aria-hidden="true"></span>
+                </button>
+                <button type="button" class="btn action btn-primary"
+                  ng-disabled="!(companyDocumentAreaCtrl.secCompanyDocumentPrint && document.canBePrinted) || companyDocumentAreaCtrl.printAllowedFiles(document.filename)"
+                  title="Drucken" ng-click="companyDocumentAreaCtrl.printDocument(document.id)">
+                  <div class="fa fa-print"></div>
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="headerCheckbox.html">
+  <input type="checkbox"
+		ng-click="companyDocumentAreaCtrl.mainCheckboxFunctionality()"
+        ng-model="companyDocumentAreaCtrl.mainCheckbox">
+</script>
+<script type="text/ng-template" id="ng-table/filters/createdOnDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="createdOn" type="text" name="createdOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="companyDocumentAreaCtrl.openCreatedOnFilter.opened"
+					ng-model="params.filter()['createdOn']"
+						ng-click="companyDocumentAreaCtrl.openCreatedOnFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="companyDocumentAreaCtrl.openCreatedOnFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>
+<script type="text/ng-template" id="ng-table/filters/lastModifiedOnDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="lastModifiedOn" type="text" name="lastModifiedOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="companyDocumentAreaCtrl.openLastModifiedOnDateFilter.opened"
+					ng-model="params.filter()['lastModifiedOn']"
+						ng-click="companyDocumentAreaCtrl.openLastModifiedOnDateFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="companyDocumentAreaCtrl.openLastModifiedOnDateFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>

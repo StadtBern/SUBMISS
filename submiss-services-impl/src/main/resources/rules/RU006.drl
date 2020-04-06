@@ -1,0 +1,46 @@
+package rules.submiss.showTemplates;
+	
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.constants.TenderStatus;
+import java.util.LinkedList;
+import java.util.List;
+global java.util.List templateCodes;
+	
+rule "RU006"
+	when
+		$submission: SubmissionDTO( )
+		$isVerfahren_SELECTIVE: Boolean( ) from $submission.getProcess().getValue().equals("SelectiveTender")
+		$isVerfahren_OPEN: Boolean( ) from $submission.getProcess().getValue().equals("OpenTender")
+		$isVerfahren_INVITATION: Boolean( ) from $submission.getProcess().getValue().equals("InvitedTender")
+		$isVerfahren_NEGOTIATED: Boolean( ) from $submission.getProcess().getValue().equals("NegotiatedTender")
+		$isVerfahren_NEGOTIATED_WITH_COMPETITION: Boolean( ) from $submission.getProcess().getValue().equals("NegotiatedCompetitionTender")
+
+		$isISBDepartment: Boolean( ) from $submission.getProject().getDepartment().getShortName().equals("ISB")
+		$isHSBDepartment: Boolean( ) from $submission.getProject().getDepartment().getShortName().equals("HSB")
+		$isSGBDepartment: Boolean( ) from $submission.getProject().getDepartment().getShortName().equals("SGB")
+		$isLBDepartment: Boolean( ) from $submission.getProject().getDepartment().getShortName().equals("LB")
+		$isISBFondsDepartment: Boolean( ) from $submission.getProject().getDepartment().getShortName().equals("Fonds")
+	if ($isISBDepartment || $isISBFondsDepartment) do[DEP_ISB]
+	if ($isHSBDepartment) do[DEP_HSB]
+	if ($isSGBDepartment) do[DEP_SGB]
+	if ($isLBDepartment) do[DEP_LB]
+	then 
+		//templates without restrictions should be added here 
+		then [DEP_ISB]
+			templateCodes.add("DEP_ISB01");
+			templateCodes.add("DEP_ISB02");
+		then [DEP_HSB]
+			templateCodes.add("DEP_HSB01");
+		then [DEP_SGB]
+			templateCodes.add("DEP_SGB01");
+			templateCodes.add("DEP_SGB02");
+			templateCodes.add("DEP_SGB03");
+			templateCodes.add("DEP_SGB04");
+			templateCodes.add("DEP_SGB05");
+			templateCodes.add("DEP_SGB06");
+		then [DEP_LB]
+			templateCodes.add("DEP_LB01");
+			templateCodes.add("DEP_LB02");								
+	end

@@ -1,0 +1,27 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+import java.util.HashMap;
+
+global HashMap placeholderMappings;
+
+rule "PT13"
+	when
+		$submission: SubmissionDTO()
+		
+		if ($submission.getOfferOpeningDate() != null) do[offerOpeningDate]
+		else do[offerOpeningDateEmpty]
+		if ($submission.getApplicationOpeningDate() != null) do[applicationOpeningDate]
+		else do[applicationOpeningDateEmpty]	
+    then 
+    
+		then [offerOpeningDate]	
+			placeholderMappings.put("s_offer_opening",SubmissConverter.convertToSwissDate($submission.getOfferOpeningDate()));
+		then [offerOpeningDateEmpty]	
+			placeholderMappings.put("s_offer_opening"," ");
+		then [applicationOpeningDate]	
+			placeholderMappings.put("s_application_opening_date",SubmissConverter.convertToSwissDate($submission.getApplicationOpeningDate()));
+		then [applicationOpeningDateEmpty]	
+			placeholderMappings.put("s_application_opening_date"," ");			
+	end

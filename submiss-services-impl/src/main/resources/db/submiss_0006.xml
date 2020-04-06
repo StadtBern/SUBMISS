@@ -1,0 +1,83 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0006">
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="GROSS_AMOUNT"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="GROSS_AMOUNT_CORRECTED"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="DISCOUNT"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="VAT"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="DISCOUNT2"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="BUILDING_COSTS"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="ANCILLIARY_AMOUNT_GROSS"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="OPERATING_COST_GROSS"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="OPERATING_COST_GROSS_CORRECTED"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="OPERATING_COST_DISCOUNT"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="OPERATING_COST_DISCOUNT2"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="OPERATING_COST_VAT"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="AMOUNT"
+      newDataType="DECIMAL(15,2)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="DISCOUNT_IN_PERCENTAGE"
+      newDataType="DECIMAL(8,4)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="DISCOUNT2_IN_PERCENTAGE"
+      newDataType="DECIMAL(8,4)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="OPERATING_COST_VAT_IN_PERCENTAGE"
+      newDataType="DECIMAL(8,4)"/>
+
+    <modifyDataType tableName="SUB_OFFER"
+      columnName="BUILDING_COSTS_IN_PERCENTAGE"
+      newDataType="DECIMAL(8,4)"/>
+
+    <modifyDataType tableName="SUB_TENDER"
+      columnName="COST_ESTIMATE"
+      newDataType="DECIMAL(15,2)"/>
+
+  </changeSet>
+
+</databaseChangeLog>

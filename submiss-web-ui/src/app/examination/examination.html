@@ -1,0 +1,507 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">
+			{{examinationViewCtrl.data.submission.workType.value1}}
+			{{examinationViewCtrl.data.submission.workType.value2}}, <small>
+				{{examinationViewCtrl.data.submission.project.projectName}},
+				{{examinationViewCtrl.getObjectInfo(examinationViewCtrl.data.submission.project.objectName)}}</small>
+		</h2>
+	</div>
+</div>
+<div class="row">
+	<div class="card-box">
+		<div class="col-sm-12">
+			<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+			<div ng-if="examinationViewCtrl.isProcessSelective" ng-include src="'app/selective/firstStage/firstStageTabs.html'"></div>
+			<form name="examinationViewCtrl.examinationForm"
+					data-ng-submit="examinationViewCtrl.save(examinationViewCtrl.examinationForm)" id="examinationForm"
+					shows-validation-errors>
+					<fieldset>
+					<div class="alert alert-danger"
+						ng-if="examinationViewCtrl.examinationForm.$invalid" role="alert" id="ErrorAnchor">
+						<field-error form-element-name="generalErrorField" translate name="error"></field-error>
+						<field-error form-element-name="criterionErrorField" translate name="error"></field-error>
+						<field-error form-element-name="subcriterionErrorField" translate name="error"></field-error>
+						<field-error form-element-name="maxGradeErrorField" translate name="error"></field-error>
+						<field-error form-element-name="minGradeErrorField" translate name="error"></field-error>
+						<field-error form-element-name=invalidGradesField translate name="error"></field-error>
+						<field-error form-element-name=emptyFieldsField translate name="error"></field-error>
+						<field-error form-element-name=invalidSubcriteriaWeightingsField translate name="error"></field-error>
+						<field-error form-element-name=invalidCriteriaWeightingsField translate name="error"></field-error>
+						<field-error form-element-name=mandatoryDocument translate name="error"></field-error>
+						<field-error form-element-name=nullMinGradeMaxGradeErrorField translate name="error"></field-error>
+            			<field-error form-element-name="noExaminationDocumentField" translate name="error"></field-error>
+            			<field-error form-element-name="proofInconsistenciesField" translate name="error"></field-error>
+					</div>
+					<div id='mandatoryFieldsEmpty' class="col-sm-12">
+						<div class="alert alert-danger" role="alert"
+							ng-if="examinationViewCtrl.mandatoryFieldsEmpty && examinationViewCtrl.examinationForm.$valid">
+							<ul>
+								<li><field-error translate>mandatory_error_message</field-error></li>
+							</ul>
+						</div>
+				    </div>
+					<input name="generalErrorField" ng-hide="true" data-ng-model="fd">
+					<input name="criterionErrorField" ng-hide="true" data-ng-model="fd">
+					<input name="subcriterionErrorField" ng-hide="true" data-ng-model="fd">
+					<input name="maxGradeErrorField" ng-hide="true" data-ng-model="fd">
+					<input name="minGradeErrorField" ng-hide="true" data-ng-model="fd">
+					<input name="invalidGradesField" ng-hide="true" data-ng-model="fd">
+					<input name="emptyFieldsField" ng-hide="true" data-ng-model="fd">
+					<input name="invalidSubcriteriaWeightingsField" ng-hide="true" data-ng-model="fd">
+					<input name="invalidCriteriaWeightingsField" ng-hide="true" data-ng-model="fd">
+					<input name="mandatoryDocument" ng-hide="true" data-ng-model="fd">
+					<input name="nullMinGradeMaxGradeErrorField" ng-hide="true" data-ng-model="fd">
+          			<input name="noExaminationDocumentField" ng-hide="true" data-ng-model="fd">
+          			<input name="proofInconsistenciesField" ng-hide="true" data-ng-model="fd">
+			<div role="tabpanel" class="tab-pane">
+				<div class="col-sm-12 ToolbarContainer">
+						<label  ng-if="examinationViewCtrl.data.submission.examinationLockedBy" ><span>Export durch {{examinationViewCtrl.data.submission.examinationLockedBy}}
+								am:  {{examinationViewCtrl.data.submission.examinationLockedTime | date:"dd.MM.y HH:mm" }}</span>
+							</label>
+							<br ng-if="examinationViewCtrl.data.submission.examinationLockedBy"/>
+							<br ng-if="examinationViewCtrl.data.submission.examinationLockedBy"/>
+
+					<div class="btn-toolbar pull-right" role="toolbar">
+						<a ng-click="examinationViewCtrl.navigateToFormalAudit(examinationViewCtrl.data.submission.id)" class="btn btn-primary"
+							 title="Formelle Prüfung durchführen"> <span aria-hidden="true"></span> Formelle
+							Prüfung durchführen
+						</a> <a ui-sref="examination.suitability({id: examinationViewCtrl.data.submission.id})"
+						 class="btn btn-primary"><span class="fa fa-plus"
+							aria-hidden="true"></span> Eignungsprüfung durchführen</a>
+
+							<div  class="btn-toolbar pull-left" style="padding-left:4px" role="toolbar" uib-dropdown>
+									<button type="button" class="btn btn-primary"
+									data-ng-disabled="(examinationViewCtrl.mustCriterion.length == 0 && examinationViewCtrl.evaluatedCriterion.length == 0) || (examinationViewCtrl.data.submission.minGrade == null || examinationViewCtrl.data.submission.maxGrade == null) || examinationViewCtrl.data.submission.examinationIsLocked || appCtrl.getLoggedUser().userGroup.name != examinationViewCtrl.group.ADMIN ||
+								examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED || examinationViewCtrl.isFormDisabled()"
+										uib-dropdown-toggle>
+										<em class="fa fa-download" aria-hidden="true"></em> Export <em
+											class="fa fa-caret-down" aria-hidden="true"></em>
+									</button>
+									<ul class="dropdown-menu" uib-dropdown-menu role="menu"
+										aria-labelledby="Export">
+										<li role="menuitem"><a
+											ng-click="examinationViewCtrl.exportEMLCriteria()"> <em
+												class="fa fa-file-text-o" aria-hidden="true"></em> Email-Format
+										</a></li>
+										<li role="menuitem"><a
+											ng-click="examinationViewCtrl.exportCriteria()"> <em
+												class="fa fa-file-excel-o" aria-hidden="true"></em> Excel-Format
+										</a></li>
+									</ul>
+							</div>
+
+						<div flow-init flow-name="examinationViewCtrl.files" class="btn btn-primary" style="display: inline;" flow-name="obj.flow"
+						 flow-files-submitted="examinationViewCtrl.uploadFile($flow)" flow-file-error="examinationViewCtrl.uploadError($file, $message, $flow )"
+						 data-ng-disabled="(!examinationViewCtrl.data.submission.examinationLockedTime ) || (examinationViewCtrl.mustCriterion.length == 0 && examinationViewCtrl.evaluatedCriterion.length == 0) || (examinationViewCtrl.data.submission.minGrade == null || examinationViewCtrl.data.submission.maxGrade == null) || appCtrl.getLoggedUser().userGroup.name != examinationViewCtrl.group.ADMIN ||
+						        examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED || examinationViewCtrl.isFormDisabled()">
+							<span flow-btn flow-attrs="{accept:'*'}" flow-complete="examinationViewCtrl.uploaded($flow);" class="action  multipleUpload fa-upload">
+								<div class="multipleUpload" /> Import
+							</span>
+						</div>
+
+						<button type="button" class="btn btn-primary"
+								ng-click="examinationViewCtrl.lockExamination()"
+								ng-if="!examinationViewCtrl.data.submission.examinationIsLocked"
+						        data-ng-disabled="appCtrl.getLoggedUser().userGroup.name != examinationViewCtrl.group.ADMIN ||
+						        examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED || examinationViewCtrl.isFormDisabled()">
+							<span class="fa fa-lock" aria-hidden="true"></span> Sperren
+						</button>
+						<button type="button" class="btn btn-primary"
+								ng-if="examinationViewCtrl.data.submission.examinationIsLocked"
+								ng-click="examinationViewCtrl.unlockExamination()"
+						        data-ng-disabled="appCtrl.getLoggedUser().userGroup.name != examinationViewCtrl.group.ADMIN ||
+						        examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED || examinationViewCtrl.isFormDisabled()">
+							<span class="fa fa-unlock" aria-hidden="true"></span> Entsperren
+						</button>
+						<button type="button" class="btn btn-primary"
+						ng-if="(examinationViewCtrl.data.submission.process != examinationViewCtrl.process.SELECTIVE
+								&& examinationViewCtrl.currentStatus <= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED) ||
+								(examinationViewCtrl.data.submission.process == examinationViewCtrl.process.SELECTIVE
+								&& examinationViewCtrl.currentStatus < examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED_S)"
+						data-ng-disabled="!examinationViewCtrl.secExaminationClose ||
+							(examinationViewCtrl.data.submission.process != examinationViewCtrl.process.SELECTIVE
+							&& examinationViewCtrl.currentStatus < examinationViewCtrl.status.FORMAL_EXAMINATION_AND_QUALIFICATION_STARTED) ||
+							(examinationViewCtrl.data.submission.process == examinationViewCtrl.process.SELECTIVE
+							&& examinationViewCtrl.currentStatus < examinationViewCtrl.status.FORMAL_EXAMINATION_SUITABILITY_AUDIT_STARTED) ||
+							examinationViewCtrl.isFormDisabled()"
+						ng-click="examinationViewCtrl.checkForChanges(examinationViewCtrl.examinationForm.$dirty)">Eignungsprüfung
+							abschliessen</button>
+							<button type="button"
+							ng-click="examinationViewCtrl.reopenExamination()"
+							data-ng-disabled="examinationViewCtrl.reopenExaminationButtonDisabled()"
+							ng-if="(examinationViewCtrl.data.submission.process != examinationViewCtrl.process.SELECTIVE
+								&& examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED) ||
+								(examinationViewCtrl.data.submission.process == examinationViewCtrl.process.SELECTIVE
+								&& examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED_S)"
+							class="btn btn-primary">Eignungsprüfung wiederaufnehmen</button>
+					</div>
+				</div>
+			</div>
+
+					<div class="col-sm-12 col-md-6 abstand3">
+						<div class="form-group zuschlag">
+							<label for="minGrade">Mindestnote</label><span class="mandatory" ng-if="examinationViewCtrl.isMindestnoteAndMaximalnoteMandatory()">*</span> <input
+								class="form-control" id="minGrade" name="minGrade" data-ng-model="examinationViewCtrl.examination.minGrade"
+								data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
+								                  || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+								                  || examinationViewCtrl.isFormDisabled()" type="number" step=".01"
+								ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)" ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+								ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)" ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+						</div>
+
+					</div>
+					<div class="col-sm-12 col-md-6">
+						<div class="form-group zuschlag">
+							<label for="maxGrade">Maximalnote</label><span class="mandatory" ng-if="examinationViewCtrl.isMindestnoteAndMaximalnoteMandatory()">*</span> <input
+								class="form-control" id="maxGrade" name="maxGrade" data-ng-model="examinationViewCtrl.examination.maxGrade"
+								data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
+								                  || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+								                  || examinationViewCtrl.isFormDisabled()" type="number" step=".01"
+								ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)" ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+								ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)" ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+						</div>
+					</div>
+					<div class="col-sm-12 col-md-12 btn-bar"></div>
+					<div class="col-sm-12">
+						<div class="panel-group" role="tablist"
+							aria-multiselectable="true">
+							<div accordion-group class="panel panel-default">
+								<div accordion-heading class="panel-heading" role="tab">
+								<span ng-click="examinationViewCtrl.openAccordion()">
+									<h4 class="panel-title">
+										<a role="button" data-toggle="collapse"
+											aria-expanded="{{examinationViewCtrl.accordion.show}}"
+											aria-controls="collapseSix">
+											Übersicht </a>
+									</h4>
+									</span>
+								</div>
+
+								<div id="collapseSix" class="panel-collapse collapse in"
+									role="tabpanel" aria-labelledby="headingSix">
+									<div ng-if="examinationViewCtrl.accordion.show">
+										<div class="panel-body">
+											<div class="col-sm-12 rankSummary">
+										<div class="table-responsive">
+												<!-- table -->
+
+												<table id="fixTable" class="table table-striped table-condensed"
+												ng-table="examinationViewCtrl.tableParams" ng-style="examinationViewCtrl.tableStyle">
+													<thead>
+														<tr>
+															<th></th>
+															<th colspan="2">Formelle Prüfung</th>
+															<th colspan="{{examinationViewCtrl.mustCriterion.length}}" ng-if="examinationViewCtrl.mustCriterion.length > 0">Muss Kriterien</th>
+															<th colspan="{{examinationViewCtrl.evaluatedCriterion.length * 3}}"
+															ng-if="examinationViewCtrl.evaluatedCriterion.length > 0">Bewertete Kriterien</th>
+
+														</tr>
+														<tr>
+															<th class="w30"></th>
+															<th class="leftborder w10">Ausschluss-gründe Art. 24
+																ÖBV</th>
+															<th class="leftborder w10">Nachweise erbracht</th>
+
+															<th class="leftborder w80" style="width: 50px;"
+																ng-repeat="column in examinationViewCtrl.mustCriterion">
+																<div data-toggle="tooltip"
+																	title="{{column.criterionText}}"
+																	style="height: 38px; overflow: hidden;">
+																	{{column.criterionText}}
+																</div></th>
+
+															<th class="leftborder"
+																ng-repeat-start="column in examinationViewCtrl.evaluatedCriterion">G</th>
+															<th class="leftborder" style="width: 50px;" colspan="2"><div data-toggle="tooltip"
+																	title="{{column.criterionText}}"
+																	style="height: 38px; overflow: hidden;">
+																	{{column.criterionText}}
+																</div></th>
+															<th class="leftborder w10"
+																ng-repeat-start="subcriterion in column.subcriterion"><em>G</em></th>
+															<th class="leftborder" style="width: 50px;" colspan="2" ng-repeat-end>
+															<div data-toggle="tooltip" data-html="true"
+																	title="UK {{subcriterion.subcriterionText}}"
+																	style="height: 38px; overflow: hidden;">
+																	<em>UK {{subcriterion.subcriterionText}}</em>
+																</div>
+															<!-- dummy input just to close the ng-repeat -->
+															<th ng-hide="true" ng-repeat-end></th>
+															<th class="leftborder" colspan="4"></th>
+														</tr>
+														<tr>
+															<th class="w30"></th>
+															<th class="w10"></th>
+															<th class="w10"></th>
+															<th class="leftborder w80"
+																ng-if="examinationViewCtrl.mustCriterion.length > 0"
+																colspan="{{examinationViewCtrl.mustCriterion.length}}"></th>
+
+															<th class="leftborder"
+																ng-repeat-start="column in examinationViewCtrl.evaluatedCriterion"
+																data-ng-value="point=column[$index].weighting">{{examinationViewCtrl.formatAmount(column.weighting)}}</th>
+															<th class="leftborder">Note</th>
+															<th class="leftborder">Punkte</th>
+															<th class="leftborder w10"
+																ng-repeat-start="subcriterion in column.subcriterion">{{examinationViewCtrl.formatAmount(subcriterion.weighting)}}</th>
+															<th class="leftborder"><em>Note</em></th>
+															<th class="leftborder" ng-repeat-end><em>Punkte</em></th>
+															<!-- dummy input just to close the ng-repeat -->
+															<th ng-hide="true" ng-repeat-end></th>
+															<th class="leftborder"
+																ng-if="examinationViewCtrl.evaluatedCriterion.length > 0">Totale
+																Punkte</th>
+															<th class="leftborder">Status</th>
+															<th class="leftborder">Prüfung erfüllt</th>
+															<th colspan="2" class="leftborder w60"  style="min-width:30em;">Bemerkung</th>
+														</tr>
+													</thead>
+
+														<tbody id="submittents">
+													<tr ng-repeat="offer in examinationViewCtrl.offers
+														| limitTo:5" ng-init="offerIndex=$index">
+														<td style="min-width: 240px;">
+																<div data-toggle="tooltip"
+																	title="{{examinationViewCtrl.showSubmittentJointVenturesSubcontractors(offer)}}"
+																	style="height: 38px; overflow: hidden;">
+																	<strong ng-class="{'fabe-kaio-style': examinationViewCtrl.markRed(offer) || offer.submittent.companyId.proofStatusFabe == 4 || (offer.submittent.companyId.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain)}">{{examinationViewCtrl.showSubmittentAndLocation(offer)}}</strong>
+																	<sup ng-if="offer.isVariant"><strong>V</strong></sup>
+																	<strong ng-class="{'fabe-kaio-style': examinationViewCtrl.markRed(offer)}">{{examinationViewCtrl.showJointVenturesSubcontractors(offer)}}</strong>
+																</div>
+															</td>
+														<td class="leftborder" translate ng-if="offer.submittent.existsExclusionReasons != null">{{offer.submittent.existsExclusionReasons}}</td>
+														<td class="leftborder" translate ng-if="offer.submittent.existsExclusionReasons == null">&nbsp;</td>
+														<td class="leftborder" translate ng-if="offer.submittent.formalExaminationFulfilled != null">{{offer.submittent.formalExaminationFulfilled}}</td>
+														<td class="leftborder" translate ng-if="offer.submittent.formalExaminationFulfilled == null">&nbsp;</td>
+														<td class="leftborder"
+										ng-repeat="mustCriterion in offer.mustCriterion">{{examinationViewCtrl.getOption(mustCriterion.isFulfilled)}}</td>
+									<td class="leftborder w10"
+									ng-repeat-start="evaluatedCriterion in offer.evaluatedCriterion"
+									ng-init="criterionIndex=$index"></td>
+									<td class="leftborder">{{examinationViewCtrl.formatAmount(evaluatedCriterion.grade)}}</td>
+									<td class="leftborder">{{examinationViewCtrl.formatScore(evaluatedCriterion.score)}}</td>
+									<td class="leftborder w10"
+										ng-repeat-start="subcriterion in evaluatedCriterion.criterion.subcriterion track by subcriterion.id"
+										ng-init="subcriterionIndex=$index"></td>
+									<td class="leftborder w40">{{examinationViewCtrl.formatAmount(subcriterion.grade)}}</td>
+									<td class="leftborder" ng-repeat-end>{{examinationViewCtrl.formatScore(subcriterion.score)}}</td>
+									<!-- dummy input just to close the ng-repeat -->
+									<td ng-hide="true" ng-repeat-end></td>
+									<td class="leftborder" ng-if="offer.evaluatedCriterion.length != 0">{{examinationViewCtrl.formatScore(offer.qExTotalGrade)}}</td>
+									<td class="leftborder"><span ng-if="offer.qExStatus">Ja</span>
+									<span ng-if="!offer.qExStatus && offer.qExStatus != null">Nein</span></td>
+									<td class="leftborder w60"><span ng-if="offer.qExExaminationIsFulfilled">Ja</span>
+									<span ng-if="!offer.qExExaminationIsFulfilled && offer.qExExaminationIsFulfilled != null">Nein</span></td>
+									<td class="leftborder">{{offer.qExSuitabilityNotes}}</td>
+													</tr>
+
+
+												</tbody>
+													</table>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								</div>
+							</div>
+
+
+							<div class="row">
+								<div class="col-sm-6">
+									<h3>MUSS-Kriterien</h3>
+								</div>
+								<div class="col-sm-6 ToolbarContainer">
+									<div class="btn-toolbar pull-right" role="toolbar">
+										<button type="button" class="btn action btn-primary"
+											title="MUSS-Kriterium hinzufügen"
+											ng-click="examinationViewCtrl.addCriterion(false)"
+											ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secAddCriterion || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+														 || examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+														 || examinationViewCtrl.isFormDisabled()">
+											<span class="fa fa-plus" aria-hidden="true"></span> MUSS-Kriterium hinzufügen
+										</button>
+									</div>
+								</div>
+							</div>
+							<div accordion-group class="panel panel-default"
+							ng-repeat="mustCriterion in examinationViewCtrl.criteria | filter : {'criterionType' : 'mustCriterion'}" is-open="mustCriterion.show">
+										<div accordion-heading class="panel-heading" role="tab">
+										<span ng-click="examinationViewCtrl.openMustCriteriaAccordion(mustCriterion)"
+										id="{{mustCriterion.id}}">
+											<h4 class="panel-title">
+												<a role="button" ng-if="mustCriterion.show != false && mustCriterion.show != true" aria-expanded="false">{{mustCriterion.criterionText}}</a>
+												<a role="button" ng-if="mustCriterion.show == false || mustCriterion.show == true" aria-expanded="{{mustCriterion.show}}">{{mustCriterion.criterionText}}</a>
+												<a class="pull-right"><span
+													class="fa fa-trash" ng-click="examinationViewCtrl.deleteCriterion(mustCriterion.id, false)" title="Kriterium löschen" aria-hidden="true"
+													ng-hide="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secDeleteCriterion || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+															|| examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+															|| examinationViewCtrl.isFormDisabled()"></span></a>
+											</h4>
+											</span>
+										</div>
+								<div class="panel-collapse collapse in"
+									role="tabpanel" aria-labelledby="headingEight">
+									<div ng-if="mustCriterion.show">
+										<div class="panel-body">
+											<div class="form-group">
+												<div class="row">
+													<div class="col-sm-8">
+														<label for="price">Kriterium<span class="mandatory">*</span></label> <input
+															class="form-control"
+															data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !(examinationViewCtrl.secFormalAuditEdit && examinationViewCtrl.secUpdateCriterion) || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+																			 || examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+																			 || examinationViewCtrl.isFormDisabled()"
+															data-ng-value="mustCriterion.criterionText = examinationViewCtrl.criteria[$index].criterionText"
+															data-ng-model="examinationViewCtrl.criteria[$index].criterionText"
+															type="text">
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-sm-6">
+									<h3>Bewertete Kriterien</h3>
+								</div>
+								<div class="col-sm-6 ToolbarContainer">
+									<div class="btn-toolbar pull-right" role="toolbar">
+										<button type="button" class="btn action btn-primary"
+											title="Bewertetes Kriterium hinzufügen"
+											ng-click="examinationViewCtrl.addCriterion(true)"
+											ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secAddCriterion || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED ||
+														examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+														|| examinationViewCtrl.isFormDisabled()">
+											<span class="fa fa-plus" aria-hidden="true"></span> Bewertetes Kriterium hinzufügen
+										</button>
+									</div>
+								</div>
+							</div>
+							<div accordion-group class="panel panel-default" is-open="evaluatedCriterion.show"
+								ng-repeat="evaluatedCriterion in examinationViewCtrl.criteria | filter : {'criterionType' : 'evaluatedCriterion'}">
+								<div accordion-heading class="panel-heading" role="tab">
+									<span ng-click="examinationViewCtrl.openEvaluatedCriteriaAccordion(evaluatedCriterion)"
+										id="{{evaluatedCriterion.id}}">
+										<h4 class="panel-title">
+											<a role="button" ng-if="evaluatedCriterion.show != false && evaluatedCriterion.show != true" aria-expanded="false">
+												{{evaluatedCriterion.criterionText}}: Gewichtung ({{examinationViewCtrl.formatAmount(evaluatedCriterion.weighting)}}%)</a>
+											<a role="button" ng-if="evaluatedCriterion.show == false || evaluatedCriterion.show == true" aria-expanded="{{evaluatedCriterion.show}}">
+												{{evaluatedCriterion.criterionText}}: Gewichtung ({{examinationViewCtrl.formatAmount(evaluatedCriterion.weighting)}}%)</a>
+											<a class="pull-right"><span
+												class="fa fa-trash" ng-click="examinationViewCtrl.deleteCriterion(evaluatedCriterion.id, true)" title="Kriterium löschen" aria-hidden="true"
+												ng-hide="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secDeleteCriterion || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+														|| examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+														|| examinationViewCtrl.isFormDisabled()"></span></a>
+										</h4>
+									</span>
+								</div>
+								<div class="panel-collapse collapse in"
+									role="tabpanel" aria-labelledby="headingTen">
+									<div ng-if="evaluatedCriterion.show">
+										<div class="panel-body">
+											<div class="row">
+												<div class="col-sm-12 ToolbarContainer">
+													<div class="btn-toolbar pull-right" role="toolbar">
+														<button type="button" class="btn action btn-primary"
+															title="Unterkriterium hinzufügen" data-toggle="modal" ng-click="examinationViewCtrl.addSubcriterion(evaluatedCriterion.id)"
+															ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secAddSubcriterion ||
+																		examinationViewCtrl.buttonOrFieldDisabledForSubcriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+																		|| examinationViewCtrl.isFormDisabled()">
+															<span class="fa fa-plus" aria-hidden="true"></span> Unterkriterium hinzufügen
+														</button>
+													</div>
+												</div>
+											</div>
+											<div role="tabpanel">
+												<div class="row">
+													<div class="col-sm-8">
+														<label for="">Kriterium<span class="mandatory">*</span></label> <input class="form-control"
+															data-ng-model="evaluatedCriterion.criterionText"
+															id="" placeholder="" type="text"
+															data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !(examinationViewCtrl.secFormalAuditEdit && examinationViewCtrl.secUpdateCriterion)  || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+																			 || examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+																			 || examinationViewCtrl.isFormDisabled()">
+													</div>
+													<div class="col-sm-4">
+														<label for="">Gewichtung<span class="mandatory">*</span></label>
+														<div class="input-group">
+															<input type="number" step=".01" class="form-control" data-ng-model="evaluatedCriterion.weighting"
+															data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !(examinationViewCtrl.secFormalAuditEdit && examinationViewCtrl.secUpdateCriterion) || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+																			 || examinationViewCtrl.buttonOrFieldDisabledForCriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+																			 || examinationViewCtrl.isFormDisabled()">
+															<span class="input-group-addon" id="basic-addon1">%</span>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-sm-12"
+												ng-repeat="subcriterion in evaluatedCriterion.subcriterion">
+												<div class="form-group">
+													<br>
+													<div class="col-sm-7">
+														<label for="">Unterkriterium<span class="mandatory">*</span></label>
+														<input class="form-control" ng-model="subcriterion.subcriterionText" type="text"
+														data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !(examinationViewCtrl.secFormalAuditEdit && examinationViewCtrl.secUpdateSubcriterion)
+																		 || examinationViewCtrl.buttonOrFieldDisabledForSubcriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+																		 || examinationViewCtrl.isFormDisabled()">
+													</div>
+													<div class="col-sm-4">
+														<label for="">Gewichtung<span class="mandatory">*</span></label>
+														<div class="input-group">
+									                            <input type="number" step=".01" class="form-control" ng-model="subcriterion.weighting"
+									                            data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !(examinationViewCtrl.secFormalAuditEdit && examinationViewCtrl.secUpdateSubcriterion)
+									                            				 || examinationViewCtrl.buttonOrFieldDisabledForSubcriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+									                            				 || examinationViewCtrl.isFormDisabled()">
+									                             <span class="input-group-addon" id="basic-addon1">%</span>
+																 <div class="col-sm-1">
+													                <button type="button" ng-click="examinationViewCtrl.deleteSubcriterion(subcriterion.id)"
+													                		ng-hide="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secDeleteSubcriterion
+													                					|| examinationViewCtrl.buttonOrFieldDisabledForSubcriterion(examinationViewCtrl.data.submission.process, examinationViewCtrl.currentStatus)
+													                					|| examinationViewCtrl.isFormDisabled()">
+													                		<span class="fa fa-trash" aria-hidden="true"></span>
+													                </button>
+													             </div>
+									                    </div>
+												    </div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+					</div>
+					</div>
+					<div class="col-sm-12 col-md-12 btn-bar">
+						<button type="submit" class="btn btn-primary"
+						data-ng-disabled="examinationViewCtrl.saveAndCancelButtonsDisabled()">Speichern</button>
+						<button type="button" class="btn btn-default" ng-click="examinationViewCtrl.cancelButton(examinationViewCtrl.examinationForm.$dirty)"
+						data-ng-disabled="examinationViewCtrl.saveAndCancelButtonsDisabled()">Abbrechen</button>
+						<div ng-if="examinationViewCtrl.examinationForm.$dirty">
+								<input ng-hide="true"
+									data-ng-model="examinationViewCtrl.dirtyFlag"
+									ng-init="examinationViewCtrl.dirtyFlag=true">
+						</div>
+					</div>
+					</fieldset>
+				</form>
+
+
+		</div>
+	</div>
+</div>

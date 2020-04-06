@@ -1,0 +1,29 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
+import java.util.HashMap;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "PT19E"
+	when
+		$company: CompanyDTO()
+		$submission: SubmissionDTO(legalHearingTerminate.empty == true)
+	if ($company.getAddress2() != null) do[address2]
+	else do[address2Empty]
+	then
+		placeholderMappings.put("r_cancel_reason", "");
+		placeholderMappings.put("r_cancel_deadline", "");
+		placeholderMappings.put("r_cancel_art_number", "");
+		placeholderMappings.put("r_cancel_art_description", "");
+		placeholderMappings.put("f_company_name", $company.getCompanyName());
+		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());
+		placeholderMappings.put("copy_reference", $submission.getProject().getDepartment().getName());
+	then [address2]
+		placeholderMappings.put("f_company_address", $company.getAddress1() + "\\n" + $company.getAddress2());
+	then [address2Empty]	
+		placeholderMappings.put("f_company_address", $company.getAddress1());			
+	end

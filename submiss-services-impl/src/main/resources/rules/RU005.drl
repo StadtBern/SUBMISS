@@ -1,0 +1,87 @@
+package rules.submiss.showTemplates;
+
+import java.util.LinkedList;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import java.util.List;
+import java.util.Date;
+import java.util.HashMap;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "RU005"
+	when
+		$submission: SubmissionDTO()
+	if ($submission.getPmExternal() != null) do[pmExternal]
+	else do[pmExternalEmpty]	
+	if ($submission.getProject().getProjectNumber() != null) do[pNumber]
+	else do[pNumberEmpty]
+	if ($submission.getFirstDeadline() != null) do[firstDeadline]
+	if ($submission.getSecondDeadline() != null) do[secondDeadline]
+	if ($submission.getPublicationDate() != null) do[publicationDate]
+	if ($submission.getDescription() != null && $submission.getDescription().length() > 1) do[description]
+	else do[descriptionEmpty]
+	if ($submission.getDescription() != null && $submission.getDescription().length() > 1) do[description2]
+	else do[description2Empty]
+	if ($submission.getDescription() != null && $submission.getDescription().length() > 1) do[description3]
+	else do[description3Empty]
+	then 
+		//templates without restrictions should be added here
+    	placeholderMappings.put("s_current_date", SubmissConverter.convertToSwissDate(new Date())); 
+		placeholderMappings.put("p_object", $submission.getProject().getObjectName().getValue1());
+		placeholderMappings.put("p_projectname", $submission.getProject().getProjectName());
+		placeholderMappings.put("p_department", $submission.getProject().getDepartment().getName());
+		placeholderMappings.put("s_worktype", $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2());
+		placeholderMappings.put("s_worktype_description", $submission.getDescription());
+		placeholderMappings.put("s_description", $submission.getDescription());
+		placeholderMappings.put("s_worktype_number", $submission.getWorkType().getValue1());
+		placeholderMappings.put("s_process",$submission.getCurrentProcess());
+		placeholderMappings.put("s_pm_admin", $submission.getPmDepartmentName());
+		placeholderMappings.put("s_procedure", $submission.getProcedure().getValue1());
+		placeholderMappings.put("s_logged_by_2", $submission.getSecondLoggedBy());
+		placeholderMappings.put("s_logged_by", $submission.getFirstLoggedBy());
+		placeholderMappings.put("p_directorate", $submission.getProject().getDepartment().getDirectorate().getName());
+    	placeholderMappings.put("s_cost_estimate", SubmissConverter.convertToCHFCurrencyWithoutSymbol($submission.getCostEstimate()));
+    	placeholderMappings.put("s_obj_pro_worktype", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2());
+	then [pmExternal]
+		placeholderMappings.put("s_pm_external", $submission.getPmExternal().getCompanyName());
+		placeholderMappings.put("s_pm_external_post", $submission.getPmExternal().getPostCode() + " " + $submission.getPmExternal().getLocation());
+      	placeholderMappings.put("s_pm_external_tel", $submission.getPmExternal().getCompanyTel());
+      	placeholderMappings.put("s_pm_external_email", $submission.getPmExternal().getCompanyEmail());
+		if ($submission.getPmExternal().getAddress2() != null) {
+			placeholderMappings.put("s_pm_external_address", $submission.getPmExternal().getAddress1() + "\\n" + $submission.getPmExternal().getAddress2());
+		} else {
+			placeholderMappings.put("s_pm_external_address", $submission.getPmExternal().getAddress1());	
+		}
+    then [pmExternalEmpty]  
+    	placeholderMappings.put("s_pm_external", "");
+     	placeholderMappings.put("s_pm_external_tel", "");
+      	placeholderMappings.put("s_pm_external_email", "");
+      	placeholderMappings.put("s_pm_external_address", "");
+		placeholderMappings.put("s_pm_external_address2", "");
+		placeholderMappings.put("s_pm_external_post", "");
+    then [pNumberEmpty]  
+    	placeholderMappings.put("p_projectnumber", "");
+    then [pNumber]  
+    	placeholderMappings.put("p_projectnumber", $submission.getProject().getProjectNumber());
+    then [firstDeadline]
+      	placeholderMappings.put("s_deadline1", SubmissConverter.convertToSwissDate($submission.getFirstDeadline()));	
+    then [secondDeadline]
+      	placeholderMappings.put("s_deadline2", SubmissConverter.convertToSwissDate($submission.getSecondDeadline()));
+    then [publicationDate]
+      	placeholderMappings.put("s_publication_date", SubmissConverter.convertToSwissDate($submission.getPublicationDate()));
+    then [description]
+      	placeholderMappings.put("s_obj_pro_worktype_descr", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2() + ", " + $submission.getDescription());
+      	placeholderMappings.put("ewb_second_header", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2() + ", " + $submission.getDescription());
+    then [descriptionEmpty]
+      	placeholderMappings.put("s_obj_pro_worktype_descr", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2());	
+      	placeholderMappings.put("ewb_second_header", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2());	
+ then [description2]
+      	placeholderMappings.put("s_obj_pro_bkp_worktype_descr", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + "BKP "+ $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2() + ", " + $submission.getDescription());
+    then [description2Empty]
+      	placeholderMappings.put("s_obj_pro_bkp_worktype_descr", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + "BKP "+ $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2());			  				
+	then [description3Empty]  
+    	placeholderMappings.put("s_description_comma", "");
+    then [description3]  
+    	placeholderMappings.put("s_description_comma", ", " + $submission.getDescription());
+	end

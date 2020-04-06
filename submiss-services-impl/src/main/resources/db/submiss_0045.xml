@@ -1,0 +1,66 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0045">
+    <sql>
+
+      ALTER TABLE SUB_SIGNATURE_HISTORY
+      DROP FOREIGN KEY FK_SIGNATURE_HISTORY_SIGNATURE;
+
+      ALTER TABLE SUB_SIGNATURE_HISTORY
+      DROP FOREIGN KEY FK_SIGNATURE_HISTORY_TENANT;
+
+      DROP TABLE IF EXISTS SUB_SIGNATURE;
+      DROP TABLE IF EXISTS SUB_SIGNATURE_HISTORY;
+
+      -- Neuen Tabellen fur Unterschriftsberechtiger
+
+      CREATE TABLE SUB_SIGNATURE
+      (
+      ID VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle
+      SUB_SIGNATURE.',
+      FK_DEPARTMENT VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle
+      SUB_DEPARTMENT',
+      FK_DIRECTORATE VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle
+      SUB_DIRECTORATE',
+      CONSTRAINT PK_SIGNATURE PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Unterschriftsberechtigter'
+      ;
+
+      CREATE TABLE `SUB_SIGNATURE_PROCESS_TYPE`
+      (
+      ID VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle
+      SUB_SIGNATURE_PROCESS_TYPE.',
+      FK_SIGNATURE VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle
+      SUB_SIGNATURE.',
+      PROCESS_TYPE TINYINT NOT NULL COMMENT 'Die Verfahrensart. Werte aus Stammdaten.',
+      CONSTRAINT PK_SIGNATURE_PROCESS_TYPE PRIMARY KEY (`ID` ASC)
+
+      )
+      COMMENT = 'Diese Tabelle enthält die Unterschriftsberechtigter bie
+      Verfahrensart'
+      ;
+
+      CREATE TABLE `SUB_SIGNATURE_PROCESS_TYPE_ENTITLED`
+      (
+      ID VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle
+      SUB_SIGNATURE_PROCESS_TYPE_ENTITLED.',
+      FK_SIGNATURE_PROCESS_TYPE VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle
+      SUB_SIGNATURE_PROCESS_TYPE.',
+      NAME VARCHAR(255) COMMENT 'Der Name des Unterschriftsberechtigters',
+      FUNCTION VARCHAR(100) COMMENT 'Die Finktion des
+      Unterschriftsberechtigters',
+      CREATE_ON TIMESTAMP,
+      CONSTRAINT PK_SIGNATURE_PROCESS_TYPE_ENTITLED PRIMARY KEY (`ID` ASC)
+
+      )
+      ;
+
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

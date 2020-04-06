@@ -1,0 +1,65 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.DocumentDTO;
+import ch.bern.submiss.services.api.dto.CountryHistoryDTO;
+import java.util.HashMap;
+import java.util.Date;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "FT03"
+	when
+		$company: CompanyDTO()
+		$document: DocumentDTO()
+	    if($company.getAddress2() != null) do[address2]
+	    else do [address2Empty]
+	    if($company.getCompanyFax() != null && ($company.getCompanyFax().length() > 5)) do[companyFax]
+	    else do [companyFaxEmpty]
+	    if($company.getTlp() != null && $company.getTlp()) do[companyTlp]
+	    else do [companyTlpEmpty]
+	    if( $company.getMainCompany() != null) do[companyMain]
+	    else do [companyMainEmpty]                  
+	    if( $company.getCompanyWeb() != null) do[companySite]
+	    else do [companySiteEmpty]
+
+	then
+                  placeholderMappings.put("s_current_date", SubmissConverter.convertToSwissDate(new Date())); 
+	    placeholderMappings.put("f_company_address", $company.getAddress1());
+	    placeholderMappings.put("f_company_post", $company.getPostCode());
+	    placeholderMappings.put("f_company_location", $company.getLocation());
+	    placeholderMappings.put("f_company_name", $company.getCompanyName());
+	    placeholderMappings.put("f_company_tel", $company.getCompanyTel());
+	    placeholderMappings.put("f_country", $company.getCountry().getCountryName());
+	    placeholderMappings.put("f_company_mail", $company.getCompanyEmail());
+	    placeholderMappings.put("s_current_date", SubmissConverter.convertToSwissDate(new Date()));
+	    placeholderMappings.put("f_company_mail", $company.getCompanyEmail()); 
+	    placeholderMappings.put("f_company_appFactor", String.valueOf(($company.getNumberOfMen() == null ? 0 : $company.getNumberOfMen()) +
+($company.getNumberOfWomen() == null ? 0 : $company.getNumberOfWomen()) + " MA, " + String.valueOf(($company.getNumberOfTrainees() == null) ? 0 : $company.getNumberOfTrainees()) + " LL"));
+      placeholderMappings.put("f_fifty_plus_factor", String.valueOf(($company.getNumberOfMen() == null ? 0 : $company.getNumberOfMen()) +
+($company.getNumberOfWomen() == null ? 0 : $company.getNumberOfWomen()) + " MA, " + String.valueOf(($company.getFiftyPlusColleagues() == null) ? 0 : $company.getFiftyPlusColleagues()) + " MA 50+"));
+
+	then[address2]
+	    placeholderMappings.put("f_company_address2", $company.getAddress2());
+	then[address2Empty]
+	    placeholderMappings.put("f_company_address2", "");
+	then[companyFax]
+	    placeholderMappings.put("f_company_fax", $company.getCompanyFax());
+	then[companyFaxEmpty]
+	    placeholderMappings.put("f_company_fax", "");
+	then[companyTlp]
+		placeholderMappings.put("f_company_tlp", "Ja");
+	then[companyTlpEmpty]
+	    placeholderMappings.put("f_company_tlp", "Nein");
+	then[companyMain]
+	    placeholderMappings.put("f_company_main", $company.getMainCompany().getCompanyName());
+	then[companyMainEmpty]
+	    placeholderMappings.put("f_company_main", "");
+	then[companySite]
+	    placeholderMappings.put("f_company_site", $company.getCompanyWeb());
+	then[companySiteEmpty]
+	    placeholderMappings.put("f_company_site", "");    
+	
+	end

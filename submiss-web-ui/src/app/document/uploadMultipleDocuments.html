@@ -1,0 +1,65 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+	<button type="button" class="close" aria-label="Close"
+		ng-click="cancel()">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<h4 class="modal-title">Dokument(e) hochladen</h4>
+</div>
+<form name="uploadMultipleDocuments.documentUpload" id="documentUpload" shows-validation-errors>
+	<div class="modal-body">
+    <div class="alert alert-danger"
+         ng-if="uploadMultipleDocuments.documentUpload.titleTooBig.$invalid" role="alert">
+      <field-error form-element-name="titleTooBig" translate
+                   name="error"></field-error>
+    </div>
+    <input name="titleTooBig" ng-hide="true"
+           data-ng-model="fd">
+		<div class="row">
+			<div class="col-md-12">
+				<p>Möchten Sie mit dem Hochladen fortfahren?</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="card-box">
+					<div class="col-sm-12">
+						<div class="table-responsive">
+							<table  class="table table-striped">
+								<thead>
+									<tr>
+									<th>Dateiname</th>	
+									<th>Neu</th>
+									<th>Versionieren</th>
+									</tr>	
+								</thead>
+								<tr  ng-repeat="document in uploadMultipleDocumentsController.documents">
+									<td class="w130" title="'Dateiname'">
+										{{document.filename}}</td>
+									<td class="w50" title="'Neu'">
+										{{document.newFile ? 'Ja' : 'Nein'}}</td>
+									<td  class="w50" title="Versionieren" ><input type="checkbox"
+										ng-model="document.versionDocument"  ng-disabled="document.versioningAllowed === false"/></td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary" ng-click="ok()">Ja</button>
+			<button type="button" class="btn btn-default" ng-click="cancel()">Nein</button>
+		</div>
+	</div>
+</form>

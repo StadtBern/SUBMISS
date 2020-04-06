@@ -1,0 +1,598 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">
+			{{companyViewCtr.data.company.companyName}},<small>&nbsp;{{companyViewCtr.data.company.address1}}</small>
+		</h2>
+	</div>
+</div>
+<div class="row">
+	<div class="card-box">
+		<div class="col-sm-12 ToolbarContainer">
+			<div class="col-sm-12">
+				<form name="companyViewCtr.companyForm" id="companyForm"
+					shows-validation-errors>
+					<div class="col-sm-12">
+						<div class="alert alert-danger"
+							ng-if="companyViewCtr.companyForm.$invalid" role="alert">
+							<field-error form-element-name="companyParticipate"
+								translate name="error"></field-error>
+							<field-error form-element-name="expiredDeletionDate"
+								translate name="expiredDeletionDate"></field-error>
+						</div>
+						<input name="companyParticipate" ng-hide="true"
+							data-ng-model="fd"></input>
+						<input name="expiredDeletionDate" ng-hide="true"
+							data-ng-model="fd"></input>
+					</div>
+				</form>
+			</div>
+			<div class="col-sm-6 pull-left">
+				<div class="" ng-model="companyViewCtr.data.company.proofStatus">
+					<label>Nachweisstatus:</label> <span> <ng-if> <text
+							ng-show="companyViewCtr.data.company.proofStatus === 4 || companyViewCtr.data.company.consultKaio">
+						<img src="../../../assets/images/ban.png" alt="verbotenne flage 2" /> Rücksprache mit KAIO
+						ZKB / FaBe </text> <!-- TODO status Rücksprache mit der Fachstelle Beschaffungswesen can be viewd only by users of the main tenant -->
+						<text
+							ng-show="!companyViewCtr.data.company.consultKaio && (companyViewCtr.data.company.proofStatus === 3 || 
+							(companyViewCtr.data.company.consultAdmin && secMainTenantBeschaffungswesenView))">
+						<img src="../../../assets/images/flagBan.png" alt="verbotenne flage" /> Rücksprache mit
+						der Fachstelle Beschaffungswesen </text> <text
+							ng-show="!companyViewCtr.data.company.consultKaio && !(companyViewCtr.data.company.consultAdmin && secMainTenantBeschaffungswesenView) && 
+							companyViewCtr.data.company.proofStatus === 2">
+						<img src="../../../assets/images/redFlag.png" alt="rotte flage"/> Nachweise nicht
+						mehr aktuell, nicht vollständig, oder nicht vorhanden </text> <text
+							ng-show="!companyViewCtr.data.company.consultKaio && !(companyViewCtr.data.company.consultAdmin && secMainTenantBeschaffungswesenView) && 
+							companyViewCtr.data.company.proofStatus === 1">
+						<img src="../../../assets/images/greenFlag.png" alt="grüne flage"/> Alle Nachweise
+						vorhanden </text></span>
+				</div>				
+				<div class=""
+					ng-if="companyViewCtr.data.company.proofDocModOn!=null">
+					<label>
+						Nachweise bestellt durch {{companyViewCtr.data.company.proofDocModBy.name}} am {{companyViewCtr.data.company.proofDocModOn | date:"dd.MM.yyyy"}}
+					</label>
+				</div>
+				<div class=""
+					ng-if="companyViewCtr.data.company.proofDocSubmitDate!=null 
+					&& companyViewCtr.data.company.proofDocModBy.name != 'Kanton Bern'">
+					<label>
+						Einreichefrist der Nachweise am {{companyViewCtr.data.company.proofDocSubmitDate | date:"dd.MM.yyyy"}}
+					</label>
+				</div>
+				<div class=""
+					ng-if="companyViewCtr.data.company.certificateDate!=null">
+					<label>
+						Firma zertifiziert am {{companyViewCtr.data.company.certificateDate | date:"dd.MM.yyyy"}}, gültig bis 
+						{{companyViewCtr.data.company.certDocExpirationDate | date:"dd.MM.yyyy"}}
+					</label>
+				</div>
+				<div class=""
+					ng-hide="companyViewCtr.data.company.modificationDate==null">
+					<label
+						ng-show="companyViewCtr.data.company.modUserName!=null || companyViewCtr.data.company.modUserName==''">Firma
+						bearbeitet am {{companyViewCtr.data.company.modifiedOn |
+						date:"dd.MM.yyyy"}} durch
+						{{companyViewCtr.data.company.modUserName}}
+						{{companyViewCtr.data.company.modUserLastName}}/{{companyViewCtr.data.company.modUserTenant}}</label>
+				</div>
+			</div>
+			<div class="col-sm-6 pull-left">
+				<div class="btn-toolbar pull-right" role="toolbar">
+					<button
+						ng-show="companyViewCtr.secProofVerificationRequest == true;"
+						ng-click="companyViewCtr.requestProofs()"
+						ng-disabled="companyViewCtr.data.company.proofStatus === 1"
+						type="submit" class="btn btn-primary">Nachweisaufforderung
+						gewünscht</button>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+<div class="row">
+	<div class="card-box">
+		<div class="col-sm-12">
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active"><a
+					ui-sref="company.view({id: companyViewCtr.data.company.id})"
+					aria-controls="Firmendetails" role="tab" data-toggle="tab">Firmendetails</a></li>
+				<li role="presentation"
+					ng-show="companyViewCtr.secCompanyProofsView == true;"><a
+					ui-sref="company.proofs({id: companyViewCtr.data.company.id})"
+					aria-controls="CompanyProofs" role="tab" data-toggle="tab">Nachweise</a></li>
+				<li role="presentation"
+					ng-show="companyViewCtr.secCompanyOffersView == true;"><a
+					ui-sref="company.offers({id: companyViewCtr.data.company.id})"
+					aria-controls="CompanyOffers" role="tab" data-toggle="tab">Eingereichte
+						Offerten</a></li>
+				<li role="presentation"><a aria-controls="documents" role="tab"
+					ui-sref="company.companyDocumentArea({id: companyViewCtr.data.company.id})"
+					data-toggle="tab">Dokumentenbereich</a></li>
+			</ul>
+
+			<!-- Tab panes -->
+			<div class="tab-content">
+
+				<div role="tabpane" class="tab-pane active" id="Firmendetails">
+					<div class="col-sm-12 ToolbarContainer">
+						<div class="btn-toolbar pull-right" role="toolbar">
+
+							<button ng-show="companyViewCtr.secCompanyUpdate == true;"
+								type="button" data-ng-click="companyViewCtr.editCompany()"
+								class="btn btn-primary">
+								<span class="fa fa-pencil" aria-hidden="true"></span>Firma
+								bearbeiten
+							</button>
+							<button ng-show="companyViewCtr.secCompanyDelete"
+								type="button" data-ng-click="companyViewCtr.deleteModal()"
+								class="btn btn-primary">
+								<span class="fa fa-trash-o" aria-hidden="true"></span> Firma
+								löschen
+							</button>
+							<button type="submit" class="btn btn-primary" data-toggle="modal"
+								data-target=".email"
+								data-ng-disabled="!companyViewCtr.secSentEmail"
+								ng-click="companyViewCtr.sendMailModal()">
+								<span class="fa fa-envelope" aria-hidden="true"></span> E-Mail
+								versenden
+							</button>
+
+
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<dl class="dl-horizontal">
+							<dt>Firmenname</dt>
+							<dd>{{companyViewCtr.data.company.companyName}}</dd>
+							<dt>Adresszeile 1</dt>
+							<dd>{{companyViewCtr.data.company.address1}}</dd>
+							<dt>Adresszeile 2</dt>
+							<dd>{{companyViewCtr.data.company.address2}}</dd>
+							<dt>PLZ</dt>
+							<dd>{{companyViewCtr.data.company.postCode}}</dd>
+							<dt>Ort</dt>
+							<dd>{{companyViewCtr.data.company.location}}</dd>
+							<dt>Land</dt>
+							<dd>{{companyViewCtr.data.company.country.countryName}}</dd>
+							<dt>Telefon</dt>
+							<dd>{{companyViewCtr.data.company.companyTel}}</dd>
+							<dt>Fax</dt>
+							<dd>{{companyViewCtr.data.company.companyFax}}</dd>
+							<dt>E-Mail</dt>
+							<dd>
+								<a href="mailto:{{companyViewCtr.data.company.companyEmail}}"
+									target="_top">{{companyViewCtr.data.company.companyEmail}}</a>
+							</dd>
+							<dt>Webseite</dt>
+							<dd>
+								<a data-ng-click="companyViewCtr.navigateToCompany(companyViewCtr.data.company.companyWeb)">{{companyViewCtr.data.company.companyWeb}}</a>
+							</dd>
+							<span ng-if="companyViewCtr.data.company.mainCompany!=null">
+								<dt>Hauptsitz</dt>
+								<dd>
+									<a
+										ui-sref="company.view({id: companyViewCtr.data.company.mainCompany.id})">{{companyViewCtr.data.company.mainCompany.companyName}}</a>
+								</dd>
+							</span>
+							<span ng-if="companyViewCtr.data.company.mainCompany==null">
+								<dt>Zweigniederlassung</dt>
+								<dd ng-repeat="branches in companyViewCtr.data.company.branches"
+									ng-if="companyViewCtr.data.company.branches != null && companyViewCtr.data.company.branches.length > 0">
+									<a ui-sref="company.view({id: branches.id})">{{branches.companyName}}</a>
+								</dd>
+								<dd ng-if="companyViewCtr.data.company.branches == null
+									|| companyViewCtr.data.company.branches.length == 0">{{""}}</dd>
+							</span>
+							<dt>U-ID (neue MwSt-ID)</dt>
+							<dd>{{companyViewCtr.data.company.newVatId}}</dd>
+							<dt>Arbeitsgattungen</dt>
+							<dd
+								ng-repeat="workTypes in companyViewCtr.data.company.workTypes | orderBy:'value1'">{{workTypes.value1}}
+								{{workTypes.value2}}</dd>
+							<dt>Herkunftsangabe</dt>
+							<dd>{{companyViewCtr.data.company.originIndication}}</dd>
+							<dt>Änderungsdatum</dt>
+							<dd>{{companyViewCtr.data.company.modificationDate|
+								date:'dd.MM.yyyy'}}</dd>
+							<dt></dt>
+							<dd></dd>
+						</dl>
+					</div>
+					<div class="col-sm-6">
+						<dl class="dl-horizontal">
+							<dt>Mitarbeitendenzahl</dt>
+							<dd>{{companyViewCtr.numberOfColleagues(companyViewCtr.data.company.numberOfMen,companyViewCtr.data.company.numberOfWomen)}}</dd>
+							<dt>Lernendenfaktor</dt>
+							<dd>{{companyViewCtr.apprenticeFactor(companyViewCtr.data.company.numberOfMen,companyViewCtr.data.company.numberOfWomen,companyViewCtr.data.company.numberOfTrainees)
+								| number: 3}}</dd>
+							<dt>Faktor 50+</dt>
+							<dd>{{companyViewCtr.fiftyPlusFactor(companyViewCtr.data.company.fiftyPlusColleagues, companyViewCtr.data.company.numberOfMen, companyViewCtr.data.company.numberOfWomen)
+								| number: 3}}</dd>
+							<dt>Anzahl Frauen</dt>
+							<dd>{{companyViewCtr.data.company.numberOfWomen}}</dd>
+							<dt>Anzahl Männer</dt>
+							<dd>{{companyViewCtr.data.company.numberOfMen}}</dd>
+							<dt>Anzahl Mitarbeitende 50+</dt>
+							<dd>{{companyViewCtr.data.company.fiftyPlusColleagues}}</dd>
+							<dt>Anzahl Lernende</dt>
+							<dd>{{companyViewCtr.data.company.numberOfTrainees}}</dd>
+							<dt></dt>
+							<dd
+								ng-show="!companyViewCtr.data.company.logIb && !companyViewCtr.data.company.logIbARGIB ">Nicht
+								Logib-pflichtig</dd>
+							<dd
+								ng-show="companyViewCtr.data.company.logIb && !companyViewCtr.data.company.logIbARGIB ">Logib-pflichtig</dd>
+							<dd
+								ng-show="!companyViewCtr.data.company.logIb && companyViewCtr.data.company.logIbARGIB ">Logib-pflichtig
+								ARGIB</dd>
+							<dt>Logibnachweis</dt>
+							<dd
+								ng-show="companyViewCtr.data.company.logIb && !companyViewCtr.data.company.logIbARGIB ">{{companyViewCtr.data.company.logibDate
+								| date:'dd.MM.yyyy'}}</dd>
+							<dd
+								ng-show="!companyViewCtr.data.company.logIb && companyViewCtr.data.company.logIbARGIB ">{{companyViewCtr.data.company.logibKmuDate
+								| date:'dd.MM.yyyy'}}</dd>
+							<dd
+								ng-show="!companyViewCtr.data.company.logIb && !companyViewCtr.data.company.logIbARGIB "></dd>
+							<dt>ILO</dt>
+							<dd>{{companyViewCtr.data.company.ilo.value1}}</dd>
+							<dt>ILO Datum</dt>
+							<dd>{{companyViewCtr.data.company.iloDate |
+								date:'dd.MM.yyyy'}}</dd>
+							<dt>Partnerfirma (TLP)</dt>
+							<dd ng-show="companyViewCtr.data.company.tlp == true" translate>true</dd>
+							<dd ng-show="companyViewCtr.data.company.tlp != true" translate>false</dd>
+							<dt>Zustand</dt>
+							<dd ng-show="companyViewCtr.data.company.archived != true ">Nicht
+								archiviert</dd>
+							<dd ng-show="companyViewCtr.data.company.archived == true ">Archiviert</dd>
+							<dt	ng-show="companyViewCtr.secMainTenantBemerkungFabeView && companyViewCtr.secAdminNotesView == true;">Bemerkung
+								FaBe</dt>
+							<dd class="companyviewnotes preline"
+								ng-show="companyViewCtr.secMainTenantBemerkungFabeView && companyViewCtr.secAdminNotesView == true;">{{companyViewCtr.data.company.noteAdmin}}</dd>
+							<dt ng-show="companyViewCtr.secNotesView == true;">Allgemeine
+								Bemerkungen</dt>
+							<dd class="companyviewnotes preline" ng-show="companyViewCtr.secNotesView == true;">{{companyViewCtr.data.company.notes}}</dd>
+						</dl>
+					</div>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="nachweise">
+					<div class="table-responsive">
+						<div class="col-sm-12 ToolbarContainer"></div>
+						<table class="table  nachweiseTable">
+							<tbody>
+								<tr>
+									<td>MwSt</td>
+									<td>
+										<div class="form-group">
+											<div class="input-group">
+												<input class="form-control datepicker" id="changeDate"
+													placeholder="" type="text" data-date-format='dd.mm.yyyy'>
+												<span class="input-group-addon"> <span
+													class="fa fa-calendar" aria-hidden="true"></span>
+												</span>
+											</div>
+										</div>
+									</td>
+									<td><label class="checkbox-inline"> <input
+											type="checkbox" id="inlineCheckbox1" checked="checked"
+											value="option1"> Erforderlich
+									</label></td>
+									<td>Abgelegt bei</td>
+									<td><input class="form-control" readonly="readonly"
+										value="Keine Angabe" id="" placeholder="" type="text">
+									</td>
+								</tr>
+								<tr>
+									<td>AHV</td>
+									<td>
+										<div class="form-group">
+											<div class="input-group">
+												<input class="form-control datepicker" id="changeDate"
+													placeholder="" type="text" data-date-format='dd.mm.yyyy'>
+												<span class="input-group-addon"> <span
+													class="fa fa-calendar" aria-hidden="true"></span>
+												</span>
+											</div>
+										</div>
+									</td>
+									<td><label class="checkbox-inline"> <input
+											type="checkbox" id="inlineCheckbox1" checked="checked"
+											value="option1"> Erforderlich
+									</label></td>
+									<td>Abgelegt bei</td>
+									<td><input class="form-control" readonly="readonly"
+										value="Keine Angabe" id="" placeholder="" type="text">
+									</td>
+								</tr>
+								<tr>
+									<td>BVG</td>
+									<td><div class="form-group">
+											<div class="input-group">
+												<input class="form-control datepicker" id="changeDate"
+													placeholder="" type="text" data-date-format='dd.mm.yyyy'>
+												<span class="input-group-addon"> <span
+													class="fa fa-calendar" aria-hidden="true"></span>
+												</span>
+											</div>
+										</div></td>
+									<td><label class="checkbox-inline"> <input
+											type="checkbox" id="inlineCheckbox1" checked="checked"
+											value="option1"> Erforderlich
+									</label></td>
+									<td>Abgelegt bei</td>
+									<td><input class="form-control" readonly="readonly"
+										value="Keine Angabe" id="" placeholder="" type="text">
+									</td>
+								</tr>
+								<tr>
+									<td>BU/NBU</td>
+									<td><div class="form-group">
+											<div class="input-group">
+												<input class="form-control datepicker" id="changeDate"
+													placeholder="" type="text" data-date-format='dd.mm.yyyy'>
+												<span class="input-group-addon"> <span
+													class="fa fa-calendar" aria-hidden="true"></span>
+												</span>
+											</div>
+										</div></td>
+									<td><label class="checkbox-inline"> <input
+											type="checkbox" id="inlineCheckbox1" checked="checked"
+											value="option1"> Erforderlich
+									</label></td>
+									<td>Abgelegt bei</td>
+									<td><input class="form-control" readonly="readonly"
+										value="Keine Angabe" id="" placeholder="" type="text">
+									</td>
+								</tr>
+								<tr>
+									<td>KTV</td>
+									<td><div class="form-group">
+											<div class="input-group">
+												<input class="form-control datepicker" id="changeDate"
+													placeholder="" type="text" data-date-format='dd.mm.yyyy'>
+												<span class="input-group-addon"> <span
+													class="fa fa-calendar" aria-hidden="true"></span>
+												</span>
+											</div>
+										</div></td>
+									<td><label class="checkbox-inline"> <input
+											type="checkbox" id="inlineCheckbox1" checked="checked"
+											value="option1"> Erforderlich
+									</label></td>
+									<td>Abgelegt bei</td>
+									<td><input class="form-control" readonly="readonly"
+										value="Keine Angabe" id="" placeholder="" type="text">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="col-sm-12 col-md-12 btn-bar">
+							<button type="submit" class="btn btn-primary">Speichern</button>
+							<button type="submit" class="btn btn-default">Abbrechen</button>
+						</div>
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="docs">
+					<form>
+						<div class="col-sm-12 section-card-item">
+							<div class="form-group">
+								<div class="row">
+
+									<div class="col-sm-4">
+										<select id="arbeitsgattung2"
+											class="form-control custom-select select2-hidden-accessible"
+											tabindex="-1" aria-hidden="true">
+											<option selected="selected">Angebotsdeckblatt</option>
+											<option>Anonymisiertes Offertöffnungsprotokoll</option>
+											<option>Anonymisiertes Offertöffnungsprotokoll DL WW</option>
+											<option>Offertöffnungsprotokoll</option>
+											<option>Submissionsübersicht</option>
+											<option>Submittentenliste</option>
+										</select>
+									</div>
+									<div class="col-sm-8">
+										<button type="submit" class="btn btn-primary">Erstellen</button>
+										<button type="submit" class="btn btn-primary">Erstellen
+											und Drucken</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+					<div class="col-sm-12 marginTop">
+						<div class="row">
+							<div class="col-sm-12 ToolbarContainer">
+								<div class="btn-toolbar pull-right" role="toolbar">
+									<button type="submit" class="btn btn-primary">
+										<span class="fa fa-upload" aria-hidden="true"></span> Mehrere
+										Dokumente hochladen
+									</button>
+									<button type="submit" class="btn btn-primary">
+										<span class="fa fa-download" aria-hidden="true"></span>
+										Mehrere Dokumente herunterladen
+									</button>
+								</div>
+							</div>
+						</div>
+						<div class="PaginationContainer">
+							<div class="PaginationLeft">
+								<label for="UniqueID004" class="sr-only"> Items per
+									page: </label> <select id="UniqueID004">
+									<option>10</option>
+									<option>50</option>
+									<option>Alle</option>
+								</select> <span class="PaginationText">von 3 Ergebnissen pro Seite
+								</span>
+							</div>
+
+						</div>
+						<div class="table-responsive">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th><input type="checkbox" onclick="toggle(this);" /><br /></th>
+										<th>Icon</th>
+										<th>Titel <span class="fa fa-sort" aria-hidden="true"></span>
+										</th>
+										<th>Dateiname <span class="fa fa-sort" aria-hidden="true"></span></th>
+										<th>Typ <span class="fa fa-sort" aria-hidden="true"></span></th>
+										<th>Erstellung <span class="fa fa-sort"
+											aria-hidden="true"></span></th>
+										<th>Änderung <span class="fa fa-sort" aria-hidden="true"></span></th>
+										<th class='w60'>Version <span class="fa fa-sort"
+											aria-hidden="true"></span></th>
+										<th class='w90'>Benutzername <span class="fa fa-sort"
+											aria-hidden="true"></span></th>
+										<th class='w60'>Aktiv <span class="fa fa-sort"
+											aria-hidden="true"></span></th>
+										<th class='w110'>Aktion</th>
+									</tr>
+									<tr>
+										<th></th>
+										<th></th>
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+										<th><input class="form-control" id="" placeholder=""
+											type="text"></th>
+										<th class='w30'><input class="form-control" id=""
+											placeholder="" type="text"></th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><input type="checkbox" /></td>
+										<td><span class="fa fa-file-word-o" aria-hidden="true"></span></td>
+										<td><span class="fa fa-lock" title="Projektleitung"
+											aria-hidden="true"></span> Angebotsdeckblatt</td>
+										<td>angebotsdeckblatt.docx</td>
+										<td>generiert</td>
+										<td>18.06.2016</td>
+										<td></td>
+										<td>2</td>
+										<td>Peter Meier</td>
+										<td>Ja</td>
+										<td>
+											<button type="button" class="btn action btn-primary"
+												title="herunterladen">
+												<span class="fa fa-download" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="hochladen">
+												<span class="fa fa-upload" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="löschen">
+												<span class="fa fa-trash-o" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="Eigenschaften bearbeiten" data-toggle="modal"
+												data-target="#editDoc">
+												<span class="fa fa-edit" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="Drucken">
+												<span class="fa fa-print" aria-hidden="true"></span>
+											</button>
+										</td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" /></td>
+										<td><span class="fa fa-file-pdf-o" aria-hidden="true"></span></td>
+										<td>Mehrwertsteuernachweis MartinAG</td>
+										<td>mwst_nachweis_martingAG.pdf</td>
+										<td>hochgeladen</td>
+										<td>25.08.2016</td>
+										<td></td>
+										<td></td>
+										<td>Peter Meier</td>
+										<td>Ja</td>
+										<td>
+											<button type="button" class="btn action btn-primary"
+												title="herunterladen">
+												<span class="fa fa-download" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="hochladen">
+												<span class="fa fa-upload" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="löschen">
+												<span class="fa fa-trash-o" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="Eigenschaften bearbeiten" data-toggle="modal"
+												data-target="#editDoc">
+												<span class="fa fa-edit" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="Drucken">
+												<span class="fa fa-print" aria-hidden="true"></span>
+											</button>
+										</td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" /></td>
+										<td><span class="fa fa-file-word-o" aria-hidden="true"></span></td>
+										<td><span class="fa fa-lock" title="Projektleitung"
+											aria-hidden="true"></span> Angebotsdeckblatt</td>
+										<td>angebotsdeckblatt.docx</td>
+										<td>generiert</td>
+										<td>15.06.2016</td>
+										<td></td>
+										<td>1</td>
+										<td>Peter Meier</td>
+										<td>Ja</td>
+										<td>
+											<button type="button" class="btn action btn-primary"
+												title="herunterladen">
+												<span class="fa fa-download" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="Eigenschaften ansehen">
+												<span class="fa fa-eye" aria-hidden="true"></span>
+											</button>
+											<button type="button" class="btn action btn-primary"
+												title="Drucken">
+												<span class="fa fa-print" aria-hidden="true"></span>
+											</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ./tab-content -->
+		</div>
+	</div>
+</div>

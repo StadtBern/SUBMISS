@@ -1,0 +1,27 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.9.0.0003">
+    <dropColumn
+      columnName="SETTLEMENT"
+      tableName="SUB_OFFER"/>
+
+    <addColumn
+      tableName="SUB_OFFER">
+      <column name="FK_SETTLEMENT" type="VARCHAR(36)"
+        remarks="Die Verrechnung."/>
+    </addColumn>
+
+    <addForeignKeyConstraint baseColumnNames="FK_SETTLEMENT"
+      baseTableName="SUB_OFFER"
+      constraintName="FK_OFFER_SETTLEMENT"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_MASTER_LIST_VALUE"/>
+
+  </changeSet>
+</databaseChangeLog>

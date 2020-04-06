@@ -1,0 +1,69 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="$close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title">Zertifikat</h4>
+</div>
+<form name="generateCertificateCtrl.requestForm" id=requestForm
+  data-ng-submit="generateCertificateCtrl.requestCertificate()" shows-validation-errors>
+  <div class="modal-body">
+    <div class="alert alert-danger" ng-if="generateCertificateCtrl.requestForm.invalid_number_error.$invalid "
+      role="alert">
+      <field-error form-element-name="invalid_number_error" translate name="error"></field-error>
+
+    </div>
+
+
+    <input name="invalid_number_error" ng-hide="true" data-ng-model="fd"></input>
+
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="form-group">
+          <label class="radios"> <input type="radio" data-ng-model="generateCertificateCtrl.template.deptAmountAction"
+              value="extractOfDeptAmount" name="optionsRadios" id="optionsRadios1"> Auszug aus dem
+            Betreibungsregister <span class="mandatory">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="web">Gültigkeitsdatum</label>
+          <div class="input-group">
+            <input class="form-control datepicker" name="registeredDate" id="registrationDate" type="text"
+              data-ng-value="generateCertificateCtrl.template.expirationDate | date:'dd.MM.yyyy'" disabled> <span
+              class="input-group-addon"> <span class="fa fa-calendar" aria-hidden="true"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="form-group">
+          <label class="radios"> <input type="radio" name="optionsRadios"
+              data-ng-model="generateCertificateCtrl.template.deptAmountAction" value="noActionDeptAmount"
+              id="optionsRadios2"> Keine
+            Betreibungen <span class="mandatory">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="web">Betreibungen in der Höhe von</label> <input class="form-control" id="deptAmounts"
+            data-ng-model="generateCertificateCtrl.template.deptAmounts" type="text" name="deptAmounts">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary" data-dismiss="modal">Generieren</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="$close()">Abbrechen</button>
+    </div>
+  </div>
+</form>

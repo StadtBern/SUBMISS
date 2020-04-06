@@ -1,0 +1,25 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.7.0.0042">
+
+    <dropColumn columnName="LEVEL"
+      tableName="SUB_OFFER_EXCLUSION_REASON"/>
+
+    <createTable tableName="SUB_OFFER_EXCLUSION_REASON_FIRST_LEVEL"
+      remarks="Die Tabelle erhält die Ausschlussgründe für jede Offerte in der 1. Stufe.">
+      <column name="FK_OFFER" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_OFFER">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_EXCLUSION_REASON" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_MASTER_LIST_VALUE">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+  </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,146 @@
+	<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row" id='errorScroll'>
+	<form name="companyProofsCtr.companyProofForm"
+			data-ng-submit="companyProofsCtr.save()" id="companyProofForm"
+			shows-validation-errors>
+					<div class="col-sm-12">
+					<div class="alert alert-danger"
+					ng-if="companyProofsCtr.companyProofForm.$invalid || 
+					companyProofsCtr.showMessage || companyProofsCtr.showDateAfterMessage" role="alert">
+					<field-error form-element-name="companyProofDate" translate name="error"></field-error>
+					<field-error form-element-name="optimisticLockErrorField" translate></field-error>
+					<ul ng-if="companyProofsCtr.showMessage || companyProofsCtr.showDateAfterMessage || companyProofsCtr.showBoth">
+						<li><field-error ng-if="companyProofsCtr.showMessage || companyProofsCtr.showBoth" translate>invalid_date_error_message</field-error></li>
+						<li><field-error ng-if="companyProofsCtr.showDateAfterMessage || companyProofsCtr.showBoth" translate>company_Proof_Date_Invalid_Today_message</field-error></li>
+					</ul>
+				</div>
+				<input name="companyProofDate" ng-hide="true" data-ng-model="fd"></input>
+				<input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+			</div>
+			<div class="col-sm-12">
+				<h2 class="page-title">{{companyProofsCtr.data.company.companyName}},<small>&nbsp;{{companyProofsCtr.data.company.address1}}</small></h2>
+			</div>
+	</div>
+				<div class="row">
+					<div class="card-box">
+						<div class="col-sm-12 ToolbarContainer">    
+							<div class="col-sm-6 pull-left">
+								<div>				 
+								  <label>Nachweisstatus:</label>
+								    <span>
+								  	<text ng-if="companyProofsCtr.data.company.proofStatus === 1"><img src="../../../assets/images/greenFlag.png" alt="grüne flage"/> Alle Nachweise vorhanden</text>
+								  	<text ng-if="companyProofsCtr.data.company.proofStatus === 2"><img src="../../../assets/images/redFlag.png" alt="rotte flage"/> Nachweise nicht mehr aktuell, nicht vollständig, oder nicht vorhanden</text>
+								    <text ng-if="companyProofsCtr.data.company.proofStatus === 3"><img src="../../../assets/images/flagBan.png" alt="verbotenne flage"/> Rücksprache mit der Fachstelle Beschaffungswesen</text>
+								    <text ng-if="companyProofsCtr.data.company.proofStatus === 4"><img src="../../../assets/images/ban.png" alt="verbotenne flage 2"/> Rücksprache mit KAIO ZKB / FaBe</text>
+								    </span>
+							    </div>
+							    <div class=""
+									ng-if="companyProofsCtr.data.company.proofDocModOn!=null">
+									<label>
+										Nachweise bestellt durch {{companyProofsCtr.data.company.proofDocModBy.name}} am {{companyProofsCtr.data.company.proofDocModOn | date:"dd.MM.yyyy"}}
+									</label>
+								</div>
+								<div class=""
+									ng-if="companyProofsCtr.data.company.proofDocSubmitDate!=null 
+									&& companyProofsCtr.data.company.proofDocModBy.name != 'Kanton Bern'">
+									<label>
+										Einreichefrist der Nachweise am {{companyProofsCtr.data.company.proofDocSubmitDate | date:"dd.MM.yyyy"}}
+									</label>
+								</div>
+							    <div 
+									ng-if="companyProofsCtr.data.company.certificateDate!=null">
+								  <label>Firma zertifiziert am {{companyProofsCtr.data.company.certificateDate | date:"dd.MM.yyyy"}}, gültig bis {{companyProofsCtr.data.company.certDocExpirationDate | date:"dd.MM.yyyy"}}</label>
+								</div>
+							    <div >				 
+								   <label ng-show="companyProofsCtr.data.company.modUserName!=null || companyProofsCtr.data.company.modUserName==''">Firma bearbeitet am {{companyProofsCtr.data.company.modifiedOn | date:"dd.MM.yyyy"}} durch {{companyProofsCtr.data.company.modUserName}} {{companyProofsCtr.data.company.modUserLastName}}/{{companyProofsCtr.data.company.modUserTenant}}</label>
+							    </div>
+							</div>
+							<div class="col-sm-6 pull-left">
+								<div class="btn-toolbar pull-right" role="toolbar">
+								 <button ng-click="companyProofsCtr.requestProofs()"
+								 	ng-disabled="companyProofsCtr.data.company.proofStatus === 1"
+								 ng-show="companyProofsCtr.secProofVerificationRequest == true;" type="submit" class="btn btn-primary">Nachweisaufforderung gewünscht</button>
+							  </div>
+						  </div>
+					    </div>
+                         						
+					</div>	
+				</div>
+				<div class="row">
+					<div class="card-box">
+						<div class="col-sm-12">		
+						<!-- Nav tabs -->
+						  <ul class="nav nav-tabs" role="tablist">
+						  	<li role="presentation"><a ui-sref="company.view({id: companyProofsCtr.data.company.id})" aria-controls="Firmendetails" role="tab" data-toggle="tab">Firmendetails</a></li>
+							<li role="presentation" class="active"><a ui-sref="company.proofs({id: companyProofsCtr.data.company.id})" aria-controls="nachweise" role="tab" data-toggle="tab">Nachweise</a></li>
+							<li role="presentation" ng-show="companyProofsCtr.secCompanyOffersView"><a ui-sref="company.offers({id: companyProofsCtr.data.company.id})" aria-controls="eingereichte" role="tab" data-toggle="tab">Eingereichte Offerten</a></li>
+						    <li role="presentation"><a ui-sref="company.companyDocumentArea({id: companyProofsCtr.data.company.id})" aria-controls="documents" role="tab" data-toggle="tab">Dokumentenbereich</a></li>
+						  </ul>
+			<div class="row" id="results">
+			 <div class="col-sm-12">
+			  <div>
+				<div class="table-responsive">
+				<div class="col-sm-12 ToolbarContainer">
+				</div>
+					<table class="table" >
+						<tr ng-repeat="proof in companyProofsCtr.proofs | orderBy:'proof.proofOrder' ">
+        
+						<td> {{proof.proof.proofName}}</td>
+						
+						<td title="Datum"><div class="form-group"
+						ng-class="{'has-error': proof.invalid || proof.invalidAfter}"> 
+						     <div class="input-group">											 
+						           <input class="form-control datepicker" class="form-control datepicker" id="proofDate" placeholder="" 
+						           type="text" uib-datepicker-popup="dd.MM.yyyy"
+						           is-open="companyProofsCtr.openProofDate.opened[$index]"
+						           datepicker-options="dateOptions"
+						           ng-click="companyProofsCtr.openProofDate($index)" name="proofDate"
+						           data-ng-model="proof.proofDate"
+						           ng-disabled="!proof.required"
+						           name="companyProofDate">
+						       <span class="input-group-btn">
+									<button class="btn btn-default" type="button"
+										data-ng-click="companyProofsCtr.openProofDate($index)">
+										<span class="fa fa-calendar"></span>
+									</button>
+								</span>
+						     </div>
+						   </div> 
+						</td>
+						
+						<td title="Erforderlich">
+						 <label class="checkbox-inline">
+						    <input type="checkbox" id="inlineCheckbox1" checked="checked"  value="option1"
+						    data-ng-model="proof.required"> Erforderlich
+						 </label> 
+						</td>
+						<td>Abgelegt bei</td>	
+						<td>
+						<div ng-show="proof.modUser==null" ><input class="form-control" readonly="readonly" value="Keine Angabe" id="" placeholder="" type="text"></div>
+						<div ng-show="proof.modUser!=null" ><textarea rows="2" cols="40" class="form-control" readonly="readonly">{{proof.modUser}} {{proof.modDate | date : "medium"}}</textarea></div>
+						</td>
+					 </tr>
+				</table>
+				<div class="col-sm-12 col-md-12 btn-bar">
+					<button type="submit" class="btn btn-primary"  ng-click="companyProofsCtr.save(companyProofsCtr.data.company.id)">Speichern
+				    </button>
+					<button type="button" class="btn btn-default" ng-click="companyProofsCtr.resetPage(companyProofsCtr.companyProofForm.$dirty)">Abbrechen</button>
+				</div>
+			  </div>
+			</div>
+		   </div>
+	      </div>
+			 </div>
+			</form>

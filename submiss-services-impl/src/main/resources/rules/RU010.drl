@@ -1,0 +1,27 @@
+package rules.submiss.showTemplates;
+import java.util.LinkedList;
+import java.util.List;
+global java.util.List templateCodes;
+global String userRole;
+
+rule "RU010"
+	when
+	$isRole_admin: Boolean( ) from userRole.equals("Admin")
+	$isRole_PL: Boolean( ) from userRole.equals("PL")
+	$isRole_Dir: Boolean( ) from userRole.equals("Dir")
+	$isRole_SB: Boolean( ) from userRole.equals("SB")
+		if ($isRole_admin || $isRole_PL || $isRole_Dir || $isRole_SB) do[FT05]
+		if ($isRole_admin || $isRole_PL || $isRole_Dir || $isRole_SB) do[FT07]
+		if ($isRole_admin || $isRole_PL || $isRole_Dir || $isRole_SB) do[FT08]
+		if ($isRole_admin || $isRole_PL || $isRole_SB) do[FT09]
+	then 
+
+		then[FT05]
+			templateCodes.add("FT05");
+		then[FT07]
+			templateCodes.add("FT07");
+		then[FT08]
+			templateCodes.add("FT08");
+		then[FT09]
+			templateCodes.add("FT09");					
+end

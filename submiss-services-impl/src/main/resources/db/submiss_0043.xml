@@ -1,0 +1,56 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0043">
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="AWARD_RECIPIENT_REASON_GIVEN" type="TEXT"
+        remarks="Die Begründung des Zuschlagsempfängers im Beschaffungsantrag."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="AWARD_RECIPIENT_FREE_TEXT_FIELD" type="VARCHAR(1000)"
+        remarks="Das freie Textfeld des Zuschlagsempfängers im Beschaffungsantrag."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_DATE" type="DATETIME"
+        remarks="Die BeKo Sitzung."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_BUSINESS" type="DECIMAL(15,2)"
+        remarks="Das Geschäft im Beschaffungsantrag."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_OBJECT" type="VARCHAR(500)"
+        remarks="Der Beschaffungsgegenstand."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_SUITABILITY_AUDIT_DROPDOWN" type="VARCHAR(200)"
+        remarks="Die Auswahlliste der Eignungsprüfung im Beschaffungsantrag."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_SUITABILITY_AUDIT_TEXT" type="VARCHAR(500)"
+        remarks="Der Text der Eignungsprüfung im Beschaffungsantrag."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_PRE_REMARKS" type="VARCHAR(1000)"
+        remarks="Die Vorbemerkungen im Beschaffungsantrag."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CPP_RESERVATION" type="VARCHAR(1000)"
+        remarks="Der Vorbehalt im Beschaffungsantrag."/>
+    </addColumn>
+
+  </changeSet>
+
+</databaseChangeLog>

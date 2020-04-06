@@ -1,0 +1,226 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">Eignungsprüfungstabelle</h2>
+		<h4 class="page-title">
+			{{suitabilityAuditCtrl.data.submission.workType.value1}}
+			{{suitabilityAuditCtrl.data.submission.workType.value2}}, <small>
+				{{suitabilityAuditCtrl.data.submission.project.projectName}},
+				{{suitabilityAuditCtrl.getObjectInfo(suitabilityAuditCtrl.data.submission.project.objectName)}}, 
+				<span>Mindestnote: {{suitabilityAuditCtrl.data.submission.minGrade}}, </span>
+				<span>Maximalnote: {{suitabilityAuditCtrl.data.submission.maxGrade}}</span></small>
+		</h4>
+	</div>
+</div>
+<div class="card-box">
+<div class="row">
+	<div class="col-sm-12 col-md-12">
+		<form name="suitabilityAuditCtrl.evidenceForm"
+			data-ng-submit="suitabilityAuditCtrl.save(suitabilityAuditCtrl.evidenceForm)"
+			shows-validation-errors>
+			<div class="col-sm-12">
+				<div class="alert alert-danger" role="alert"
+					ng-if="suitabilityAuditCtrl.notPermittedGrade 
+						|| suitabilityAuditCtrl.evidenceForm.evaluatedCriterionGrade.$invalid
+						|| suitabilityAuditCtrl.notRoundedGrade
+						|| suitabilityAuditCtrl.evidenceForm.errorField.$invalid">
+					<ul ng-if="suitabilityAuditCtrl.notPermittedGrade || suitabilityAuditCtrl.evidenceForm.evaluatedCriterionGrade.$invalid"><li translate>
+						criterion_grade_permitted</li></ul>
+					<ul ng-if="suitabilityAuditCtrl.notRoundedGrade"><li translate>
+						not_rounded_grade</li></ul>
+					<field-error ng-if="suitabilityAuditCtrl.evidenceForm.errorField.$invalid" form-element-name="errorField" translate
+						name="error"></field-error>
+				</div>
+				<input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+			</div>
+			<div class="col-sm-12 ToolbarContainer">
+			<div class="btn-toolbar pull-left role=" toolbar"="">
+				<button  type="button"
+					class="btn btn-primary" ng-show="!tableform.$visible"
+					ng-click="suitabilityAuditCtrl.cancelButton(suitabilityAuditCtrl.evidenceForm.$dirty,true)"><span
+					class="fa fa-reply" aria-hidden="true"></span> Zurück</button>
+			</div>
+			<div class="btn-toolbar pull-right role=">
+				<button type="submit" class="btn btn-primary"
+				data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()">Speichern</button>
+				<button type="button"
+				data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()"
+					class="btn btn-default" ng-show="!tableform.$visible"
+					ng-click="suitabilityAuditCtrl.cancelButton(suitabilityAuditCtrl.evidenceForm.$dirty,false)">Abbrechen</button>
+			</div>
+			</div>
+			<div class="card-box">
+				<div>
+					<div id="parent" class="rankWhole fixedCol" style="margin:0; overflow:scroll; max-height: 500px;">
+						<table id="fixTable" class="table table-striped table-condensed" ng-style="suitabilityAuditCtrl.tableStyle">
+							<thead>
+								<tr>
+									<th></th>
+									<th></th>
+									<th colspan="2">Formelle Prüfung</th>
+									<th colspan="{{suitabilityAuditCtrl.mustCriterion.length}}"
+										ng-if="suitabilityAuditCtrl.mustCriterion.length > 0">Muss
+										Kriterien</th>
+									<th
+										colspan="{{suitabilityAuditCtrl.evaluatedCriteriaColspan(suitabilityAuditCtrl.evaluatedCriterion)}}"
+										ng-if="suitabilityAuditCtrl.evaluatedCriterion.length > 0">Bewertete
+										Kriterien</th>
+									<th
+										colspan="{{suitabilityAuditCtrl.resultsColspan(suitabilityAuditCtrl.evaluatedCriterion)}}"></th>
+								</tr>
+								<tr>
+									<th class="leftborder w30"></th>
+									<th class="leftborder w30">Rang</th>
+									<th class="leftborder w10">Ausschluss-gründe Art. 24 ÖBV</th>
+									<th class="leftborder w10">Nachweise erbracht</th>
+
+									<th class="leftborder w80"
+										ng-repeat="column in suitabilityAuditCtrl.mustCriterion" style="width: 50px;"><div data-toggle="tooltip"
+																	title="{{column.criterionText}}"
+																	style="height: 38px; overflow: hidden;">
+																	{{column.criterionText}}
+																</div></th>
+									<th class="leftborder w10" 
+										ng-repeat-start="column in suitabilityAuditCtrl.evaluatedCriterion">G</th>
+									<th class="leftborder" colspan="2" style="width: 50px;"><div data-toggle="tooltip"
+																	title="{{column.criterionText}}"
+																	style="height: 38px; overflow: hidden;">
+																	{{column.criterionText}}
+																</div></th>
+									<th class="leftborder w10"
+										ng-repeat-start="subcriterion in column.subcriterion"><em>G</em></th>
+									<th class="leftborder" colspan="2" style="width: 50px;" ng-repeat-end><div data-toggle="tooltip" data-html="true"
+																	title="UK {{subcriterion.subcriterionText}}"
+																	style="height: 38px; overflow: hidden;">
+																	<em>UK {{subcriterion.subcriterionText}}</em>
+																</div></th>
+									<!-- dummy input just to close the ng-repeat -->
+									<th ng-hide="true" ng-repeat-end></th>
+									<th class="leftborder" colspan="4"></th>
+								</tr>
+								<tr>
+									<th></th>
+									<th class="leftborder"></th>
+									<th class="leftborder"></th>
+									<th class="leftborder"></th>
+									<th class="leftborder"
+										ng-if="suitabilityAuditCtrl.mustCriterion.length > 0"
+										colspan="{{suitabilityAuditCtrl.mustCriterion.length}}"></th>
+
+									<th class="leftborder w10" 
+									ng-repeat-start="column in suitabilityAuditCtrl.evaluatedCriterion"
+									>{{suitabilityAuditCtrl.formatAmount(column.weighting)}}</th>
+								<th class="leftborder">Note</th>
+								<th class="leftborder">Punkte</th>
+								<th class="leftborder w10"
+										ng-repeat-start="subcriterion in column.subcriterion">{{suitabilityAuditCtrl.formatAmount(subcriterion.weighting)}}</th>
+									<th class="leftborder"><em>Note</em></th>
+									<th class="leftborder" ng-repeat-end><em>Punkte</em></th>
+									<!-- dummy input just to close the ng-repeat -->
+									<th ng-hide="true" ng-repeat-end></th>
+									<th class="leftborder"
+										ng-if="suitabilityAuditCtrl.evaluatedCriterion.length > 0">Totale
+										Punkte</th>
+									<th class="leftborder">Status</th>
+									<th class="leftborder w60">Prüfung erfüllt</th>
+									<th colspan="2" class="leftborder w110" style="min-width:30em;">Bemerkung<span class="mandatory" ng-if="suitabilityAuditCtrl.differentValues">*</span></th>
+								</tr>
+							</thead>
+							<tbody id="submittents">
+								<tr
+									ng-repeat="offer in suitabilityAuditCtrl.offers"
+									ng-init="offerIndex=$index">
+									<td style="min-width: 240px;">
+										<div data-toggle="tooltip"
+											title="{{suitabilityAuditCtrl.showSubmittentJointVenturesSubcontractors(offer)}}"
+											style="height: 38px; overflow: hidden;">
+											<strong ng-class="{'fabe-kaio-style': suitabilityAuditCtrl.markRed(offer) || offer.submittent.companyId.proofStatusFabe == 4 || (offer.submittent.companyId.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain)}">{{suitabilityAuditCtrl.showSubmittentAndLocation(offer)}}</strong>
+											<sup ng-if="offer.isVariant"><strong>V</strong></sup>
+											<strong ng-class="{'fabe-kaio-style': suitabilityAuditCtrl.markRed(offer)}">{{suitabilityAuditCtrl.showJointVenturesSubcontractors(offer)}}</strong>
+										</div>
+									</td>
+									<td class="leftborder w10" ng-if="offer.qExTotalGrade != 0">{{offer.qExRank}}</td>
+									<td class="leftborder w10" ng-if="offer.qExTotalGrade == 0">&nbsp;</td>
+									<td class="leftborder" translate ng-if="offer.submittent.existsExclusionReasons == null">&nbsp;</td>
+									<td class="leftborder" translate
+										ng-if="offer.submittent.existsExclusionReasons != null">{{offer.submittent.existsExclusionReasons}}</td>
+									<td class="leftborder" translate ng-if="offer.submittent.formalExaminationFulfilled == null">&nbsp;</td>
+									<td class="leftborder" translate
+										ng-if="offer.submittent.formalExaminationFulfilled != null">{{offer.submittent.formalExaminationFulfilled}}</td>
+									<td class="leftborder"
+										ng-repeat="mustCriterion in offer.mustCriterion"><select
+										id="option" name="option"
+										data-ng-model="mustCriterion.isFulfilled"
+										ng-change="suitabilityAuditCtrl.setMandatoryNotes(suitabilityAuditCtrl.offers)"
+										data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()"
+										data-ng-options="o.value as o.label for o in suitabilityAuditCtrl.options">
+											<option></option>
+									</select></td>
+									<td class="leftborder w10"
+									ng-repeat-start="evaluatedCriterion in offer.evaluatedCriterion"
+									ng-init="criterionIndex=$index"></td>
+								<td class="leftborder" ng-if="evaluatedCriterion.criterion.subcriterion.length == 0">
+								<input type="number" class="form-control" style="min-width:70px" step=".01"	
+										data-ng-model="suitabilityAuditCtrl.criterionGrade[offerIndex][criterionIndex]"
+										data-ng-value="suitabilityAuditCtrl.getOfferCriterionGrade(evaluatedCriterion)"
+										name="evaluatedCriterionGrade"
+										data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()"
+										ng-change="suitabilityAuditCtrl.proofAndCalculateScoreCriterion(evaluatedCriterion, offerIndex, criterionIndex)"
+										id="grade"></td>
+								<td ng-if="evaluatedCriterion.criterion.subcriterion.length != 0"
+										class="leftborder">{{suitabilityAuditCtrl.getOfferCriterionGrade(evaluatedCriterion)}}</td>	
+									<td class="leftborder" ng-if="evaluatedCriterion.criterion.subcriterion.length == 0">{{suitabilityAuditCtrl.calculatePoint(evaluatedCriterion)}}</td>
+									<td class="leftborder" ng-if="evaluatedCriterion.criterion.subcriterion.length != 0">{{suitabilityAuditCtrl.calculatePointWithSubcriteria(evaluatedCriterion)}}</td>
+									<td class="leftborder w10"
+										ng-repeat-start="subcriterion in evaluatedCriterion.criterion.subcriterion"
+										ng-init="subcriterionIndex=$index"></td>
+									<td class="leftborder w40"><input style="min-width:70px" class="form-control"
+										type="number"
+										step=".01"
+										data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()"
+										data-ng-model="suitabilityAuditCtrl.subcriterionGrade[offerIndex][criterionIndex][subcriterionIndex]"
+										data-ng-value="suitabilityAuditCtrl.getOfferSubcriterionGrade(offerIndex, criterionIndex+offer.mustCriterion.length, subcriterionIndex)"
+										ng-change="suitabilityAuditCtrl.proofAndCalculateScoreSubcriterion(subcriterion, offerIndex, criterionIndex, subcriterionIndex)"></td>
+									<td class="leftborder" ng-repeat-end>{{suitabilityAuditCtrl.calculateSubcriterionPoint(subcriterion)}}</td>
+									<!-- dummy input just to close the ng-repeat -->
+									<td ng-hide="true" ng-repeat-end></td>	
+									<td class="leftborder" ng-if="offer.evaluatedCriterion.length != 0">{{suitabilityAuditCtrl.calculateTotalPoint(offer.evaluatedCriterion)}}</td>
+									<td class="leftborder" ng-if="suitabilityAuditCtrl.calculateStatus(offer.submittent.existsExclusionReasons,offer.submittent.formalExaminationFulfilled,offer.mustCriterion)">Ja</td>
+									<td class="leftborder" ng-if="!suitabilityAuditCtrl.calculateStatus(offer.submittent.existsExclusionReasons,offer.submittent.formalExaminationFulfilled,offer.mustCriterion)">Nein</td>
+									<td class="leftborder w60">
+									<div class="form-group"><select
+										id="formalExaminationFulfilledChanged"
+										data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()"
+										name="formalExaminationFulfilledChanged"
+										data-ng-model="offer.qExExaminationIsFulfilled"
+										ng-change="suitabilityAuditCtrl.setMandatoryNotes(suitabilityAuditCtrl.offers)"
+										data-ng-options="o.value as o.label for o in suitabilityAuditCtrl.formalExaminationFulfilled">
+											<option></option>
+									</select></div></td>
+									<td class="leftborder"><textarea rows="3"
+										data-ng-disabled="suitabilityAuditCtrl.buttonOrFieldDisabled()"
+										class="form-control" id="notes" name="{{offer.id}}"
+										data-ng-model="offer.qExSuitabilityNotes" type="text"></textarea></td>
+								</tr>
+							</tbody>
+						</table>
+
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</div>

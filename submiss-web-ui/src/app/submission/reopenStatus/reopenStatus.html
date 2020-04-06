@@ -1,0 +1,41 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+	<button type="button" class="close" aria-label="Close" ng-click="$close()"><span aria-hidden="true">&times;</span></button>
+	<h4 class="modal-title">{{reopenStatusCtrl.reopenTitle}}</h4>
+</div>
+<form name ="reopenStatusCtrl.reopenStatusForm" id=reopenStatusForm 
+	data-ng-submit="reopenStatusCtrl.resumeReopenStatus()" shows-validation-errors>	
+	<div class="modal-body">
+			<div class="alert alert-danger" ng-if="reopenStatusCtrl.reopenStatusForm.$invalid" role="alert">
+				<field-error form-element-name="errorField" translate name="error"></field-error>
+			</div>
+			<div class="form-group">
+				<input name="errorField" ng-hide="true" data-ng-model="fd"></input>	
+					<div>
+						<p>{{reopenStatusCtrl.reopenQuestion}}</p>
+						<div class="form-group">
+							<label for="reasonNotes">Begründung<span class="mandatory">*</span></label> <textarea
+								class="form-control" id="reasonGiven" rows="2"
+								data-ng-model="reopenStatusCtrl.reasonGiven" ng-style="reopenStatusCtrl.reasonGivenStyle"
+								type="text" name="reasonGiven" autofocus></textarea>
+						</div>
+					</div>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary" data-dismiss="modal">Ja</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="$close()">Nein</button>
+			</div>
+	</div>
+</form>

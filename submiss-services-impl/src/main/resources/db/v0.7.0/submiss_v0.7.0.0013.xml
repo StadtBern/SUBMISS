@@ -1,0 +1,83 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.7.0.0013">
+
+    <createTable tableName="SUB_LEGAL_EXCLUSION"
+      remarks="Die Tabelle erhält die Rechtliches Gehör (Ausschluss) Daten der Submission.">
+      <column name="ID" type="VARCHAR(36)"
+        remarks="Primärschlüssel der Tabelle SUB_LEGAL_EXCLUSION">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_TENDERER" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_TENDERER.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="EXCL_HEARING_DEADLINE" type="DATETIME"
+        remarks="Die Frist Anhörung."/>
+      <column name="PROOFS_PROVIDED" type="BIT"
+        remarks="Die Nachweise erbracht."/>
+      <column name="EXISTS_EXC_REASONS" type="BIT"
+        remarks="Die Ausschlussgründe Art. 24 ÖBV."/>
+      <column name="MUST_CRIT_FULFILLED" type="BIT"
+        remarks="Die MUSS Kriterien."/>
+      <column name="EXCUSION_REASON" type="TEXT"
+        remarks="Die Begründung."/>
+      <column name="CREATED_ON" type="DATETIME"
+        remarks="Das Datum, dass die Submission zum ersten Mal abgebrochen wurde Rechtliches Gehör Daten wurden gespeichert)."/>
+      <column name="CREATED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der die Submission zum ersten Mal abgebrochen hat Rechtliches Gehör Daten gespeichert)."/>
+      <column name="UPDATED_ON" type="DATETIME"
+        remarks="Das Datum, dass die Rechtliches Gehör Daten zum letzten Mal gespeichert wurden."/>
+      <column name="UPDATED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der die Rechtliches Gehör Daten zum letzten Mal gespeichert hat."/>
+    </createTable>
+
+    <addPrimaryKey columnNames="ID"
+      constraintName="PK_LEGAL_EXCLUSION" tableName="SUB_LEGAL_EXCLUSION"/>
+    <addForeignKeyConstraint
+      baseColumnNames="FK_TENDERER" baseTableName="SUB_LEGAL_EXCLUSION"
+      constraintName="FK_LEGAL_EXCLUSION_TENDERER" onDelete="CASCADE"
+      onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_TENDERER"/>
+    <addForeignKeyConstraint
+      baseColumnNames="CREATED_BY" baseTableName="SUB_LEGAL_EXCLUSION"
+      constraintName="FK_CREATED_BY_LEGAL_EXCLUSION_USER"
+      onDelete="SET NULL" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+    <addForeignKeyConstraint
+      baseColumnNames="UPDATED_BY" baseTableName="SUB_LEGAL_EXCLUSION"
+      constraintName="FK_UPDATED_BY_LEGAL_EXCLUSION_USER"
+      onDelete="SET NULL" onUpdate="SET NULL" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+
+    <createTable tableName="SUB_LEGAL_EXCLUSION_REASON"
+      remarks="Die Tabelle erhält die Rechtliches Gehör Grunde.">
+      <column name="FK_LEGAL_EXCLUSION" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_LEGAL_EXCLUSION">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_HEARING_EXCLUSION_REASON" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_MASTER_LIST_VALUE">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseColumnNames="FK_LEGAL_EXCLUSION"
+      baseTableName="SUB_LEGAL_EXCLUSION_REASON"
+      constraintName="FK_LEGAL_EXCLUSION_REASON_LEGAL_EXCLUSION"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_LEGAL_EXCLUSION"/>
+    <addForeignKeyConstraint
+      baseColumnNames="FK_HEARING_EXCLUSION_REASON"
+      baseTableName="SUB_LEGAL_EXCLUSION_REASON"
+      constraintName="FK_LEGAL_HEARING_EXCLUSION_REASON_REASON"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_MASTER_LIST_VALUE"/>
+  </changeSet>
+</databaseChangeLog>

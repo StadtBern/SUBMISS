@@ -1,0 +1,353 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<tr>
+  <td colspan="9" class="hiddenRow">
+    <div id="demo1" class="accordian-body collapse subTabs" is-open="close" style="display: block;">
+      <div role="tabpanel" class="tab-pane active" ui-view>
+        <form name="offerDetailsCtrl.offerDetailsForm" id="offerDetailsForm" shows-validation-errors>
+          <fieldset data-ng-disabled="offerDetailsCtrl.disabledForm(appCtrl.getLoggedUser().userGroup.name)">
+            <div class="col-sm-12">
+              <div class="alert alert-danger" ng-if="offerDetailsCtrl.offerDetailsForm.errorField.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.offerNotesErrorField.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.offerPriceIncreaseErrorField.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.offerDiscount2DaysErrorField.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.offerAmountErrorField.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.discount.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.grossAmountCorrected.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.grossAmount.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.buildingCosts.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.discount2.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.discount2Days.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.offerVariantNotesErrorField.$invalid
+			          || offerDetailsCtrl.offerDetailsForm.tempVat.$invalid
+			          || offerDetailsCtrl.error" role="alert">
+                <field-error form-element-name="errorField" translate name="error"></field-error>
+                <field-error form-element-name="offerNotesErrorField" translate name="error"></field-error>
+                <field-error form-element-name="offerPriceIncreaseErrorField" translate name="error"></field-error>
+                <field-error form-element-name="offerDiscount2DaysErrorField" translate name="error"></field-error>
+                <field-error form-element-name="discount2Days" translate name="error"></field-error>
+                <field-error form-element-name="offerVariantNotesErrorField" translate name="error"></field-error>
+                <field-error form-element-name="offerAmountErrorField" translate name="error"></field-error>
+                <ul ng-if="offerDetailsCtrl.offerDetailsForm.grossAmount.$invalid
+       					 || offerDetailsCtrl.offerDetailsForm.discount.$invalid || offerDetailsCtrl.offerDetailsForm.grossAmountCorrected.$invalid
+       					 || offerDetailsCtrl.offerDetailsForm.buildingCosts.$invalid || offerDetailsCtrl.offerDetailsForm.discount2.$invalid
+       					 || offerDetailsCtrl.offerDetailsForm.tempVat.$invalid">
+                  <li translate>
+                    invalid_number_error_message</li>
+                </ul>
+              </div>
+              <input name="errorField" ng-hide="true" data-ng-model="fd">
+              <input name="offerNotesErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="offerPriceIncreaseErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="offerDiscount2DaysErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="offerAmountErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="discount" ng-hide="true" data-ng-model="fd">
+              <input name="grossAmountCorrected" ng-hide="true" data-ng-model="fd">
+              <input name="buildingCosts" ng-hide="true" data-ng-model="fd">
+              <input name="discount2" ng-hide="true" data-ng-model="fd">
+              <input name="discount2Days" ng-hide="true" data-ng-model="fd">
+              <input name="offerVariantNotesErrorField" ng-hide="true" data-ng-model="fd">
+            </div>
+            <div class="col-sm-6">
+              <h4>Offertinformationen</h4>
+              <div class="row">
+                <div class="col-sm-12 col-md-12">
+                  <div
+                    ng-class="(offerDetailsCtrl.offer.isAwarded== true) ? 'form-group zuschlag green' : 'form-group zuschlag'">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" disabled="disabled" id="inlineCheckbox1"
+                            data-ng-model="offerDetailsCtrl.offer.isAwarded"
+                            value="option1"><strong>Zuschlag</strong></label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12 col-md-6">
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isPartOffer"
+                            data-ng-model="offerDetailsCtrl.offer.isPartOffer"
+                            data-ng-disabled="offerDetailsCtrl.isPartOfferOrIsVariantChecked(offerDetailsCtrl.offer.isEmptyOffer)">Teilofferte
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isVariant" name="isVariant"
+                            data-ng-model="offerDetailsCtrl.offer.isVariant"
+                            data-ng-disabled="offerDetailsCtrl.isPartOfferOrIsVariantChecked(offerDetailsCtrl.offer.isEmptyOffer)">Variante
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="variantNotes">Bemerkung Variante</label> <input class="form-control"
+                      data-ng-disabled="!offerDetailsCtrl.offer.isVariant" id="variantNotes" name="variantNotes"
+                      placeholder="" type="text"
+                      ng-value="offerDetailsCtrl.offer.variantNotes=offerDetailsCtrl.variantNotesValue(offerDetailsCtrl.offer.isVariant)"
+                      data-ng-model="offerDetailsCtrl.offer.variantNotes">
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isEmptyOffer"
+                            ng-disabled="offerDetailsCtrl.currentStatus >= offerDetailsCtrl.status.OFFER_OPENING_CLOSED"
+                            data-ng-model="offerDetailsCtrl.offer.isEmptyOffer">Leere
+                          Offerte
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group bg-danger">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <span class="fa red fa-exclamation-triangle" aria-hidden="true"></span>
+                        <label class="checkbox-inline"> <input disabled="disabled" id="isExcludedFromProcess"
+                            data-ng-model="offerDetailsCtrl.offer.isExcludedFromProcess" value="option4"
+                            type="checkbox">Verfahrensausschluss
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12 col-md-6">
+                  <div class="form-group">
+                    <label for="offerDate">Offertdatum<span class="mandatory">*</span></label>
+                    <div class="input-group">
+                      <input class="form-control datepicker" id="offerDate" name="offerDate"
+                        data-ng-disabled="offerDetailsCtrl.currentStatus >= offerDetailsCtrl.status.OFFER_OPENING_CLOSED"
+                        type="text" uib-datepicker-popup="dd.MM.yyyy" is-open="offerDetailsCtrl.openOfferDate.opened"
+                        data-ng-model="offerDetailsCtrl.offer.offerDate" ng-click="offerDetailsCtrl.openOfferDate()">
+                      <span class="input-group-btn">
+                        <button class="btn btn-default" type="button"
+                          data-ng-disabled="offerDetailsCtrl.currentStatus >= offerDetailsCtrl.status.OFFER_OPENING_CLOSED"
+                          data-ng-click="offerDetailsCtrl.openOfferDate()">
+                          <span class="fa fa-calendar"></span>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="settlement">Verrechnung</label>
+                    <ui-select name="settlement" data-ng-model="offerDetailsCtrl.offer.settlement"
+                      data-ng-disabled="offerDetailsCtrl.disabledForm(appCtrl.getLoggedUser().userGroup.name)
+										  || !offerDetailsCtrl.secOfferDetailsEdit || ((offerDetailsCtrl.data.submission.process != 'SELECTIVE'
+								          && offerDetailsCtrl.data.submission.process != null)  && (!offerDetailsCtrl.data.submission.secondDeadline
+								          || !offerDetailsCtrl.data.submission.offerOpeningDate || !offerDetailsCtrl.data.submission.secondLoggedBy))
+								          || (offerDetailsCtrl.data.submission.process == 'SELECTIVE' && (!offerDetailsCtrl.data.submission.firstDeadline
+								          || !offerDetailsCtrl.data.submission.applicationOpeningDate || !offerDetailsCtrl.data.submission.firstLoggedBy))
+								          || offerDetailsCtrl.currentStatus == offerDetailsCtrl.status.SUBMITTENTLIST_CHECK ||
+								          (offerDetailsCtrl.currentStatus < offerDetailsCtrl.status.OFFER_OPENING_CLOSED && appCtrl.getLoggedUser().userGroup.name == offerDetailsCtrl.group.PL
+								          && (offerDetailsCtrl.data.submission.process == 'SELECTIVE' || offerDetailsCtrl.data.submission.process == 'OPEN' || offerDetailsCtrl.data.submission.process == 'INVITATION'))
+								          || offerDetailsCtrl.currentStatus == offerDetailsCtrl.status.SUBMITTENTLIST_CHECK || offerDetailsCtrl.fieldSetDisabled" theme="select2">
+                      <ui-select-match placeholder="" allow-clear="true"> <span>
+                          {{$select.selected.value1}}</span> </ui-select-match>
+                      <ui-select-choices repeat="settlementOption in offerDetailsCtrl.settlementOptions">
+                        <span ng-bind="settlementOption.value1"></span> </ui-select-choices>
+                    </ui-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <h4>Offertdetails</h4>
+              <div class="row">
+                <div class="col-sm-12 col-md-6">
+                  <div class="form-group"
+                    ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.grossAmount.$invalid}">
+                    <label for="grossAmount">Bruttobetrag <span class="mandatory">*</span></label> <input
+                      class="form-control" id="bruttobetrag" name="grossAmount" df-currency
+                      data-ng-model="offerDetailsCtrl.offer.grossAmount" placeholder="" type="text" ng-change="offerDetailsCtrl.offerDetailsForm.grossAmount.$invalid =
+											offerDetailsCtrl.ignoreInvalidNumber(offerDetailsCtrl.offerDetailsForm.grossAmount)"
+                      data-ng-disabled="offerDetailsCtrl.offer.isCorrected || offerDetailsCtrl.currentStatus >= offerDetailsCtrl.status.OFFER_OPENING_CLOSED">
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isCorrected"
+                            data-ng-model="offerDetailsCtrl.offer.isCorrected" value="option6">Korrigiert
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group"
+                    ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.grossAmountCorrected.$invalid}">
+                    <label for="grossAmountCorrected">korrigierter
+                      Bruttobetrag</label> <input class="form-control" df-currency id="grossAmountCorrected"
+                      name="grossAmountCorrected" data-ng-model="offerDetailsCtrl.offer.grossAmountCorrected"
+                      type="text" ng-change="offerDetailsCtrl.offerDetailsForm.grossAmountCorrected.$invalid =
+											offerDetailsCtrl.ignoreInvalidNumber(offerDetailsCtrl.offerDetailsForm.grossAmountCorrected)"
+                      data-ng-disabled="!offerDetailsCtrl.offer.isCorrected">
+                  </div>
+                  <div class="form-group" ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.discount.$invalid}">
+                    <label for="discount">Rabatt</label> <input class="form-control" id="discount" name="discount"
+                      ng-change="offerDetailsCtrl.offerDetailsForm.discount.$invalid =
+											offerDetailsCtrl.ignoreInvalidNumber(offerDetailsCtrl.offerDetailsForm.discount)"
+                      data-ng-model="offerDetailsCtrl.offer.discount" df-currency type="text">
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isDiscountPercentage"
+                            checked="checked" value="option7"
+                            data-ng-model="offerDetailsCtrl.offer.isDiscountPercentage">
+                          Rabatt in %
+                        </label> <span class="label label-default"
+                          ng-if="offerDetailsCtrl.offer.isDiscountPercentage">{{offerDetailsCtrl.customRoundNumber(offerDetailsCtrl.calculateCHFDiscountValue(offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.grossAmountCorrected,offerDetailsCtrl.offer.grossAmount,offerDetailsCtrl.offer.discount))}}
+                          CHF</span>
+                        <span class="label label-default" ng-if="!offerDetailsCtrl.offer.isDiscountPercentage">0.00
+                          CHF</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group"
+                    ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.buildingCosts.$invalid}">
+                    <label for="buildingCosts">Baunebenkosten</label> <input class="form-control" id="buildingCosts"
+                      name="buildingCosts" type="text" df-currency ng-change="offerDetailsCtrl.offerDetailsForm.buildingCosts.$invalid =
+											offerDetailsCtrl.ignoreInvalidNumber(offerDetailsCtrl.offerDetailsForm.buildingCosts)"
+                      data-ng-model="offerDetailsCtrl.offer.buildingCosts">
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isBuildingCostsPercentage"
+                            checked="checked" value="option8"
+                            data-ng-model="offerDetailsCtrl.offer.isBuildingCostsPercentage">
+                          Baunebenkosten in %
+                        </label> <span class="label label-default"
+                          ng-if="offerDetailsCtrl.offer.isBuildingCostsPercentage">{{offerDetailsCtrl.customRoundNumber(offerDetailsCtrl.calculateCHFBuildingCostsValue(offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.grossAmountCorrected,offerDetailsCtrl.offer.grossAmount,offerDetailsCtrl.offer.discount,offerDetailsCtrl.offer.isDiscountPercentage,offerDetailsCtrl.offer.buildingCosts))}}
+                          CHF</span>
+                        <span class="label label-default" ng-if="!offerDetailsCtrl.offer.isBuildingCostsPercentage">0.00
+                          CHF</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group"
+                    ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.discount2.$invalid}">
+                    <label for="discount2">Skonto</label> <input df-currency ng-change="offerDetailsCtrl.offerDetailsForm.discount2.$invalid =
+											offerDetailsCtrl.ignoreInvalidNumber(offerDetailsCtrl.offerDetailsForm.discount2)" class="form-control"
+                      id="discount2" name="discount2" type="text" data-ng-model="offerDetailsCtrl.offer.discount2">
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <label class="checkbox-inline"> <input type="checkbox" id="isDiscount2Percentage"
+                            checked="checked" value="option8"
+                            data-ng-model="offerDetailsCtrl.offer.isDiscount2Percentage">
+                          Skonto in %
+                        </label> <span class="label label-default"
+                          ng-if="offerDetailsCtrl.offer.isDiscount2Percentage">{{offerDetailsCtrl.customRoundNumber(offerDetailsCtrl.calculateCHFDiscount2Value(offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.grossAmountCorrected,offerDetailsCtrl.offer.grossAmount,offerDetailsCtrl.offer.discount,offerDetailsCtrl.offer.isDiscountPercentage,offerDetailsCtrl.offer.buildingCosts,offerDetailsCtrl.offer.isBuildingCostsPercentage,offerDetailsCtrl.offer.discount2))}}
+                          CHF</span>
+                        <span class="label label-default" ng-if="!offerDetailsCtrl.offer.isDiscount2Percentage">0.00
+                          CHF</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12 col-md-6">
+                  <div class="form-group">
+                    <label for="isVatPercentage">MWST in %</label>
+                    <div class="row">
+                      <div class="col-sm-8">
+                        <ui-select name="vat" data-ng-model="offerDetailsCtrl.tempVatDD"
+                          data-ng-disabled="offerDetailsCtrl.disabledForm(appCtrl.getLoggedUser().userGroup.name)
+		  || !offerDetailsCtrl.secOfferDetailsEdit || ((offerDetailsCtrl.data.submission.process != 'SELECTIVE'
+          && offerDetailsCtrl.data.submission.process != null)  && (!offerDetailsCtrl.data.submission.secondDeadline
+          || !offerDetailsCtrl.data.submission.offerOpeningDate || !offerDetailsCtrl.data.submission.secondLoggedBy))
+          || (offerDetailsCtrl.data.submission.process == 'SELECTIVE' && (!offerDetailsCtrl.data.submission.firstDeadline
+          || !offerDetailsCtrl.data.submission.applicationOpeningDate || !offerDetailsCtrl.data.submission.firstLoggedBy))
+          || offerDetailsCtrl.currentStatus == offerDetailsCtrl.status.SUBMITTENTLIST_CHECK ||
+          (offerDetailsCtrl.currentStatus < offerDetailsCtrl.status.OFFER_OPENING_CLOSED && appCtrl.getLoggedUser().userGroup.name == offerDetailsCtrl.group.PL
+          && (offerDetailsCtrl.data.submission.process == 'SELECTIVE' || offerDetailsCtrl.data.submission.process == 'OPEN' || offerDetailsCtrl.data.submission.process == 'INVITATION'))
+          || (offerDetailsCtrl.tempVat != '0.00' && offerDetailsCtrl.tempVat != '0.0' && offerDetailsCtrl.tempVat != '0' && offerDetailsCtrl.tempVat != '')
+          || offerDetailsCtrl.currentStatus == offerDetailsCtrl.status.SUBMITTENTLIST_CHECK || offerDetailsCtrl.fieldSetDisabled" theme="select2">
+                          <ui-select-match allow-clear="true"> <span>
+                              {{$select.selected | number:2 }}</span> </ui-select-match>
+                          <ui-select-choices
+                            repeat="vatValue in offerDetailsCtrl.vatValues | filter: $select.search track by vatValue">
+                            <span ng-bind="vatValue"></span> </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-sm-6" style="margin-top:5px">
+                        <span class="label label-default"
+                          ng-if="offerDetailsCtrl.tempVat == '0.00' || offerDetailsCtrl.tempVat == '0.0' || offerDetailsCtrl.tempVat == '0' || offerDetailsCtrl.tempVat == ''">{{offerDetailsCtrl.customRoundNumber(offerDetailsCtrl.calculateCHFMWSTValueCalc(offerDetailsCtrl.calculateNet(offerDetailsCtrl.offer.grossAmount, offerDetailsCtrl.offer.grossAmountCorrected, offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.discount, offerDetailsCtrl.offer.isDiscountPercentage,
+    			                        offerDetailsCtrl.offer.buildingCosts, offerDetailsCtrl.offer.isBuildingCostsPercentage, offerDetailsCtrl.offer.discount2, offerDetailsCtrl.offer.isDiscount2Percentage),offerDetailsCtrl.offer.vat,offerDetailsCtrl.offer.isVatPercentage,offerDetailsCtrl.tempVat,offerDetailsCtrl.tempVatDD))}}
+                          CHF</span>
+                        <span class="label label-default"
+                          ng-if="!(offerDetailsCtrl.tempVat == '0.00' || offerDetailsCtrl.tempVat == '0.0' || offerDetailsCtrl.tempVat == '0' || offerDetailsCtrl.tempVat == '')">0.00
+                          CHF</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group" ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.tempVat.$invalid}">
+                    <label for="vat">MWST</label> <input class="form-control" id="tempVat" name="tempVat"
+                      data-ng-model="offerDetailsCtrl.tempVat"
+                      ng-change="offerDetailsCtrl.offerDetailsForm.tempVat.$invalid = offerDetailsCtrl.ignoreInvalidNumber(offerDetailsCtrl.offerDetailsForm.tempVat)"
+                      placeholder="" type="text" df-currency>
+                  </div>
+                  <div class="form-group">
+                    <label for="nettobetragin">Nettobetrag inkl. MWST </label> <input class="form-control" disabled
+                      id="nettobetragin"
+                      ng-value="offerDetailsCtrl.customRoundNumber(offerDetailsCtrl.calculateNet(offerDetailsCtrl.offer.grossAmount, offerDetailsCtrl.offer.grossAmountCorrected, offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.discount, offerDetailsCtrl.offer.isDiscountPercentage,
+    			                        offerDetailsCtrl.offer.buildingCosts, offerDetailsCtrl.offer.isBuildingCostsPercentage, offerDetailsCtrl.offer.discount2, offerDetailsCtrl.offer.isDiscount2Percentage) + offerDetailsCtrl.calculateCHFMWSTValueCalc(offerDetailsCtrl.calculateNet(offerDetailsCtrl.offer.grossAmount, offerDetailsCtrl.offer.grossAmountCorrected, offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.discount, offerDetailsCtrl.offer.isDiscountPercentage,
+    			                        offerDetailsCtrl.offer.buildingCosts, offerDetailsCtrl.offer.isBuildingCostsPercentage, offerDetailsCtrl.offer.discount2, offerDetailsCtrl.offer.isDiscount2Percentage),offerDetailsCtrl.offer.vat,offerDetailsCtrl.offer.isVatPercentage,offerDetailsCtrl.tempVat,offerDetailsCtrl.tempVatDD))"
+                      type="text" placeholder="">
+                  </div>
+                  <div class="form-group">
+                    <label for="discount2Days">Skonto Tage</label> <input class="form-control" name="discount2Days"
+                      data-ng-model="offerDetailsCtrl.offer.discount2Days" id="discount2Days" placeholder=""
+                      type="text">
+                  </div>
+                  <div class="form-group">
+                    <label for="priceIncrease">Teuerung</label> <input class="form-control" id="priceIncrease"
+                      data-ng-model="offerDetailsCtrl.offer.priceIncrease" placeholder="" type="text"
+                      name="priceIncrease">
+                  </div>
+                  <div class="form-group"
+                    ng-class="{'has-error': offerDetailsCtrl.offerDetailsForm.offerAmountErrorField.$invalid}">
+                    <label for="nettobetrag">Nettobetrag exkl. MWST</label> <input class="form-control" disabled
+                      name="amount"
+                      ng-value="offerDetailsCtrl.customRoundNumber(offerDetailsCtrl.calculateNet(offerDetailsCtrl.offer.grossAmount, offerDetailsCtrl.offer.grossAmountCorrected, offerDetailsCtrl.offer.isCorrected,offerDetailsCtrl.offer.discount, offerDetailsCtrl.offer.isDiscountPercentage,
+    			                        offerDetailsCtrl.offer.buildingCosts, offerDetailsCtrl.offer.isBuildingCostsPercentage, offerDetailsCtrl.offer.discount2, offerDetailsCtrl.offer.isDiscount2Percentage))"
+                      type="text" placeholder="">
+                  </div>
+                </div>
+                <div class="col-sm-12 col-md-12">
+                  <div class="form-group">
+                    <label for="notes">Offertinformationen</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2"
+                      data-ng-model="offerDetailsCtrl.offer.notes"> </textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-md-12 btn-bar">
+              <button type="button" ng-click="offerDetailsCtrl.save()" class="btn btn-primary">Speichern</button>
+              <button type="button" class="btn btn-default"
+                ng-click="offerDetailsCtrl.resetPage(offerDetailsCtrl.offerDetailsForm.$dirty)">Abbrechen</button>
+              <div ng-if="offerDetailsCtrl.offerDetailsForm.$dirty">
+                <input ng-hide="true" type="checkbox" data-ng-model="offerDetailsCtrl.dirtyFlag"
+                  ng-init="offerDetailsCtrl.dirtyFlag=true" ng-value="appCtrl.setDirtyFlag(true)">
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </td>
+</tr>

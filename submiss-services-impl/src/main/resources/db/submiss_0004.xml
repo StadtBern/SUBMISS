@@ -1,0 +1,31 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0004">
+    <sql>
+
+      ALTER TABLE SUB_CRITERION ADD CRITERION_TYPE VARCHAR(50) NOT NULL COMMENT 'Die Kriteriumsart';
+      ALTER TABLE SUB_CRITERION MODIFY WEIGHTING DECIMAL(10,2) NULL COMMENT 'Die Gewichtung.';
+      ALTER TABLE SUB_COMPANY_PROOF DROP FOREIGN KEY FK_COMPANY_PROOF_COMPANY;
+      ALTER TABLE SUB_COMPANY_PROOF ADD CONSTRAINT FK_COMPANY_PROOF_COMPANY FOREIGN KEY
+      (`FK_COMPANY`) REFERENCES SUB_COMPANY (`ID`) ON UPDATE CASCADE ON DELETE CASCADE;
+      CREATE TABLE `SUB_TENDERER_EVIDENCE`(
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_TENDER_EVIDENCE.',
+      `FK_TENDER` VARCHAR(36) NOT NULL,
+      `FK_COMPANY` VARCHAR(36) NOT NULL,
+      `VALUE` BIT NULL,
+      `CREATED_ON` DATETIME NULL,
+      `MODIFIED_ON` DATETIME NULL,
+      CONSTRAINT `PK_TENDERER_EVIDENCE` PRIMARY KEY (`ID` ASC));
+      ALTER TABLE `SUB_TENDERER_EVIDENCE` ADD CONSTRAINT `FK_TENDERER_EVIDENCE_TENDER` FOREIGN KEY
+      (`FK_TENDER`) REFERENCES `SUB_TENDER` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+      ALTER TABLE `SUB_TENDERER_EVIDENCE` ADD CONSTRAINT `FK_TENDERER_EVIDENCE_COMPANY` FOREIGN KEY
+      (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-Description: SUBMISS :: web ui
+Bundle-ManifestVersion: 2
+Bundle-Name: submiss-web-ui
+Bundle-SymbolicName: ch.bern.submiss.web.ui
+Bundle-Version: ${parsedVersion.osgiVersion}
+Jetty-WarFragmentResourcePath: /
+Web-ContextPath: /

@@ -1,0 +1,62 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v1.1.0.0001">
+    <sql>
+      CREATE OR REPLACE VIEW VW_AUDIT_COMPANY AS
+      SELECT a.id AS id,
+      concat(uafirst.data, ' ', ualast.data) AS userName,
+      a.short_description AS shortDescription,
+      (CASE
+      WHEN (locate('{{XY}}', ld.value) > 0) THEN replace(ld.value, '{{XY}}', substring_index(a.opt2,
+      '[#]',-(1)))
+      ELSE ld.value
+      END) AS TRANSLATION,
+      from_unixtime(floor((a.created_on / 1000))) AS createdOn,
+      (CASE
+      WHEN isnull(
+      (SELECT company.ID
+      FROM SUB_COMPANY company
+      WHERE (company.ID = a.reference_id))) THEN substring_index(a.opt2, '[#]', 1)
+      ELSE c.COMPANY_NAME
+      END) AS companyName,
+      (CASE
+      WHEN isnull(
+      (SELECT company.ID
+      FROM SUB_COMPANY company
+      WHERE (company.ID = a.reference_id))) THEN substring_index(substring_index(a.opt2, '[#]', 2),
+      '[#]',-(1))
+      ELSE c.PROOF_STATUS_FABE
+      END) AS proofStatusFabe,
+      substring_index(a.opt2, '[#]',-(1)) AS resource_key,
+      (CASE
+      WHEN (a.short_description = 'PROOF_REQUEST') THEN
+      (SELECT aaa_user_attributes.data
+      FROM (aaa_user
+      JOIN aaa_user_attributes on((aaa_user_attributes.user_id = aaa_user.id)))
+      WHERE ((aaa_user_attributes.name = 'TENANT')
+      AND (aaa_user.id = a.prin_session_id)))
+      ELSE NULL
+      END) AS tenant_id
+      FROM ((((((al_audit a
+      LEFT JOIN SUB_COMPANY c on((c.ID = a.reference_id)))
+      JOIN aaa_user u on((u.id = a.prin_session_id)))
+      JOIN aaa_user_attributes uafirst on((uafirst.user_id = u.id)))
+      JOIN aaa_user_attributes ualast on((ualast.user_id = u.id)))
+      JOIN lex_key lk on((a.short_description = lk.name)))
+      JOIN lex_data ld on((lk.id = ld.key_id)))
+      WHERE ((a.opt3 = '1')
+      AND a.level_id IN
+      (SELECT al_audit_level.id
+      FROM al_audit_level
+      WHERE (al_audit_level.name = 'COMPANY_LEVEL'))
+      AND (ualast.name = 'LASTNAME')
+      AND (uafirst.name = 'FIRSTNAME'))
+      AND NOT(c.COMPANY_NAME IS NULL
+      AND a.opt2 IS NULL);
+    </sql>
+  </changeSet>
+</databaseChangeLog>

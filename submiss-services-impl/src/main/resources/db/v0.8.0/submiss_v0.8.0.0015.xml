@@ -1,0 +1,17 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.8.0.0015">
+    <addColumn tableName="SUB_TENDER">
+      <column name="EXCLUSION_DEADLINE_FIRST_LEVEL" type="DATETIME"
+        remarks="Frist Anhörung Rechtliches Gehör (Ausschluss) Selektiv 1.Stufe"/>
+    </addColumn>
+    <addColumn tableName="SUB_LEGAL_EXCLUSION">
+      <column name="EXCL_HEARING_DEADLINE_FIRST_LEVEL" type="DATETIME"
+        remarks="Die Frist Anhörung (Selektiv 1.Stufe)."/>
+    </addColumn>
+  </changeSet>
+</databaseChangeLog>

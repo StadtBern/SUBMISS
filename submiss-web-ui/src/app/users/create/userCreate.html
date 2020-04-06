@@ -1,0 +1,146 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">Registrierung in der Fachanwendung Submiss</h2>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <form name="userCreateCtr.userForm"
+          data-ng-submit="userCreateCtr.save()" id="userForm"
+          shows-validation-errors>
+      <div class="col-sm-12">
+				<div class="alert alert-danger"
+					ng-if="userCreateCtr.userForm.$invalid" role="alert">
+					<field-error form-element-name="errorField" translate name="error"></field-error>
+					<field-error form-element-name="departmentMandatoryErrorField"
+						translate name="error"></field-error>
+					<field-error form-element-name="functionErrorField"
+						translate name="error"></field-error>
+				</div>
+				<div class="alert alert-danger" 
+          ng-if="userCreateCtr.ivalidFirstUserError" role="alert" translate>
+       		  
+       		  <field-error form-element-name="errorField" ng-if="userCreateCtr.ivalidFirstUserError" name="error" translate>invalid_first_user_password</field-error>
+            </div>
+
+        <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="departmentMandatoryErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="functionErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label>Login-Name
+            <span class="mandatory">*</span>
+          </label>
+          <input
+            class="form-control" id="userName"
+            data-ng-model="userCreateCtr.user.username" type="text"
+            name="userName" disabled>
+        </div>
+
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12">
+              <label>Vorname
+                <span class="mandatory">*</span>
+              </label>
+              <input
+                class="form-control" id="firstName"
+                data-ng-model="userCreateCtr.user.firstName"
+                type="text"
+                name="firstName" disabled>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nachname
+            <span class="mandatory">*</span>
+          </label>
+          <input
+            class="form-control" id="lastName"
+            data-ng-model="userCreateCtr.user.lastName"
+            type="text" name="lastName" disabled>
+        </div>
+        <div class="form-group">
+          <label>E-Mail
+            <span class="mandatory">*</span>
+          </label>
+          <input
+            class="form-control" id="email"
+            data-ng-model="userCreateCtr.user.email" type="text" name="email" disabled>
+        </div>
+      </div>
+
+			<div class="col-sm-12 col-md-6">
+				<div class="form-group">
+					<!-- 	disabled -->
+					<label for="tenant">Mandant <span class="mandatory">*</span>
+					</label>
+					<!-- deactivate the drop down list in case of first user -->
+					<ui-select name="tenant" ng-model="userCreateCtr.user.tenant"
+						data-ng-disabled="userCreateCtr.user.secondaryDepartments.length > 0"
+						ng-change="userCreateCtr.tenantChange(userCreateCtr.user.tenant)"
+						theme="select2"> <ui-select-match allow-clear="true"
+						data-placeholder="Bitte auswählen"> <span>
+						{{$select.selected.name}}</span> </ui-select-match> <ui-select-choices
+						repeat="item in (userCreateCtr.tenants | filter: $select.search)">
+					<span ng-bind="item.name"></span> </ui-select-choices> </ui-select>
+				</div>
+				<div class="form-group">
+					<label for="secondaryDepartments">Abteilung(en) pro
+						Direktion <span class="mandatory">*</span>
+					</label>
+					<ui-select multiple id="secondaryDepartments"
+						name="secondaryDepartments"
+						ng-model="userCreateCtr.user.secondaryDepartments"
+						ng-change="userCreateCtr.departmentChange(userCreateCtr.user.secondaryDepartments)">
+					<ui-select-match allow-clear="true">{{$item.name}}
+					({{$item.directorate.shortName}})</ui-select-match> <ui-select-choices
+						repeat="item in userCreateCtr.departments | propsFilter: {name: $select.search}  | orderBy:'name'">
+					{{item.name}} ({{item.directorate.shortName}}) </ui-select-choices> </ui-select>
+				</div>
+				<div class="form-group">
+					<label for="role">Rolle <span class="mandatory">*</span>
+					</label>
+					<!-- deactivate the drop down list in case of first user -->
+					<ui-select name="role" ng-model="userCreateCtr.user.userGroup"
+						ng-change="userCreateCtr.setUnregisteredUserGroup(userCreateCtr.user.userGroup)"
+						theme="select2"> <ui-select-match allow-clear="true"
+						data-placeholder="Bitte auswählen"> <span>
+						{{$select.selected.description}}</span> </ui-select-match> <ui-select-choices
+						repeat="item in (userCreateCtr.roles | filter: $select.search)">
+					<span ng-bind="item.description"></span> </ui-select-choices> </ui-select>
+				</div>
+				<div class="form-group">
+					<div class="row">
+						<div class="col-sm-12">
+							<label>Funktion <span class="mandatory"
+								ng-if="userCreateCtr.user.userGroup.name == 'Admin'">*</span>
+							</label> <input class="form-control" id="function"
+								data-ng-model="userCreateCtr.user.function" type="text"
+								name="function">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-12 col-md-12 btn-bar">
+				<button type="submit" class="btn btn-primary">Registrierung
+					beantragen</button>
+			</div>
+		</form>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.DocumentDTO;
+import java.util.HashMap;
+import java.util.Date;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "FT01"
+	when
+		$company: CompanyDTO()
+		$document: DocumentDTO()
+	if ($company.getAddress2() != null) do[address2]
+	else do[address2Empty]
+	if ($document.getDepartment() != null) do[department]
+	else do[departmentEmpty]
+	if ($document.getProcurement() != null) do[procurement]
+	else do[procurementEmpty]
+	then
+		placeholderMappings.put("f_proofDate", SubmissConverter.convertToSwissDate($document.getSubmitDate()));
+		placeholderMappings.put("s_current_date", SubmissConverter.convertToSwissDate(new Date()));
+		placeholderMappings.put("f_company_name", $company.getCompanyName());
+		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());
+	then [address2]
+		placeholderMappings.put("f_company_address", $company.getAddress1() + "\\n" + $company.getAddress2());
+	then [address2Empty]	
+		placeholderMappings.put("f_company_address", $company.getAddress1());
+	then [department]	
+		placeholderMappings.put("f_department", $document.getDepartment().getName());
+	then [departmentEmpty]	
+		placeholderMappings.put("f_department", "");
+	then [procurement]	
+		placeholderMappings.put("f_procurement", $document.getProcurement());
+	then [procurementEmpty]	
+		placeholderMappings.put("f_procurement", "");				
+	end

@@ -1,0 +1,150 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">
+			{{submissionViewCtr.data.submission.workType.value1}}
+			{{submissionViewCtr.data.submission.workType.value2}},<small>&nbsp;{{submissionViewCtr.data.submission.project.projectName}},&nbsp;{{submissionViewCtr.getObjectInfo(submissionViewCtr.data.submission.project.objectName)}}</small>
+		</h2>
+	</div>
+	<div class="card-box">
+		<div class="col-sm-12">
+			<div class="alert alert-info"
+				ng-if="(submissionViewCtr.data.submission.process != 'SELECTIVE' 
+          && submissionViewCtr.data.submission.process != null) 
+           && (!submissionViewCtr.data.submission.secondDeadline 
+          || !submissionViewCtr.data.submission.offerOpeningDate 
+          || !submissionViewCtr.data.submission.secondLoggedBy)"
+				role="alert" translate>
+				submission_mandatory_for_other_processes</div>
+		</div>
+		<form name="submissionViewCtr.submissionForm" id="submissionForm" shows-validation-errors>
+		<div class="col-sm-12">
+          <div class="alert alert-danger" ng-if="submissionViewCtr.submissionForm.$invalid" role="alert">
+       		 <field-error form-element-name="submissionHasSubmittentField" translate name="error"></field-error>
+          </div> 
+          <input name="submissionHasSubmittentField" ng-hide="true" data-ng-model="fd"></input>
+        </div>
+        </form>
+		<div class="col-sm-12">
+		<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="subDetails">
+				<div class="row">
+					<div class="col-sm-6 ToolbarContainer">
+						<dl class="dl-horizontal" ng-style="{'color': '#a94442'}">
+							<dt
+							ng-if="submissionViewCtr.secLockedSubmissionFieldView && submissionViewCtr.data.submission.isLocked">Submission für DST gesperrt</dt>
+							<dt ng-if="submissionViewCtr.secGekoSubmissionFieldView && !submissionViewCtr.data.submission.isGekoEntry">Kein GeKo-Eintrag</dt>
+						</dl>
+					</div>
+					<div class="col-sm-6 ToolbarContainer">
+						<div class="btn-toolbar pull-right" role="toolbar">
+								<button type="button" class="btn btn-primary"
+									data-toggle="modal"
+								data-ng-disabled="!submissionViewCtr.secTenderEdit
+											|| !((appCtrl.getLoggedUser().userGroup.name == submissionViewCtr.group.ADMIN) 
+											|| (appCtrl.getLoggedUser().userGroup.name == submissionViewCtr.group.PL
+											&& (((submissionViewCtr.data.submission.process == 'OPEN'
+											|| submissionViewCtr.data.submission.process == 'INVITATION') 
+											&& submissionViewCtr.currentStatus < submissionViewCtr.status.OFFER_OPENING_STARTED) 
+											|| (submissionViewCtr.data.submission.process == 'SELECTIVE'
+											&& submissionViewCtr.currentStatus < submissionViewCtr.status.APPLICATION_OPENING_STARTED)
+											|| (submissionViewCtr.data.submission.process == 'NEGOTIATED_PROCEDURE'
+											|| submissionViewCtr.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION'))))"
+								data-ng-click="submissionViewCtr.editSubmission()">
+								<span class="fa fa-pencil" aria-hidden="true"></span> Submission
+								bearbeiten
+							</button>
+								<button type="submit" class="btn btn-primary"
+									data-toggle="modal"
+								data-ng-disabled="!submissionViewCtr.secTenderDelete
+								               || submissionViewCtr.currentStatus >= submissionViewCtr.status.PROCEDURE_COMPLETED
+											   || submissionViewCtr.currentStatus >= submissionViewCtr.status.PROCEDURE_CANCELED"
+								data-ng-click="submissionViewCtr.deleteModal()">
+									<span class="fa fa-trash-o" aria-hidden="true"></span> Submission
+									löschen
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-6">
+						<dl class="dl-horizontal">
+							<dt>Beschreibung</dt>
+							<dd>{{submissionViewCtr.data.submission.description}}</dd>
+							<dt>Verfahrensart</dt>
+							<dd translate>{{submissionViewCtr.data.submission.process}}</dd>
+							<dt>Kostenvoranschlag</dt>
+								<dd>{{submissionViewCtr.formatAmount(submissionViewCtr.data.submission.costEstimate)}}</dd>
+							<dt>Auftragsart</dt>
+							<dd>{{submissionViewCtr.data.submission.processType.value1}}</dd>
+							<dt ng-style="{'color': '#a94442'}" ng-if="submissionViewCtr.data.submission.isServiceTender">DL-Wettbewerb</dt>
+							<dd></dd>
+							<dt>GATT/WTO</dt>
+							<dd ng-if="submissionViewCtr.data.submission.gattTwo == true"
+								translate>{{submissionViewCtr.data.submission.gattTwo}}</dd>
+							<dd ng-if="submissionViewCtr.data.submission.gattTwo == false"
+								translate>{{submissionViewCtr.data.submission.gattTwo}}</dd>
+							<dd ng-if="submissionViewCtr.data.submission.gattTwo == null"></dd>
+							<dt>Publikation</dt>
+							<dd>{{submissionViewCtr.data.submission.publicationDate |
+								date:'dd.MM.yyyy'}}</dd>
+							<dt>Publikation freihändige Vergabe</dt>
+							<dd>{{submissionViewCtr.data.submission.publicationDateDirectAward
+								| date:'dd.MM.yyyy'}}</dd>
+							<dt>Zuschlagspublikation</dt>
+							<dd>{{submissionViewCtr.data.submission.publicationDateAward
+								| date:'dd.MM.yyyy'}}</dd>
+							<br>
+							<br>
+							<dt>Submissionsbemerkung</dt>
+							<dd class="preline">{{submissionViewCtr.data.submission.notes}}</dd>
+
+						</dl>
+					</div>
+					<div class="col-sm-6">
+						<dl class="dl-horizontal">
+							<dt>Verfahrensleitung</dt>
+							<dd>{{submissionViewCtr.data.submission.procedure.value1}}</dd>
+							<dt>Projektleitung der Abt.</dt>
+							<dd>{{submissionViewCtr.data.submission.pmDepartmentName}}</dd>
+							<dt>Externe Projektleitung</dt>
+							<dd>{{submissionViewCtr.data.submission.pmExternal.companyName}}</dd>
+							<dt>Direktion</dt>
+							<dd>{{submissionViewCtr.data.submission.project.department.directorate.name}}</dd>
+							<dt>Abteilung</dt>
+							<dd>{{submissionViewCtr.data.submission.project.department.name}}</dd>
+							<dt>Projekt/Kreditnummer</dt>
+							<dd>{{submissionViewCtr.data.submission.project.projectNumber}}</dd>
+							<dt>Baubewilligung</dt>
+							<dd translate>{{submissionViewCtr.data.submission.constructionPermit}}</dd>
+							<dt>Kreditbewilligung</dt>
+							<dd translate>{{submissionViewCtr.data.submission.loanApproval}}</dd>
+							<dt>Verfahrensabbruch</dt>
+							<dd ng-if="submissionViewCtr.currentStatus === submissionViewCtr.status.PROCEDURE_CANCELED">
+							{{submissionViewCtr.cancelledMessageStart}}
+							{{submissionViewCtr.availableDateOfCancelledSubmission | date:'dd.MM.yyyy'}}</dd>
+							<dd ng-if="submissionViewCtr.currentStatus !== submissionViewCtr.status.PROCEDURE_CANCELED"></dd>
+							<dt></dt>
+						</dl>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>

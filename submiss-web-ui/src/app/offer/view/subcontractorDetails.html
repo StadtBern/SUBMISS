@@ -1,0 +1,52 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row" ng-style="subcontractorDetailsCtrl.divRowStyle()">
+  <fieldset ng-disabled="subcontractorDetailsCtrl.disabledForm()"
+  			ng-style="subcontractorDetailsCtrl.fieldsetStyle()">
+	<div class="col-sm-12 ToolbarContainer">
+		<div class="btn-toolbar" role="toolbar"
+			ng-class="{'pull-right': subcontractorDetailsCtrl.submittent.subcontractors.length > 0}">
+			<button type="button"
+				ng-click="subcontractorDetailsCtrl.addCompany()"
+				ng-disabled="!subcontractorDetailsCtrl.secAddSubcontractor 
+					|| subcontractorDetailsCtrl.buttonDisabled()" 
+				class="btn btn-primary" data-toggle="modal"
+				data-target="#hinzufügen">
+				<span class="fa fa-plus" aria-hidden="true"></span> Subunternehmen hinzufügen
+			</button>
+		</div>
+	</div>
+	<div class="col-sm-12">
+		<ul class="list-group">
+			<li class="list-group-item"
+				ng-if="subcontractorDetailsCtrl.submittent.companyId.companyName"
+				ng-repeat="subcontractor in subcontractorDetailsCtrl.submittent.subcontractors | orderBy : 'companyName'">{{subcontractor.companyName}},
+				{{subcontractor.location}}
+				<a class="btn btn-primary pull-right"
+					ng-disabled="true"
+					ng-if="!subcontractorDetailsCtrl.secDeleteSubcontractor
+						|| subcontractorDetailsCtrl.buttonDisabled()"
+					title="Subunternehmen entfernen"> <span class="fa fa-trash"
+					aria-hidden="true"></span></a>
+				<a class="btn btn-primary pull-right"
+					ng-if="!(!subcontractorDetailsCtrl.secDeleteSubcontractor
+						|| subcontractorDetailsCtrl.buttonDisabled())"
+					ng-click="subcontractorDetailsCtrl.deleteSubcontractorModal(subcontractorDetailsCtrl.submittent.id, subcontractor.id)"	
+					title="Subunternehmen entfernen"> <span class="fa fa-trash"
+					aria-hidden="true"></span></a>
+			</li>
+		</ul>
+	</div>
+  </fieldset>
+</div>

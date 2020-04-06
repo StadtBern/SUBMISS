@@ -1,0 +1,18 @@
+version: "3"
+services:
+  mariadb:
+    image: mariadb:10.1.26
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    expose:
+      - 3306
+
+  submiss:
+    image: submiss/submiss
+    ports:
+      - "8181:8181"
+    depends_on:
+      - mariadb
+    entrypoint: ["dockerize", "-timeout", "180s",
+        "-wait", "tcp://mariadb:3306",
+        "/var/lib/submiss/bin/karaf"]

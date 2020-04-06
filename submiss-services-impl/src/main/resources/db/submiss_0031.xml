@@ -1,0 +1,20 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0031">
+    <sql>
+
+      ALTER TABLE `SUB_PROOF_HISTORY`
+      DROP FOREIGN KEY `FK_PROOF_HISTORY_COUNTRY`;
+
+      ALTER TABLE `SUB_PROOF_HISTORY`
+      ADD CONSTRAINT `FK_PROOF_HISTORY_COUNTRY`
+      FOREIGN KEY (`FK_COUNTRY`) REFERENCES `SUB_COUNTRY` (`ID`) ON DELETE CASCADE ON UPDATE
+      CASCADE;
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>

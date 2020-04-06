@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/${blueprint.ns}"
+  xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+  xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0">
+
+  <!-- Validation -->
+  <bean id="HibernateValidatorFactory"
+    class="com.eurodyn.qlack2.util.hibernate.validator.resolver.HibernateValidatorFactory"/>
+  <bean id="ValidationProvider" class="org.apache.cxf.validation.BeanValidationProvider">
+    <argument ref="HibernateValidatorFactory"/>
+  </bean>
+  <bean id="ValidationInInterceptor"
+    class="org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor">
+    <property name="provider" ref="ValidationProvider"/>
+  </bean>
+
+  <!-- SSO ************************************************************************************* -->
+  <!-- Caching implementation -->
+  <reference id="CacheService" interface="com.eurodyn.qlack2.fuse.caching.api.CacheService"
+    ext:proxy-method="classes"/>
+
+  <!-- Request/Response state manager -->
+  <bean id="stateManager" class="com.eurodyn.qlack2.util.sso.SPStateCache">
+    <property name="cacheService" ref="CacheService"/>
+    <property name="keyPrefix" value="submiss:sso:state:"/>
+  </bean>
+
+  <!-- A Callback handler to be used by CXF when it needs to obtain the password of the keystore -->
+  <bean id="callbackHandler" class="com.eurodyn.qlack2.util.sso.CBHandler" init-method="init">
+    <property name="signaturePropertiesFile" value="${sso.signaturePropertiesFile}"/>
+  </bean>
+
+  <!-- A token replay avoidance mechanism (based on caching previous tokens) for POST redirects -->
+  <bean id="tokenReplayCache" class="com.eurodyn.qlack2.util.sso.PluggableTokenReplayCache">
+    <property name="cacheService" ref="CacheService"/>
+    <property name="keyPrefix" value="submiss:sso:replay:"/>
+  </bean>
+
+  <!-- SSO POST-redirect filter for SP initiated authentication -->
+  <bean id="POSTSSOFilter" class="org.apache.cxf.rs.security.saml.sso.SamlPostBindingFilter">
+    <property name="idpServiceAddress" value="${sso.idpServiceAddress}"/>
+    <property name="assertionConsumerServiceAddress" value="${sso.assertionConsumerServiceAddress}"/>
+    <property name="stateProvider" ref="stateManager"/>
+    <property name="addEndpointAddressToContext" value="false"/>
+    <property name="addWebAppContext" value="false"/>
+    <property name="stateTimeToLive" value="36000000"/>
+    <property name="signRequest" value="true"/>
+    <property name="signatureUsername" value="${sso.signatureUsername}"/>
+    <property name="signaturePropertiesFile" value="${sso.signaturePropertiesFile}"/>
+    <property name="callbackHandler" ref="callbackHandler"/>
+    <property name="issuerId" value="${sso.serviceAddress}"/>
+  </bean>
+
+  <!-- Fake SSO filter and cookie intereceptor for testing -->
+  <bean id="FakeSSOFilter" class="com.eurodyn.qlack2.util.sso.FakeSSOFilter">
+    <property name="fakeAttributes">
+      <list>
+        <value>entryUUID</value> <value>subAdmSB</value>
+        <value>uid</value> <value>subAdmSB</value>
+        <value>sn</value> <value>FaBe</value>
+        <value>givenName</value> <value>Submiss Administrator</value>
+        <value>mail</value> <value>submiss@bern.ch</value>
+        <value>department</value> <value>FaBe</value>
+        <value>company</value> <value>FPI</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- The RACS responsible to parse the SAML Response from the Idp -->
+  <bean id="consumerService" class="com.eurodyn.qlack2.util.sso.RACS">
+    <property name="stateProvider" ref="stateManager"/>
+    <property name="enforceKnownIssuer" value="false"/>
+    <property name="signaturePropertiesFile" value="${sso.signaturePropertiesFile}"/>
+    <property name="enforceResponseSigned" value="true"/>
+    <property name="enforceAssertionsSigned" value="true"/>
+    <property name="callbackHandler" ref="callbackHandler"/>
+    <property name="replayCache" ref="tokenReplayCache"/>
+    <property name="assertionConsumerServiceAddress" value="${sso.assertionConsumerServiceAddress}"/>
+    <property name="stateTimeToLive" value="36000000"/>
+  </bean>
+
+  <!-- SSO metadata service allowing quick and easy registration of the SP to the IdP -->
+  <bean id="metadataBean" class="com.eurodyn.qlack2.util.sso.CustomMetadataService">
+    <!-- serviceAddress is translated to 'entityId' in the metadata, as well as the 'Issuer' in
+     requests -->
+    <property name="serviceAddress" value="${sso.serviceAddress}"/>
+    <property name="assertionConsumerServiceAddress" value="${sso.assertionConsumerServiceAddress}"/>
+    <property name="logoutServiceAddress" value="${sso.logoutServiceAddress}"/>
+    <property name="signatureUsername" value="${sso.signatureUsername}"/>
+    <property name="signaturePropertiesFile" value="${sso.signaturePropertiesFile}"/>
+    <property name="callbackHandler" ref="callbackHandler"/>
+    <property name="skipSignature" value="${sso.skipSignatureInMetadata}"/>
+  </bean>
+
+  <!-- Interceptors to make the attributes of the SAML available to the application -->
+  <bean id="WebSSOCookieInterceptor" class="com.eurodyn.qlack2.util.sso.interceptors.WebSSOCookieInterceptor">
+    <property name="stateProvider" ref="stateManager"/>
+  </bean>
+  <bean id="WebSSOCookieInterceptorCleanup" class="com.eurodyn.qlack2.util.sso.interceptors.WebSSOCookieInterceptorCleanup"/>
+  <bean id="DumpCookieInterceptor" class="com.eurodyn.qlack2.util.sso.interceptors.DumpCookiesInterceptor"/>
+
+  <!-- A separate JAXRS server in which no filtering takes place -->
+  <jaxrs:server id="SUBMISSSSOMetadataRestServer" address="/sso">
+    <jaxrs:serviceBeans>
+      <ref component-id="metadataBean"/>
+      <ref component-id="consumerService"/>
+    </jaxrs:serviceBeans>
+  </jaxrs:server>
+  <!-- /SSO ************************************************************************************ -->
+
+  <!-- Endpoints which do not require authentication -->
+  <jaxrs:server id="SUBMISSRestServerPublic" address="/public">
+
+    <jaxrs:serviceBeans>
+      <ref component-id="lexiconResource" />
+    </jaxrs:serviceBeans>
+    <jaxrs:providers>
+    
+    <!-- Support for CORS -->
+      <bean id="cors-filter"
+        class="org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter"/>
+        
+      <!-- Map generic mapping errors from JSON. This is to support validation errors
+           when e.g. a DTO's property is 'int' whereas the value submitted is text. -->
+      <bean id="JSONMappingExceptionMapper"
+        class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.JSONMappingExceptionMapper"/>
+      <bean id="InvalidFormatExceptionMapper"
+        class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.InvalidFormatExceptionMapper"/>
+      <!-- Map JSR-303 validation errors -->
+      <bean id="ValidationExceptionMapper"
+        class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.ValidationExceptionMapper"/>
+      <!-- Map security exceptions to provide an appropriate Response code -->
+      <bean id="SecurityExceptionMapper"
+        class="com.eurodyn.qlack2.util.rest.mapper.SecurityExceptionMapper"/>
+      <!-- Map generic exceptions to provide an appropriate Response code -->
+      <bean id="GenericExceptionMapper"
+        class="com.eurodyn.qlack2.util.rest.mapper.GenericExceptionMapper"/>
+
+      <!-- A configurable Jackson provider -->
+      <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
+        <property name="mapper">
+          <bean id="jacksonMapper" class="com.eurodyn.qlack2.util.rest.CustomisedJackson"/>
+        </property>
+      </bean>
+    </jaxrs:providers>
+  </jaxrs:server>
+
+  <!-- Endpoints requiring authentication -->
+  <jaxrs:server id="SUBMISSRestServerPrivate" address="/">
+    <jaxrs:serviceBeans>
+      <ref component-id="projectResource" />
+      <ref component-id="sDObjectResource" />
+      <ref component-id="sDProcedureResource" />
+      <ref component-id="sDDepartmentResource" />
+      <ref component-id="sDDirectorateResource" />
+      <ref component-id="sDWorkTypeResource" />
+      <ref component-id="sDCountryResource" />
+      <ref component-id="sDProcessTypeResource" />
+      <ref component-id="companyResource" />
+      <ref component-id="submissionResource" />
+      <ref component-id="sDNegotiatedProcedureResource" />      
+      <ref component-id="authResource"/>
+      <ref component-id="offerResource"/>
+      <ref component-id="userAdministrationResource"/>
+      <ref component-id="sDILOResource"/>
+      <ref component-id="sDTenantResource"/>
+      <ref component-id="sDGroupResource"/>
+      <ref component-id="sDVatResource"/>
+      <ref component-id="sDLogibResource"/>
+      <ref component-id="criterionResource"/>
+      <ref component-id="pingResource"/>
+	  <ref component-id="documentResource"/>
+      <ref component-id="commissionProcurementResource"/>
+      <ref component-id="fileUploadResource"/> 
+      <ref component-id="enumerationResource"/>
+      <ref component-id="submissionCancelResource"/>
+      <ref component-id="sDResource"/>
+      <ref component-id="reportResource"/>
+      <ref component-id="tasksResource"/>
+      <ref component-id="tenderStatusHistoryResource"/>
+	  <ref component-id="emailResource"/>
+      <ref component-id="submissAuditResource"/>
+      <ref component-id="procedureResource"/>
+      <ref component-id="sDProofResource"/>
+      <ref component-id="sDCancelReasonResource" />    
+   </jaxrs:serviceBeans>
+
+    <jaxrs:inInterceptors>
+      <ref component-id="WebSSOCookieInterceptor"/>
+      <ref component-id="ValidationInInterceptor"/>
+    </jaxrs:inInterceptors>
+    <jaxrs:outInterceptors>
+      <ref component-id="WebSSOCookieInterceptorCleanup"/>
+    </jaxrs:outInterceptors>
+
+    <jaxrs:providers>
+      <!-- SSO ********************************************************************************* -->
+      <!-- The SP initiated authentication redirect filter -->
+      <ref component-id="POSTSSOFilter"/>
+      <!--<ref component-id="FakeSSOFilter"/>-->
+      <!-- A provider rendering an auto-submitted form for POST-redirect filter only -->
+      <bean id="SAMLRequestInfoProvider"
+        class="com.eurodyn.qlack2.util.sso.SamlRequestInfoProvider"/>
+      <!-- /SSO ******************************************************************************** -->
+
+      <!-- Support for CORS -->
+      <bean id="cors-filter"
+        class="org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter"/>
+      <!-- Map generic mapping errors from JSON. This is to support validation errors
+           when e.g. a DTO's property is 'int' whereas the value submitted is text. -->
+      <bean id="JSONMappingExceptionMapper"
+        class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.JSONMappingExceptionMapper"/>
+      <bean id="InvalidFormatExceptionMapper"
+        class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.InvalidFormatExceptionMapper"/>
+      <!-- Map JSR-303 validation errors -->
+      <bean id="ValidationExceptionMapper"
+        class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.ValidationExceptionMapper"/>
+      <!-- Map security exceptions to provide an appropriate Response code -->
+      <bean id="SecurityExceptionMapper"
+        class="com.eurodyn.qlack2.util.rest.mapper.SecurityExceptionMapper"/>
+      <!-- Map generic exceptions to provide an appropriate Response code -->
+      <bean id="GenericExceptionMapper"
+        class="com.eurodyn.qlack2.util.rest.mapper.GenericExceptionMapper"/>
+
+      <!-- A configurable Jackson provider -->
+      <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
+        <property name="mapper">
+          <bean id="jacksonMapper" class="com.eurodyn.qlack2.util.rest.CustomisedJackson"/>
+        </property>
+      </bean>
+    </jaxrs:providers>
+  </jaxrs:server>
+
+</blueprint>

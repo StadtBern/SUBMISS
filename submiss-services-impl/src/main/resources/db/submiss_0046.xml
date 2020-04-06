@@ -1,0 +1,72 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0046">
+    <sql>
+
+      ALTER TABLE SUB_SIGNATURE
+      ADD CONSTRAINT `FK_SIGNATURE_DEPARTMENT`
+      FOREIGN
+      KEY (`FK_DEPARTMENT`) REFERENCES `SUB_DEPARTMENT` (`ID`) ON DELETE
+      Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE SUB_SIGNATURE
+      ADD CONSTRAINT
+      `FK_SIGNATURE_DIRECTORATE`
+      FOREIGN KEY (`FK_DIRECTORATE`) REFERENCES
+      `SUB_DIRECTORATE` (`ID`) ON DELETE
+      Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE
+      SUB_SIGNATURE_PROCESS_TYPE
+      ADD CONSTRAINT `FK_SIGNATURE_PROCESS_TYPE_SIGNATURE`
+      FOREIGN KEY (`FK_SIGNATURE`) REFERENCES `SUB_SIGNATURE` (`ID`) ON
+      DELETE
+      Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE
+      SUB_SIGNATURE_PROCESS_TYPE_ENTITLED
+      ADD CONSTRAINT
+      `FK_SIGNATURE_PROCESS_TYPE_ENTITLED_SIGNATURE_PROCESS_TYPE`
+      FOREIGN KEY
+      (`FK_SIGNATURE_PROCESS_TYPE`) REFERENCES
+      `SUB_SIGNATURE_PROCESS_TYPE`
+      (`ID`) ON DELETE Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE SUB_SIGNATURE_COPY
+      ADD CREATE_ON TIMESTAMP;
+
+      ALTER TABLE SUB_SIGNATURE_COPY
+      ADD FK_SIGNATURE_PROCESS_TYPE VARCHAR(36);
+
+      ALTER TABLE SUB_SIGNATURE_COPY
+      ADD FK_DEPARTMENT VARCHAR(36);
+
+      ALTER TABLE SUB_SIGNATURE_COPY
+      ADD CONSTRAINT
+      `FK_SIGNATURE_COPY_SIGNATURE_PROCESS_TYPE`
+      FOREIGN KEY (FK_SIGNATURE_PROCESS_TYPE) REFERENCES
+      `SUB_SIGNATURE_PROCESS_TYPE` (`ID`) ON DELETE
+      Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE SUB_SIGNATURE_COPY
+      ADD CONSTRAINT
+      `FK_SIGNATURE_COPY_DEPARTMENT`
+      FOREIGN KEY (FK_DEPARTMENT) REFERENCES
+      `SUB_DEPARTMENT` (`ID`) ON DELETE
+      Restrict ON UPDATE Restrict
+      ;
+
+    </sql>
+
+  </changeSet>
+
+</databaseChangeLog>

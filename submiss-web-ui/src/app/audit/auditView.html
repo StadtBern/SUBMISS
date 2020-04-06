@@ -1,0 +1,74 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <div>
+      <div>
+        <h2 class="page-title" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'">Projektteil Verlauf</h2>
+        <h2 class="page-title" ng-if="auditViewCtrl.levelIdOption ==='COMPANY_LEVEL'">Firmenteil Verlauf</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-box">
+    <div class="col-sm-12 ToolbarContainer" ng-if="auditViewCtrl.levelIdOption ==='COMPANY_LEVEL' && appCtrl.getLoggedUser().tenant.isMain">
+      <div class="btn-toolbar pull-right" role="toolbar">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false" ng-click="auditViewCtrl.generateCompaniesPerMandatDoc()">
+          <span class="fa fa-download" aria-hidden="true"></span> Erstellte Firmen pro Mandant
+        </button>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <div>
+        <div ng-table-pagination="auditViewCtrl.tableParams" id="fromStart" template-url="'app/layout/verlaufPager.html'"></div>
+        <div class="table-responsive" style="margin: 0; overflow: scroll; max-height: 500px;" scrolly="auditViewCtrl.loadMore(auditViewCtrl.tableParams)">
+          <table ng-table="auditViewCtrl.tableParams" class="table table-striped mailSendAction" ng-template-pagination="'app/layout/pager.html'"
+            show-filter="true" id="StartingPoint">
+            <tr ng-repeat="logs in $data | limitTo:auditViewCtrl.totalDisplay:auditViewCtrl.startingDisplay">
+              <td title="'Benutzer'" filter="{ 'userName' : 'text'}" sortable="'userName'">{{logs.userName}}</td>
+              <td title="'Beschreibung'" filter="{ 'shortDescription' : 'text'}" sortable="'shortDescription'"
+                translate translate-values="{ XY: '{{logs.resourceKey | translate}}'}">{{logs.shortDescription}}</td>
+              <td title="'Datum und Zeit'" filter="{ 'createdOn' : 'createdOnDateFilter' }" sortable="'createdOn'">{{logs.createdOn
+                | date:'dd.MM.yyyy HH:mm:ss'}}</td>
+              <td title="'Firma'" filter="{ 'companyName' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='COMPANY_LEVEL'"
+                sortable="'companyName'">{{logs.companyName}}</td>
+              <td title="'Objekt'" filter="{ 'objectName' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
+                sortable="'objectName'">{{logs.objectName}}</td>
+              <td title="'Projekt'" filter="{ 'projectName' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
+                sortable="'projectName'">{{logs.projectName}}</td>
+              <td title="'Arbeitsgattung'" filter="{ 'workType' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
+                sortable="'workType'">{{logs.workType}}</td>
+              <td title="'Begründung'" filter="{ 'reason' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
+                sortable="'reason'">{{logs.reason}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="ng-table/filters/createdOnDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="createdOn" type="text" name="createdOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="auditViewCtrl.openCreatedOnFilter.opened"
+					ng-model="params.filter()['createdOn']"
+						ng-click="auditViewCtrl.openCreatedOnFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="auditViewCtrl.openCreatedOnFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>

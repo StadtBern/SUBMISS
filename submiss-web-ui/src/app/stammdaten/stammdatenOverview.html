@@ -1,0 +1,42 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">Stammdatenarten</h2>
+	</div>
+</div>
+<div class="row">
+	<div class="card-box">
+		<div class="col-sm-12">
+			<div class="table-responsive">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Bezeichnung</th>
+							<th class="w80">Aktion</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="masterListType in stammdatenOverviewCtrl.masterListTypes">
+							<td>{{masterListType.name}}</td>
+							<td><a title="Anzeigen" class="btn action btn-primary" ng-click="stammdatenOverviewCtrl.navigateToTypeData(masterListType.name, masterListType.categoryType)">
+								<i class="fa fa-eye"></i></a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

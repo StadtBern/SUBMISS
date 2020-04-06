@@ -1,0 +1,34 @@
+package rules.submiss.showTemplates;
+
+import java.util.LinkedList;
+import java.util.List;
+global java.util.List templateCodes;
+global String userRole;
+
+rule "RU004"
+	when
+	$isRole_admin: Boolean( ) from userRole.equals("Admin")
+	$isRole_PL: Boolean( ) from userRole.equals("PL")
+	$isRole_Dir: Boolean( ) from userRole.equals("Dir")
+	$isRole_SB: Boolean( ) from userRole.equals("SB")
+	if ($isRole_admin ) do[FT01]
+	if ($isRole_admin) do[FT02]
+	if ($isRole_admin || $isRole_PL || $isRole_Dir || $isRole_SB) do[FT03]
+	if ($isRole_admin ) do[PT03]
+	if ($isRole_admin ) do[PT04]
+then 
+	//templates without restrictions should be added here 
+	then[FT01]//Nachweisbrief (FT01), Erstellte Firmen pro Mandant (FT06), Firmenblatt erweitert(FT04)
+		templateCodes.add("FT01");
+		templateCodes.add("FT04");
+		templateCodes.add("FT06");
+	then[FT02]//Zertifikat (FT02)
+		templateCodes.add("FT02");
+	then[FT03]//Firmenblatt einfach FT04, Liste Arbeitsgattung(FT05)
+		templateCodes.add("FT03");
+		templateCodes.add("FT05");
+	then[PT03] //Nachweisbrief PT
+		templateCodes.add("PT03");
+	then[PT04] //Nachweisbrief Sub
+		templateCodes.add("PT04");
+end

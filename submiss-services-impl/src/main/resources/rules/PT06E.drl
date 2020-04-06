@@ -1,0 +1,41 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.SubmissionCancelDTO;
+import java.util.HashMap;
+import java.util.Date;
+import java.sql.Timestamp;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "PT06E"
+	when
+		$submission: SubmissionDTO(submissionCancel.empty == true)
+		$company: CompanyDTO()
+	if ($company.getAddress2() != null) do[address2]
+	else do[address2Empty]	
+	if ($submission.getLegalHearingTerminate().get(0) != null && $submission.getLegalHearingTerminate().get(0).getLastModifiedOn()) != null) do[exclusionDeadline]
+	else do[exclusionDeadlineEmpty]
+	if ($submission.getDescription() != null) do[description]
+	else do[descriptionEmpty]
+	then	
+		placeholderMappings.put("f_company_name", $company.getCompanyName());
+		placeholderMappings.put("f_company_location", $company.getLocation());
+		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());
+		placeholderMappings.put("s_cancel_available_date", SubmissConverter.convertToSwissDate(new Timestamp(new Date().getTime())));
+		placeholderMappings.put("s_cancel_reason", $submission.getLegalHearingTerminate().get(0).getReason());
+	then [address2]
+		placeholderMappings.put("f_company_address", $company.getAddress1() + "\\n" + $company.getAddress2());
+	then [address2Empty]	
+		placeholderMappings.put("f_company_address", $company.getAddress1());
+	then [exclusionDeadline]	
+		placeholderMappings.put("r_date", SubmissConverter.convertToSwissDate($submission.getLegalHearingTerminate().get(0).getLastModifiedOn()));
+	then [exclusionDeadlineEmpty]	
+		placeholderMappings.put("r_date", "");
+	then [descriptionEmpty]	
+		placeholderMappings.put("read_values", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2());
+	then [description]	
+		placeholderMappings.put("read_values", $submission.getProject().getObjectName().getValue1() + ", " + $submission.getProject().getProjectName() + ", " + $submission.getWorkType().getValue1() + " " + $submission.getWorkType().getValue2() + ", " + $submission.getDescription());					
+	end

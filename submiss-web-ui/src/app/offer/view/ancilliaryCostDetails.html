@@ -1,0 +1,107 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<form name="ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm"
+	id="offerAncilliaryCostDetailsForm"
+	shows-validation-errors>
+	 <fieldset data-ng-disabled="ancilliaryCostDetailsCtrl.disabledForm(appCtrl.getLoggedUser().userGroup.name)">
+					<div class="col-sm-12">
+			          <div class="alert alert-danger" ng-if="ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.ancilliaryAmountGross.$invalid
+			          ||ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.offerDate.$invalid" role="alert">
+			       		 <field-error form-element-name="ancilliaryAmountGross" translate name="error"></field-error>
+			          	 <field-error form-element-name="offerDate" translate name="error"></field-error>
+			          	 <ul ng-if="ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.ancilliaryAmountGross.$invalid"><li translate>
+	       		 		 invalid_number_error_message
+	       				</li></ul> 
+			          </div>
+			          <input name="ancilliaryAmountGross" ng-hide="true" data-ng-model="fd"></input>
+			          <input name="offerDate" ng-hide="true" data-ng-model="fd"></input>
+			        
+			        </div>
+	<div class="col-sm-12">
+		<div class="row">
+			<div class="col-sm-12 col-md-6">
+				<div class="form-group"
+				ng-class="{'has-error': ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.ancilliaryAmountGross.$invalid}">
+					<label for="nk">NK brutto</label> <input class="form-control" df-currency
+						ng-change="ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.ancilliaryAmountGross.$invalid =
+								ancilliaryCostDetailsCtrl.ignoreInvalidNumber(ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.ancilliaryAmountGross)"
+										id="ancilliaryAmountGross" name="ancilliaryAmountGross"
+										data-ng-model="ancilliaryCostDetailsCtrl.offer.ancilliaryAmountGross"
+										placeholder="" type="text">
+				</div>
+				<div class="form-group">
+					<div class="row">
+						<div class="col-sm-12">
+							<label class="checkbox-inline"> <input
+												type="checkbox" id="isAncilliaryAmountPercentage"
+												data-ng-model="ancilliaryCostDetailsCtrl.offer.isAncilliaryAmountPercentage"
+												>
+								NK brutto in %
+							</label> <span class="label label-default" ng-if="ancilliaryCostDetailsCtrl.offer.isAncilliaryAmountPercentage">{{offerListViewCtrl.customRoundNumber(ancilliaryCostDetailsCtrl.amountCHF)}} CHF</span>
+							<span class="label label-default" ng-if="!ancilliaryCostDetailsCtrl.offer.isAncilliaryAmountPercentage">0.00 CHF</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-12 col-md-6">
+				<div class="form-group">
+					<label for="nettobetragin">NK netto inkl. MWST </label> <input
+						class="form-control" disabled id="nettobetragin"
+						ng-value="offerListViewCtrl.customRoundNumber(ancilliaryCostDetailsCtrl.calculateNetInkl(ancilliaryCostDetailsCtrl.offer.isCorrected,ancilliaryCostDetailsCtrl.offer.grossAmountCorrected,ancilliaryCostDetailsCtrl.offer.grossAmount,ancilliaryCostDetailsCtrl.offer.ancilliaryAmountGross,ancilliaryCostDetailsCtrl.offer.isAncilliaryAmountPercentage,ancilliaryCostDetailsCtrl.offer.ancilliaryAmountVat))"
+						 placeholder="" type="text">
+				</div>
+				<div class="form-group">
+									<label for="isVatPercentage">MWST in %</label>
+									<div class="row">
+										<div class="col-sm-8">
+
+											<ui-select name="ancilliaryAmountVat"
+												ng-model="ancilliaryCostDetailsCtrl.offer.ancilliaryAmountVat"
+												data-ng-disabled="!ancilliaryCostDetailsCtrl.secAncilliaryCostDetailsEdit || ((ancilliaryCostDetailsCtrl.offer.submittent.submissionId.process != 'SELECTIVE' 
+          && ancilliaryCostDetailsCtrl.offer.submittent.submissionId.process != null)  && (!ancilliaryCostDetailsCtrl.offer.submittent.submissionId.secondDeadline 
+          || !ancilliaryCostDetailsCtrl.offer.submittent.submissionId.offerOpeningDate || !ancilliaryCostDetailsCtrl.offer.submittent.submissionId.secondLoggedBy))
+          || (ancilliaryCostDetailsCtrl.offer.submittent.submissionId.process == 'SELECTIVE' 
+          && (!ancilliaryCostDetailsCtrl.offer.submittent.submissionId.firstDeadline 
+          || !ancilliaryCostDetailsCtrl.offer.submittent.submissionId.applicationOpeningDate || !ancilliaryCostDetailsCtrl.offer.submittent.submissionId.firstLoggedBy))
+          || ancilliaryCostDetailsCtrl.currentStatus == ancilliaryCostDetailsCtrl.status.SUBMITTENTLIST_CHECK ||
+          (appCtrl.getLoggedUser().userGroup.name == offerListViewCtrl.group.PL && ancilliaryCostDetailsCtrl.offer.isDefaultOffer)
+          || ancilliaryCostDetailsCtrl.currentStatus == ancilliaryCostDetailsCtrl.status.SUBMITTENTLIST_CHECK || ancilliaryCostDetailsCtrl.fieldSetDisabled"
+												theme="select2"> <ui-select-match
+												allow-clear="true"> <span>
+												{{$select.selected | number:2 }} </span> </ui-select-match> <ui-select-choices
+												repeat="vatValue in ancilliaryCostDetailsCtrl.vatValues | filter: $select.search track by vatValue">
+											<span ng-bind="vatValue"></span> </ui-select-choices> </ui-select>
+										</div>
+										<div class="col-sm-4">
+											<span class="label label-default">{{offerListViewCtrl.customRoundNumber(ancilliaryCostDetailsCtrl.calculateCHFMWSTValueCalc(ancilliaryCostDetailsCtrl.offer.isCorrected,ancilliaryCostDetailsCtrl.offer.grossAmountCorrected,ancilliaryCostDetailsCtrl.offer.grossAmount,ancilliaryCostDetailsCtrl.offer.ancilliaryAmountGross,ancilliaryCostDetailsCtrl.offer.isAncilliaryAmountPercentage,ancilliaryCostDetailsCtrl.offer.ancilliaryAmountVat))}} CHF</span>
+										</div>
+									</div>
+								</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-12 col-md-12 btn-bar">
+		<button type="button" class="btn btn-primary"
+			ng-click="ancilliaryCostDetailsCtrl.save()">Speichern</button>
+		<button type="button" class="btn btn-default"
+		ng-click="ancilliaryCostDetailsCtrl.resetPage(ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.$dirty)">Abbrechen</button>
+		<div ng-if="ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.$dirty">
+					<input ng-hide="true" type="checkbox"
+						data-ng-model="ancilliaryCostDetailsCtrl.dirtyFlag"
+						ng-init="ancilliaryCostDetailsCtrl.dirtyFlag=true"
+						ng-value = "appCtrl.setDirtyFlag(true)">
+				</div>
+	</div>
+	</fieldset>
+</form>

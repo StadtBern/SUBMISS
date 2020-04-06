@@ -1,0 +1,2000 @@
+{
+	"groups": [
+		{
+			"name": "Admin",
+			"description": "Administration"
+		},
+		{
+			"name": "Dir",
+			"description": "Direktion"
+		},
+		{
+			"name": "PL",
+			"description": "Projektleitung"
+		},
+		{
+			"name": "SB",
+			"description": "Sachbearbeitung"
+		}
+	],
+	"operations": [
+		{
+			"name":"AdminNotesView",
+			"description":"BemerkungenFaBe"
+		},
+		{
+			"name":"AncilliaryCostDetailsEdit",
+			"description":"Nebenkostenbearbeiten"
+		},
+		{
+			"name":"CompanyDelete",
+			"description":"Firmalöschen"
+		},
+		{
+			"name":"CompanyOffersView",
+			"description":"Eingereichteofferte"
+		},
+		{
+			"name":"CompanyProofsView",
+			"description":"Nachweisseanzeigen"
+		},
+		{
+			"name":"CompanyProofsView",
+			"description":"Nachweisseanzeigen"
+		},
+		{
+			"name":"CompanyUpdate",
+			"description":"Firmabearbeiten"
+		},
+		{
+			"name":"CompanyView",
+			"description":"Firmaanzeigen"
+		},
+		{
+			"name":"DLWettbewerbFieldTenderCreate",
+			"description":"Submissioneröffnen-DLWettbewerbField"
+		},
+		{
+			"name":"FormalAuditExecute",
+			"description":"FormellePrüfungdurchführen"
+		},
+		{
+			"name":"GeKoEintragFieldTenderCreate",
+			"description":"Submissioneröffnen-GeKoEintragField"
+		},
+		{
+			"name":"InvitedTender.AddCriterion",
+			"description":"Kriteriumhinzufügen"
+		},
+		{
+			"name":"InvitedTender.AddJointVenture",
+			"description":"ARGEhinzufügen"
+		},
+		{
+			"name":"InvitedTender.AddSubcriterion",
+			"description":"Unterkriteriumhinzufügen"
+		},
+		{
+			"name":"InvitedTender.DeleteCriterion",
+			"description":"Kriteriumlöschen"
+		},
+		{
+			"name":"InvitedTender.DeleteJointVenture",
+			"description":"ARGEentfernen"
+		},
+		{
+			"name":"InvitedTender.DeleteSubcriterion",
+			"description":"Unterkriteriumlöschen"
+		},
+		{
+			"name":"InvitedTender.FormalAuditEdit",
+			"description":"FormellePrüfung/Eignungsprüfungbearbeiten"
+		},
+		{
+			"name":"InvitedTender.FormalAuditView",
+			"description":"FormellePrüfung/Eignungsprüfunganzeigen"
+		},
+		{
+			"name":"InvitedTender.OfferOpeningClose",
+			"description":"Offertöffnungabschliessen"
+		},
+		{
+			"name":"InvitedTender.OfferOpeningRestart",
+			"description":"Offertöffnungwiederaufnehmen"
+		},
+		{
+			"name":"OpenTender.OfferOpeningClose",
+			"description":"Offertöffnungabschliessen"
+		},
+		{
+			"name":"OpenTender.OfferOpeningRestart",
+			"description":"Offertöffnungwiederaufnehmen"
+		},
+		{
+			"name":"SelectiveTender.OfferOpeningClose",
+			"description":"Offertöffnungabschliessen"
+		},
+		{
+			"name":"SelectiveTender.OfferOpeningRestart",
+			"description":"Offertöffnungwiederaufnehmen"
+		},	
+		{
+			"name":"NegotiatedTender.OfferOpeningClose",
+			"description":"Offertöffnungabschliessen"
+		},
+		{
+			"name":"NegotiatedTender.OfferOpeningRestart",
+			"description":"Offertöffnungwiederaufnehmen"
+		},
+		{
+			"name":"NegotiatedCompetitionTender.OfferOpeningClose",
+			"description":"Offertöffnungabschliessen"
+		},
+		{
+			"name":"NegotiatedCompetitionTender.OfferOpeningRestart",
+			"description":"Offertöffnungwiederaufnehmen"
+		},	
+		{
+			"name":"InvitedTender.UpdateCriterion",
+			"description":"Kriteriumbearbeiten"
+		},
+		{
+			"name":"InvitedTender.UpdateSubcriterion",
+			"description":"Unterkriteriumbearbeiten"
+		},
+		{
+			"name":"MainTenantAdminNotes",
+			"description":"BemerkungFabe"
+		},
+		{
+			"name":"NegotiatedCompetitionTender.AddJointVenture",
+			"description":"ARGEhinzufügen"
+		},
+		{
+			"name":"NegotiatedCompetitionTender.Awarded",
+			"description":"Zuschlagerteilen"
+		},
+		{
+			"name":"NegotiatedCompetitionTender.AwardRemoved",
+			"description":"Zuschlagserteilungwiederaufnehmen"
+		},
+		{
+			"name":"NegotiatedCompetitionTender.DeleteJointVenture",
+			"description":"ARGEentfernen"
+		},
+		{
+			"name":"NegotiatedTender.AddJointVenture",
+			"description":"ARGEhinzufügen"
+		},
+		{
+			"name":"NegotiatedTender.Awarded",
+			"description":"Zuschlagerteilen"
+		},
+		{
+			"name":"NegotiatedTender.AwardRemoved",
+			"description":"Zuschlagserteilungwiederaufnehmen"
+		},
+		{
+			"name":"NegotiatedTender.DeleteJointVenture",
+			"description":"ARGEentfernen"
+		},
+		{
+			"name":"NotesView",
+			"description":"AllgemrineBemerkungenanzeigen"
+		},
+		{
+			"name":"OfferDelete",
+			"description":"Offertelöschen"
+		},
+		{
+			"name":"OfferDetailsEdit",
+			"description":"Offertendetailsbearbeiten"
+		},
+		{
+			"name":"OpenTender.AddCriterion",
+			"description":"Kriteriumhinzufügen"
+		},
+		{
+			"name":"OpenTender.AddJointVenture",
+			"description":"ARGEhinzufügen"
+		},
+		{
+			"name":"OpenTender.AddSubcriterion",
+			"description":"Unterkriteriumhinzufügen"
+		},
+		{
+			"name":"OpenTender.Awarded",
+			"description":"Zuschlagerteilen"
+		},
+		{
+			"name":"OpenTender.AwardRemoved",
+			"description":"Zuschlagserteilungwiederaufnehmen"
+		},
+		{
+			"name":"OpenTender.DeleteCriterion",
+			"description":"Kriteriumlöschen"
+		},
+		{
+			"name":"OpenTender.DeleteJointVenture",
+			"description":"ARGEentfernen"
+		},
+		{
+			"name":"OpenTender.DeleteSubcriterion",
+			"description":"Unterkriteriumlöschen"
+		},
+		{
+			"name":"OpenTender.FormalAuditEdit",
+			"description":"FormellePrüfung/Eignungsprüfungbearbeiten"
+		},
+		{
+			"name":"OpenTender.FormalAuditView",
+			"description":"FormellePrüfung/Eignungsprüfunganzeigen"
+		},
+		{
+			"name":"OpenTender.UpdateCriterion",
+			"description":"Kriteriumbearbeiten"
+		},
+		{
+			"name":"OpenTender.UpdateSubcriterion",
+			"description":"Unterkriteriumbearbeiten"
+		},
+		{
+			"name":"OperationCostDetailsEdit",
+			"description":"Betriebskostenbearbeiten"
+		},
+		{
+			"name":"ProjectEdit",
+			"description":"Projektbearbeiten"
+		},
+		{
+			"name":"ProofVerificationRequest",
+			"description":"Nachweisaufforderunggewünscht"
+		},
+		{
+			"name":"SelectiveTender.AddCriterion",
+			"description":"Kriteriumhinzufügen"
+		},
+		{
+			"name":"SelectiveTender.AddJointVenture",
+			"description":"ARGEhinzufügen"
+		},
+		{
+			"name":"SelectiveTender.AddSubcriterion",
+			"description":"Unterkriteriumhinzufügen"
+		},
+		{
+			"name":"SelectiveTender.Awarded",
+			"description":"Zuschlagerteilen"
+		},
+		{
+			"name":"SelectiveTender.AwardRemoved",
+			"description":"Zuschlagserteilungwiederaufnehmen"
+		},
+		{
+			"name":"SelectiveTender.DeleteCriterion",
+			"description":"Kriteriumlöschen"
+		},
+		{
+			"name":"SelectiveTender.DeleteJointVenture",
+			"description":"ARGEentfernen"
+		},
+		{
+			"name":"SelectiveTender.DeleteSubcriterion",
+			"description":"Unterkriteriumlöschen"
+		},
+		{
+			"name":"SelectiveTender.FormalAuditEdit",
+			"description":"FormellePrüfung/Eignungsprüfungbearbeiten"
+		},
+		{
+			"name":"SelectiveTender.FormalAuditView",
+			"description":"FormellePrüfung/Eignungsprüfunganzeigen"
+		},
+		{
+			"name":"SelectiveTender.UpdateCriterion",
+			"description":"Kriteriumbearbeiten"
+		},
+		{
+			"name":"SelectiveTender.UpdateSubcriterion",
+			"description":"Unterkriteriumbearbeiten"
+		},
+		{
+			"name":"TenderAudit",
+			"description":"Submissionprüfen"
+		},
+		{
+			"name":"TenderChecked",
+			"description":"Submissiongeprüft"
+		},
+		{
+			"name":"TenderCreate",
+			"description":"Submissioneröffnen"
+		},
+		{
+			"name":"TenderDelete",
+			"description":"Submissionlöschen"
+		},
+		{
+			"name": "TenderEdit",
+			"description": "Submission bearbeiten"
+		},
+		{
+			"name": "TendererAdd",
+			"description": "Submittent hinzufügen"
+		},
+		{
+			"name": "TendererRemove",
+			"description": "Aktuellen Submittenten entfernen"
+		},
+		{
+			"name": "TenderView",
+			"description": "Submission anzeigen"
+		},
+		{
+			"name": "ResourceProjectView",
+			"description": "Projekt anzeigen per Mandant, Direktion, oder Abteilung"
+		},
+		{
+			"name": "ResourceUserView",
+			"description": "Benutzer anzeigen per Mandant"
+		},
+		{
+			"name": "ResourceRoleTypeUser",
+			"description": "Benutzerverwaltung von bestimmten Rolen"
+		},
+		{
+			"name": "ResourceTenant",
+			"description": "Operationen per Mandant"
+		},
+		{
+			"name": "ResourceSubmissionList",
+			"description": "Submissionen die ein Group in Eingereichte Offerte Liste sehen kann"
+		},
+		{
+			"name": "ResourceSubmissionLocked",
+			"description": "Submissionen die ein Group nicht sehen kann, weil sie gesperrt sind"
+		},
+		{
+			"name": "ResourceSubmissionUnlocked",
+			"description": "Submissionen die ein Group sehen kann, weil ihre Sperrung manuell aufgehoben wurde"
+		},
+		{
+			"name": "UserOperationUserView",
+			"description": "Benutzer anzeigen"
+		},
+		{
+			"name": "ProjectSearch",
+			"description": "Projekt suchen"
+		},
+		{
+			"name": "CompanyCreate",
+			"description": "Firma Erstellen"
+		},
+		{
+			"name": "CompanySearch",
+			"description": "Firma Suche"
+		},
+		{
+			"name": "InvitedTender.AddSubcontractor",
+			"description": "Subunternehmen hinzufügen"
+		},
+		{
+			"name": "InvitedTender.DeleteSubcontractor",
+			"description": "Subunternehmen entfernen"
+		},
+		{
+			"name": "OpenTender.AddSubcontractor",
+			"description": "Subunternehmen hinzufügen"
+		},
+		{
+			"name": "OpenTender.DeleteSubcontractor",
+			"description": "Subunternehmen entfernen"
+		},
+		{
+			"name": "SelectiveTender.AddSubcontractor",
+			"description": "Subunternehmen hinzufügen"
+		},
+		{
+			"name": "SelectiveTender.DeleteSubcontractor",
+			"description": "Subunternehmen entfernen"
+		},
+		{
+			"name": "NegotiatedTender.AddSubcontractor",
+			"description": "Subunternehmen hinzufügen"
+		},
+		{
+			"name": "NegotiatedTender.DeleteSubcontractor",
+			"description": "Subunternehmen entfernen"
+		},
+		{
+			"name": "NegotiatedCompetitionTender.AddSubcontractor",
+			"description": "Subunternehmen hinzufügen"
+		},
+		{
+			"name": "NegotiatedCompetitionTender.DeleteSubcontractor",
+			"description": "Subunternehmen entfernen"
+		},
+		{
+			"name": "ProjectCreate",
+			"description": "Projekt eröffnen"
+		},
+		{
+			"name": "ProjectDelete",
+			"description": "Projekt löschen"
+		},
+		{
+			"name": "TenderListView",
+			"description": "Submissionen anzeigen"
+		},
+		{
+			"name": "MainTenantBemerkungFabeEdit",
+			"description": "Bemerkung Fabe bearbeiten"
+		},
+		{
+			"name": "MainTenantBemerkungFabeView",
+			"description": "Bemerkung Fabe anzeigen"
+		},
+		{
+			"name": "MainTenantBeschaffungswesenEdit",
+			"description": "Rücksprache mit der Fachstelle Beschaffungswesen bearbeiten"
+		},
+		{
+			"name": "MainTenantBeschaffungswesenView",
+			"description": "Rücksprache mit der Fachstelle Beschaffungswesen anzeigen"
+		},
+		{
+			"name": "ExtendedAccess",
+			"description": "Kanton Bern kann in Menu nur Firma und Administration anzeigen"
+		},
+		{
+			"name": "Pending",
+			"description": "Pendenzen Menu"
+		},
+		{
+			"name": "Project",
+			"description": "Projekt Menu"
+		},
+		{
+			"name": "Audit",
+			"description": "Verlauf"
+		},
+		{
+			"name": "SelectiveTender.Eingabetermin2FieldTenderEdit",
+			"description": "Eingabetermin 2 Feld im selektiven Verfahren bearbeiten"
+		},
+		{
+			"name": "FormalAuditClose",
+			"description": "Formelle Prüfung abschliessen"
+		},
+		{
+			"name": "ExaminationClose",
+			"description": "Eignungsprüfung abschliessen"
+		},
+		{
+			"name": "InvitedTender.AddOperatingCostAwardCriterion",
+			"description": "Betriebskosten Kriterium hinzufügen"
+		},
+		{
+			"name": "OpenTender.AddOperatingCostAwardCriterion",
+			"description": "Betriebskosten Kriterium hinzufügen"
+		},
+		{
+			"name": "SelectiveTender.AddOperatingCostAwardCriterion",
+			"description": "Betriebskosten Kriterium hinzufügen"
+		},
+		{
+			"name": "OpenTender.AwardEvaluationEdit",
+			"description": "Zuschlagsbewertung bearbeiten"
+		},
+		{
+			"name": "InvitedTender.AwardEvaluationEdit",
+			"description": "Zuschlagsbewertung bearbeiten"
+		},
+		{
+			"name": "SelectiveTender.AwardEvaluationEdit",
+			"description": "Zuschlagsbewertung bearbeiten"
+		},
+		{
+			"name":"SuitabilityExecute",
+			"description":"Eignungsprüfung durchführen"
+		},
+		{
+			"name": "InvitedTender.AwardEvaluationClose",
+			"description": "Zuschlagsbewertung abschliessen"
+		},
+		{
+			"name": "OpenTender.AwardEvaluationClose",
+			"description": "Zuschlagsbewertung abschliessen"
+		},
+		{
+			"name": "SelectiveTender.AwardEvaluationClose",
+			"description": "Zuschlagsbewertung abschliessen"
+		},
+		{
+			"name": "TenderMove",
+			"description": "Submission verschieben"
+		},
+		{
+			"name": "SentEmail",
+			"description": "E-Mail senden"
+		},
+		{
+			"name": "AwardEvaluationReopen",
+			"description": "Zuschlagsbewertung wiederaufnehmen"
+		},
+		{
+			"name": "ExaminationReopen",
+			"description": "Eignungsprüfung wiederaufnehmen"
+		},
+		{
+			"name": "SelectiveTender.FormalAuditReopen",
+			"description": "Formelle Prüfung wiederaufnehmen"
+		},
+		{
+			"name": "NegotiatedCompetitionTender.FormalAuditReopen",
+			"description": "Formelle Prüfung wiederaufnehmen"
+		},
+		{
+			"name": "NegotiatedTender.FormalAuditReopen",
+			"description": "Formelle Prüfung wiederaufnehmen"
+		},
+		{
+			"name": "CommissionProcurementProposalView",
+			"description": "BeKo Antrag anzeigen"
+		},
+		{
+			"name": "CommissionProcurementProposalEdit",
+			"description": "BeKo Antrag bearbeiten"
+		},
+		{
+			"name": "GekoSubmissionFieldView",
+			"description": "Feld 'Kein GeKo-Eintrag' anzeigen"
+		},
+		{
+			"name": "LockedSubmissionFieldView",
+			"description": "Feld 'Submission für DST gesperrt' anzeigen"
+		},
+		{
+			"name": "ProjectDocumentView",
+			"description": "Tab Dokumente anzeigen in Projekt Teil"
+		},
+		{
+			"name": "ProjectDocumentUpload",
+			"description": "Dokument hochladen im Projektteil"
+		},
+		{
+			"name": "ProjectDocumentDownload",
+			"description": "Dokument herunterladen im Projektteil"
+		},
+		{
+			"name": "ProjectDocumentPrint",
+			"description": "Dokument drücken im Projektteil"
+		},
+		{
+			"name": "ProjectDocumentDelete",
+			"description": "Dokument löschen im Projektteil"
+		},
+		{
+			"name": "ProjectDocumentEditProperties",
+			"description": "Dokumenteigenschaften bearbeiten im Projektteil"
+		},	
+		{
+			"name": "CompanyDocumentUpload",
+			"description": "Dokument hochladen im Firmenteil"
+		},
+		{
+			"name": "CompanyDocumentDownload",
+			"description": "Dokument herunterladen im Firmenteil"
+		},	
+		{
+			"name": "CompanyDocumentPrint",
+			"description": "Dokument drücken im Firmenteil"
+		},
+		{
+			"name": "CompanyDocumentDelete",
+			"description": "Dokument löschen im Firmenteil"
+		},
+		{
+			"name": "CompanyDocumentEditProperties",
+			"description": "Dokumenteigenschaften bearbeiten im Firmenteil"
+		},
+		{
+			"name": "CommissionProcurementProposalClose",
+			"description": "BeKo Antrag abschliessen"
+		},
+		{
+			"name": "CommissionProcurementProposalReopen",
+			"description": "BeKo Antrag wiederaufnehmen"
+		},
+		{
+			"name": "CommissionProcurementDecisionView",
+			"description": "BeKo Beschluss anzeigen"
+		},
+		{
+			"name": "CommissionProcurementDecisionEdit",
+			"description": "BeKo Beschluss bearbeiten"
+		},
+		{
+			"name": "CommissionProcurementDecisionClose",
+			"description": "BeKo Beschluss abschliessen"
+		},
+		{
+			"name": "CommissionProcurementDecisionReopen",
+			"description": "BeKo Beschluss wiederaufnehmen"
+		},
+		{
+			"name": "ProjectMultipleDocumentsUpload",
+			"description": "Mehrere dokumente hochladen im Projektteil"
+		},
+		{
+			"name": "CompanyMultipleDocumentsUpload",
+			"description": "Mehrere dokumente hochladen im Firmenteil"
+		},
+		{
+			"name": "ProjectMultipleDocumentsDownload",
+			"description": "Mehrere dokumente herunterladen im Projektteil"
+		},
+		{
+			"name": "CompanyMultipleDocumentsDownload",
+			"description": "Mehrere dokumente herunterladen im Firmenteil"
+		},
+		{
+			"name": "SelectiveTender.TenderCancelView",
+			"description": "Verfahrensabbruch anzeigen"
+		},
+		{
+			"name": "OpenTender.TenderCancelView",
+			"description": "Verfahrensabbruch anzeigen"
+		},
+		{
+			"name": "InvitedTender.TenderCancelView",
+			"description": "Verfahrensabbruch anzeigen"
+		},
+		{
+			"name": "TenderCancelEdit",
+			"description": "Verfahrensabbruch bearbeiten"
+		},
+		{
+			"name": "TenderCancel",
+			"description": "Verfahren abbrechen"
+		},
+		{
+			"name": "SelectiveTender.ApplicantsView",
+			"description": "Bewerberliste/Bewerbungsübersicht anzeigen"
+		},
+		{
+			"name": "SelectiveTender.ApplicantsAdd",
+			"description": "Bewerber hinzufügen"
+		},
+		{
+			"name": "SelectiveTender.ApplicantDelete",
+			"description": "Bewerber entfernen"
+		},
+		{
+			"name": "TenderClose",
+			"description": "Verfahren manuell abschliessen"
+		},
+		{
+			"name": "TenderReopen",
+			"description": "Verfahren wiederaufnehmen"
+		},
+		{
+			"name": "GenerateReport",
+			"description": "Auswertung erstellen"
+		},
+		{
+			"name": "SelectiveTender.ApplicationView",
+			"description": "Bewerbung sichten"
+		},
+		{
+			"name": "SelectiveTender.ApplicationEdit",
+			"description": "Bewerbungsdetails bearbeiten"
+		},
+		{
+			"name": "LegalView",
+			"description": "Rechtliches Gehör bearbeiten"
+		},
+		{
+			"name": "SelectiveTender.ApplicationDelete",
+			"description": "Bewerbung entfernen"
+		},
+		{
+			"name": "SelectiveTender.ApplicationOpeningClose",
+			"description": "Bewerbungsöffnung abschliessen"
+		},
+		{
+			"name": "InvitedTender.AwardInfoEdit",
+			"description": "Verfügungsinformationen bearbeiten"
+		},
+		{
+			"name": "OpenTender.AwardInfoEdit",
+			"description": "Verfügungsinformationen bearbeiten"
+		},
+		{
+			"name": "SelectiveTender.AwardInfoEdit",
+			"description": "Verfügungsinformationen bearbeiten"
+		},
+		{
+			"name": "NegotiatedTender.AwardInfoEdit",
+			"description": "Verfügungsinformationen bearbeiten"
+		},
+		{
+			"name": "NegotiatedCompetitionTender.AwardInfoEdit",
+			"description": "Verfügungsinformationen bearbeiten"
+		},
+		{
+			"name": "AwardInfoView",
+			"description": "Verfügungsinformationen anzeigen"
+		},
+		{
+			"name": "SelectiveTender.ApplicationOpeningReopen",
+			"description": "Bewerbungsöffnung wiederaufnehmen"
+		},
+		{
+			"name": "SelectiveTender.AwardInfoFirstLevelEdit",
+			"description": "Verfügungsinformationen 1. Stufe bearbeiten"
+		},
+		{
+			"name": "SelectiveTender.AwardInfoFirstLevelView",
+			"description": "Verfügungsinformationen 1. Stufe anzeigen"
+		},
+		{
+			"name": "GenerateOperationsReport",
+			"description": "GeKo-Auswertung erstellen"
+		},
+		{
+			"name": "GenerateUsersExportReport",
+			"description": "Export der Benutzerübersicht"
+		}
+	],
+	"groupHasOperations": [
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyView"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectSearch"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectSearch"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectSearch"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OfferDelete"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OfferDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.OfferOpeningRestart"
+		},
+				{
+			"groupName": "Admin",
+			"operationName": "OpenTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.OfferOpeningRestart"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.OfferOpeningRestart"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.OfferOpeningRestart"
+		},
+				{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.OfferOpeningRestart"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.OfferOpeningRestart"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.OfferOpeningClose"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.OfferOpeningRestart"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderAudit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderChecked"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TendererAdd"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TendererRemove"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TendererAdd"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TendererRemove"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "TenderView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.Awarded"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.AwardRemoved"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.Awarded"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.AwardRemoved"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.Awarded"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.AwardRemoved"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.Awarded"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.AwardRemoved"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "FormalAuditExecute"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "FormalAuditExecute"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.FormalAuditEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.FormalAuditEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.FormalAuditEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.FormalAuditEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.FormalAuditEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.FormalAuditEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.FormalAuditView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.FormalAuditView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "SelectiveTender.FormalAuditView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.FormalAuditView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.FormalAuditView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "OpenTender.FormalAuditView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.FormalAuditView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.FormalAuditView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "InvitedTender.FormalAuditView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AddCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AddCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AddCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.UpdateCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.UpdateCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.UpdateCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.DeleteCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.DeleteCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.DeleteCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AddSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AddSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AddSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.UpdateSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.UpdateSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.UpdateSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.DeleteSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.DeleteSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.DeleteSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AddCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.AddCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.AddCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.UpdateCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.UpdateCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.UpdateCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.DeleteCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.DeleteCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.DeleteCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AddSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.AddSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.AddSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.UpdateSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.UpdateSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.UpdateSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.DeleteSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.DeleteSubcriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.DeleteSubcriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "DLWettbewerbFieldTenderCreate"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "GeKoEintragFieldTenderCreate"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderDelete"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AddJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AddJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AddJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.AddJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.AddJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.AddJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.AddJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AddJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.AddJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.AddJointVenture"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.DeleteJointVenture"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OfferDetailsEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OfferDetailsEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "AncilliaryCostDetailsEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "AncilliaryCostDetailsEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OperationCostDetailsEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OperationCostDetailsEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProofVerificationRequest"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "ProofVerificationRequest"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProofVerificationRequest"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "AdminNotesView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NotesView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyUpdate"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyOffersView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyOffersView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyOffersView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyProofsView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyCreate"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanySearch"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanySearch"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanySearch"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanySearch"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AddSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AddSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AddSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.AddSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.AddSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.AddSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.AddSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AddSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.AddSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.AddSubcontractor"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.DeleteSubcontractor"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectCreate"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectCreate"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDelete"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderListView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "TenderListView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderListView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderCreate"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderCreate"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "Pending"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "Project"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "Project"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "Project"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "Audit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.Eingabetermin2FieldTenderEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "FormalAuditClose"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "FormalAuditClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ExaminationClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AddOperatingCostAwardCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AddOperatingCostAwardCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AddOperatingCostAwardCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.AddOperatingCostAwardCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.AddOperatingCostAwardCriterion"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AddOperatingCostAwardCriterion"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AwardEvaluationEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AwardEvaluationEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AwardEvaluationEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "InvitedTender.AwardEvaluationEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "OpenTender.AwardEvaluationEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AwardEvaluationEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SuitabilityExecute"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SuitabilityExecute"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AwardEvaluationClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AwardEvaluationClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AwardEvaluationClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderMove"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SentEmail"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SentEmail"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "AwardEvaluationReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ExaminationReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.FormalAuditReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.FormalAuditReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.FormalAuditReopen"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.FormalAuditReopen"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.FormalAuditReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementProposalView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementProposalEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "GekoSubmissionFieldView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "LockedSubmissionFieldView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDocumentView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDocumentView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectDocumentView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDocumentUpload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDocumentUpload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDocumentDownload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectDocumentDownload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDocumentDownload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDocumentPrint"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectDocumentPrint"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDocumentPrint"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDocumentDelete"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDocumentDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectDocumentEditProperties"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectDocumentEditProperties"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectDocumentEditProperties"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyDocumentUpload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyDocumentUpload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyDocumentUpload"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyDocumentUpload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyDocumentDownload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyDocumentDownload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyDocumentDownload"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyDocumentDownload"
+		},	
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyDocumentPrint"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyDocumentPrint"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyDocumentPrint"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyDocumentPrint"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyDocumentDelete"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyDocumentDelete"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyDocumentDelete"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyDocumentDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyDocumentEditProperties"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyDocumentEditProperties"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyDocumentEditProperties"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyDocumentEditProperties"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.Awarded"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AwardRemoved"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.Awarded"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AwardRemoved"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementProposalClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementProposalReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementDecisionView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementDecisionEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementDecisionClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CommissionProcurementDecisionReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyMultipleDocumentsUpload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "ProjectMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "ProjectMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "ProjectMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "CompanyMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "CompanyMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "CompanyMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "SB",
+			"operationName": "CompanyMultipleDocumentsDownload"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.TenderCancelView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.TenderCancelView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.TenderCancelView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderCancelEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderCancel"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicantsView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.ApplicantsView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "SelectiveTender.ApplicantsView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicantsAdd"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicantDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderClose"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "TenderReopen"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "TenderReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "GenerateReport"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "GenerateReport"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "GenerateReport"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicationView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.ApplicationView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "SelectiveTender.ApplicationView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicationEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "LegalView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicationDelete"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicationOpeningClose"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "InvitedTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "OpenTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "NegotiatedCompetitionTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "NegotiatedCompetitionTender.AwardInfoEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "AwardInfoView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "AwardInfoView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "AwardInfoView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.ApplicationOpeningReopen"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AwardInfoFirstLevelEdit"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "SelectiveTender.AwardInfoFirstLevelView"
+		},
+		{
+			"groupName": "Dir",
+			"operationName": "SelectiveTender.AwardInfoFirstLevelView"
+		},
+		{
+			"groupName": "PL",
+			"operationName": "SelectiveTender.AwardInfoFirstLevelView"
+		},
+		{
+			"groupName": "Admin",
+			"operationName": "GenerateOperationsReport"
+		}
+	]
+}

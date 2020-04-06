@@ -1,0 +1,47 @@
+package rules.submiss.showTemplates;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import java.util.LinkedList;
+import java.util.List;
+import ch.bern.submiss.services.api.constants.TenderStatus;
+import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.util.LookupValues;
+global java.util.List templateCodes;
+global java.util.List submissStatuses;
+global String userRole;
+
+rule "RU008"
+when
+	$submission: SubmissionDTO( )
+	$isRole_admin: Boolean( ) from userRole.equals("Admin")
+	$isRole_PL: Boolean( ) from userRole.equals("PL")
+	$isRole_Dir: Boolean( ) from userRole.equals("Dir")
+	$isRole_SB: Boolean( ) from userRole.equals("SB")
+	$currentStatus: TenderStatus( ) from $submission.getCurrentState()
+	$indexOfCurrentState: Number( ) from submissStatuses.indexOf($currentStatus)
+	$isVerfahren_SELECTIVE: Boolean( ) from $submission.getProcess().getValue().equals("SelectiveTender")
+	$isVerfahren_OPEN: Boolean( ) from $submission.getProcess().getValue().equals("OpenTender")
+	$isVerfahren_INVITATION: Boolean( ) from $submission.getProcess().getValue().equals("InvitedTender")
+	$isVerfahren_NEGOTIATED: Boolean( ) from $submission.getProcess().getValue().equals("NegotiatedTender")
+	$isVerfahren_NEGOTIATED_WITH_COMPETITION: Boolean( ) from $submission.getProcess().getValue().equals("NegotiatedCompetitionTender")
+	if ($isVerfahren_INVITATION && $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80"))) do[INVITATION]
+	if ($isVerfahren_SELECTIVE && ($indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("70"))
+	|| $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))) do[SELECTIVE]
+	if ($isVerfahren_NEGOTIATED && $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80"))) do[NEGOTIATED]
+	if ($isVerfahren_NEGOTIATED_WITH_COMPETITION && $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80"))) do[NEGOTIATED_WITH_COMPETITION]
+	if ($isRole_PL && ($isVerfahren_INVITATION || $isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80"))) do[CHECK_SUBMITTENT]	
+	then 
+		//templates without restrictions should be added here
+		templateCodes.add("ET11");
+	then [INVITATION]
+		templateCodes.add("ET01");
+		templateCodes.add("ET05");
+	then [SELECTIVE]
+		templateCodes.add("ET05");
+		templateCodes.add("ET04");
+	then [NEGOTIATED]
+		templateCodes.add("ET03");
+	then [NEGOTIATED_WITH_COMPETITION]
+		templateCodes.add("ET02");
+	then [CHECK_SUBMITTENT]
+		templateCodes.add("ET07");						
+end

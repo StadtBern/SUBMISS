@@ -1,0 +1,225 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">Firmensuche</h2>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <form data-ng-submit="companySearchCtr.search()">
+      <div class="col-sm-12 col-md-4">
+        <div class="form-group">
+          <label>Firmenname</label> <input id="companyName" type="text"
+            ng-model="companySearchCtr.searchForm.companyName"
+            uib-typeahead="company for company in companySearchCtr.getCompanyNames($viewValue)" typeahead-min-length="3"
+            typeahead-wait-ms="500" autocomplete="off" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>PLZ</label> <input id="postCode" type="text" ng-model="companySearchCtr.searchForm.postCode"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Ort</label> <input id="location" type="text" ng-model="companySearchCtr.searchForm.location"
+            uib-typeahead="location for location in companySearchCtr.getCompanyLocations($viewValue)"
+            typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="country">Land</label> <select ui-select2="{allowClear: true}" id="country"
+            data-ng-model="companySearchCtr.searchForm.countryId" data-placeholder="Keine Auswahl">
+            <option></option>
+            <option ng-repeat="country in companySearchCtr.countries " value="{{country.id}}">{{country.countryName}}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="form-group">
+          <label>Telefon</label> <input id="companyTel" type="text" ng-model="companySearchCtr.searchForm.companyTel"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="companyWorkTypes">Arbeitsgattung</label> <select ui-select2="{allowClear: true}" multiple
+            id="companyWorkTypes" data-ng-model="companySearchCtr.searchForm.workTypes"
+            data-placeholder="Mehrfachauswahl möglich"
+            ng-options="workType.value1 + ' ' + workType.value2 for workType in companySearchCtr.workTypes">
+            <option></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="logibStatus">Logib</label>
+          <ui-select name="logibStatus" id="logibStatus" ng-model="companySearchCtr.searchForm.logibStatus"
+            theme="select2">
+            <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.title"></span> </ui-select-match>
+            <ui-select-choices repeat="item.id as item in (companySearchCtr.logibStatuses| filter: $select.search)">
+              <span ng-bind="item.title"></ui-select-choices>
+          </ui-select>
+        </div>
+
+        <div class="form-group">
+          <label for="ilo">ILO</label> <select ui-select2="{allowClear: true}" id="ilo"
+            data-ng-model="companySearchCtr.searchForm.ilo" data-placeholder="Keine Auswahl" name="ilo"
+            ng-options="ilo.value1 for ilo in companySearchCtr.ilo">
+            <option></option>
+          </select>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12">
+              <label class="checkbox-inline"> <input type="checkbox" data-ng-model="companySearchCtr.searchForm.tlp"
+                  id="tlp">
+                Partnerfirma (TLP)
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Bemerkungen</label>
+          <textarea id="notes" rows="3" type="text" ng-model="companySearchCtr.searchForm.notes"
+            uib-typeahead="companyTel for companyTel in companySearchCtr.getCompanyNotes($viewValue)"
+            typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" class="form-control"></textarea>
+        </div>
+        <div class="form-group noLabel">
+          <div class="row">
+            <div class="col-sm-12">
+              <label class="checkbox-inline"> <input type="checkbox"
+                  data-ng-model="companySearchCtr.searchForm.archived" id="archived" value=""> Firma archiviert
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="proofStatus">Nachweisstatus</label>
+          <ui-select name="proofStatus" id="proofStatus" ng-model="companySearchCtr.searchForm.proofStatus"
+            theme="select2">
+            <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.title"></span> </ui-select-match>
+            <ui-select-choices repeat="item.id as item in (companySearchCtr.proofStatuses| filter: $select.search)">
+              <span ng-bind="item.title"></ui-select-choices>
+          </ui-select>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12 btn-bar">
+        <button type="submit" class="btn btn-primary">Suchen</button>
+        <button type="button" class="btn btn-default"
+          data-ng-click="companySearchCtr.reloadPage()">Zurücksetzen</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">Suchresultate</h2>
+  </div>
+</div>
+<style>
+</style>
+
+<div class="row" id="results">
+  <div class="card-box">
+    <form data-ng-submit="companySearchCtr.addSelected()">
+
+      <div class="col-sm-12 ToolbarContainer">
+        <div class="btn-toolbar  pull-right">
+          <button type="submit" class="btn btn-primary" data-ng-disabled="!companySearchCtr.secSentEmail"
+            data-target=".email">
+            <span class="fa fa-envelope" aria-hidden="true"></span> E-Mail
+            versenden
+          </button>
+
+          <div class="btn-toolbar pull-left" style="padding-left:4px" role="toolbar" uib-dropdown>
+            <button id="" type="button" class="btn btn-primary" uib-dropdown-toggle>
+              <em class="fa fa-download" aria-hidden="true"></em> Liste
+              erstellen <em class="fa fa-caret-down" aria-hidden="true"></em>
+            </button>
+            <ul class="dropdown-menu">
+              <li ng-repeat="template in companySearchCtr.templates"
+                ng-click="companySearchCtr.generateDocument(template);$parent.open =!$parent.open"><a href=""><span
+                    ng-class="companySearchCtr.applyClass(template)" aria-hidden="true"></span> {{template.value1}}</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-12">
+        <div ng-table-pagination="companySearchCtr.tableParams" id="formStart" template-url="'app/layout/pager.html'">
+        </div>
+        <div class="table-responsive" style="margin: 0; overflow: scroll; max-height: 500px;"
+          scrolly="companySearchCtr.scrollyRun(companySearchCtr.tableParams)">
+          <table ng-table="companySearchCtr.tableParams" class="table table-striped companies" show-filter="true"
+            id="StartingPoint">
+            <tr ng-repeat="company in $data" ng-click="company.selected = !company.selected" id="company{{$index}}">
+              <td title="' &#xf0e0;'"><input type="checkbox" ng-model="company.selected"
+                  ng-disabled="companySearchCtr.loggedInUser.userGroup.name == 'SB' || companySearchCtr.loggedInUser.userGroup.name == 'Dir'"
+                  ng-click="company.selected = !company.selected" /></td>
+              <td title="'Firmenname'" filter="{'companyName' : 'text'}" sortable="'companyName'"><a
+                  ng-click="companySearchCtr.navigateToCompany(company.id)">{{company.companyName}}</a></td>
+              </td>
+              <td title="'Telefon'" filter="{'companyTel' : 'text'}" sortable="'companyTel'">{{company.companyTel}}</td>
+              <td title="'PLZ Ort'" filter="{'postCode' : 'text'}" sortable="'postCode'">{{company.postCode}}
+                {{company.location}}</td>
+              <td title="'Arbeitsgattung'" filter="{'workTypes' : 'text'}" sortable="'workTypes'"><span
+                  ng-repeat="workType in company.workTypes | orderBy:'value1'">{{workType.value1}}
+                  {{workType.value2}}</br>
+                </span></td>
+              <td title="'Lehr.f'" filter="{'apprenticeFactor' : 'text'}" sortable="'apprenticeFactor'">{{company.apprenticeFactor |
+								number : 3}}</td>
+              <td title="'F50+'" filter="{'fiftyPlusFactor' : 'text'}" sortable="'fiftyPlusFactor'">{{company.fiftyPlusFactor |
+                number : 3}}</td>
+              <td title="'Logib'" filter="{'logib' : 'select'}" filter-data="companySearchCtr.logibStatuses"
+                sortable="'logIb'">{{companySearchCtr.checkLogib(company.logIb
+								, company.logIbARGIB)}}</td>
+              <td class="w100" title="'Zertifiziert am'" sortable="'certificateDate'"
+                filter="{'certificateDate': 'dateFilter'}">{{company.certificateDate
+								| date:'dd.MM.yyyy'}}</td>
+              <td title="'Nachweisstatus'" filter="{'proofStatus' : 'select'}"
+                filter-data="companySearchCtr.proofStatusesFilter" sortable="'proofStatus'">
+                <div ng-show="company.proofStatus =='1'">
+                  <img src="../../../assets/images/greenFlag.png" alt="grüne flage" /> Alle Nachweise vorhanden
+                </div>
+                <div ng-show="company.proofStatus =='2'">
+                  <img src="../../../assets/images/redFlag.png" alt="rotte flage" />
+                  Nachweise nicht mehr aktuell, nicht vollständig, oder nicht
+                  vorhanden
+                </div>
+                <div ng-show="company.proofStatus =='3'">
+                  <img src="../../../assets/images/flagBan.png" alt="verbotenne flage" /> Rücksprache mit der Fachstelle
+                  Beschaffungswesen
+                </div>
+                <div ng-show="company.proofStatus =='4'">
+                  <img src="../../../assets/images/ban.png" alt="verbotenne flage 2" /> Rücksprache mit KAIO ZKB / FaBe
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </form>
+    <script type="text/ng-template" id="ng-table/filters/dateFilter.html">
+      <div class="input-group">
+				<input class="form-control datepicker" id="certificateDate" type="text" name="certificateDate" uib-datepicker-popup="dd.MM.yyyy"
+						is-open="companySearchCtr.openCertifiedOnDateFilter.opened"
+						ng-model="params.filter()['certificateDate']"
+						ng-click="companySearchCtr.openCertifiedOnDateFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="companySearchCtr.openCertifiedOnDateFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+			</div>
+   		</script>
+  </div>
+</div>

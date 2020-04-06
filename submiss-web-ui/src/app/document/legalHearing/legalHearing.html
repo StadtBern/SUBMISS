@@ -1,0 +1,83 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div role="tabpanel" class="tab-pane card-box">
+  <div role="tabpanel" class="tab-pane" id="recht">
+    <div class="row">
+      <div class="col-sm-12">
+        <form name="legalHearingCtrl.legalTerminationForm" data-ng-submit="legalHearingCtrl.save()"
+          shows-validation-errors>
+          <div class="col-sm-12">
+            <div class="alert alert-danger" ng-if="legalHearingCtrl.legalTerminationForm.$invalid && legalHearingCtrl.errorFieldsVisible"
+              role="alert">
+              <field-error form-element-name="errorField" translate name="error"></field-error>
+              <field-error form-element-name="reasonError" translate name="error"></field-error>
+              <field-error form-element-name="deadlineErrorField" translate name="error"></field-error>
+            </div>
+          </div>
+          <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="reasonError" ng-hide="true" data-ng-model="fd"></input>
+          <input name="deadlineErrorField" ng-hide="true" data-ng-model="fd"></input>
+          <div class="form-group">
+            <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" checked="checked" id="inlineRadio1"
+                value="submissionTermination" ui-sref="documentView.legalHearing({submissionId: documentViewCtrl.submission.id})">
+              ÖBV Abbruch
+            </label> <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="submittentsExcluded"
+                ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">
+              ÖBV Ausschluss
+            </label>
+          </div>
+          <fieldset ng-disabled="legalHearingCtrl.isFormDisabled()">
+            <div id="completion1" class="desc">
+              <div class="form-group">
+                <label for="bewerbung">Frist Anhörung<span class="mandatory">*</span></label>
+                <div class="input-group">
+                  <input class="form-control datepicker" id="hearingDeadline" type="text" name="hearingDeadline"
+                    uib-datepicker-popup="dd.MM.yyyy" is-open="legalHearingCtrl.hearingDeadlineOpened" data-ng-model="legalHearingCtrl.submissionTerminate.deadline"
+                    ng-click="legalHearingCtrl.openHearingDeadline()"> <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" data-ng-click="legalHearingCtrl.openHearingDeadline()">
+                      <span class="fa fa-calendar"></span>
+                    </button>
+                  </span>
+                </div>
+              </div>
+              <label for="OBV">Art. 29 ÖBV Abs.<span class="mandatory">*</span></label>
+              <div class="form-group" ng-repeat="terminationReason in legalHearingCtrl.terminationReasons track by terminationReason.id">
+                <label class="checkbox-inline"> <input type="checkbox" id="terminationReason" data-ng-model="terminationReason.selected"
+                    name="terminationReason">{{terminationReason.value1}}
+                  {{terminationReason.value2}}
+                </label>
+              </div>
+              <div class="form-group" ng-class="{'has-error': legalHearingCtrl.legalTerminationForm.reason.$invalid}">
+                <label for="Begrundung">Begründung<span class="mandatory">*</span></label>
+                <textarea class="form-control" data-ng-model="legalHearingCtrl.submissionTerminate.reason" id="reason"
+                  name="reason" rows="3">
+                </textarea>
+              </div>
+            </div>
+            <div class=" btn-bar">
+              <div class="form-group">
+                <button type="submit" class="btn btn-primary">Speichern</button>
+                <button type="button" ng-click="legalHearingCtrl.cancelButton(legalHearingCtrl.legalTerminationForm.$dirty)"
+                  class="btn btn-default">Abbrechen</button>
+              </div>
+            </div>
+            <div ng-if="legalHearingCtrl.legalTerminationForm.$dirty">
+              <input ng-hide="true" type="checkbox" data-ng-model="legalHearingCtrl.dirtyFlag" ng-init="legalHearingCtrl.dirtyFlag = true">
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

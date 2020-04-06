@@ -1,0 +1,72 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.9.2.0011">
+    <createView replaceIfExists="true" viewName="VW_AUDIT_COMPANY">
+      SELECT
+      a.id AS id,
+      CONCAT(uafirst.data, ' ', ualast.data) AS userName,
+      a.short_description as shortDescription,
+      ld.value as translation,
+      from_unixtime(floor(a.created_on / 1000)) as createdOn,
+      CASE
+      WHEN
+      (select
+      company.id
+      from
+      SUB_COMPANY as company
+      WHERE
+      company.id = a.reference_id) is null
+      THEN
+      SUBSTRING_INDEX(a.opt2, '[#]', 1)
+      ELSE c.COMPANY_NAME
+      END AS companyName,
+      CASE
+      WHEN
+      (select
+      company.id
+      from
+      SUB_COMPANY as company
+      WHERE
+      company.id = a.reference_id) is null
+      THEN
+      SUBSTRING_INDEX(SUBSTRING_INDEX(a.opt2, '[#]', 2), '[#]' , -1)
+      ELSE c.PROOF_STATUS_FABE
+      END AS proofStatusFabe,
+      SUBSTRING_INDEX(a.opt2, '[#]', - 1) as resource_key,
+      CASE WHEN a.short_description = 'PROOF_REQUEST'
+      THEN (SELECT aaa_user_attributes.data FROM aaa_user
+      inner join aaa_user_attributes
+      on aaa_user_attributes.user_id = aaa_user.id
+      where aaa_user_attributes.name = 'TENANT' and aaa_user.id = a.prin_session_id)
+      ELSE NULL
+      END AS tenant_id
+      FROM
+      al_audit a
+      LEFT JOIN
+      SUB_COMPANY c ON c.id = a.reference_id
+      INNER JOIN
+      aaa_user u ON u.id = a.prin_session_id
+      INNER JOIN
+      aaa_user_attributes uafirst ON uafirst.user_id = u.id
+      INNER JOIN
+      aaa_user_attributes ualast ON ualast.user_id = u.id
+      INNER JOIN
+      lex_key lk ON a.short_description = lk.name
+      INNER JOIN
+      lex_data ld ON lk.id=ld.key_id
+      WHERE
+      opt3 = '1'
+      and level_id IN (SELECT
+      id
+      FROM
+      al_audit_level
+      WHERE
+      NAME = 'COMPANY_LEVEL')
+      and ualast.name = 'LASTNAME'
+      and uafirst.name = 'FIRSTNAME';
+    </createView>
+  </changeSet>
+</databaseChangeLog>

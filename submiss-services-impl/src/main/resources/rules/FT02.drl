@@ -1,0 +1,34 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.DocumentDTO;
+import java.util.HashMap;
+import java.util.Date;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "FT02"
+	when
+		$company: CompanyDTO()
+		$document: DocumentDTO()
+	if ($document.getDeptAmounts() != null) do[deptAmount]
+	else do[deptAmountEmpty]
+	if($document.getExpirationDate() != null) do[expirationDate]
+	else do[expirationDateEmpty]
+	then
+		placeholderMappings.put("f_company_name", $company.getCompanyName());
+		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());
+		placeholderMappings.put("current_date", SubmissConverter.convertToSwissDate(new Date()));
+	then [deptAmount]
+		placeholderMappings.put("f_dept_amounts", "von " + SubmissConverter.convertToCHFCurrencyWithoutSymbol($document.getDeptAmounts()));
+		placeholderMappings.put("f_dept_amounts_fr", "de " + SubmissConverter.convertToCHFCurrencyWithoutSymbol($document.getDeptAmounts()));
+	then [expirationDate]
+		placeholderMappings.put("f_expiration_date", SubmissConverter.convertToSwissDate($document.getExpirationDate()));
+	then [deptAmountEmpty]	
+		placeholderMappings.put("f_dept_amounts", "von ...");
+		placeholderMappings.put("f_dept_amounts_fr", "de ...");
+	then [expirationDateEmpty]	
+		placeholderMappings.put("f_expiration_date", "");	
+	end

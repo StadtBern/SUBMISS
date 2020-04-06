@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>ch.bern.submiss</groupId>
+    <artifactId>submiss</artifactId>
+    <version>1.3.0</version>
+    <relativePath>../</relativePath>
+  </parent>
+
+  <artifactId>submiss-dist</artifactId>
+  <packaging>karaf-assembly</packaging>
+
+  <description>The Submiss project distribution package</description>
+
+  <properties>
+    <sonar.skip>true</sonar.skip>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.karaf.tooling</groupId>
+        <artifactId>karaf-maven-plugin</artifactId>
+        <version>${karaf.maven.plugin.version}</version>
+        <extensions>true</extensions>
+
+        <configuration>
+          <startupFeatures>
+            <feature>eventadmin</feature>
+            <feature>scr</feature>
+          </startupFeatures>
+          <installedFeatures>
+            <feature>wrapper</feature>
+          </installedFeatures>
+          <bootFeatures>
+            <feature>standard</feature>
+            <feature>config</feature>
+            <feature>management</feature>
+            <feature>ssh</feature>
+            <feature>package</feature>
+            <feature>kar</feature>
+            <feature>jndi</feature>
+            <feature>submiss</feature>
+          </bootFeatures>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.karaf.features</groupId>
+      <artifactId>framework</artifactId>
+      <version>${karaf.version}</version>
+      <type>kar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.karaf.features</groupId>
+      <artifactId>standard</artifactId>
+      <version>${karaf.version}</version>
+      <classifier>features</classifier>
+      <type>xml</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.karaf.features</groupId>
+      <artifactId>enterprise</artifactId>
+      <version>${karaf.version}</version>
+      <classifier>features</classifier>
+      <type>xml</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.bern.submiss</groupId>
+      <artifactId>submiss-karaf-features</artifactId>
+      <version>${project.version}</version>
+      <type>xml</type>
+      <classifier>features</classifier>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+</project>

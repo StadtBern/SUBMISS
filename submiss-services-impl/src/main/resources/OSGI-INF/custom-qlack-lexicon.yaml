@@ -1,0 +1,337 @@
+languages:
+  - name: German (CH)
+    locale: de-ch
+
+groups:
+  - name: default
+    description: DEFAULT 
+
+translations:
+  - group: default
+    locale: de-ch
+    keys: 
+      - EXISTING: vorhanden
+      - PENDING: ausstehend
+      - NON_EXISTING: nicht relevant
+      - 'true': Ja
+      - 'false': Nein
+      - 'null': ' '
+      -  IGNORED_PROOF: "Nachweis-Status bei der Suche nicht berücksichtigen"
+      -  ALL_PROOF: Alle Nachweise vorhanden
+      -  NOT_ACTIVE: Nachweise nicht mehr aktuell, nicht vollständig, oder nicht vorhanden
+      -  WITH_FABE: Rücksprache mit der Fachstelle Beschaffungswesen 
+      -  NOT_ACTIVE_NOT_ACTUAL: Nachweise nicht mehr aktuell, nicht vollständig, oder nicht vorhanden 
+      -  WITH_KAIO: Rücksprache mit KAIO ZKB / FaBe
+      - project_mandatory_error_message: "Achtung: Sie müssen alle Pflichtfelder ausfüllen, um das Geschäftsobjekt eröffnen zu können."
+      - project_max_size_projectName_error_message: "Projektname: Der Wert darf maximal 100 Zeichen lang sein."
+      - project_max_size_pmDepartmentName_message: "Projektleitung der Abt.: Der Wert darf maximal 100 Zeichen lang sein."
+        forceUpdate: true
+      - project_min_size_pmDepartmentName_message: 'Achtung: Bitte geben Sie mindestens 3 Zeichen in das Feld Projektleitung der Abt. an, um weiter fortfahren zu können.'
+        forceUpdate: true
+      - project_mandatory_for_submission_create_message: 'Die Felder "Baubewilligung", "Kreditbewilligung" und "GATT/WTO" müssen befüllt werden, bevor Sie eine Submission eröffnen können.'
+      - project_max_size_projectNumber_error_message: "Projekt/Kredit-Nummer: Der Wert darf maximal 20 Zeichen lang sein."
+      - unique_name_error_message: Der Projektname existiert bereits für den ausgewählten Objektnamen. Bitte ändern Sie den Projektnamen oder den Objektnamen.
+      - SELECTIVE: Selektiv
+      - OPEN: Offen
+      - INVITATION: Einladungsverfahren
+        forceUpdate: true
+      - NEGOTIATED_PROCEDURE: Freihändig
+      - NEGOTIATED_PROCEDURE_WITH_COMPETITION: Freihändig mit Konkurrenz
+      - submission_mandatory_for_selective_process: 'Die Felder "Eingabetermin 1", "Bewerbungsöffnung" und "protokolliert durch" müssen befüllt werden, bevor Sie mit der Eingabe der Bewerbung starten können.'
+      - submission_mandatory_for_other_processes: 'Die Felder "Eingabetermin 2", "Offertöffnung" und "protokolliert durch" müssen befüllt werden, bevor Sie mit der Eingabe der Offerte starten können.'
+      - submission_max_size_notes_message: "Submissionsbemerkung: Der Wert darf maximal 100 Zeichen lang sein."
+      - unique_telephone_error_message: Es besteht bereits eine Firma mit der eingegebenen Telefonnummer.
+      - mandatory_error_message: Sie müssen alle Pflichtfelder ausfüllen, um weiter fortfahren zu können.
+      - offer_exists: Eine Offerte ist angehängt, bitte löschen Sie zuerst die Offerte.
+      - subcontractor_exists: ARGE / Subunternehmen ist/sind angehängt, bitte entfernen Sie zuerst die ARGE / Subunternehmen.
+      - offer_max_size_notes_message: "Offertinformationen: Der Wert darf maximal 500 Zeichen lang sein."
+      - offer_max_size_price_increase_message: "Teuerung: Der Wert darf maximal 50 Zeichen lang sein."
+      - offer_invalid_discount_2_days_message: "Skonto Tage: Bitte geben Sie eine Zahl ein."
+      - email_format_error_message: "Die von Ihnen eingegebene E-Mail Adresse ist nicht gültig."
+        forceUpdate: true
+      - company_Admin_Notes_error_message: 'Bitte geben Sie einen Wert in das Feld "Bemerkung FaBe" ein.'
+        forceUpdate: true
+      - company_Notes_error_message: 'Bitte geben Sie einen Wert in das Feld "Allgemeine Bemerkungen" ein.'
+        forceUpdate: true
+      - company_max_size_companyNotes_error_message: 'Achtung: Bitte geben Sie mindestens 10 und maximal 1000 Zeichen in das Feld "Allgemeine Bemerkungen" an, um weiter fortfahren zu können.'
+      - company_max_size_companyNoteAdmin_error_message: 'Achtung: Bitte geben Sie mindestens 10 und maximal 1000 Zeichen in das Feld "Bemerkung FaBe" an, um weiter fortfahren zu können.'
+      - company_max_size_companyTel_error_message: "Telefonnummer: Der Wert darf maximal 20 Zeichen lang sein."
+      - company_fax_length_error_message: "Faxnummer: Der Wert darf maximal 20 Zeichen lang sein."
+        forceUpdate: true
+      - company_companyTel_number_error_message: Bitte geben Sie eine korrekte Telefonnummer ein.
+      - company_fax_number_error_message: Bitte geben Sie eine korrekte Faxnummer ein.
+        forceUpdate: true
+      - errors.field.type.mapping: Bitte geben Sie eine Zahl ein.
+      - offer_max_size_operatingCostNotes: "Kosteninformation: Der Wert darf maximal 100 Zeichen lang sein."
+      - project_maximum_error_message: "Projektbemerkung: Der Wert darf maximal 100 Zeichen lang sein."
+      - user_mandatory_error_message: Bitte vervollständigen Sie Ihre Daten im IAM, bevor Sie mit der Registrierung in Submiss fortfahren.
+      - company_add_only_one: Es dürfen nicht mehr als eine Firma resp. ein Submittent hinzugefügt werden. Bitte wählen Sie nur eine Firma aus.
+      - company_add_only_one_submittent: Ein Submittent kann dem freihändigen Verfahren nicht mehr hinzugefügt werden. Bitte entfernen Sie zuerst den eingebundenen Submittenten, bevor Sie mit der Aktion fortfahren.
+      - user_fields_error_message: "Achtung: Sie müssen alle Pflichtfelder ausfüllen, um das Geschäftsobjekt eröffnen zu können."
+      - company_add_only_one_extern: Bitte entfernen Sie zuerst die eingebundene Firma, bevor Sie mit der Aktion fortfahren.
+      - offer_date_error_message: 'Bitte geben Sie ein Datum in das Feld "Offerdatum" im Reiter "Offertendetails" ein.'
+      - invalid_date_error_message: Bitte geben Sie ein korrektes Datum ein.
+      - company_originIndication_max_number_error_message: "Herkunftsangabe: Der Wert darf maximal 50 Zeichen lang sein."
+      - company_Name_max_size_error_message: "Firmenname: Der Wert darf maximal 100 Zeichen lang sein."
+      - company_Address1_max_size_error_message: "Adresszeile 1: Der Wert darf maximal 100 Zeichen lang sein."
+      - company_Address2_max_size_error_message: "Adresszeile 2: Der Wert darf maximal 100 Zeichen lang sein."
+      - company_max_size_companyPostcode_error_message: "PLZ: Der Wert darf maximal 10 Zeichen lang sein."
+      - email_max_size_error_message: "Email: Der Wert darf maximal 100 Zeichen lang sein."
+      - description_max_size_message: "Beschreibung: Der Wert darf maximal 100 Zeichen lang sein."
+      - company_Website_max_size_error_message: "Webseite: Der Wert darf maximal 100 Zeichen lang sein."
+      - company_Vat_max_size_error_message: "U-ID (neue MwSt-ID): Der Wert darf maximal 100 Zeichen lang sein."
+      - company_Location_max_size_error_message: "Ort: Der Wert darf maximal 50 Zeichen lang sein."
+      - offer_mandatory_error_message: Sie müssen alle Pflichtfelder ausfüllen um die Offerte erfassen zu können.
+      - submittent_exists_error_message: Diese Submission kann nicht gelöscht werden, da sie noch mindestens einen Submittenten enthält. Bitte entfernen Sie zuerst die Submittententen.
+      - company_add_not_allowed: Sie können nicht die zu bearbeitende Firma als Zweigniederlassung hinzufügen.
+      - submission_exists_error_message: Dieses Projekt kann nicht gelöscht werden, da es noch mindestens eine Submission enthält. Bitte entfernen Sie zuerst die Submission.
+      - invalid_first_user_password: Das von Ihnen eingegebene Passwort ist ungültig.
+      - company_Admin_Notes2_error_message: 'Bitte geben Sie einen Wert in das Feld "Bemerkung FaBe" ein.'
+        forceUpdate: true
+      - criterion_mandatory_message: Sie müssen alle Pflichfelder ausfüllen um das Kriterium erfassen zu können.
+      - criterion_max_size_title_message: "Kriterium: Der Wert darf maximal 50 Zeichen lang sein."
+      - evaluated_criterion_weighting_limit: Die Summe der Gewichtungen der Bewerteten Kriterien darf nicht grösser als 100% sein.
+      - award_criterion_weighting_limit: Die Summe der Gewichtungen der Zuschlagskriterien darf nicht grösser als 99% sein.
+      - subcriterion_weighting_limit: Die Summe der Gewichtungen der Unterkriterien darf nicht grösser als 100% sein.
+      - criterion_zero_error_message: Die Gewichtung eines Kriteriums darf nicht 0 sein.
+      - subcriterion_zero_error_message: Die Gewichtung eines Unterkriteriums darf nicht 0 sein.
+      - subcriterion_mandatory_message: Sie müssen alle Pflichfelder ausfüllen um das Unterkriterium erfassen zu können.
+      - criterion_grade_permitted: "Die Note muss innerhalb der eingegebenen Mindest- und Maximalnote liegen."
+      - minGrade_error_message: Die Mindestnote muss grösser oder gleich 0 sein und kleiner als die Maximalnote.
+      - maxGrade_error_message: Die Maximalnote muss grösser 0 und darf maximal 5 sein.
+      - company_Proof_Date_After_Today_message: Bitte geben Sie ein korrektes Datum in das Feld.
+      - company_Proof_Date_Invalid_Today_message: Ein Datum in der Zukunft darf nicht eingegeben werden.
+      - company_participate_in_offer_message: Die Firma kann aufgrund ihrer Einbindung in einem Verfahren nicht gelöscht werden.
+      - company_not_selected_error: Bitte selektieren Sie zuerst eine Firma aus der Liste.
+      - selective_formal_audit_empty_field: Um den Abschluss durchführen zu können, müssen die Ausschlussgründe Art. 24 ÖBV Felder der Formellen Prüfung vollständig befüllt worden sein.
+      - negotiated_procedure_formal_audit_empty_field: Um den Abschluss durchführen zu können, müssen die Prüfung erfüllt Felder der Formellen Prüfung vollständig befüllt worden sein.
+      - close_examination_empty_field: Um den Abschluss durchführen zu können, müssen die Felder der Formellen Prüfung sowie Eignungsprüfung vollständig befüllt worden sein.
+      - close_examination_invalid_grades: Um den Abschluss durchführen zu können, müssen die Noten innerhalb der eingegebenen Mindest- und Maximalnote liegen.
+      - invalid_subcriteria_weightings: Die Summe der Gewichtungen der Unterkriterien eines oder mehrerer Bewerteten Kriterien erreicht nicht die notwendigen 100%.
+      - invalid_criteria_weightings: Die Summe der Gewichtungen der Bewerteten Kriterien erreicht nicht die notwendigen 100%.
+      - expired_validity_period_after_creation: Sie haben nicht mehr das Recht die Firma zu löschen.
+      - awardMaxGrade_error_message: Die Maximalnote muss grösser als 0 sein.
+      - awardMinGrade_error_message: Die Mindestnote muss kleiner als die Maximalnote sein.
+      - evaluationThrough_error_message: "Bewertung durch: Der Wert darf maximal 500 Zeichen lang sein."
+      - addedAwardRecipients_error_message: "Mehrere Zuschlagsempfänger: Der Wert muss grösser oder gleich 0 sein und kleiner oder gleich der Summe der aktiv gesetzten (nicht ausgeschlossenen) Submittenten."
+      - awardMaxGrade_maximum_error_message: Die Maximalnote darf nicht grösser als 5 sein.
+      - awardMinGrade_minimum_error_message: "Die Mindestnote darf nicht kleiner als -999 sein."
+      - submittent_not_selected_error: Bitte wählen Sie mindestens einen Submittenten aus.
+      - error_above_threshold_pl: Der Schwellenwert wurde überschritten. Sie haben keine Berechtigung in dieser Submission einen Zuschlag zu erteilen. Bitte wenden Sie sich an ihren Administrator.
+      - manual_award_reopen_pl_error_message: Sie haben keine Berechtigung die Zuschlagserteilung aufzuheben, da der Schwellenwert überschritten wurde. Bitte wenden Sie sich an den Administrator.
+      - error_above_threshold_admin: 'Das Feld "Begründung Freihandvergabe nach Art. 7 ÖBV" muss befüllt werden, damit Sie eine manuelle Zuschlagserteilung durchführen können.'
+      - offer_operatingCostGrossError_message: 'Bitte geben Sie einen Betrag in das Feld "Bruttobetrag" ein.'
+      - offer_operatingCostGrossCorrectedError_message: 'Bitte geben Sie einen Betrag in das Feld "korrigierter Bruttobetrag" ein.'
+      - offer_dateError_message: 'Bitte geben Sie ein Datum in das Feld "Offertdatum" ein, um weiter fortfahren zu können.'
+      - zero_betrag: Es existieren Offerten, in denen noch kein Betrag eingegeben wurde.
+      - not_rounded_grade: Bitte geben Sie eine Note mit maximal 2 Dezimalstellen ein.
+      - offer_max_size_variant_notes_message: "Bemerkung Variante: Der Wert darf maximal 20 Zeichen lang sein."
+      - award_subcriterion_weighting_sum_not_achieved_error_message: Die Summe der Unterkriterien eines oder mehrerer Hauptkriterien erreicht nicht die notwendigen 100%.
+      - award_criterion_null_grade_error_message: Es wurden nicht alle Notenfelder befüllt.
+      - award_criterion_invalid_grade_error_message: "Die Noten müssen innerhalb der eingegebenen Mindest- und Maximalnote liegen."
+      - invalid_Award_Note_Reason_error: Bitte befüllen Sie das Begründungsfeld, um mit die Zuschlagserteilung wieder aufzuheben.
+      - reason_given_max_error_message: Das Begründungsfeld darf maximal 100 Zeichen lang sein.
+      - application_opening_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme der Bewerbungsöffnung fortfahren zu können.
+      - offer_opening_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme der Offertöffnung fortfahren zu können.
+      - suitability_audit_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme der Eignungsprüfung fortfahren zu können.
+      - formal_audit_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme der formellen Prüfung fortfahren zu können.
+      - award_evaluation_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme der Zuschlagsbewertung fortfahren zu können.
+      - commission_procurement_proposal_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme des Beschaffungsantrags fortfahren zu können.
+      - commission_procurement_decision_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme der BeKo Beschluss fortfahren zu können.
+      - process_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um mit der Wiederaufnahme des Verfahrens fortfahren zu können.
+      - manual_award_reopen_error_message: Bitte befüllen Sie das Begründungsfeld, um die Zuschlagserteilung wieder aufzuheben.
+      - cost_estimate_max_error_message: "Kostenvoranschlag: Der Wert darf bis 9'999'999'999'999.99 sein."
+      - cpp_object_error_message: "Beschaffungsgegenstand: Der Wert darf maximal 500 Zeichen lang sein."
+      - cpp_business_error_message: "Geschäft: Bitte geben Sie eine positive ganze Zahl ein."
+        forceUpdate: true
+      - cpp_preRemarks_error_message: "Vorbemerkungen: Der Wert darf maximal 1000 Zeichen lang sein."
+      - cpp_suitabilityAuditText_error_message: Das Textfeld der Eignungsprüfung darf maximal 500 Zeichen enthalten.
+      - cpp_reservation_error_message: "Vorbehalt: Der Wert darf maximal 1000 Zeichen lang sein."
+      - cpp_freeTextField_error_message: Das Textfeld des Zuschlags darf maximal 1000 Zeichen enthalten.
+      - cpp_reasonGiven_error_message: "Begründung: Der Wert darf maximal 10000 Zeichen lang sein."
+      - no_radiobutton_selected: Sie müssen mindestens eine Option auswählen.
+        forceUpdate: true
+      - technical_error: Ein technischer Fehler aufgetreten
+      - invalid_file_type: Dieser Dateityp wird vom System nicht unterstützt
+        forceUpdate: true
+      - UPLOADED: hochgeladen
+      - GENERATED: generiert
+      - file_types_not_match: Die Datei kann nicht hochgeladen werden, da sie ein anderes Format hat.
+      - templateSelection: Sie müssen eine option auswählen.
+      - no_proposal_document_error_message: Um fortfahren zu können, müssen Sie mindestens einmal den BeKo-Antrag erstellt haben.
+      - decision_recommendation_error_message: "Empfehlung: Der Wert darf maximal 200 Zeichen lang sein."
+      - no_decision_document_error_message: Um fortfahren zu können, müssen Sie mindestens einmal den BeKo-Beschluss erstellt haben.
+      - document_should_be_created: Der Nachweisbrief oder das Rechtliche Gehör (Ausschluss) wurde für die ausgeschlossenen Firmen nicht erstellt.
+        forceUpdate: true
+      - empty_submittent_list_error_message: Sie müssen mindestens einen Submittenten auswählen um einen Nachweisbrief zu erstellen.
+      - not_required: Nicht erforderlich
+      - submission_cancel_reason_select_error_message: Bitte wählen Sie mindestens einen Abbruchgrund aus.
+      - no_template_selected: Bitte wählen Sie eine Vorlage aus.
+      - mandatory_offer_protocol_document_message: Um fortfahren zu können, müssen Sie mindestens einmal das Offertöffnungsprotokoll erstellt haben.
+        forceUpdate: true
+      - mandatory_submittentliste_document_message: Um fortfahren zu können, müssen Sie mindestens einmal die Submittentenliste erstellt haben.
+      - invalid_number_error_message: "Bitte geben Sie eine gültige Zahl ein (Beispiel: 258.25)."
+        forceUpdate: true
+      - suitability_text_error_message: "Bemerkung: Der Wert muss grösser oder gleich 10 und bis 150 Zeichen lang sein."
+      - date_in_the_future_error_message: Bitte geben Sie ein gültiges Datum ein. Beachten Sie, dass das Datum nicht in der Zukunft liegen darf.
+        forceUpdate: true
+      - start_date_after_end_date_error_message: Bitte geben Sie ein gültiges Datum ein. Beachten Sie, dass der Starttermin nicht jünger als der Endtermin sein darf.
+      - application_information_error_message: "Bewerbungsinformationen: Der Wert darf maximal 500 Zeichen lang sein."
+      - applicant_has_application_error_message: Eine Bewerbung ist angehängt, bitte löschen Sie zuerst die Bewerbung.
+      - subcontractor_or_joint_venture_exists: ARGE / Subunternehmen ist/sind angehängt, bitte entfernen Sie zuerst die ARGE / Subunternehmen.
+      - no_applicant_overview_document: Um fortfahren zu können, müssen Sie mindestens einmal die Bewerberübersicht erstellt haben.
+      - missing_application_dates: Es wurde nicht für alle Bewerbungen ein Bewerbungsdatum eingegeben.
+      - mandatory_offer_protocol_dl_document_message: Um fortfahren zu können, müssen Sie mindestens einmal das Offertöffnungsprotokoll DL WW erstellt haben.
+        forceUpdate: true
+      - frei_document_should_be_created: Das Rechtliche Gehör wurde für die ausgeschlossenen Firmen nicht erstellt.
+      - zero_amount_error_message: "Nettobetrag exkl. MWST: Der Wert darf nicht 0.00 sein."
+      - offers_no_date_error: Es wurde nicht für alle Offerten ein Datum eingegeben.
+      - UNDEFINED: Undefiniert
+      - FIXED: Pauschal
+      - GLOBAL: Global
+      - DEGREE: Ausmass
+      - COST_CEILING: Kostendach
+      - EXPENSE: Aufwand
+      - EXPENSE_WITH_COST_CEILING: Aufwand mit Kostendach
+      - empty_submittent_list_rechtliches: Sie müssen mindestens einen Submittenten auswählen um ein Rechtliches Gehör zu erstellen.
+      - formal_audit_notes_message: "Bemerkung: Der Wert darf maximal 150 Zeichen lang sein."
+        forceUpdate: true
+      - report_no_results: "Es liegen keine Ergebnisse zu den eingegebenen Kriterien bzw. dem eingegebenen Zeitraum vor."
+      - no_legal_hearing_document_created: Das Rechtliche (Abbruch) Gehör wurde noch nicht erstellt, daher ist die Bearbeitung des Verfahrensabbruchs derzeit nicht möglich.
+        forceUpdate: true
+      - REGISTRATION_APPLICATION: Neuer Registrierungsantrag
+      - PROOF_REQUEST: Nachweisaufforderung gewünscht
+      - PROOF_REQUEST_PL_XY: Nachweisaufforderung für PL {{XY}} ausstehend
+        forceUpdate: true
+      - NOT_CLOSED_SUBMISSION: Nicht abgeschlossene Submission
+      - CHECK_TENDERLIST: Submittentenliste prüfen
+      - ILLEGAL_THRESHOLD: Unerlaubter Schwellenwert
+      - SET_SURCHARGE_PDATE: Zuschlagspublikationsdatum setzen
+      - offer_above_threshold_pl: Es wurde mindestens ein Submittent ausgewählt, bei dem die Offerte den Schwellenwert überschreitet.
+        forceUpdate: true
+      - function_max_size: "Funktion: Der Wert darf maximal 100 Zeichen lang sein."
+      - mandatory_for_selective_process_second_level: 'Die Felder "Eingabetermin 2", "Offertöffnung" und "protokolliert durch" müssen befüllt werden und das Dokument "Verfügungen S-Verfahren 1. Stufe" muss erstellt werden, bevor Sie mit der Eingabe der Offerte starten können.'
+      - reason_approval_max_error_message: "Begründung Zulassung: Der Wert darf maximal 10000 Zeichen lang sein."
+      - reason_exclusion_max_error_message: "Begründung Ausschluss: Der Wert darf maximal 10000 Zeichen lang sein."
+      - filenames_not_match: "Die Datei kann nicht hochgeladen werden, da sie nicht mit der Bestehenden übereinstimmt."
+      - no_selected_submittents: Sie müssen mindestens einen Submittenten auswählen.
+      - no_cancellation_document_error_message: Um fortfahren zu können, müssen Sie mindestens einmal die Abbruch Verfügungen erstellt haben.
+      - COMPANY_PART: Firmenteil
+      - PROJECT_PART: Projektteil
+      - article_max_size_message: "Artikel und Litera: Der Wert darf maximal 30 Zeichen lang sein."
+      - same_description: "Beschreibung: Der Wert muss eindeutig sein."
+      - short_name_max_size_massage: "Kürzel: Der Wert darf maximal 50 Zeichen lang sein."
+      - address_max_size_massage: "Adresse: Der Wert darf maximal 100 Zeichen lang sein."
+      - post_code_max_size_massage: "PLZ: Der Wert darf maximal 10 Zeichen lang sein."
+      - location_max_size_massage: "Ort: Der Wert darf maximal 50 Zeichen lang sein."
+      - wk_number_max_size_error_message: "ArG-Nr: Der Wert darf maximal 50 Zeichen lang sein."
+      - formula_max_size_message: "Formel: Der Wert darf maximal 100 Zeichen lang sein."
+      - formula_invalid_message: Die von Ihnen eingegebene Formel ist nicht gültig.
+      - iso_code_max_size_message: "ISO-Code: Der Wert darf maximal 50 Zeichen lang sein."
+      - tel_prefix_max_size_message: "Telefon-Vorwahl: Der Wert darf maximal 4 Zeichen lang sein."
+      - tel_prefix_invalid_message: Die von Ihnen eingegebene Telefon-Vorwahl ist nicht gültig.
+      - invalid_validity_period: "Gültigkeit (Monate): Der Wert muss grösser als 0 sein."
+      - ger_max_size_message: "Text DE: Der Wert darf maximal 10000 Zeichen lang sein."
+      - fr_max_size_message: "Text FR: Der Wert darf maximal 10000 Zeichen lang sein."
+      - invalid_proof_order: "Sortierung: Der Wert muss grösser als 0 sein."
+      - unique_proof_name_and_country: 'Der kombinierte Wert aus "Land" und "Beschreibung" muss eindeutig sein.'
+      - description_500_message: "Beschreibung: Der Wert darf maximal 500 Zeichen lang sein."
+      - input_value_size_short: Der Wert darf maximal 50 Zeichen lang sein.
+      - input_value_size_middle: Der Wert darf maximal 100 Zeichen lang sein.
+      - input_value_size_twenty: Der Wert darf maximal 20 Zeichen lang sein.
+      - no_project_selected: Bitte wählen Sie ein Projekt aus der Liste aus.
+      - formula_syntax_error_message: Die eingegebene Formel ist nicht korrekt.
+      - formula_arguments_error_message: Bitte verwenden Sie nur die erlaubten Variablen ai und ao für Ihre Formel.
+      - CREATE_PROJECT: Projekt erstellt
+      - DELETE_PROJECT: Projekt gelöscht
+      - CREATE_SUBMISSION: Submission erstellt
+      - DELETE_SUBMISSION: Submission gelöscht
+      - SUBMITTENT_ADDED: Submittent hinzugefügt nach Prüfung der Submittentenliste
+      - SUBMITTENT_REMOVED: Submittent entfernt nach Prüfung der Submittentenliste
+      - ARGE_ADDED: ARGE-Partner hinzugefügt nach Prüfung der Submittentenliste
+      - ARGE_REMOVED: ARGE-Partner entfernt nach Prüfung der Submittentenliste
+      - SUBCONTRACTOR_ADDED: Subunternehmen hinzugefügt nach Prüfung der Submittentenliste und/oder nach Offeröffnung abgeschlossen
+      - SUBCONTRACTOR_REMOVED: Subunternehmen entfernt nach Prüfung der Submittentenliste und/oder nach Offertöffnung abgeschlossen
+      - SUBMITTENTLIST_CHECK: Submittentenliste prüfen
+      - SUBMITTENTLIST_CHECKED: Submittentenliste freigegeben bzw. geprüft
+      - MANUAL_AWARD_REOPEN: Manuelle Zuschlagserteilung aufheben
+      - AUTOMATICALLY_CLOSE_SUBMISSION: Verfahren automatisch abgeschlossen
+      - RECHTLICHES_GEHOR_DOC_GENERATED: Erstellung Rechtliches Gehör
+      - SELEKTIV_1_STUFE_DOC_GENERATED: Erstellung Verfügungen 1. Stufe
+      - VERFUGUNGEN_DOCS_GENERATED: Erstellung Verfügungen
+      - VERFAHRENSABBRUCH_DOC_GENERATED: Erstellung Verfahrensabbruch Verfügungen
+      - DOCUMENT_DELETED: Dokument {{XY}} gelöscht
+        forceUpdate: true     
+      - SUITABILITY_AUDIT_CLOSE: Eignungsprüfung abgeschlossen
+      - FORMAL_AUDIT_CLOSE: Formelle Prüfung abgeschlossen
+      - AWARD_EVALUATION_CLOSE: Zuschlagsbewertung abgeschlossen
+      - COMMISSION_PROCUREMENT_PROPOSAL_CLOSE: BeKo Antrag abgeschlossen
+      - COMMISSION_PROCUREMENT_DECISION_CLOSE: BeKo Beschluss abgeschlossen
+      - MANUAL_AWARD_COMPLETED: Manuelle Zuschlagserteilung erfolgt
+      - OFFER_REOPEN: Wiederaufnahme Offertöffnung
+      - FORMAL_AUDIT_REOPEN: Wiederaufnahme Formelle Prüfung
+      - FORMAL_EXAMINATION_REOPEN: Wiederaufnahme Eignungsprüfung
+      - GENERATE_PROOF_DOCUMENT: Erstellung Nachweisbrief
+      - CANCEL_SUBMISSION: Verfahren abgebrochen
+      - CLOSE_SUBMISSION: Verfahren manuell abgeschlossen
+      - REOPEN_SUBMISSION: Verfahren wiederaufgenommen
+      - CLOSE_OFFER: Offertöffnung abgeschlossen
+      - APPLICATION_OPENING_CLOSE: Bewerbungsöffnung abgeschlossen
+      - APPLICATION_OPENING_REOPEN: Wiederaufnahme Bewerbungsöffnung
+      - COMMISSION_PROCUREMENT_PROPOSAL_REOPEN: Wiederaufnahme BeKo Antrag
+      - COMMISSION_PROCUREMENT_DECISION_REOPEN: Wiederaufnahme BeKo Beschluss
+      - AWARD_EVALUATION_REOPEN: Wiederaufnahme Zuschlagsbewertung
+      - RECHTLICHES_GEHOR_DOC_UPLOADED: Rechtliches Gehör hochgeladen
+      - SELEKTIV_1_STUFE_DOC_UPLOADED: Verfügungen 1. Stufe hochgeladen
+      - VERFUGUNGEN_DOCS_UPLOADED: Verfügungen hochgeladen
+      - VERFAHRENSABBRUCH_DOC_UPLOADED: Verfahrensabbruch Verfügungen hochgeladen
+      - EMAIL_CREATED: E-Mail {{XY}} erstellt
+        forceUpdate: true
+      - TASK_SETTLED: Pendenz {{XY}} erledigt 
+        forceUpdate: true
+      - NACHWEISBRIEF_DOC_UPLOADED: Nachweisbrief hochgeladen
+      - EMAIL_CREATED_6: Beantwortung Anfrage PL {{XY}}
+        forceUpdate: true
+      - EMAIL_CREATED_3: Erstellung E-Mail zur Nachweisaufforderung Zertifikat
+      - CREATE_COMPANY: Firmenprofil erstellt
+      - UPDATE_COMPANY1: Der Zustand der Firma hat sich auf "archiviert" geändert.
+      - UPDATE_COMPANY2: Der Zustand der Firma hat sich auf "aktiv" geändert.
+      - SUMBISSION_DATA_MOVED: Submission verschoben
+      - litera_max_size_message: "Litera: Der Wert darf maximal 30 Zeichen lang sein."
+      - empty_formula_message: Bitte geben Sie eine Formel ein.
+      - litera_max_size_message: "Litera: Der Wert darf maximal 30 Zeichen lang sein."
+      - date_from_after_date_to_error_message: Bitte geben Sie ein gültiges Datum ein. Beachten Sie, dass das "Von" Datum nicht jünger als das "Bis" Datum sein darf.
+        forceUpdate: true
+      - any_date_in_the_future_error_message: Bitte geben Sie ein gültiges Datum ein. Beachten Sie, dass das Datum nicht in der Zukunft liegen darf.
+        forceUpdate: true
+      - GENERATE_CERTIFICATE_DOCUMENT: Erstellung Zertifikat
+      - empty_active_submittent_list: Es stehen keine potentiellen Zuschlagsempfänger zu Verfügung.
+      - formula_max_grade_error: Die eingegebene Formel kalkuliert mindestens eine Note die die Maximalnote überschreitet.
+      - price_formula_max_grade_error: Die Preis Formel kalkuliert mindestens eine Note die die Maximalnote überschreitet.
+      - op_cost_formula_max_grade_error: Die Betriebskosten Formel kalkuliert mindestens eine Note die die Maximalnote überschreitet.
+      - optimistic_lock: Sie können den Datensatz nicht mehr speichern, da die Daten bereits von einem anderer Benutzer bearbeitet und die von ihm vorgenommenen Änderungen gespeichert wurden.
+      - unsaved_cancellation_error_message: Bitte speichern Sie die Abbruch Maske des Rechtlichen Gehörs bevor Sie mit der Generierung weiterfortfahren.
+      - content_max_size_message: "Inhaltstext: Der Wert darf maximal 10000 Zeichen lang sein."
+      - optimistic_lock_delete: Der Datensatz kann nicht gespeichert werden, da dieser bereits von einem anderen Benutzer gelöscht wurde.
+      - IMPORT: Bewertung importiert
+      - formula_min_grade_error: Die eingegebene Formel kalkuliert mindestens eine Note kleiner als die Mindestnote.
+      - price_formula_min_grade_error: Die Preis Formel kalkuliert mindestens eine Note kleiner als die Mindestnote.
+      - op_cost_formula_min_grade_error: Die Betriebskosten Formel kalkuliert mindestens eine Note kleiner als die Mindestnote.
+      - TO_receiver_error_message: "An: Der Wert darf maximal 100 Zeichen lang sein."
+      - CC_receiver_error_message: "CC: Der Wert darf maximal 100 Zeichen lang sein."
+      - BCC_receiver_error_message: "BCC: Der Wert darf maximal 100 Zeichen lang sein."
+      - unique_description_and_available_part: 'Der kombinierte Wert aus "Beschreibung" und "Verfügbar" muss eindeutig sein.'
+      - unique_name_and_short_name: 'Der kombinierte Wert aus "Beschreibung" und "Kürzel" muss eindeutig sein.'
+      - invalid_open_email_to : 'Die 2000 Zeichen dürfen nicht überschritten werden. Bitte passen Sie den Inhalt der E-Mail Vorlage entsprechend an.'
+      - no_examination_document: Um fortfahren zu können, müssen Sie mindestens einmal die Eignungsprüfung erstellt haben.
+      - no_award_document: Um fortfahren zu können, müssen Sie mindestens einmal die Zuschlagsbewertung erstellt haben.
+      - DELETE_COMPANY: Firmenprofil gelöscht
+      - procurement_max_length: "Beschaffung: Der Wert darf maximal 100 Zeichen lang sein."
+      - USER_PART: Benutzerverwaltung
+      - invalid_image_message: Bitte laden Sie ein Logo im png-Format hoch.
+      - title_doc_error_message: "Titel: Der Wert darf maximal 100 Zeichen lang sein."
+      - navigate_to_legal_hearing_message: Bitte öffnen Sie den Reiter "Rechtliches Gehör" um weiter fortzufahren.
+      - proof_inconsistencies_message: Mindestens ein Nachweisstatus hat sich seit dem letzten Speichern geändert. Bitte speichern Sie erneut die Formelle Prüfung, um weiter fortfahren zu können.
+      - companyNotes_length_error_message: "Allgemeine Bemerkungen: Der Wert darf maximal 1000 Zeichen lang sein."
+        forceUpdate: true
+      - companyAdminNotes_length_error_message: "Bemerkung FaBe: Der Wert darf maximal 1000 Zeichen lang sein."

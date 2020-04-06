@@ -1,0 +1,164 @@
+	package rules.submiss.showTemplates;
+	
+	import ch.bern.submiss.services.api.dto.SubmissionDTO;
+	import ch.bern.submiss.services.api.constants.Process;
+	import ch.bern.submiss.services.api.util.LookupValues;
+	import ch.bern.submiss.services.api.constants.TenderStatus;
+	import java.util.LinkedList;
+	import java.util.List;
+	global java.util.List templateCodes;
+	global String userRole;
+	global java.util.List submissStatuses;
+	global String tenantName;
+	global Integer previousStatusId;
+		
+	rule "RU001"
+		when
+		$submission: SubmissionDTO( )
+		$isRole_admin: Boolean( ) from userRole.equals("Admin")
+		$isRole_PL: Boolean( ) from userRole.equals("PL")
+		$isRole_Dir: Boolean( ) from userRole.equals("Dir")
+		$isRole_SB: Boolean( ) from userRole.equals("SB")
+		$isTenant_SB: Boolean( ) from tenantName.equals("Stadt Bern")
+		$isTenant_EWB: Boolean( ) from tenantName.equals("EWB")
+		$isTenant_KB: Boolean( ) from tenantName.equals("Kanton Bern")
+		$currentStatus: TenderStatus( ) from $submission.getCurrentState()
+		$indexOfCurrentState: Number( ) from submissStatuses.indexOf($currentStatus)
+		$isVerfahren_SELECTIVE: Boolean( ) from $submission.getProcess().getValue().equals("SelectiveTender")
+		$isVerfahren_OPEN: Boolean( ) from $submission.getProcess().getValue().equals("OpenTender")
+		$isVerfahren_INVITATION: Boolean( ) from $submission.getProcess().getValue().equals("InvitedTender")
+		$isVerfahren_NEGOTIATED: Boolean( ) from $submission.getProcess().getValue().equals("NegotiatedTender")
+		$isVerfahren_NEGOTIATED_WITH_COMPETITION: Boolean( ) from $submission.getProcess().getValue().equals("NegotiatedCompetitionTender")
+
+		$isServiceTender: Boolean( ) from Boolean.TRUE.equals($submission.getIsServiceTender())
+		$isAboveThreshold: Boolean( ) from Boolean.TRUE.equals($submission.getAboveThreshold())
+		$isSGBDepartment: Boolean( ) from $submission.getProject().getDepartment().getShortName().equals("SGB")
+		$previousStatusId: Integer() from previousStatusId
+	
+		if (($isRole_admin || $isRole_PL) && $isSGBDepartment && (($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("70"))) 
+		|| (!$isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))) && ( $indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110")))) do[PT01]
+		if ($isRole_admin && !$isTenant_KB && ($isVerfahren_SELECTIVE || $isVerfahren_OPEN || $isVerfahren_INVITATION || (($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $isAboveThreshold)) && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("220")) 
+		&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("230"))) do[PT02]
+		if ($isRole_admin && ($isTenant_SB || $isTenant_EWB) && ($isVerfahren_SELECTIVE || $isVerfahren_INVITATION || $isVerfahren_OPEN || (($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $isAboveThreshold)) && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("240")) 
+		&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("250"))) do[PT05]
+		if ($isRole_admin && !$isTenant_KB && !$submission.getLegalHearingTerminate().isEmpty() && 
+		(($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("20")))
+		|| (($isVerfahren_OPEN || $isVerfahren_INVITATION) &&
+		$indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280")))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260"))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("290")))) do[PT06]
+		if (($isRole_admin || $isRole_PL) && !$isTenant_KB && ((($isVerfahren_INVITATION || $isVerfahren_OPEN) 
+        && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("130")) 
+		&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("180"))) 
+        || (($isVerfahren_SELECTIVE) 
+        && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("50")) 
+		&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("60"))))) do[PT07]
+		if ($isRole_admin && !$isTenant_KB && ((($isVerfahren_SELECTIVE || $isVerfahren_OPEN) && !$isServiceTender) || $isVerfahren_INVITATION) && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")) 
+		&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("120"))) do[PT08]
+		if ($isRole_admin && $isTenant_SB && ($isVerfahren_SELECTIVE || $isVerfahren_OPEN) && $isServiceTender && ($indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))
+		&& ($indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("120")))) do[PT10]
+		if (($isRole_admin || $isRole_PL) && $isTenant_SB && ($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110"))) do[PT12]
+		if ($isRole_admin && !$isTenant_KB && $isVerfahren_SELECTIVE && ($indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("30"))) 
+		&& ($indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("40")))) do[PT13]
+		if ($isRole_admin && !$isTenant_KB && (($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("20"))) ||
+		(($isVerfahren_OPEN || $isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION || $isVerfahren_INVITATION) && $indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80"))))) do[PT14]
+		if (($isRole_admin || $isRole_PL) && !$isTenant_KB && 
+		(($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("20"))) ||
+		(($isVerfahren_OPEN || $isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION || $isVerfahren_INVITATION) && $indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))
+		)) do[PT15]
+		if (($isRole_admin || $isRole_PL) && $isTenant_SB && 
+		(($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("20"))) ||
+		(($isVerfahren_OPEN || $isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION || $isVerfahren_INVITATION) && $indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))
+		)) do[PT16]
+		if (($isRole_admin || $isRole_PL) && (((($isVerfahren_OPEN  && !$isServiceTender) || $isVerfahren_INVITATION)
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("160")) 
+		&& ($indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("200"))))) 
+        || (($isVerfahren_SELECTIVE  && !$isServiceTender)
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("140")) 
+		&& ($indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("200"))))))) do[PT18]
+		if ($isRole_admin && !$isTenant_KB && (!$submission.getLegalHearingTerminate().isEmpty() || $submission.getExclusionDeadline() != null || $submission.getFirstLevelExclusionDate() != null) && ((($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $isAboveThreshold
+		&& $indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("210"))
+		&& $indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260"))) || 
+		(($isVerfahren_OPEN || $isVerfahren_INVITATION)
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")) 
+		&& ($indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260")))))
+		|| ($isVerfahren_SELECTIVE && ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("20")) 
+		&& ($indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260"))))))) do[PT19]
+		if (($isRole_admin || $isRole_PL) && $isTenant_SB 
+		&& ((($isVerfahren_OPEN || $isVerfahren_INVITATION || $isVerfahren_NEGOTIATED ||  $isVerfahren_NEGOTIATED_WITH_COMPETITION
+		|| $isVerfahren_SELECTIVE)
+		&& $indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260"))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("290"))))) do[PT21]
+	  	if ($isRole_admin && !$isTenant_KB && (!$isServiceTender && ((($isVerfahren_SELECTIVE || $isVerfahren_OPEN) 
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("250")) 
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280"))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("290"))))
+		|| ($isVerfahren_INVITATION
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("250")) 
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280"))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("290"))))))) do[PT24]
+		if (($isRole_admin || $isRole_PL) && !$isTenant_KB && (!$isServiceTender 
+		&& ((($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $isAboveThreshold) 
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("250")) 
+		&& $indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280")))) 
+		|| ((($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && !$isAboveThreshold) 
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("210")) 
+		&& ($indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280"))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("290"))))))) do[PT25]
+		if ($isRole_admin && !$isTenant_KB && (($isVerfahren_SELECTIVE || $isVerfahren_OPEN) && $isServiceTender)
+		&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("250")) 
+		&& ($indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280"))
+		&& $indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("290"))))) do[PT23]
+		if ($isRole_admin && !$isTenant_KB && $isVerfahren_SELECTIVE
+		&& (($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("60")) 
+				&& $indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110")))
+			|| ($previousStatusId.intValue() == 50
+				&& $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110"))))) do[PT22]
+	then 
+		//templates without restrictions should be added here 
+		then[PT01]
+			templateCodes.add("PT01");
+		then[PT02]
+			templateCodes.add("PT02");
+		then[PT05] //BeKo Beschluss
+			templateCodes.add("PT05");
+		then[PT06] //Verfahrensabbruch
+			templateCodes.add("PT06");			
+		then[PT07] //Eignungsprüfung
+			templateCodes.add("PT07");
+		then[PT08]
+			// Offertöffnungsprotokoll
+			templateCodes.add("PT08");
+			//Anonymisiertes Offertöffnungsprotokoll
+			templateCodes.add("PT09");
+		then[PT10]
+			//Offertöffnungsprotokoll DL WW
+			templateCodes.add("PT10");
+			//Anonymisiertes Offertöffnungsprotokoll DL WW
+			templateCodes.add("PT11");
+		then[PT12] //Offertvergleich freihändig
+			templateCodes.add("PT12");
+		then[PT13] //Bewerberübersicht
+			templateCodes.add("PT13");
+		then[PT14] //Submissionsübersicht
+			templateCodes.add("PT14");
+		then[PT15] //Submittentenliste(PT15)
+			templateCodes.add("PT15");
+		then[PT16] //Submittentenliste als Etiketten (3652) (PT16), Submittentenliste (Postliste) (PT17)
+			templateCodes.add("PT16");
+			templateCodes.add("PT17");	
+		then[PT18] //Zuschlagsbewertung
+			templateCodes.add("PT18");
+		then[PT19] //Rechtliches Gehör
+			templateCodes.add("PT19");
+		then[PT21] //Vertrag
+			templateCodes.add("PT21");	
+		then[PT24] //Zuschlag/Absage und Ausschluss
+			templateCodes.add("PT24");
+		then[PT23] //Verfügungen DL Wettbewerb 
+			templateCodes.add("PT23");
+		then[PT22] //Verfügungen S-Verfahren 1. Stufe
+			templateCodes.add("PT22");
+		then[PT25] //Zuschlag/Absage
+			templateCodes.add("PT24");	
+	end

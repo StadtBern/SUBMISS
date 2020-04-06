@@ -1,0 +1,25 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+
+import java.util.HashMap;
+
+global HashMap placeholderMappings;
+
+rule "PT01"
+	when
+		$submission: SubmissionDTO()
+		$company: CompanyDTO()
+	if ($company.getAddress2() != null) do[address2]
+	else do[address2Empty]	
+	then
+		placeholderMappings.put("f_company_name", $company.getCompanyName());
+		placeholderMappings.put("f_company_tel", $company.getCompanyTel());
+		placeholderMappings.put("f_company_mail", $company.getCompanyEmail());
+		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());
+	then [address2]
+		placeholderMappings.put("f_company_address", $company.getAddress1() + "\\n" + $company.getAddress2());
+	then [address2Empty]	
+		placeholderMappings.put("f_company_address", $company.getAddress1());		
+	end

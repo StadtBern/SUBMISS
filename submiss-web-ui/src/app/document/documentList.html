@@ -1,0 +1,209 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div>
+  <div class="row">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="btn-toolbar pull-right" role="toolbar">
+
+        <div flow-init flow-name="documentListCtr.files" class="btn btn-primary"
+          ng-if="documentListCtr.secProjectMultipleDocumentUpload" style="display: inline;" flow-name="obj.flow"
+          flow-files-submitted="documentListCtr.uploadMultipleDocuments($flow)"
+          flow-file-error="documentListCtr.uploadError($file, $message, $flow )" title="Dokument(e) hochladen">
+          <span flow-btn flow-attrs="{accept:'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
+														,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+														,image/jpeg,image/png,text/plain,application/rtf,text/html, application/vnd.openxmlformats-officedocument.presentationml.presentation,
+														 application/vnd.ms-powerpoint, application/vnd.ms-outlook'}"
+            flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1,csv:1}"
+            flow-complete="documentListCtr.uploadedMultipleDocuments($flow);" class="action  multipleUpload fa-upload">
+            <div class="multipleUpload"> Dokument(e) hochladen</div>
+          </span>
+        </div>
+        <!-- TODO the second instance of upload button must be removed and it's functionality must be added to the first with the ng-flow -->
+        <div flow-init flow-name="documentListCtr.files" class="btn btn-primary" disabled
+          ng-if="!documentListCtr.secProjectMultipleDocumentUpload">
+          <span class="action  multipleUpload fa-upload">
+            <div class="multipleUpload"> Dokument(e) hochladen</div>
+          </span>
+        </div>
+        <button type="submit" class="btn btn-primary"
+          ng-disabled="!documentListCtr.secProjectMultipleDocumentsDownload || !documentListCtr.multipleFilesDownload"
+          ng-click="documentListCtr.downloadMultipleDocuments()">
+          <i class="fa fa-download" aria-hidden="true"></i> Mehrere Dokumente herunterladen
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="card-box">
+    <div class="col-sm-12">
+      <div ng-table-pagination="documentListCtr.tableParams" template-url="'app/layout/pager.html'"></div>
+      <div class="table-responsive" ng-style="documentListCtr.divTableHeight">
+        <table ng-table="documentListCtr.tableParams" class="table table-striped" show-filter="true">
+          <tr ng-repeat="document in $data">
+
+            <td header="'headerCheckbox.html'"><input type="checkbox"
+                ng-change="documentListCtr.seperateCheckboxFunctionality()" ng-model="document.checkbox" /></td>
+            <td title="'Icon'">
+              <div ng-switch="document.mimetype ">
+                <div ng-switch-when="application/pdf">
+                  <div class="fa fa-file-pdf-o" aria-hidden="true" title="pdf"></div>
+                </div>
+                <div ng-switch-when="application/vnd.ms-excel">
+                  <div class="fa fa-file-excel-o" aria-hidden="true" title="excel"></div>
+                </div>
+                <div ng-switch-when="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                  <div class="fa fa-file-excel-o" aria-hidden="true" title="sheet"></div>
+                </div>
+                <div ng-switch-when="text/csv">
+                  <div class="fa fa-file-text-o" aria-hidden="true" title="csv"></div>
+                </div>
+                <div ng-switch-when="image/png">
+                  <div class="fa fa-file-image-o" aria-hidden="true" title="png"></div>
+                </div>
+                <div ng-switch-when="image/jpeg">
+                  <div class="fa fa-file-image-o" aria-hidden="true" title="jpeg"></div>
+                </div>
+                <div ng-switch-when="text/plain">
+                  <div class="fa fa-file-text-o" aria-hidden="true" title="txt"></div>
+                </div>
+                <div ng-switch-when="application/rtf">
+                  <div class="fa fa-file-text-o" aria-hidden="true" title="rtf"></div>
+                </div>
+                <div ng-switch-when="text/html">
+                  <div class="fa fa-file-text-o" aria-hidden="true" title="html"></div>
+                </div>
+                <div ng-switch-when="application/vnd.ms-powerpoint">
+                  <div class="fa fa-file-powerpoint-o" aria-hidden="true" title="ppt"></div>
+                </div>
+                <div ng-switch-when="application/vnd.openxmlformats-officedocument.presentationml.presentation">
+                  <div class="fa fa-file-powerpoint-o" aria-hidden="true" title="presentation"></div>
+                </div>
+                <div ng-switch-when="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                  <div class="fa fa-file-word-o" aria-hidden="true" title="doc"></div>
+                </div>
+                <div ng-switch-when="application/msword">
+                  <div class="fa fa-file-word-o" aria-hidden="true" title="word"></div>
+                </div>
+                <div ng-switch-default>
+                  <!-- Default icon to be set -->
+                  <div class="fa fa-file-text-o" aria-hidden="true" title="text"></div>
+                </div>
+              </div>
+            </td>
+            <td class="w130" title="'Titel'" filter="{ 'title' : 'text'}" sortable="'title'">
+              <span ng-if="document.privateDocument" class="fa fa-lock" title="{{document.privateGroup}}"
+                aria-hidden="true"></span>
+              {{document.title}}</td>
+            <td title="'Submittent/Bewerber'" filter="{ 'submitentName' : 'text'}" sortable="'submitentName'">
+              {{document.submitentName}}</td>
+            <td title="'Dateiname'" filter="{ 'filename' : 'text'}" sortable="'filename'">{{document.filename}}</td>
+            <td title="'Typ'" filter="{ 'documentCreationType' : 'select'}"
+              filter-data="documentListCtr.documentCreationType" sortable="'documentCreationType'" translate>
+              {{document.documentCreationType}}</td>
+            <td title="'Erstellung'" filter="{'createdOn': 'createdOnDateFilter' }" sortable="'createdOn'">{{document.createdOn
+              |date:'dd.MM.yyyy'}}</td>
+            <td title="'Änderung'" filter="{'lastModifiedOn': 'lastModifiedOnDateFilter' }" sortable="'lastModifiedOn'">{{document.lastModifiedOn
+              == document.createdOn ? '' : document.lastModifiedOn|date:'dd.MM.yyyy'}}</td>
+            <td title="'Version'" filter="{ 'versionName' : 'text'}" sortable="'versionName'">{{document.versionName}}
+            </td>
+            <td title="'Benutzername'" filter="{ 'createdBy'  : 'text'}" sortable="'createdBy'">{{document.createdBy}}
+            </td>
+            <td title="'Aktiv'" filter="{ 'active': 'select'}" filter-data="documentListCtr.active" sortable="'active'">
+              {{documentListCtr.showActiveOrInactive(document.active)}}
+            </td>
+            <td class="w110" title="Aktion">
+
+              <button type="button" ng-click="documentListCtr.seperateDocumentDownload(document.id)"
+                ng-disabled="!(documentListCtr.secProjectDocumentDownload && document.canBeDownloaded)"
+                class="btn action btn-primary" title="Herunterladen">
+                <div class="fa fa-download"></div>
+              </button>
+
+              <div flow-init flow-name="documentListCtr.files" style="display: inline;" flow-name="obj.flow"
+                flow-files-submitted="documentListCtr.uploadSelectedDocument($flow, document)"
+                flow-file-error="documentListCtr.uploadError($file, $message, $flow )" title="Hochladen">
+                <span flow-btn flow-attrs="{accept:'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
+														,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+														,image/jpeg,image/png,text/plain,application/rtf,text/html, application/vnd.openxmlformats-officedocument.presentationml.presentation,
+														 application/vnd.ms-powerpoint, application/vnd.ms-outlook'}"
+                  ng-style="{'pointer-events': (!(documentListCtr.secProjectDocumentUpload && document.canBeUploaded) || !document.active) ? 'none' : 'auto'}"
+                  flow-complete="documentListCtr.uploaded($flow);" class="btn action btn-primary fa fa-upload"
+                  ng-disabled="!(documentListCtr.secProjectDocumentUpload && document.canBeUploaded) || !document.active">
+                  <div ng-if="main.spinner" class="fa fa-upload"></div>
+                </span>
+              </div>
+
+              <button type="button" class="btn action btn-primary"
+                ng-click="documentListCtr.deleteDocument(document.templateId, document.id, document.title)"
+                ng-disabled="!(documentListCtr.secProjectDocumentDelete && document.canBeDeleted) || !document.active"
+                title="Löschen">
+                <div class="fa fa-trash-o"></div>
+              </button>
+
+              <button type="button" class="btn action btn-primary"
+                ng-if="documentListCtr.secProjectDocumentEditProperties && document.canPropertiesBeEdited && document.active"
+                ng-disabled="false" ng-click="documentListCtr.editDocumentProperties(document,true)"
+                title="Eigenschaften bearbeiten" data-toggle="modal" data-target="#editDoc">
+                <div class="fa fa-edit"></div>
+              </button>
+
+              <button type="button" class="btn action btn-primary"
+                ng-if="!(documentListCtr.secProjectDocumentEditProperties && document.canPropertiesBeEdited && document.active)"
+                ng-click="documentListCtr.editDocumentProperties(document,false)" title="Eigenschaften ansehen">
+                <span class="fa fa-eye" aria-hidden="true"></span>
+              </button>
+
+              <button type="button" class="btn action btn-primary" ng-disabled="!(documentListCtr.secProjectDocumentPrint && document.canBePrinted) || documentListCtr.printAllowedFiles(document.filename)" title="Drucken"
+                ng-click="documentListCtr.printDocument(document.id)">
+                <div class="fa fa-print"></div>
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/ng-template" id="headerCheckbox.html">
+  <input type="checkbox"
+		ng-click="documentListCtr.mainCheckboxFunctionality()"
+        ng-model="documentListCtr.mainCheckbox">
+</script>
+<script type="text/ng-template" id="ng-table/filters/createdOnDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="createdOn" type="text" name="createdOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="documentListCtr.openCreatedOnFilter.opened"
+					ng-model="params.filter()['createdOn']"
+						ng-click="documentListCtr.openCreatedOnFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="documentListCtr.openCreatedOnFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>
+<script type="text/ng-template" id="ng-table/filters/lastModifiedOnDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="lastModifiedOn" type="text" name="lastModifiedOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="documentListCtr.openLastModifiedOnDateFilter.opened"
+					ng-model="params.filter()['lastModifiedOn']"
+						ng-click="documentListCtr.openLastModifiedOnDateFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="documentListCtr.openLastModifiedOnDateFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>

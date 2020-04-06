@@ -1,0 +1,219 @@
+
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div role="tabpanel" class="tab-pane">
+	<form name="awardInfoCtrl.awardInfoHtmlForm"
+		data-ng-submit="awardInfoCtrl.save()" id="awardInfoHtmlForm"
+		shows-validation-errors>
+		<fieldset ng-disabled="awardInfoCtrl.isAwardInfoDisabled()">
+			<div class="col-sm-12">
+				<div class="alert alert-danger" role="alert" 
+					 ng-if="awardInfoCtrl.invalidDate
+					   	   || awardInfoCtrl.awardInfoHtmlForm.errorField.$invalid">
+					<field-error 
+						ng-if="awardInfoCtrl.invalidDate" translate>invalid_date_error_message
+					</field-error>
+					<field-error 
+						ng-if="awardInfoCtrl.awardInfoHtmlForm.errorField.$invalid" form-element-name="errorField" translate name="error">
+					</field-error>
+				</div>
+				<input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+			</div>
+			<div class="row">
+				<div class="col-sm-2">
+					<div class="form-group"
+						 ng-class="{'has-error': !awardInfoCtrl.awardInfoHtmlForm.availableDate.$valid
+						                         || awardInfoCtrl.invalidDate}">
+						<label for="creationDate">Verfügungsdatum</label>
+						<div class="input-group">
+							<input class="form-control datepicker" id="availableDate"
+								type="text" name="availableDate"
+								uib-datepicker-popup="dd.MM.yyyy"
+								is-open="awardInfoCtrl.availableDateOpened"
+								data-ng-model="awardInfoCtrl.awardInfo.availableDate"
+								ng-click="awardInfoCtrl.openAvailableDate()"> <span
+								class="input-group-btn">
+								<button class="btn btn-default" type="button"
+									data-ng-click="awardInfoCtrl.openAvailableDate()">
+									<span class="fa fa-calendar"></span>
+								</button>
+							</span>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-2" ng-if="awardInfoCtrl.isNotNegotiatedProcess()">
+					<div class="form-group zuschlag">
+						<label class="checkbox-inline"> <input type="checkbox"
+							id="freezeCloseSubmission"
+							data-ng-model="awardInfoCtrl.awardInfo.freezeCloseSubmission"
+							name="freezeCloseSubmission">Beschwerdeeingang
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-2">
+					<div class="form-group">
+						<label class="checkbox-inline"> <input type="checkbox"
+							id="objectNameRead"
+							data-ng-model="awardInfoCtrl.awardInfo.objectNameRead"
+							name="objectNameRead"> Objekt
+						</label>
+					</div>
+					<div class="form-group abstand3">
+						<label class="checkbox-inline"> <input type="checkbox"
+							id="projectNameRead"
+							data-ng-model="awardInfoCtrl.awardInfo.projectNameRead"
+							name="projectNameRead"> Projektname
+						</label>
+					</div>
+				</div>
+				<div class="col-sm-2">
+					<div class="form-group">
+						<label class="checkbox-inline"> <input type="checkbox"
+							id="workingClassRead"
+							data-ng-model="awardInfoCtrl.awardInfo.workingClassRead"
+							name="workingClassRead"> Arbeitsgattung
+						</label>
+					</div>
+					<div class="form-group">
+						<label class="checkbox-inline"> <input type="checkbox"
+							id="descriptionRead"
+							data-ng-model="awardInfoCtrl.awardInfo.descriptionRead"
+							name="descriptionRead"> Beschreibung
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-12 abstand3">
+					<table>
+						<tr>
+							<th class="width700">
+                <label>Zuschlag:</label>
+              </th>
+							<th class="width300" style="text-align: right">
+                <label>Nettobetrag exkl. MWST</label>
+              </th>
+							<th class="width200" style="text-align: right" ng-if="awardInfoCtrl.awardedNumber > 1">
+								<label>Manueller Nettobetrag exkl. MWST</label>
+              </th>
+						</tr>
+						<tbody id="offer"
+							ng-repeat="offer in awardInfoCtrl.awardInfo.offers | filter : {'isAwarded' : 'true'}">
+							<td class="width700">
+                {{offer.submittentName}}
+              </td>
+							<td class="width300" style="text-align: right">
+                {{awardInfoCtrl.formatAmount(offer.amount)}}
+              </td>
+							<td class="width200" style="text-align: right" ng-if="awardInfoCtrl.awardedNumber > 1">
+								<input class="form-control" df-currency placeholder=""
+                       type="text" data-ng-model="offer.manualAmount">
+              </td>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="form-group" ng-if="awardInfoCtrl.isNotNegotiatedProcess()">
+				<label><strong>Ausschlüsse:</strong></label>
+				<div id="accordionTable"
+					class="table-responsive tableBtnAction subunternehmerTable">
+					<table class="table table-condensed"
+						style="border-collapse: collapse;">
+						<thead>
+							<tr>
+								<th colspan="2"><label>Submittent</label></th>
+								<th><label>Ausschlussgründe Art. 24 ÖBV </label></th>
+								<th><label>Nachweise erbracht </label></th>
+								<th><label>MUSS Kriterien </label></th>
+							</tr>
+						</thead>
+						<tbody id="offer"
+							ng-repeat="offer in awardInfoCtrl.awardInfo.offers
+									 | filter : awardInfoCtrl.filterExcluded(offerIndex)
+									 track by offer.id"
+							ng-init="offerIndex=$index"
+							accordion-group>
+							<div class="form-group">
+							<tr accordion-heading id="{{offer.id}}"
+								ng-click="awardInfoCtrl.openOfferAccordion(offer)">
+								<td><span class="fa fa-caret-right" aria-hidden="true"
+									ng-if="!offer.show"></span> <span class="fa fa-caret-down"
+									aria-hidden="true" ng-if="offer.show"></span></td>
+								<td>{{offer.submittentName}}</td>
+								<td translate ng-if="offer.existsExclusionReasons != null">{{offer.existsExclusionReasons}}</td>
+								<td translate ng-if="offer.existsExclusionReasons == null">&nbsp;</td>
+								<td translate ng-if="offer.formalExaminationFulfilled != null">{{offer.formalExaminationFulfilled}}</td>
+								<td translate ng-if="offer.formalExaminationFulfilled == null">&nbsp;</td>
+								<td ng-if="offer.mustCriteriaFulfilled === null"></td>
+								<td ng-if="offer.mustCriteriaFulfilled">Erfüllt</td>
+								<td ng-if="offer.mustCriteriaFulfilled !== null
+								           && !offer.mustCriteriaFulfilled">Nicht erfüllt</td>
+							</tr>
+							<tr>
+								<td colspan="9" ng-if="offer.show">
+									<div class="accordian-body collapse subTabs"
+										style="display: block;">
+										<div>
+
+											<br> <label> Ausschlussgründe nach Art. 24 ÖBV Abs. 1 </label> <br>
+											<br>
+
+											<div class="form-group"
+												ng-repeat="exclusionReason in offer.exclusionReasonCheckboxes track by exclusionReason.id">
+												<label class="checkbox-inline"> <input
+													type="checkbox" id="exclusionReason"
+													data-ng-model="exclusionReason.selected"
+													data-ng-disabled="exclusionReason.disabled"
+													name="exclusionReason">{{exclusionReason.value}}
+												</label>
+											</div>
+
+											<div class="form-group">
+												<label>Begründung</label>
+												<textarea class="form-control" id="exclusionReason"
+													name="exclusionReason" rows="5" resize="none"
+													data-ng-model="offer.exclusionReason"></textarea>
+											</div>
+
+										</div>
+									</div>
+								</td>
+							</tr>
+							</div>
+						</tbody>
+					</table>
+					</div>
+					</div>
+
+					<div class="col-sm-12 col-md-12 btn-bar">
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary">Speichern</button>
+							<button type="button" class="btn btn-default"
+								ng-click="awardInfoCtrl.resetPage(awardInfoCtrl.awardInfoHtmlForm.$dirty)">Abbrechen</button>
+								<div ng-if="awardInfoCtrl.awardInfoHtmlForm.$dirty">
+					<input ng-hide="true" type="checkbox"
+						data-ng-model="awardInfoCtrl.dirtyFlag"
+						ng-init="awardInfoCtrl.dirtyFlag=true"
+						ng-value = "appCtrl.setDirtyFlag(true)">
+				</div>
+						</div>
+					</div>
+		</fieldset>
+	</form>
+</div>

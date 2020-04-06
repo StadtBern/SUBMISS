@@ -1,0 +1,34 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0057">
+    <addColumn tableName="SUB_COMPANY">
+      <column name="PROOF_DOC_MOD_ON" type="DATETIME"
+        remarks="The date that the Nachweisbrief document has been updated."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_COMPANY">
+      <column name="PROOF_DOC_MOD_BY" type="VARCHAR(36)"
+        remarks="The Tenant that updated Nachweisbrief document."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_COMPANY">
+      <column name="PROOF_DOC_SUBMIT_DATE" type="DATETIME"
+        remarks="The date that the Nachweisbrief document should be submitted."/>
+    </addColumn>
+
+    <addColumn tableName="SUB_COMPANY">
+      <column name="CERT_EXPIRATION_DATE" type="DATETIME"
+        remarks="The date that the Certificate document expires."/>
+    </addColumn>
+
+    <addForeignKeyConstraint baseColumnNames="PROOF_DOC_MOD_BY"
+      baseTableName="SUB_COMPANY" constraintName="FK_PROOF_COMPANY_TENANT"
+      onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="ID"
+      referencedTableName="SUB_TENANT"/>
+  </changeSet>
+
+</databaseChangeLog>

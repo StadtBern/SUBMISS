@@ -1,0 +1,184 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">
+			{{applicantsCtrl.submission.workType.value1}}
+			{{applicantsCtrl.submission.workType.value2}},
+			<small>&nbsp;{{applicantsCtrl.submission.project.projectName}},
+				&nbsp;{{applicantsCtrl.getObjectInfo(applicantsCtrl.submission.project.objectName)}}
+			</small>
+		</h2>
+	</div>
+</div>
+<div class="row">	
+	<div class="card-box">
+		<form name="applicantsForm" id="applicantsForm" shows-validation-errors>
+			<div class="col-sm-12">
+	          <div class="alert alert-danger" ng-if="applicantsForm.$invalid" role="alert">
+	       		 <field-error form-element-name="applicantHasApplicationErrorField" translate name="error"></field-error>
+	       		 <field-error form-element-name="applicantHasSubcontractorsOrJointVentureErrorField" translate name="error"></field-error>
+	       		 <field-error form-element-name="noApplicantDocumentErrorField" translate name="error"></field-error>
+	       		 <field-error form-element-name="missingApplicationDatesErrorField" translate name="error"></field-error>
+	          </div> 
+	          <input name="applicantHasApplicationErrorField" ng-hide="true" data-ng-model="fd">
+	          <input name="applicantHasSubcontractorsOrJointVentureErrorField" ng-hide="true" data-ng-model="fd">
+	          <input name="noApplicantDocumentErrorField" ng-hide="true" data-ng-model="fd">
+	          <input name="missingApplicationDatesErrorField" ng-hide="true" data-ng-model="fd">
+	        </div>
+        </form>
+		<div class="col-sm-12">
+		<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+		<div ng-include src="'app/selective/firstStage/firstStageTabs.html'"></div>
+			<div role="tabpanel" class="tab-pane" id="subList">
+				<div class="row">
+					<div class="col-sm-12 ToolbarContainer">
+						<div class="btn-toolbar pull-right" role="toolbar">
+							<button type="button"
+								data-ng-click="applicantsCtrl.addApplicants()"
+								class="btn btn-primary" data-toggle="modal"
+								data-ng-disabled="!applicantsCtrl.secApplicantsAdd
+									|| applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED
+									|| applicantsCtrl.isCompletedOrCancelled"
+								data-target="#hinzufügen">
+								<span class="fa fa-plus" aria-hidden="true"></span> Bewerber hinzufügen
+							</button>
+							<button type="button"
+								class="btn btn-primary" data-toggle="modal"
+								data-ng-click="applicantsCtrl.closeApplicationOpening()"
+								data-ng-disabled="!applicantsCtrl.secApplicationOpeningClose || applicantsCtrl.firstLevelSubmissionFieldsEmpty()
+									|| applicantsCtrl.currentStatus < applicantsCtrl.status.APPLICATION_OPENING_STARTED
+									|| applicantsCtrl.isCompletedOrCancelled"
+								ng-if="applicantsCtrl.currentStatus < applicantsCtrl.status.APPLICATION_OPENING_CLOSED">
+								<span class="fa fa-plus" aria-hidden="true"></span> Bewerbungsöffnung abschliessen
+							</button>
+							<button type="button"
+								class="btn btn-primary" data-toggle="modal"
+								ng-click="applicantsCtrl.reopenApplicationOpening()"
+								ng-if="applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED"
+								ng-disabled="!applicantsCtrl.secApplicationOpeningReopen
+									|| applicantsCtrl.currentStatus >= applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
+									|| applicantsCtrl.isCompletedOrCancelled">
+								<span class="fa fa-plus" aria-hidden="true"></span> Bewerbungsöffnung wiederaufnehmen
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="tab-content">
+					<div class="row" id="results">
+						<div class="card-box">
+							<div class="col-sm-12 ToolbarContainer"></div>
+							<div class="col-sm-12">
+								<div>
+									<div ng-table-pagination="applicantsCtrl.tableParams"
+										template-url="'app/layout/pager.html'"></div>
+									<div id="accordionTable"
+										class="table-responsive tableBtnAction">
+										<table class="table table-condensed"
+											ng-table="applicantsCtrl.tableParams"
+											style="border-collapse: collapse;"
+											template-pagination="custom/pager"
+											 show-filter="true">
+												<tr>
+													<th colspan="2">Bewerber</th>
+													<th>P</span></th>
+													<th class="w80">Aktion</th>
+												</tr>
+												<tbody id="applicant" ng-repeat="applicant in $data | orderBy : 'companyName'"  
+													accordion-group is-open="false">
+													<tr  accordion-heading id="{{applicant.offer.id}}" ng-click="applicantsCtrl.openApplicantDetails(applicant)">
+														<td>
+															<span class="fa fa-caret-right" aria-hidden="true" ng-if="!applicant.show"></span>
+															<span class="fa fa-caret-down" aria-hidden="true" ng-if="applicant.show"></span></td>
+														<td>{{applicant.submittent.submittentNameArgeSub}} </td>
+														<td>
+															<span class="fa fa-circle green" aria-hidden="true"
+																ng-if="applicantsCtrl.currentStatus >= applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
+																	&& !applicant.offer.excludedFirstLevel"></span>
+															<span class="fa fa-circle-thin" aria-hidden="true"
+																ng-if="applicantsCtrl.currentStatus < applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
+																	|| applicant.offer.excludedFirstLevel"></span>
+														</td>
+														<td>
+															<button type="button" class="btn action btn-primary"
+																ng-click="applicantsCtrl.deleteApplicationModal(applicant.offer.id)"
+																ng-disabled="!applicantsCtrl.secApplicationDelete
+																	|| applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED
+																	|| applicantsCtrl.isCompletedOrCancelled"
+																title="Bewerbung löschen">
+																<span class="fa fa-eraser" aria-hidden="true"></span>
+															</button>						
+															<button type="button" class="btn action btn-primary"
+																ng-click="applicantsCtrl.deleteApplicantModal(applicant.submittent.id)"
+																ng-disabled="!applicantsCtrl.secApplicantDelete
+																	|| applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED
+																	|| applicantsCtrl.isCompletedOrCancelled"
+																title="Aktuellen Bewerber entfernen">
+																<span class="fa fa-trash-o" aria-hidden="true"></span>
+															</button>
+															<button type="button" class="btn action btn-primary" title="Firma ansehen"
+																ng-disabled="!applicantsCtrl.secCompanyView"
+																ng-click="applicantsCtrl.navigateToCompany(applicant.submittent.companyId.id)">
+																<span class="fa fa-eye" aria-hidden="true"></span>
+															</button>
+														</td>
+													</tr>
+													<tr>
+														<td colspan="9" class="hiddenRow" ng-if="applicant.show">
+															<div ng-include class="col-sm-12" src="'app/selective/firstStage/applicantTabs.html'"></div>
+															<div ui-view  class="col-sm-12"></div>
+														</td>
+													</tr>
+												</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/ng-template" id="custom/pager">
+  <div class="PaginationContainer">
+    <div class="PaginationLeft">
+      <label for="UniqueID004" class="sr-only">
+        Ergebnisse pro Seite:
+      </label>
+      <select id="UniqueID004">
+        <option value="10" ng-click="params.count(10)">10</option>
+        <option value="50" ng-click="params.count(50)">50</option>
+        <option value="10000" ng-click="params.count(10000)">Alle</option>
+      </select>
+      <span class="PaginationText">von {{params.total()}} Ergebnissen pro Seite </span>
+    </div>
+    <div class="PaginationRight">
+      <ul class="pagination ng-table-pagination pull-right">
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="first" ng-click="params.page(1)" href=""><span class="fa fa-fast-backward"></span></a></li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="prev" ng-click="params.page(page.number)" href=""><span class="fa fa-backward"><span class="sr-only">Previous</span></span></a></li>
+        <li ng-class="{'active': !page.active}" ng-repeat="page in pages" ng-switch="page.type">
+          <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+          <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+          <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a>
+          <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+        </li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type">	<a ng-switch-when="next" ng-click="params.page(page.number)" href=""><span class="fa fa-forward"><span class="sr-only">Next</span></span></a> </li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span class="fa fa-fast-forward"><span class="sr-only">Last</span></span></a></li>
+      </ul>
+    </div>
+  </div>
+</script>

@@ -1,0 +1,84 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="$close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title" ng-if="!selectSignOrDepCtrl.isBeko">{{selectSignOrDepCtrl.template.templateName}}</h4>
+  <h4 class="modal-title" ng-if="selectSignOrDepCtrl.isBeko">Referenz</h4>
+</div>
+<form name="selectSignOrDepCtrl.signatureForm" id="signatureForm"
+      data-ng-submit="selectSignOrDepCtrl.generateDocument()"
+      shows-validation-errors>
+	<div class="modal-body">
+	<div class="alert alert-danger"
+		ng-if="selectSignOrDepCtrl.signatureForm.$invalid" role="alert">
+		<field-error form-element-name="mandatoryErrorField" translate name="error"></field-error>
+	</div>
+	<div class="form-group">
+		<input name="mandatoryErrorField" ng-hide="true" data-ng-model="fd"></input>
+	</div>
+	<div ng-if="!selectSignOrDepCtrl.isBeko">
+		<div class="form-group">
+			<label for="signature">1. Unterschriftsberechtigter<span class="mandatory">*</span></label>
+			<ui-select name="firstSignature" id="firstSignature"
+				ng-model="selectSignOrDepCtrl.signature.firstSignature"
+				theme="select2"> <ui-select-match allow-clear="true">
+			<span ng-bind="$select.selected.name"></span> </ui-select-match> <ui-select-choices
+				repeat="signature in selectSignOrDepCtrl.signatures | propsFilter: {name: $select.search}">
+			<span ng-bind="signature.name"></span> </ui-select-choices> </ui-select>
+		</div>
+		<div class="form-group">
+			<label class="checkbox-inline"> <input type="checkbox"
+				id="isChecked" name="isChecked"
+				ng-model="selectSignOrDepCtrl.isChecked"
+				ng-checked="selectSignOrDepCtrl.isChecked">
+				Doppelunterschrift
+			</label>
+		</div>
+		<div class="form-group" ng-if="selectSignOrDepCtrl.isChecked">
+			<label for="signature">2. Unterschriftsberechtigter</label>
+			<ui-select name="secondSignature" id="secondSignature"
+				ng-model="selectSignOrDepCtrl.signature.secondSignature"
+				theme="select2"> <ui-select-match allow-clear="true">
+			<span ng-bind="$select.selected.name"></span> </ui-select-match> <ui-select-choices
+				repeat="signature in selectSignOrDepCtrl.signatures | propsFilter: {name: $select.search}">
+			<span ng-bind="signature.name"></span> </ui-select-choices> </ui-select>
+		</div>
+		<div class="modal-footer">
+			<button type="submit" class="btn btn-primary" data-dismiss="modal">Speichern</button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"
+				ng-click="$close()">Abbrechen</button>
+		</div>
+	</div>
+	<div ng-if="selectSignOrDepCtrl.isBeko">
+		<div class="form-group">
+			<label for="department">Abteilung<span
+						class="mandatory">*</span></label>
+			<ui-select name="department" id="department"
+				ng-model="selectSignOrDepCtrl.template.department" theme="select2">
+			<ui-select-match allow-clear="true" placeholder="Bitte wählen Sie eine Abteilung aus."> <span
+				ng-bind="$select.selected.name"></span> </ui-select-match> <ui-select-choices
+				repeat="department in selectSignOrDepCtrl.userDepartments | propsFilter: {name: $select.search}">
+			<span ng-bind="department.name"></span> </ui-select-choices> </ui-select>
+		</div>
+		<div class="modal-footer">
+			<button type="submit" class="btn btn-primary" data-dismiss="modal" ng-if="!selectSignOrDepCtrl.isBeko">Speichern</button>
+			<button type="submit" class="btn btn-primary" data-dismiss="modal" ng-if="selectSignOrDepCtrl.isBeko">Weiter</button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"
+				ng-click="$close()">Abbrechen</button>
+		</div>
+	</div>
+	</div>
+</form>

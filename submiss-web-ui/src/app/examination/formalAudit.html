@@ -1,0 +1,276 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">
+			{{formalAuditCtrl.data.submission.workType.value1}}
+			{{formalAuditCtrl.data.submission.workType.value2}}, <small>
+				{{formalAuditCtrl.data.submission.project.projectName}},
+				{{formalAuditCtrl.getObjectInfo(formalAuditCtrl.data.submission.project.objectName)}}
+			</small>
+		</h2>
+	</div>
+</div>
+<div class="row">
+	<div class="card-box">
+		<div class="col-sm-12">
+			<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+			<div ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.SELECTIVE"
+				 ng-include src="'app/selective/secondStage/secondStageTabs.html'"></div>
+				<form name="formalAuditCtrl.evidenceForm"
+					data-ng-submit="formalAuditCtrl.save(formalAuditCtrl.submittents)"
+					shows-validation-errors>
+					<fieldset ng-disabled="(formalAuditCtrl.currentStatus < formalAuditCtrl.status.OFFER_OPENING_CLOSED
+								&& formalAuditCtrl.offerOpeningClosedBefore) || formalAuditCtrl.isCompletedOrCancelled 
+								|| (formalAuditCtrl.data.submission.process != formalAuditCtrl.process.SELECTIVE && formalAuditCtrl.data.submission.examinationIsLocked)">
+					<div class="col-sm-12">
+						<div class="alert alert-danger"
+							ng-if="formalAuditCtrl.evidenceForm.$invalid" role="alert">
+							<field-error form-element-name="errorField" translate
+								name="error"></field-error>
+							<field-error form-element-name="mandatoryDocument" translate
+								name="error"></field-error>
+							<field-error form-element-name="mandatoryFormalAuditNotes" translate
+								name="error"></field-error>
+							<field-error form-element-name="formalAuditNotesLength" translate
+								name="error"></field-error>
+							<ul ng-if="formalAuditCtrl.noCheckedSubmittents"><li translate>no_selected_submittents</li></ul>
+						</div>
+
+						<input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+						<input name="mandatoryDocument" ng-hide="true" data-ng-model="fd"></input>
+						<input name="mandatoryFormalAuditNotes" ng-hide="true" data-ng-model="fd"></input>
+						<input name="formalAuditNotesLength" ng-hide="true" data-ng-model="fd"></input>
+					</div>
+					<div role="tabpanel" class="tab-pane" id="prufung">
+					<div class="col-sm-12 ToolbarContainer">
+					
+					<div class="btn-toolbar pull-right" role="toolbar"
+						ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.OPEN
+		 					|| formalAuditCtrl.data.submission.process == formalAuditCtrl.process.INVITATION">
+						<button type="button" class="btn btn-primary"
+							data-ng-click="formalAuditCtrl.checkBeforeSendingProofs()"
+							data-ng-disabled="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.PL
+								|| formalAuditCtrl.disableButtons() || formalAuditCtrl.allFormalExaminationsFulfilled()">Nachweise
+							anfordern</button>
+						<button type="submit" class="btn btn-primary"
+							data-ng-disabled="formalAuditCtrl.disableButtons()">Speichern</button>
+						<button type="button"
+							data-ng-disabled="formalAuditCtrl.disableButtons()"
+							ng-click="formalAuditCtrl.cancelButton(formalAuditCtrl.evidenceForm.$dirty,false)"
+							class="btn btn-default" ng-show="!tableform.$visible">Abbrechen</button>
+					</div>
+					<div ng-if="formalAuditCtrl.evidenceForm.$dirty">
+							<input ng-hide="true"
+								data-ng-model="formalAuditCtrl.dirtyFlag"
+								ng-init="formalAuditCtrl.dirtyFlag=true">
+					</div>
+							<div class="btn-toolbar pull-right role=" toolbar"=""
+								ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE 
+									|| formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION
+									|| formalAuditCtrl.data.submission.process == formalAuditCtrl.process.SELECTIVE">
+								<button type="button"
+									data-ng-if="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.PL && formalAuditCtrl.data.submission.process != formalAuditCtrl.process.SELECTIVE"
+									data-ng-click="formalAuditCtrl.checkBeforeRequestingProofs()"
+									data-ng-disabled="appCtrl.getLoggedUser().userGroup.name != formalAuditCtrl.group.PL 
+									|| formalAuditCtrl.currentStatus >= formalAuditCtrl.status.FORMAL_AUDIT_COMPLETED
+									|| formalAuditCtrl.allFormalExaminationsFulfilled()"
+									class="btn btn-primary">Nachweisaufforderung gewünscht</button>
+									<button type="button"
+									data-ng-click="formalAuditCtrl.checkBeforeSendingProofs(formalAuditCtrl.submittents)"
+									data-ng-if="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.ADMIN"
+									ng-disabled="formalAuditCtrl.sendEmailButtonDisabled() || formalAuditCtrl.currentStatus >= formalAuditCtrl.status.FORMAL_AUDIT_COMPLETED"
+									class="btn btn-primary">Nachweise anfordern</button>
+								<button type="button"
+									data-ng-disabled="formalAuditCtrl.formalAuditCloseButtonDisabled()"
+									class="btn btn-primary"
+									ng-if="formalAuditCtrl.currentStatus < formalAuditCtrl.status.FORMAL_AUDIT_COMPLETED"
+									ng-click="formalAuditCtrl.checkForChanges()">Formelle
+									Prüfung abschliessen</button>
+								<button type="button"
+									ng-click="formalAuditCtrl.reopenFormalAudit()"
+									data-ng-disabled="formalAuditCtrl.reopenFormalAuditDisabled()
+								|| formalAuditCtrl.reopenFormalAuditDisabledForPL(appCtrl.getLoggedUser().userGroup.name, formalAuditCtrl.data.submission.aboveThreshold)"
+									ng-if="formalAuditCtrl.currentStatus >= formalAuditCtrl.status.FORMAL_AUDIT_COMPLETED"
+									class="btn btn-primary">Formelle Prüfung
+									wiederaufnehmen</button>
+								<button type="submit"
+									data-ng-disabled="!formalAuditCtrl.secFormalAuditExecute || formalAuditCtrl.currentStatus >= formalAuditCtrl.status.FORMAL_AUDIT_COMPLETED"
+									class="btn btn-primary">Speichern</button>
+								<button type="button"
+									data-ng-disabled="!formalAuditCtrl.secFormalAuditExecute || formalAuditCtrl.currentStatus >= formalAuditCtrl.status.FORMAL_AUDIT_COMPLETED"
+									class="btn btn-default"
+									ng-click="formalAuditCtrl.cancelButton(formalAuditCtrl.evidenceForm.$dirty,false)">Abbrechen</button>
+
+							</div>
+						</div>
+					</div>
+					<div class="card-box">
+						<div class="col-sm-12">
+							<div class="table-responsive" id="table" ng-style="formalAuditCtrl.divTableHeight">
+								<table class="table table-striped"
+									ng-table="formalAuditCtrl.tableParams"
+									style="border-collapse: collapse;">
+									<thead>
+										<tr>
+											<th></th>
+											<th ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.SELECTIVE">
+                      </th>
+											<th colspan="2"
+												ng-if="formalAuditCtrl.data.submission.process != formalAuditCtrl.process.NEGOTIATED_PROCEDURE
+													&& formalAuditCtrl.data.submission.process != formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION
+													&& formalAuditCtrl.data.submission.process != formalAuditCtrl.process.SELECTIVE">
+                        Formelle Prüfung
+                      </th>
+                      <th
+                        ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE
+												|| formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION
+												|| formalAuditCtrl.data.submission.process == formalAuditCtrl.process.SELECTIVE">
+                      </th>
+                      <th
+                        ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION">
+                      </th>
+                      <th
+                        ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION">
+                      </th>
+                      <th
+                        ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION">
+                      </th>
+										</tr>
+										<tr>
+											<th class="rightborder"
+												ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION"><input
+												ng-disabled="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.DIR"
+												type="checkbox" ng-model="formalAuditCtrl.checkall" ng-change="formalAuditCtrl.activeEvidenceButton()" ng-click="formalAuditCtrl.checkUncheckAll()" />
+                      </th>
+											<th></th>
+											<th class="leftborder">Nachweise erbracht</th>
+											<th class="leftborder"
+												ng-if="formalAuditCtrl.data.submission.process != formalAuditCtrl.process.NEGOTIATED_PROCEDURE &&
+										formalAuditCtrl.data.submission.process != formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION">
+                        Ausschlussgründe Art. 24 ÖBV</th>
+											<th class="leftborder"
+												ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION">Prüfung
+												erfüllt</th>
+											<th class="leftborder"
+												ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION">Bemerkung
+												<span class="mandatory" ng-if="formalAuditCtrl.notesMandatory()">*</span></th>
+										</tr>
+									</thead>
+									<tbody ng-repeat="submittent in formalAuditCtrl.submittents">
+										<tr>
+											<td class="rightborder" style="width:20"
+												ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+										formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION"><input
+												ng-disabled="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.DIR"
+												type="checkbox" ng-model="submittent.checked" ng-change="formalAuditCtrl.activeEvidenceButton()" ng-value="formalAuditCtrl.test"/></td>
+											<td style="width:200">
+												<table>
+													<tbody>
+														<tr>
+															<td><strong>{{submittent.companyId.companyName}}</strong>
+															<sup ng-if="submittent.isVariant"><strong>V</strong></sup>
+															<sup ng-if="submittent.companyId.proofStatusFabe == 4"><strong>KAIO/FABE</strong></sup>
+															<sup ng-if="submittent.companyId.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain"><strong>FABE</strong></sup></td>
+														</tr>
+														<tr ng-if="submittent.jointVentures.length>0"
+															ng-repeat="jointVenture in submittent.jointVentures | orderBy : 'companyName'">
+															<td><span>ARGE {{jointVenture.companyName}}
+															<sup ng-if="jointVenture.proofStatusFabe == 4">KAIO/FABE</sup>
+															<sup ng-if="jointVenture.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain">FABE</sup></span></td>
+														</tr>
+														<tr ng-if="submittent.subcontractors.length>0"
+															ng-repeat="subcontractor in submittent.subcontractors | orderBy : 'companyName'">
+															<td><span>Sub U.
+																	{{subcontractor.companyName}} <sup
+																	ng-if="subcontractor.proofStatusFabe == 4">KAIO/FABE</sup>
+																	<sup
+																	ng-if="subcontractor.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain">FABE</sup>
+															</span></td>
+														</tr>
+														<tr>
+															<td><strong>Formelle Prüfung erfüllt</strong></td>
+														</tr>
+													</tbody>
+												</table>
+											</td>
+											<td class="leftborder" style="width:60">
+												<table>
+													<tbody>
+														<tr>
+															<td translate
+																ng-if="submittent.companyId.isProofProvided == null">&nbsp;</td>
+															<td translate
+																ng-if="submittent.companyId.isProofProvided != null"><strong>{{submittent.companyId.isProofProvided}}</strong></td>
+														</tr>
+														<tr ng-if="submittent.jointVentures.length>0"
+															ng-repeat="jointVenture in submittent.jointVentures | orderBy : 'companyName'">
+															<td translate
+																ng-if="jointVenture.isProofProvided == null">&nbsp;</td>
+															<td translate
+																ng-if="jointVenture.isProofProvided != null">{{jointVenture.isProofProvided}}</td>
+														</tr>
+														<tr ng-if="submittent.subcontractors.length>0"
+															ng-repeat="subcontractor in submittent.subcontractors | orderBy : 'companyName'">
+															<td translate
+																ng-if="subcontractor.isProofProvided == null">&nbsp;</td>
+															<td translate
+																ng-if="subcontractor.isProofProvided != null">{{subcontractor.isProofProvided}}</td>
+														</tr>
+														<tr>
+															<td ng-if="submittent.formalExaminationFulfilled"><strong>Ja</strong></td>
+															<td
+																ng-if="!submittent.formalExaminationFulfilled && submittent.formalExaminationFulfilled != null"><strong>Nein</strong></td>
+														</tr>
+													</tbody>
+												</table>
+
+											</td>
+											<td class="leftborder" style="width: 60" id="dropdownRow{{$index}}">
+												<ui-select name="options{{$index}}" id="option"
+													ng-click="formalAuditCtrl.expandTableHeight($index)"
+													data-ng-model="submittent.existsExclusionReasons"
+													data-ng-disabled="(formalAuditCtrl.data.submission.process != formalAuditCtrl.process.SELECTIVE && formalAuditCtrl.data.submission.examinationIsLocked) 
+						         					|| formalAuditCtrl.dropDownDisabled(submittent)"
+													theme="select2"> <ui-select-match
+													allow-clear="true"> <span>
+													{{$select.selected.label}}</span> </ui-select-match> <ui-select-choices
+													repeat="item.value as item in (formalAuditCtrl.options | propsFilter: {label: $select.search} | orderBy:'label')">
+												<span ng-bind="item.label"></span> </ui-select-choices> </ui-select>
+											</td>
+											<td ng-if="formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE ||
+													formalAuditCtrl.data.submission.process == formalAuditCtrl.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION"
+												class="leftborder"><textarea rows="3"
+												ng-disabled="formalAuditCtrl.notesDisabled()"
+												ng-change="formalAuditCtrl.notesMandatory(formalAuditCtrl.submittents)"
+												class="form-control" name="notes{{$index}}"
+												type="text" data-ng-model="submittent.formalAuditNotes"></textarea>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+				</form>
+		</div>
+	</div>
+</div>

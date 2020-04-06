@@ -1,0 +1,27 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class='btn-group multiS' data-ng-class='{open: open}'>
+	<button class='btn btn-primary dropdown-toggle' id='multiSId'>
+		<i class='fa fa-columns' aria-hidden='true'></i> Mehr Spalten
+	</button>
+	<button class='btn btn-primary dropdown-toggle' id='multiSCaretId'>
+		<span class='caret'> </span>
+	</button>
+	<ul class='dropdown-menu toggleCols'  aria-labelledby='dropdownMenu'>
+		<li style='cursor: pointer;' data-ng-repeat='option in options'><input id="spanCheckboxId"
+			type="checkbox" data-ng-click="toggleSelectItem(option)"
+			data-ng-checked="isChecked(option)" /> <span id="spanId"
+			data-ng-click='toggleSelectItem(option)'> {{option.name}} </span></li>
+	</ul>
+</div>

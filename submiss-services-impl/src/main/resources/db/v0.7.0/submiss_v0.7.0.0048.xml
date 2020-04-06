@@ -1,0 +1,18 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.7.0.0048">
+    <addColumn tableName="SUB_EMAIL_TEMPLATE_TENANT">
+      <column name="FK_EMAIL_TEMPLATE" type="VARCHAR(36)"/>
+    </addColumn>
+
+    <addForeignKeyConstraint baseColumnNames="FK_EMAIL_TEMPLATE"
+      baseTableName="SUB_EMAIL_TEMPLATE_TENANT"
+      constraintName="FK_EMAIL_TEMPLATE_TENANT_EMAIL_TEMPLATE"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_EMAIL_TEMPLATE"/>
+  </changeSet>
+</databaseChangeLog>

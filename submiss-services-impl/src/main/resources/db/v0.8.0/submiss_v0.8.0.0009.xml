@@ -1,0 +1,34 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.8.0.0009">
+
+    <dropView viewName="V_AUDIT_COMPANY"/>
+    <createView replaceIfExists="true" viewName="VW_AUDIT_COMPANY">
+      SELECT
+      a.id AS id,
+      CONCAT(uafirst.data, ' ', ualast.data) AS userName,
+      a.short_description as shortDescription,
+      a.created_on as createdOn,
+      c.COMPANY_NAME as companyName,
+      c.PROOF_STATUS_FABE as proofStatusFabe
+      FROM
+      al_audit a
+      INNER JOIN
+      SUB_COMPANY c ON c.id = a.reference_id
+      INNER JOIN
+      aaa_user u ON u.id = a.prin_session_id
+      INNER JOIN
+      aaa_user_attributes uafirst ON uafirst.user_id = u.id
+      INNER JOIN
+      aaa_user_attributes ualast ON ualast.user_id = u.id
+      WHERE opt3='1'
+      and reference_id in (select id from SUB_COMPANY)
+      and group_name = 'COMPANY'
+      and ualast.name = 'LASTNAME' and uafirst.name = 'FIRSTNAME';
+    </createView>
+  </changeSet>
+</databaseChangeLog>

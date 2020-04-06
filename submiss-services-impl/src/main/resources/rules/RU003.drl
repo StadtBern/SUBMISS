@@ -1,0 +1,85 @@
+package rules.submiss.showTemplates;
+
+import java.util.LinkedList;
+import java.util.List;
+global java.util.List templateCodes;
+global String userRole;
+
+rule "RU003"
+	when
+	$isRole_admin: Boolean( ) from userRole.equals("Admin")
+	$isRole_PL: Boolean( ) from userRole.equals("PL")
+	$isRole_Dir: Boolean( ) from userRole.equals("Dir")
+	$isRole_SB: Boolean( ) from userRole.equals("SB")
+		if ($isRole_admin || $isRole_PL) do[PT01]
+		if ($isRole_admin) do[PT02]
+		if ($isRole_admin) do[PT05]
+		if ($isRole_admin) do[PT06]
+		if ($isRole_admin || $isRole_PL) do[PT07]
+		if ($isRole_admin) do[PT08]
+		if ($isRole_admin) do[PT09]
+		if ($isRole_admin) do[PT10]
+		if ($isRole_admin) do[PT11]
+		if ($isRole_admin || $isRole_PL) do[PT12]
+		if ($isRole_admin) do[PT13]
+		if ($isRole_admin) do[PT14]
+		if ($isRole_admin || $isRole_PL) do[PT15]
+		if ($isRole_admin || $isRole_PL) do[PT18]
+		if ($isRole_admin ) do[FT01]
+		if ($isRole_admin ) do[PT03]
+		if ($isRole_admin ) do[PT04]
+		if ($isRole_admin ) do[PT19]
+		if ($isRole_admin || $isRole_PL) do[PT21]
+		if ($isRole_admin || $isRole_PL) do[PT24]
+		if ($isRole_admin || $isRole_PL) do[PT23]
+		if ($isRole_admin ) do[PT22]
+	then 
+		//templates without restrictions should be added here 
+		then[PT01]
+			templateCodes.add("PT01");
+		then[PT02]
+			templateCodes.add("PT02");
+		then[PT05] //BeKo Beschluss
+			templateCodes.add("PT05");
+		then[PT06] //Verfahrensabbruch
+			templateCodes.add("PT06");			
+		then[PT07] //Eignungsprüfung
+			templateCodes.add("PT07");
+		then[PT08] // Offertöffnungsprotokoll
+			templateCodes.add("PT08");
+		then[PT09] //Anonymisiertes Offertöffnungsprotokol
+			templateCodes.add("PT09");
+		then[PT10] //Offertöffnungsprotokoll DL WW
+			templateCodes.add("PT10");
+	    then[PT11] //Anonymisiertes Offertöffnungsprotokoll Wettbewerb
+			templateCodes.add("PT11");
+		then[PT12] //Offertvergleich freihändig
+			templateCodes.add("PT12");
+		then[PT13] //Bewerberübersicht
+			templateCodes.add("PT13");
+		then[PT14] //Submissionsübersicht
+			templateCodes.add("PT14");
+		then[PT15] //Submittentenliste(PT15), Submittentenliste als Etiketten (3652) (PT16), Submittentenliste (Postliste) (PT17)
+			templateCodes.add("PT15");
+			templateCodes.add("PT16");
+			templateCodes.add("PT17");
+		then[PT18] //Zuschlagsbewertung
+			templateCodes.add("PT18");
+		then[FT01] //Nachweisbrief
+			templateCodes.add("FT01");
+		then[PT03] //Nachweisbrief PT
+			templateCodes.add("PT03");
+		then[PT04] //Nachweisbrief Sub
+			templateCodes.add("PT04");
+		then[PT19] //Rechtliches Gehör
+			templateCodes.add("PT19");
+		then[PT21] //Vertrag
+			templateCodes.add("PT21");
+		then[PT24] //Zuschlag/Absage und Ausschluss
+			templateCodes.add("PT24");	
+			templateCodes.add("PT25");
+		then[PT23] //Verfügungen DL Wettbewerb 
+			templateCodes.add("PT23");
+		then[PT22] //Verfügungen S-Verfahren 1. Stufe
+			templateCodes.add("PT22");								
+end

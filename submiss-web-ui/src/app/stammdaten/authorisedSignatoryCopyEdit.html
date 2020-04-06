@@ -1,0 +1,64 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/select2.min.css" rel="stylesheet">
+
+<div class="modal-content">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="$close()">
+      <span aria-hidden="true">×</span>
+    </button>
+    <h4 class="modal-title" id="">Kopie an</h4>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="copycontrols">
+          <form role="form" autocomplete="off">
+
+            <label class="" for="Abteilung">Abteilungen</label>
+            <div class="kopie input-group col-xs-12">
+              <div ng-repeat="signature in AuthorisedSignatoryCopyEditCtrl.signatureCopies">
+
+                <ui-select name="template" id="template"
+                  on-select="AuthorisedSignatoryCopyEditCtrl.setDepartmentForSignatureCopy($select.selected.departmentId,$index)"
+                  ng-model="signature.departmentHistory" theme="select2">
+                  <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.name"></span> </ui-select-match>
+                  <ui-select-choices
+                    repeat="department in (AuthorisedSignatoryCopyEditCtrl.departments | filter: {name: $select.search})">
+                    <span ng-bind="department.name"></span> </ui-select-choices>
+                </ui-select>
+
+                <button id="addRowBtn" class="btn btn-default btn-add"
+                  ng-click="AuthorisedSignatoryCopyEditCtrl.removeRow($index)"
+                  ng-if="$index <= AuthorisedSignatoryCopyEditCtrl.signatureCopies.length - 1">
+                  <span class="fa fa-minus"></span>
+                </button>
+                <button id="addRowBtn" class="btn btn-default btn-add"
+                  ng-click="AuthorisedSignatoryCopyEditCtrl.addNewRow($index)"
+                  ng-if="$index == AuthorisedSignatoryCopyEditCtrl.signatureCopies.length - 1">
+                  <span class="fa fa-plus"></span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-click="AuthorisedSignatoryCopyEditCtrl.save()">Speichern</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="$close()">Abbrechen</button>
+  </div>
+</div>

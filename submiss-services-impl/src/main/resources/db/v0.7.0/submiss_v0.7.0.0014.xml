@@ -1,0 +1,49 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="European Dynamics SA" id="submiss_v0.7.0.0014">
+		<createTable tableName="SUB_TASKS"
+			remarks="Die Tabelle erhält die laufenden Pendenzen">
+			<column name="ID" type="VARCHAR(36)"
+				remarks="Primärschlüssel der Tabelle SUB_TASKS.">
+				<constraints nullable="false" />
+			</column>
+			<column name="FK_TENDER" type="VARCHAR(36)"
+				remarks="Fremdschlüssel der Tabelle SUB_TENDER.">
+			</column>
+			<column name="FK_COMPANY" type="VARCHAR(36)"
+				remarks="Fremdschlüssel der Tabelle SUB_COMPANY.">
+			</column>
+			<column name="FK_USER_TO_EDIT" type="VARCHAR(36)"
+				remarks="Fremdschlüssel der Tabelle AAA_USER. Referenziert den Benutzer der bearbeitet werden soll.">
+			</column>
+			<column name="FK_USER_ASSIGNED" type="VARCHAR(36)"
+				remarks="Fremdschlüssel der Tabelle AAA_USER. Referenziert den Benutzer der die Pendenz übernihmt">
+			</column>
+			<column name="DESCRIPTION" type="VARCHAR(200)" remarks="Die Beschreibung.">
+				<constraints nullable="false"/>
+			</column>
+			<column name="CREATED_ON" type="DATETIME"
+				remarks="Das Erstellungsdatum">
+				<constraints nullable="false"/>
+			</column>
+			<column name="CREATED_BY" type="VARCHAR(36)"
+				remarks="Der Ersteller">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+		
+		<addPrimaryKey columnNames="ID" constraintName="PK_SUB_TASKS"
+			tableName="SUB_TASKS" />
+		<addForeignKeyConstraint baseColumnNames="FK_TENDER"
+			baseTableName="SUB_TASKS" constraintName="FK_TENDER_TASKS"
+			onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+			referencedTableName="SUB_TENDER" />
+		<addForeignKeyConstraint baseColumnNames="FK_COMPANY"
+			baseTableName="SUB_TASKS" constraintName="FK_COMPANY_TASKS"
+			onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+			referencedTableName="SUB_COMPANY" />
+	</changeSet>
+</databaseChangeLog>

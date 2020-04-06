@@ -1,0 +1,42 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0022">
+    <sql>
+      -- drop table inserts (records): SUB_PROCEDURE_HISTORY
+
+      DELETE FROM SUB_PROCEDURE_HISTORY;
+      DELETE FROM SUB_PROCEDURE;
+
+      -- drop columns NAME and TYPE
+
+      ALTER TABLE SUB_PROCEDURE_HISTORY
+      DROP NAME;
+
+      ALTER TABLE SUB_PROCEDURE_HISTORY
+      DROP TYPE;
+
+      -- create columns instead: PROCESS and FK_PROCESS_TYPE
+
+      ALTER TABLE SUB_PROCEDURE_HISTORY
+      ADD PROCESS TINYINT NOT NULL;
+
+      ALTER TABLE SUB_PROCEDURE_HISTORY
+      ADD FK_PROCESS_TYPE VARCHAR(36);
+
+      -- Create foreign key for FK_PROCESS_TYPE
+
+      ALTER TABLE `SUB_PROCEDURE_HISTORY`
+      ADD CONSTRAINT `FK_PROCEDURE_HISTORY_PROCESS_TYPE`
+      FOREIGN KEY (`FK_PROCESS_TYPE`) REFERENCES
+      `SUB_MASTER_LIST_VALUE`
+      (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+    </sql>
+  </changeSet>
+
+
+</databaseChangeLog>

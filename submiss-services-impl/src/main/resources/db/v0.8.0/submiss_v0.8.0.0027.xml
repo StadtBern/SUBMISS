@@ -1,0 +1,19 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.8.0.0027">
+
+    <addColumn tableName="SUB_TENDER">
+      <column name="CUSTOM_PRICE_FORMULA" type="TEXT"
+        remarks="Benutzerdefinierte Preisformel."/>
+    </addColumn>
+    <addColumn tableName="SUB_TENDER">
+      <column name="CUSTOM_OPERATING_COST_FORMULA" type="TEXT"
+        remarks="Benutzerdefinierte Betriebskostenformel."/>
+    </addColumn>
+
+  </changeSet>
+</databaseChangeLog>

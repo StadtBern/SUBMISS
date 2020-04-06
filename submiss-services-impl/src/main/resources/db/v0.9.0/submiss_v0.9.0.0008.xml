@@ -1,0 +1,116 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.9.0.0008">
+    <createView replaceIfExists="true" viewName="VW_AUDIT_COMPANY">
+      SELECT
+      a.id AS id,
+      CONCAT(uafirst.data, ' ', ualast.data) AS userName,
+      a.short_description as shortDescription,
+      from_unixtime(floor(a.created_on / 1000)) as createdOn,
+      CASE
+      WHEN
+      (select
+      company.id
+      from
+      SUB_COMPANY as company
+      WHERE
+      company.id = a.reference_id) is null
+      THEN
+      SUBSTRING_INDEX(a.opt2, '[#]', 1)
+      ELSE c.COMPANY_NAME
+      END AS companyName,
+      CASE
+      WHEN
+      (select
+      company.id
+      from
+      SUB_COMPANY as company
+      WHERE
+      company.id = a.reference_id) is null
+      THEN
+      SUBSTRING_INDEX(SUBSTRING_INDEX(a.opt2, '[#]', 2), '[#]' , -1)
+      ELSE c.PROOF_STATUS_FABE
+      END AS proofStatusFabe,
+      SUBSTRING_INDEX(a.opt2, '[#]', - 1) as resource_key
+      FROM
+      al_audit a
+      LEFT JOIN
+      SUB_COMPANY c ON c.id = a.reference_id
+      INNER JOIN
+      aaa_user u ON u.id = a.prin_session_id
+      INNER JOIN
+      aaa_user_attributes uafirst ON uafirst.user_id = u.id
+      INNER JOIN
+      aaa_user_attributes ualast ON ualast.user_id = u.id
+      WHERE
+      opt3 = '1'
+      and level_id IN (SELECT
+      id
+      FROM
+      al_audit_level
+      WHERE
+      NAME = 'COMPANY_LEVEL')
+      and ualast.name = 'LASTNAME'
+      and uafirst.name = 'FIRSTNAME';
+    </createView>
+    <createView replaceIfExists="true" viewName="VW_AUDIT_PROJECT">
+      SELECT
+      a.id AS id,
+      CONCAT(uafirst.data, ' ', ualast.data) AS userName,
+      a.short_description as shortDescription,
+      from_unixtime(floor(a.created_on / 1000)) as createdOn,
+      CASE
+      WHEN union_select.id is not null THEN CONCAT_WS(' ', mlvh.VALUE1, mlvh.VALUE2)
+      ELSE SUBSTRING_INDEX(SUBSTRING_INDEX(a.opt2, '[#]', 2), '[#]', - 1)
+      END AS objectName,
+      CASE
+      WHEN union_select.id is not null THEN union_select.projectName
+      ELSE SUBSTRING_INDEX(a.opt2, '[#]', 1)
+      END AS projectName,
+      CASE
+      WHEN union_select.id is not null THEN CONCAT_WS(' ', mlvh1.VALUE1, mlvh1.VALUE2)
+      ELSE SUBSTRING_INDEX(SUBSTRING_INDEX(a.opt2, '[#]', 3), '[#]', -1)
+      END AS workType,
+      a.opt1 as reason,
+      CASE
+      WHEN union_select.id is not null THEN union_select.tenant_id
+      ELSE SUBSTRING_INDEX(SUBSTRING_INDEX(a.opt2, '[#]', - 2), '[#]', 1)
+      END AS tenant_id,
+      a.reference_id as reference_id,
+      a.opt2 as additionalInfo,
+      SUBSTRING_INDEX(a.opt2, '[#]', - 1) as resource_key
+      FROM
+      al_audit a
+      INNER JOIN
+      aaa_user u ON u.id = a.prin_session_id
+      INNER JOIN
+      aaa_user_attributes uafirst ON uafirst.user_id = u.id
+      INNER JOIN
+      aaa_user_attributes ualast ON ualast.user_id = u.id
+      LEFT JOIN
+      UNION_VIEW as union_select ON union_select.id = a.reference_id
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE mlv ON mlv.id = union_select.object
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE_HISTORY mlvh ON mlvh.FK_MASTER_LIST_VALUE = mlv.id
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE mlv1 ON mlv1.id = union_select.workType
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE_HISTORY mlvh1 ON mlvh1.FK_MASTER_LIST_VALUE = mlv1.id
+      WHERE
+      opt3 = '1'
+      and level_id IN (SELECT
+      id
+      FROM
+      al_audit_level
+      WHERE
+      NAME = 'PROJECT_LEVEL')
+      and ualast.name = 'LASTNAME'
+      and uafirst.name = 'FIRSTNAME';
+    </createView>
+  </changeSet>
+</databaseChangeLog>

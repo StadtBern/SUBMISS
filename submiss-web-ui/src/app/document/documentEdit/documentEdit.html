@@ -1,0 +1,168 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<!-- MODAL -->
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal"
+		ng-click="documentEditCtrl.closeWindow(documentEditCtrl.documentEdit.$dirty)"
+		aria-label="Close">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<h4 ng-if="documentEditCtrl.editMode" class="modal-title">Eigenschaften bearbeiten</h4>
+	<h4  ng-if="!documentEditCtrl.editMode" class="modal-title">Eigenschaften ansehen</h4>
+</div>
+
+	<form name="documentEditCtrl.documentEdit" data-ng-submit="documentEditCtrl.save(documentEditCtrl.document.id,documentEditCtrl.document.title,documentEditCtrl.document.privateDocument,documentEditCtrl.documentEdit.$dirty)" id="documentEdit"
+		shows-validation-errors>
+		<div class="modal-body">
+<div class="alert alert-danger"
+					ng-if="documentEditCtrl.documentEdit.titleNotGivenError.$invalid
+					  || documentEditCtrl.documentEdit.titleTooBig.$invalid" role="alert">
+					<field-error form-element-name="titleNotGivenError" translate
+						name="error"></field-error>
+          <field-error form-element-name="titleTooBig" translate
+            name="error"></field-error>
+</div>
+		<input name="titleNotGivenError" ng-hide="true"
+					data-ng-model="fd">
+    <input name="titleTooBig" ng-hide="true"
+           data-ng-model="fd">
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="form-group">
+					 
+					<label for="title">Titel</label><span
+										class="mandatory">*</span>  <input class="form-control" name="title"
+						id="title" value="Angebotsdeckblatt" placeholder="" type="text"
+						data-ng-model="documentEditCtrl.document.title" 
+						data-ng-disabled="!documentEditCtrl.editMode || !documentEditCtrl.document.canPropertiesBeEdited">
+						
+						
+				</div>
+				<div class="form-group">
+					<label for="dataName">Dateiname</label> <input class="form-control"
+						id="dataName" placeholder="" type="text"
+						data-ng-model="documentEditCtrl.document.filename"
+						data-ng-disabled="true"
+						>						
+				</div>
+				<div class="form-group">
+					<label for="version">Version</label> <input class="form-control"
+						id="version" placeholder="" type="text"
+						data-ng-model="documentEditCtrl.document.version"
+												data-ng-disabled="true"
+						>
+				</div>
+				<div class="form-group" ng-if="documentEditCtrl.projectPart">
+					<label for="Submittent">Submittent/Bewerber</label> <input
+						
+						class="form-control" id="Submittent" placeholder="" type="text"
+						data-ng-model="documentEditCtrl.document.submitentName"
+												data-ng-disabled="true"
+						
+						>
+				</div>
+				<div class="form-group">
+					<label for="creationDate">Erstellungsdatum</label>
+					<div class="input-group" >
+						<input class="form-control datepicker" id="creationDate"
+							placeholder="" type="text" data-ng-disabled="true"
+							ng-click="documentEditCtrl.openCreateDate()"
+							is-open="documentEditCtrl.openCreateDate.opened"
+							uib-datepicker-popup="dd.MM.yyyy"
+							data-ng-model="documentEditCtrl.document.createdOn  "> <span
+							class="input-group-btn">
+							<button class="btn btn-default" type="button" data-ng-disabled="true"
+								data-ng-click="documentEditCtrl.openCreateDate()">
+								<span class="fa fa-calendar"></span>
+							</button>
+						</span>
+					</div>
+				</div>
+
+			</div>
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label for="changeDate">Änderungsdatum:</label>
+					<div class="input-group">
+						<input class="form-control datepicker" id="changeDate"
+							placeholder="" type="text" data-ng-disabled="true"
+							ng-click="documentEditCtrl.openChangeDate()"
+							is-open="documentEditCtrl.openChangeDate.opened"
+							uib-datepicker-popup="dd.MM.yyyy"
+							data-ng-model="documentEditCtrl.document.lastModifiedOn">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" data-ng-disabled="true"
+								data-ng-click="documentEditCtrl.openChangeDate()">
+								<span class="fa fa-calendar"></span>
+							</button>
+						</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="user">Erstellt von</label> <input class="form-control"
+						id="user" data-ng-model="documentEditCtrl.document.createdBy" data-ng-disabled="true"
+						type="text">
+				</div>
+				<div class="form-group" ng-if="documentEditCtrl.projectPart">
+					<label  for="user">Abteilung der Submission </label> 
+					<input					
+						class="form-control" id="Submittent" placeholder="" type="text"
+						data-ng-model="documentEditCtrl.document.department.name" data-ng-disabled="true">
+				</div>
+				<div class="form-group" ng-if="!documentEditCtrl.projectPart">
+					<label for="user">Abteilung(en) des Erstellers</label>
+					<ui-select multiple id="secondaryDepartments"
+						name="secondaryDepartments"
+						ng-model="documentEditCtrl.document.userDepartments"
+						data-ng-disabled="true"> <ui-select-match
+						allow-clear="true">{{$item.name}}</ui-select-match> <ui-select-choices
+						repeat="item in documentEditCtrl.document.userDepartments | propsFilter: {name: $select.search}  | orderBy:'name'">
+					{{item.name}} </ui-select-choices> </ui-select>
+				</div>
+				<div class="form-group">
+					<label for="user">Direktion</label>
+						<ui-select multiple id="documentDirectorate"
+						name="documentDirectorate"
+						ng-model="documentEditCtrl.documentDirectorate"
+						data-ng-disabled="true"> <ui-select-match
+						allow-clear="true">{{$item.name}}</ui-select-match> <ui-select-choices
+						repeat="item in documentEditCtrl.documentDirectorate | propsFilter: {name: $select.search}  | orderBy:'name'">
+					{{item.name}} </ui-select-choices> </ui-select>
+				</div>
+			</div>
+			<div class="col-sm-12">
+				<div class="form-group">
+					<label class="checkbox-inline"> <input id="inlineCheckbox1"
+						value="option1" checked="checked" type="checkbox"
+						data-ng-model="documentEditCtrl.document.privateDocument "
+						data-ng-disabled="!documentEditCtrl.editMode || !documentEditCtrl.document.canPropertiesBeEdited">
+						Vertraulich (gilt für alle Versionen)
+					</label>
+				</div>
+			</div>
+		</div>
+
+
+
+</div>
+<div class="modal-footer">
+	<button type="submit" ng-if="documentEditCtrl.editMode" class="btn btn-primary">Speichern</button>
+	<button type="button" ng-if="documentEditCtrl.editMode"
+		ng-click="documentEditCtrl.closeWindow(documentEditCtrl.documentEdit.$dirty)"
+		class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+	<button type="button"
+		ng-if="!documentEditCtrl.editMode" ng-click="documentEditCtrl.closeWindow(documentEditCtrl.documentEdit.$dirty)"
+		class="btn btn-default" data-dismiss="modal">Schliessen</button>
+</div>
+	</form>

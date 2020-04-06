@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @formatter:off -->
+<!--
+feature:repo-add mvn:ch.bern.submiss/submiss-karaf-features/LATEST/xml/features
+-->
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="SUBMISS">
+  <!-- External repositories needed for this features set -->
+  <repository>mvn:com.eurodyn.qlack2.util/qlack2-util-repack-karaf-features/${qlack2.version}/xml/features</repository>
+  <repository>mvn:com.eurodyn.qlack2.fuse/qlack2-fuse-karaf-features/${qlack2.version}/xml/features</repository>
+  <repository>mvn:com.eurodyn.qlack2.common/qlack2-common-karaf-features/${qlack2.version}/xml/features</repository>
+  <!-- <repository>mvn:com.aspose/aspose-words/18.6</repository>    -->
+
+  <feature name="submiss" description="SUBMISS project" version="${project.version}">
+    <feature>submiss-database</feature>
+    <feature>submiss-deps</feature>
+    <feature>submiss-back-end</feature>
+    <feature>submiss-front-end</feature>
+  </feature>
+
+  <feature name="submiss-back-end" version="${project.version}">
+    <!-- Configuration -->
+    <!--<configfile finalname="/etc/ch.bern.submiss.impl.cfg">mvn:ch.bern.submiss/submiss-impl/${project.version}/cfg/config-admin</configfile>-->
+
+    <!-- <feature>submiss-deps</feature> -->
+    <bundle>mvn:ch.bern.submiss/submiss-services-api/${project.version}</bundle>
+    <bundle>mvn:ch.bern.submiss/submiss-services-impl/${project.version}</bundle>
+    <bundle>mvn:ch.bern.submiss/submiss-web-api/${project.version}</bundle>
+  </feature>
+
+  <feature name="submiss-front-end" version="${project.version}">
+    <feature>war</feature>
+    <bundle>mvn:ch.bern.submiss/submiss-web-ui/${project.version}/zip/distribution</bundle>
+  </feature>
+
+  <feature name="submiss-database" version="${project.version}">
+    <feature>qlack2-util-liquibase</feature>
+    <feature>qlack2-util-repack-jpadb</feature>
+    <feature>pax-jdbc-mariadb</feature>
+  </feature>
+
+  <feature name="submiss-deps-test" version="${project.version}">
+    <feature prerequisite="true">wrap</feature>
+    <feature prerequisite="true">jndi</feature>
+    <bundle>wrap:mvn:com.eurodyn.qlack2.util/qlack2-util-testing/${qlack2.version}</bundle>
+    <bundle>wrap:mvn:com.eurodyn.qlack2.util/qlack2-util-networking/${qlack2.version}</bundle>
+  </feature>
+
+
+  <feature name="submiss-deps" version="${project.version}">
+    <feature>qlack2-common-util</feature>
+    <feature>cxf-jaxrs</feature>
+    <feature>cxf-rs-security-cors</feature>
+    <feature>cxf-rs-security-sso-saml</feature>
+    <feature>pax-cdi</feature>
+    <feature>eventadmin</feature>
+    <feature>qlack2-util-rest</feature>
+    <feature>qlack2-util-repack-cxf-conf</feature>
+    <feature>qlack2-util-repack-querydsl</feature>
+    <feature>qlack2-util-repack-jackson-rs</feature>
+    <feature>qlack2-fuse-AAA</feature>
+    <feature>qlack2-fuse-caching-api</feature>
+    <feature>qlack2-fuse-caching-local</feature>
+    <feature>qlack2-fuse-lexicon</feature>
+    <feature>qlack2-util-jsr-validator-util</feature>
+    <feature>qlack2-fuse-settings</feature>
+    <feature>qlack2-util-hibernate-validator</feature>
+    <feature>qlack2-fuse-content-manager</feature>
+    <feature>qlack2-fuse-auditing</feature>
+    <feature>qlack2-fuse-scheduler</feature>
+    <feature>qlack2-util-sso</feature>
+    <feature>qlack2-fuse-fileupload</feature> 
+    <feature>qlack2-fuse-fileupload-api</feature> 
+    <bundle>mvn:com.eurodyn.qlack2.fuse/qlack2-fuse-file-upload-rest/${qlack2.version}</bundle>
+    <feature>qlack2-fuse-template-service</feature>
+    <feature>qlack2-fuse-rules-runtime</feature>
+    <bundle>mvn:org.mapstruct/mapstruct-jdk8/${mapstruct.version}</bundle>
+    <bundle>wrap:mvn:org.mariuszgromada.math/MathParser.org-mXparser/${mathParser.version}</bundle>
+    <bundle>wrap:mvn:commons-io/commons-io/${commons.io.version}</bundle>
+    <bundle>wrap:mvn:com.querydsl/querydsl-sql/${querydsl.version}</bundle>
+        
+    <!--  jasper -->
+	<bundle>wrap:mvn:net.sf.jasperreports/jasperreports/6.7.0</bundle>
+	<bundle>wrap:mvn:commons-beanutils/commons-beanutils/1.9.3</bundle>
+	<bundle>wrap:mvn:commons-digester/commons-digester/2.1</bundle>
+	<bundle>wrap:mvn:org.codehaus.castor/castor-xml/1.3.3</bundle>
+	<bundle>wrap:mvn:com.lowagie/itext/2.1.7.js6</bundle>
+	<bundle>wrap:mvn:com.fasterxml.jackson.core/jackson-annotations/${jackson-version}</bundle>
+ 	<bundle>wrap:mvn:com.fasterxml.jackson.core/jackson-databind/${jackson-version}</bundle>
+	<bundle>wrap:mvn:com.fasterxml.jackson.core/jackson-core/${jackson-version}</bundle>
+	<bundle>wrap:mvn:net.sf.jasperreports/jasperreports-fonts/6.0.0</bundle>
+	<bundle>wrap:mvn:com.ibm.icu/icu4j/63.1</bundle>
+    <!--  jasper -->
+    
+    <!--  Apache-poi-->  
+    <bundle>wrap:mvn:org.apache.commons/commons-collections4/4.1</bundle>
+    <bundle>wrap:mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.bcel/5.2_4</bundle>
+    <bundle>wrap:mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.poi/3.16_1</bundle> 
+     
+       
+	<!--  Aspose.Words -->
+ 	<bundle>wrap:mvn:com.aspose/aspose-words/18.6-jdk16$Bundle-SymbolicName=com.aspose.words&amp;Import-Package=javax.xml.*,javax.print.*,org.w3c.*,javax.imageio.*&amp;overwrite=merge</bundle>
+ 	<!--  Aspose.Cells -->
+ 	<bundle>wrap:mvn:com.aspose/aspose-cells/18.9</bundle>
+ 	 
+  <!-- <feature>submiss-poi</feature> --> 
+  </feature>
+</features>

@@ -1,0 +1,213 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <div>
+      <div>
+        <h2 class="page-title">Pendenzenliste</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-box" ng-if="appCtrl.getLoggedUser().userAdminRight">
+    <div class="col-sm-12">
+
+      <div class="panel-heading" role="tab" id="headingTwelve">
+        <span ng-click="tasksViewCtrl.openUserTaskTableAccordion()">
+          <h3 class="panel-title">
+            <a role="button" data-toggle="collapse" aria-expanded="{{tasksViewCtrl.userTaskTableAccordionShow}}"
+              aria-controls="collapseUserTasks">Benutzerverwaltung</a>
+          </h3>
+        </span>
+      </div>
+      <div id="collapseUserTasks" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwelve"
+        ng-if="tasksViewCtrl.userTaskTableAccordionShow">
+        <div ng-table-pagination="tasksViewCtrl.tableParamsUser" template-url="'custom/pager1'"></div>
+        <div class="table-responsive" ng-style="tasksViewCtrl.divTableHeight">
+          <table ng-table="tasksViewCtrl.tableParamsUser" class="table table-striped mailSendAction"
+            template-pagination="custom/pager1" show-filter="true">
+            <tr ng-repeat="allTasks in $data">
+              <td title="'Bezeichnung'" filter="{ 'description' : 'text'}" sortable="'description | translate'"
+                translate translate-values="{ XY: '{{allTasks.userAutoAssigned}}'}">{{allTasks.description}}</td>
+              <td title="'Erstellung'" filter="{ 'createdOn' : 'createdOnUserTaslDateFilter' }" sortable="'createdOn'">{{allTasks.createdOn |
+								date:'dd.MM.yyyy'}}</td>
+              <td title="'Vorname'" filter="{ 'firstName' : 'text'}" sortable="'firstName'">{{allTasks.firstName}}</td>
+              <td title="'Nachname'" filter="{ 'lastName' : 'text'}" sortable="'lastName'">{{allTasks.lastName}}</td>
+              <td title="'E-Mail'" filter="{ 'email' : 'text'}" sortable="'email'">{{allTasks.email}}</td>
+              <td title="'Login'" filter="{ 'id' : 'text'}" sortable="'id'">{{allTasks.id}}</td>
+              <td title="'Abteilung(en)'" filter="{ 'mainDepartmentStr' : 'text'}" sortable="'mainDepartmentStr'">
+                {{allTasks.mainDepartmentStr}}</td>
+              <td title="'Direktion(en)'" filter="{ 'directoratesStr' : 'text'}" sortable="'directoratesStr'">
+                {{allTasks.directoratesStr}}</td>
+              <td title="'Mandant'" filter="{ 'tenantName' : 'text'}" sortable="'tenantName'">{{allTasks.tenantName}}
+              </td>
+              <td title="'Rolle'" filter="{ 'role' : 'text'}" sortable="'role'">{{allTasks.role}}</td>
+              <td class="w90" title="'Aktion'">
+                <button type="button" class="btn action btn-primary"
+                  data-ng-click="tasksViewCtrl.editUser(allTasks.userToEditDTO)" title="Benutzer bearbeiten">
+                  <span class="fa fa-pencil" aria-hidden="true"></span>
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-box">
+    <div class="col-sm-12">
+      <div class="panel-heading" role="tab" id="headingTwelve" ng-if="appCtrl.getLoggedUser().userAdminRight">
+        <span ng-click="tasksViewCtrl.openTaskTableAccordion()">
+          <h3 class="panel-title">
+            <a role="button" data-toggle="collapse" aria-expanded="{{tasksViewCtrl.taskTableAccordionShow}}"
+              aria-controls="collapseUserTasks">{{tasksViewCtrl.openTasksAccordionTitle}}</a>
+          </h3>
+        </span>
+      </div>
+      <div id="collapseUserTasks" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwelve"
+        ng-if="tasksViewCtrl.taskTableAccordionShow">
+        <div ng-table-pagination="tasksViewCtrl.tableParams" template-url="'custom/pager2'"></div>
+        <div class="table-responsive" ng-style="tasksViewCtrl.divTableHeight">
+          <table ng-table="tasksViewCtrl.tableParams" class="table table-striped mailSendAction"
+            template-pagination="custom/pager2" show-filter="true">
+            <tr ng-repeat="allTasks in $data">
+              <td title="'Bezeichnung'" filter="{ 'description' : 'text'}" sortable="'description | translate'"
+                translate translate-values="{ XY: '{{allTasks.userAutoAssigned}}'}">{{allTasks.description}}</td>
+              <td title="'Erstellung'" filter="{ 'createdOn' : 'createdOnDateFilter' }" sortable="'createdOn'">{{allTasks.createdOn |
+								date:'dd.MM.yyyy'}}</td>
+              <td title="'Objekt'" filter="{ 'objectName' : 'text'}" sortable="'objectName'">{{allTasks.objectName}}
+              </td>
+              <td title="'Projekt'" filter="{ 'projectName' : 'text'}" sortable="'projectName'">{{allTasks.projectName}}
+              </td>
+              <td title="'Arbeitsgattung'" filter="{ 'workType' : 'text'}" sortable="'workType'">{{allTasks.workType}}
+              </td>
+              <td title="'Firma'" filter="{ 'companyName' : 'text'}" sortable="'companyName'">{{allTasks.companyName}}
+              </td>
+              <td title="'In Arbeit'" filter="{ 'userAssigned' : 'text'}" sortable="'userAssigned'">
+                {{allTasks.userAssigned}}</td>
+              <td class="w110" title="Aktion">
+                <button type="button" class="btn action btn-primary" title="Ansehen"
+                  ng-click="tasksViewCtrl.gotoTaskPage(allTasks)">
+                  <div class="fa fa-eye"></div>
+                </button>
+                <button type="button" class="btn action btn-primary" title="Erledigt"
+                  ng-click="tasksViewCtrl.settleTask(allTasks)" ng-if="tasksViewCtrl.canBeSettled(allTasks)">
+                  <div class="fa fa-check"></div>
+                </button>
+                <button type="button" ng-click="tasksViewCtrl.undertakeTask(allTasks)" class="btn action btn-primary"
+                  title="Übernehmen">
+                  <div class="fa fa-user-plus"></div>
+                </button>
+                <button type="button"
+                  ng-hide="allTasks.description == 'PROOF_REQUEST_PL_XY' && (allTasks.type == null || allTasks.type == 0)"
+                  ng-click="tasksViewCtrl.openMailModal(allTasks)" class="btn action btn-primary"
+                  title="E-Mail versenden">
+                  <div class="fa fa-envelope"></div>
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="ng-table/filters/createdOnDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="createdOn" type="text" name="createdOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="tasksViewCtrl.openCreatedOnFilter.opened"
+					ng-model="params.filter()['createdOn']"
+						ng-click="tasksViewCtrl.openCreatedOnFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="tasksViewCtrl.openCreatedOnFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>
+
+<script type="text/ng-template" id="ng-table/filters/createdOnUserTaslDateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="createdOn" type="text" name="createdOn" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="tasksViewCtrl.openCreatedOnUserTaskFilter.opened"
+					ng-model="params.filter()['createdOn']"
+						ng-click="tasksViewCtrl.openCreatedOnUserTaskFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="tasksViewCtrl.openCreatedOnUserTaskFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>
+
+
+<script type="text/ng-template" id="custom/pager1">
+  <div class="PaginationContainer">
+    <div class="PaginationLeft">
+      <label for="UniqueID004" class="sr-only">
+        Ergebnisse pro Seite:
+      </label>
+      <select id="UniqueID004" ng-change="params.count(params.settings.counts[$index])" ng-param-directive ng-model="params.settings.counts[$index]">
+        <option value="10" ng-selected="true">10</option>
+        <option value="50">50</option>
+        <option value="1000">Alle</option>
+      </select>
+      <span class="PaginationText">von {{params.total()}} Ergebnissen pro Seite </span>
+    </div>
+    <div class="PaginationRight">
+      <ul class="pagination ng-table-pagination pull-right">
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="first" ng-click="params.page(1)" href=""><span class="fa fa-fast-backward"></i></a></li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="prev" ng-click="params.page(page.number)" href=""><span class="fa fa-backward"><span class="sr-only">Previous</span></span></a></li>
+        <li ng-class="{'active': !page.active}" ng-repeat="page in pages" ng-switch="page.type">
+          <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+          <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+          <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a>
+          <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+        </li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type">	<a ng-switch-when="next" ng-click="params.page(page.number)" href=""><span class="fa fa-forward"><span class="sr-only">Next</span></span></a> </li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span class="fa fa-fast-forward"><span class="sr-only">Last</span></span></a></li>
+      </ul>
+    </div>
+  </div>
+</script>
+
+<script type="text/ng-template" id="custom/pager2">
+  <div class="PaginationContainer">
+    <div class="PaginationLeft">
+      <label for="UniqueID004" class="sr-only">
+        Ergebnisse pro Seite:
+      </label>
+      <select id="UniqueID004" ng-change="params.count(params.settings.counts[$index])" ng-param-directive ng-model="params.settings.counts[$index]">
+        <option value="10" ng-selected="true">10</option>
+        <option value="50">50</option>
+        <option value="1000">Alle</option>
+      </select>
+      <span class="PaginationText">von {{params.total()}} Ergebnissen pro Seite </span>
+    </div>
+    <div class="PaginationRight">
+      <ul class="pagination ng-table-pagination pull-right">
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="first" ng-click="params.page(1)" href=""><span class="fa fa-fast-backward"></i></a></li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="prev" ng-click="params.page(page.number)" href=""><span class="fa fa-backward"><span class="sr-only">Previous</span></span></a></li>
+        <li ng-class="{'active': !page.active}" ng-repeat="page in pages" ng-switch="page.type">
+          <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+          <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+          <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a>
+          <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+        </li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type">	<a ng-switch-when="next" ng-click="params.page(page.number)" href=""><span class="fa fa-forward"><span class="sr-only">Next</span></span></a> </li>
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type"><a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span class="fa fa-fast-forward"><span class="sr-only">Last</span></span></a></li>
+      </ul>
+    </div>
+  </div>
+</script>

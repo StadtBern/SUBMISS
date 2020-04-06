@@ -1,0 +1,32 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0026">
+    <sql>SET FOREIGN_KEY_CHECKS=0;</sql>
+    <dropTable tableName="SUB_ELIGIBILITY_CRITERION"/>
+    <dropTable tableName="SUB_OFFER_ELIGIB_CRITERION"/>
+    <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
+
+    <dropColumn tableName="SUB_OFFER_CRITERION" columnName="SCORE"/>
+    <addColumn tableName="SUB_OFFER_CRITERION">
+      <column name="NOTE" type="DECIMAL(10,2)" remarks="Die Noten.">
+        <constraints nullable="true"/>
+      </column>
+      <column name="POINT" type="DECIMAL(10,3)" remarks="Die Punkte.">
+        <constraints nullable="true"/>
+      </column>
+    </addColumn>
+    <dropColumn tableName="SUB_OFFER_SUBCRITERION" columnName="SCORE"/>
+    <addColumn tableName="SUB_OFFER_SUBCRITERION">
+      <column name="NOTE" type="DECIMAL(10,2)" remarks="Die Noten.">
+        <constraints nullable="true"/>
+      </column>
+      <column name="POINT" type="DECIMAL(10,3)" remarks="Die Punkte.">
+        <constraints nullable="true"/>
+      </column>
+    </addColumn>
+  </changeSet>
+</databaseChangeLog>

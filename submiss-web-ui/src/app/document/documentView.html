@@ -1,0 +1,101 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{documentViewCtrl.submission.workType.value1}}
+      {{documentViewCtrl.submission.workType.value2}}, <small>
+        {{documentViewCtrl.submission.project.projectName}},
+        {{documentViewCtrl.getObjectInfo(documentViewCtrl.submission.project.objectName)}}</small>
+    </h2>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card-box">
+    <div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+    <div class="tab-pane">
+      <form name="documentViewCtrl.template" data-ng-submit="documentViewCtrl.createDocument()" id="templateForm"
+        shows-validation-errors>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.template.templateNotSelectedError.$invalid"
+          role="alert">
+          <field-error form-element-name="templateNotSelectedError" translate name="error"></field-error>
+        </div>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.uploadError != null" role="alert" translate>
+          {{documentViewCtrl.uploadError}}</div>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.showError" role="alert" translate>
+          <ul ng-if="documentViewCtrl.showError">
+            <li translate>
+              empty_submittent_list_rechtliches
+            </li>
+          </ul>
+        </div>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.legalHearingErrorMessage" role="alert" translate>
+          <ul ng-if="documentViewCtrl.legalHearingErrorMessage">
+            <li translate>
+              navigate_to_legal_hearing_message
+            </li>
+          </ul>
+        </div>
+
+        <input name="templateNotSelectedError" ng-hide="true" data-ng-model="fd"></input>
+
+        <div class="col-sm-12 col-md-12 section-card-item">
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-4 ">
+                <div class="form-group">
+                  <ui-select name="template" id="template"
+                    ng-init="documentViewCtrl.chosenTemplate = documentViewCtrl.templates[0]"
+                    ng-model="documentViewCtrl.chosenTemplate" theme="select2">
+                    <ui-select-match allow-clear="true">
+                      <span ng-bind="$select.selected.value1"></span>
+                    </ui-select-match>
+                    <ui-select-choices
+                      repeat="template in (documentViewCtrl.templates | filter: {value1: $select.search})">
+                      <span ng-bind="template.value1"></span>
+                    </ui-select-choices>
+                  </ui-select>
+                </div>
+              </div>
+              <div class="col-sm-1 versionieren">
+                <div class="checkbox">
+                  <label> <input type="checkbox" id="selective"
+                      data-ng-model="documentViewCtrl.templateForm.createVersion">Versionieren
+                  </label>
+                </div>
+              </div>
+              <div class="col-sm-7 ">
+                <button type="submit" class="btn btn-primary modalbutton"
+                  ng-click="documentViewCtrl.createAndPrintDocument = false">
+                  <span aria-hidden="true"></span> Erstellen
+                </button>
+                <button type="submit" class="btn btn-primary"
+                  ng-disabled="documentViewCtrl.chosenTemplate.shortCode === 'PT17'"
+                  ng-click="documentViewCtrl.createAndPrintDocument = true">Erstellen
+                  und Drucken</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <tr>
+        <td>
+          <div ng-include class="col-sm-12" src="'app/document/documentTabs.html'"></div>
+          <div ui-view class="col-sm-12"></div>
+        </td>
+      </tr>
+    </div>
+  </div>
+</div>

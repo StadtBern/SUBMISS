@@ -1,0 +1,92 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.6.0.0003">
+
+    <createTable tableName="SUB_TENDER_CANCEL"
+      remarks="Die Tabelle erhält die Verfahrensabbruch Daten der Submission.">
+      <column name="ID" type="VARCHAR(36)"
+        remarks="Primärschlüssel der Tabelle SUB_TENDER_CANCEL.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_TENDER" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_TENDER.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="AVAILABLE_DATE" type="DATETIME" remarks="Das Verfügungsdatum."/>
+      <column name="FREEZE_CLOSE_TENDER" type="BIT"
+        remarks="Der Beschwerdeeingang."/>
+      <column name="OBJECT_NAME_READ" type="BIT"
+        remarks="Ob der Wert des Feldes Objektname des ausgewählten Projektes in die Verfügung eingelesen wird."/>
+      <column name="PROJECT_NAME_READ" type="BIT"
+        remarks="Ob der Wert des Feldes Projektname des ausgewählten Projektes in die Verfügung eingelesen wird."/>
+      <column name="WORKING_CLASS_READ" type="BIT"
+        remarks="Ob der Wert des Feldes Arbeitsgattung der ausgewählten Submission in die Verfügung eingelesen wird."/>
+      <column name="DESCRIPTION_READ" type="BIT"
+        remarks="Ob der Wert des Feldes Beschreibung der ausgewählten Submission in die Verfügung eingelesen wird."/>
+      <column name="REASON" type="TEXT" remarks="Die Begründung.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="CREATED_ON" type="DATETIME"
+        remarks="Das Datum, dass die Submission zum ersten Mal abgebrochen wurde (Verfahrensabbruch Daten wurden gespeichert)."/>
+      <column name="CREATED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der die Submission zum ersten Mal abgebrochen hat (Verfahrensabbruch Daten gespeichert)."/>
+      <column name="UPDATED_ON" type="DATETIME"
+        remarks="Das Datum, dass die Verfahrensabbruch Daten zum letzten Mal gespeichert wurden."/>
+      <column name="UPDATED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der die Verfahrensabbruch Daten zum letzten Mal gespeichert hat."/>
+      <column name="CANCELLED_ON" type="DATETIME"
+        remarks="Das Datum, dass der Verfahren abgebrochen wurde.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="CANCELLED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der den Verfahren abgebrochen hat."/>
+    </createTable>
+
+    <addPrimaryKey columnNames="ID" constraintName="PK_TENDER_CANCEL"
+      tableName="SUB_TENDER_CANCEL"/>
+    <addForeignKeyConstraint baseColumnNames="FK_TENDER"
+      baseTableName="SUB_TENDER_CANCEL" constraintName="FK_TENDER_CANCEL_TENDER"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_TENDER"/>
+    <addForeignKeyConstraint baseColumnNames="CREATED_BY"
+      baseTableName="SUB_TENDER_CANCEL" constraintName="FK_CREATED_BY_CANCEL_USER"
+      onDelete="SET NULL" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+    <addForeignKeyConstraint baseColumnNames="UPDATED_BY"
+      baseTableName="SUB_TENDER_CANCEL" constraintName="FK_UPDATED_BY_CANCEL_USER"
+      onDelete="SET NULL" onUpdate="SET NULL" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+    <addForeignKeyConstraint baseColumnNames="CANCELLED_BY"
+      baseTableName="SUB_TENDER_CANCEL" constraintName="FK_CANCELLED_BY_CANCEL_USER"
+      onDelete="SET NULL" onUpdate="SET NULL" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+
+    <createTable tableName="SUB_TENDER_CANCEL_REASON"
+      remarks="Die Tabelle erhält die Verfahrensabbruch Grunde.">
+      <column name="FK_TENDER_CANCEL" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_TENDER_CANCEL">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_CANCEL_REASON" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_MASTER_LIST_VALUE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="CANCEL_REASON_EXISTS" type="BIT"
+        remarks="Ob der Abschlussgrund existiert für diesen Verfahrensabbruch."/>
+    </createTable>
+
+    <addForeignKeyConstraint baseColumnNames="FK_TENDER_CANCEL"
+      baseTableName="SUB_TENDER_CANCEL_REASON" constraintName="FK_TENDER_CANCEL_REASON_CANCEL"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_TENDER_CANCEL"/>
+    <addForeignKeyConstraint baseColumnNames="FK_CANCEL_REASON"
+      baseTableName="SUB_TENDER_CANCEL_REASON" constraintName="FK_TENDER_CANCEL_REASON_REASON"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_MASTER_LIST_VALUE"/>
+  </changeSet>
+
+</databaseChangeLog>

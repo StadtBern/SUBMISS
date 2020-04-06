@@ -1,0 +1,30 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0005">
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="AMOUNT" type="DECIMAL(10,2)"/>
+    </addColumn>
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="DISCOUNT_IN_PERCENTAGE" type="DECIMAL(10,2)"/>
+    </addColumn>
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="DISCOUNT2_IN_PERCENTAGE" type="DECIMAL(10,2)"/>
+    </addColumn>
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="OPERATING_COST_VAT_IN_PERCENTAGE" type="DECIMAL(10,2)"/>
+    </addColumn>
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="BUILDING_COSTS_IN_PERCENTAGE" type="DECIMAL(10,2)"/>
+    </addColumn>
+  </changeSet>
+
+</databaseChangeLog>

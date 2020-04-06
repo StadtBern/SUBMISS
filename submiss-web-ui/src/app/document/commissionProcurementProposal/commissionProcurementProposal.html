@@ -1,0 +1,199 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="col-sm-12 ToolbarContainer">
+	<div class="btn-toolbar pull-right" role="toolbar">
+		<button type="button" class="btn btn-primary"
+			ng-click="commissionProcurementProposalCtrl.checkForChanges(commissionProcurementProposalCtrl.commissionProcurementForm.$dirty)"
+			ng-if="commissionProcurementProposalCtrl.secCommissionProcurementProposalClose &&
+				commissionProcurementProposalCtrl.currentStatus < commissionProcurementProposalCtrl.status.COMMISSION_PROCUREMENT_PROPOSAL_CLOSED"
+			ng-disabled="commissionProcurementProposalCtrl.currentStatus < commissionProcurementProposalCtrl.status.COMMISSION_PROCUREMENT_PROPOSAL_STARTED
+						|| commissionProcurementProposalCtrl.isCompletedOrCancelled"> 
+			Beschaffungsantrag abschliessen
+		</button>
+		<button type="button" class="btn btn-primary"
+			ng-click="commissionProcurementProposalCtrl.reopenCommissionProcurementProposal()"
+			ng-if="commissionProcurementProposalCtrl.secCommissionProcurementProposalReopen &&
+				commissionProcurementProposalCtrl.currentStatus >= commissionProcurementProposalCtrl.status.COMMISSION_PROCUREMENT_PROPOSAL_CLOSED"
+			ng-disabled="commissionProcurementProposalCtrl.currentStatus >= commissionProcurementProposalCtrl.status.COMMISSION_PROCUREMENT_DECISION_CLOSED
+						|| commissionProcurementProposalCtrl.isCompletedOrCancelled"> 
+			Beschaffungsantrag wiederaufnehmen
+		</button>
+	</div>
+</div>
+<div role="tabpanel" class="tab-pane card-box">
+	<form name="commissionProcurementProposalCtrl.commissionProcurementForm"
+		ng-submit="commissionProcurementProposalCtrl.save()"
+		ng-if="commissionProcurementProposalCtrl.secCommissionProcurementProposalView
+			&& commissionProcurementProposalCtrl.isFormVisible(commissionProcurementProposalCtrl.currentStatus,
+				commissionProcurementProposalCtrl.submission.process)"
+		id="commissionProcurementForm" shows-validation-errors>
+		<fieldset ng-disabled="!commissionProcurementProposalCtrl.secCommissionProcurementProposalEdit 
+			|| commissionProcurementProposalCtrl.isFormDisabled(commissionProcurementProposalCtrl.currentStatus)">
+		<div class="col-sm-12">
+		<div class="alert alert-danger"
+			ng-if="commissionProcurementProposalCtrl.commissionProcurementForm.$invalid && commissionProcurementProposalCtrl.errorFieldsVisible"
+			role="alert">
+			<field-error form-element-name="noProposalDocumentErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="noLegalHearingDocumentErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementDateErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementObjectErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementBusinessErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementPreRemarksErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementSuitabilityAuditTextErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementReservationErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementFreeTextFieldErrorField" translate
+				name="error"></field-error>
+			<field-error form-element-name="procurementReasonGivenErrorField" translate
+				name="error"></field-error>
+		</div>
+		<input name="noProposalDocumentErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementDateErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementObjectErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementBusinessErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementPreRemarksErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementSuitabilityAuditTextErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementReservationErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementFreeTextFieldErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="procurementReasonGivenErrorField" ng-hide="true" data-ng-model="fd"></input>
+		<input name="noLegalHearingDocumentErrorField" ng-hide="true" data-ng-model="fd"></input>
+		</div>
+		<div class="col-sm-12 col-md-6">
+			<div class="form-group"> 
+				<label for="commissionProcurementDate">BeKo Sitzung<span class="mandatory">*</span></label>
+				<div class="input-group">
+               		<input class="form-control datepicker" id="commissionProcurementDate" type="text"
+                	   name="commissionProcurementDate" uib-datepicker-popup="dd.MM.yyyy"
+                	   is-open="commissionProcurementProposalCtrl.commissionProcurementDateOpened"
+					   data-ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.date"
+					   ng-click="commissionProcurementProposalCtrl.openCommissionProcurementDate()"> 
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button"
+							data-ng-click="commissionProcurementProposalCtrl.openCommissionProcurementDate()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+				</div>
+			</div>
+			<div class="form-group"> 
+				<label for="commissionProcurementBusiness">Geschäft</label> 
+				<input class="form-control" ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.business" 
+					id="commissionProcurementBusiness" name="commissionProcurementBusiness" type="number" step="1"
+					data-ng-value="commissionProcurementProposalCtrl.submission.commissionProcurementProposalBusiness">
+			</div>
+			<div class="form-group"> 
+				<label for="procurementObject">Beschaffungsgegenstand</label>
+				<textarea class="form-control" ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.object"  
+					name="procurementObject" id="procurementObject" rows="2"></textarea> 
+			</div>
+			<div class="form-group"> 
+				<label for="suitabilityAudit">Eignungsprüfung</label>
+				<ui-select name="procurementSuitabilityAuditDropdown" id="procurementSuitabilityAuditDropdown"
+					ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.suitabilityAuditDropdown" theme="select2"
+					ng-disabled="!commissionProcurementProposalCtrl.secCommissionProcurementProposalEdit 
+						|| commissionProcurementProposalCtrl.isFormDisabled(commissionProcurementProposalCtrl.currentStatus)">
+					<ui-select-match allow-clear="true"> <span
+						ng-bind="$select.selected"></span> 
+					</ui-select-match> 
+					<ui-select-choices
+						repeat="choice in commissionProcurementProposalCtrl.suitabilityAuditDropdownChoices">
+					<span ng-bind="choice"></span></ui-select-choices> 
+				</ui-select>
+			</div>
+			<div class="form-group"> 				
+				<textarea class="form-control" ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.suitabilityAuditText"
+				 	id="procurementSuitabilityAuditText" name="procurementSuitabilityAuditText" rows="3"></textarea> 
+			</div>																																																															
+		</div>	
+		<div class="col-sm-12 col-md-6">
+			<div class="form-group"> 
+				<label for="costEstimate">Kostenvoranschlag</label> 
+				<input class="form-control" readonly="readonly" df-currency 
+					ng-model="commissionProcurementProposalCtrl.submission.costEstimate" id="costEstimate"> 
+			</div>									
+			<div class="form-group"> 
+				<label for="preRemarks">Vorbemerkungen</label>
+				<textarea class="form-control" ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.preRemarks" 
+					id="procurementPreRemarks" name="procurementPreRemarks" rows="2"></textarea> 
+			</div>
+			<div class="form-group"> 
+				<label for="reservation">Vorbehalt</label> 
+				<textarea class="form-control" ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.reservation" 
+				id="procurementReservation" name="procurementReservation" rows="3"></textarea> 
+			</div>
+		</div>
+		<div ng-repeat="awardRecipient in commissionProcurementProposalCtrl.commissionProcurementProposalForm.awardRecipients | orderBy : 'awardRank'">
+			<div class="col-sm-12">			
+				<div class="row">
+					<div class="col-sm-12 col-md-6">
+						<div class="form-group"> 
+							<label for="award">Zuschlag {{$index + 1}}</label> 
+							<input class="form-control" 
+								ng-value="commissionProcurementProposalCtrl.showAwardRecipientJointVenturesSubcontractors(awardRecipient)" 
+								readonly="readonly" id="award"> 
+						</div>
+						<div class="form-group"> 
+							<label for="amount">Nettobetrag exkl. MWST</label>
+							<input class="form-control" readonly="readonly" 
+								ng-model="awardRecipient.amount" id="amount" df-currency> 
+						</div>									
+					</div>
+					<div class="col-sm-12 col-md-6">
+						<div class="form-group" ng-if="awardRecipient.operatingCostsAmount"> 
+							<label for="operatingCostAmount">BK - Nettobetrag exkl. MWST</label>
+							<input class="form-control" ng-model="awardRecipient.operatingCostsAmount" 
+								readonly="readonly" id="operatingCostAmount" df-currency> 
+						</div>	
+						<div class="form-group" ng-if="awardRecipient.operatingCostNotes"> 
+							<label for="operatingCostNotes">BK Kosteninformation</label>
+							<input class="form-control" ng-model="awardRecipient.operatingCostNotes" 
+								readonly="readonly" id="operatingCostNotes"> 
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-12">
+				<div class="form-group"> 
+					<textarea class="form-control" ng-model="awardRecipient.awardRecipientFreeTextField" 
+						id="procurementFreeTextField" name="procurementFreeTextField{{awardRecipient.id}}" type="text" rows="3"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-12">
+			<div class="form-group"> 
+				<label for="reasonGiven">Begründung</label>
+				<textarea class="form-control" ng-model="commissionProcurementProposalCtrl.commissionProcurementProposalForm.reasonGiven" 
+					id="reasonGiven" name="procurementReasonGiven" rows="3"></textarea> 
+			</div>
+		</div>
+		<div class="col-sm-12 col-md-12 btn-bar">
+			<button type="submit" class="btn btn-primary">Speichern</button>
+			<button type="button" class="btn btn-default" 
+				ng-click="commissionProcurementProposalCtrl.cancelButton(commissionProcurementProposalCtrl.commissionProcurementForm.$dirty)">Abbrechen</button>
+			<div ng-if="commissionProcurementProposalCtrl.commissionProcurementForm.$dirty">
+				<input ng-hide="true" type="checkbox"
+					data-ng-model="commissionProcurementProposalCtrl.dirtyFlag"
+					ng-init="commissionProcurementProposalCtrl.dirtyFlag=true">
+			</div>
+		</div>
+		</fieldset>
+	</form>
+</div>

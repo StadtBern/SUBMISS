@@ -1,0 +1,1075 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0001">
+    <sql>
+
+
+      CREATE TABLE `SUB_AUDIT_LOG`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_AUDIT_LOG.',
+      `LOG_DATE` DATETIME NOT NULL,
+      `LOG_TYPE` SMALLINT NOT NULL COMMENT 'Der Typ des Logs. Mögliche Werte: 0 (INFO), 1 (ERROR), 2
+      (DEBUG)',
+      `LOG_TEXT` TEXT NOT NULL,
+      `USERNAME` VARCHAR(50) NOT NULL,
+      `APP_VERSION` VARCHAR(10) NOT NULL COMMENT 'Die Version der Submiss-Fachanwendung.',
+      CONSTRAINT `PK_AUDIT_LOG` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält den Verlauf für Projekt- und Firmenteil.'
+
+      ;
+
+      CREATE TABLE `SUB_COMPANY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_COMPANY.',
+      `COMPANY_NAME` VARCHAR(100) NOT NULL COMMENT 'Der Name der Firma.',
+      `PROOF_ORDERED_BY` VARCHAR(150) NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      `PROOF_ORDERED_ON` DATETIME NULL,
+      `FK_COUNTRY` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COUNTRY.',
+      `ADD_INFO` VARCHAR(100) NULL,
+      `ADDRESS1` VARCHAR(100) NOT NULL COMMENT 'Die Adresse der Firma.',
+      `ADDRESS2` VARCHAR(100) NULL COMMENT 'Die Adresse der Firma.',
+      `POST_CODE` VARCHAR(10) NOT NULL COMMENT 'Die Postleitzahl der Firma.',
+      `LOCATION` VARCHAR(50) NOT NULL,
+      `COMPANY_TEL` VARCHAR(20) NOT NULL COMMENT 'Die Telefonnummer der Firma.',
+      `COMPANY_FAX` VARCHAR(20) NULL COMMENT 'Das Fax.',
+      `COMPANY_EMAIL` VARCHAR(100) NOT NULL COMMENT 'Die E-Mail der Firma. (Mehrere Werte
+      kommasepariert).',
+      `COMPANY_WEBSITE` VARCHAR(100) NULL COMMENT 'Webseite der Firma.',
+      `PROOF_STATUS` TINYINT NOT NULL COMMENT 'Der Status der Nachweise. Mögliche Werte: 1 bis 5.',
+      `NOTES` TEXT NULL COMMENT 'Allgemeine Bemerkungen.',
+      `MODIFICATION_DATE` TIMESTAMP NULL COMMENT 'Das Änderungsdatum.',
+      `NUMBER_OF_TRAINEES` BIGINT NULL DEFAULT 0 COMMENT 'Anzahl Lernende.',
+      `NUMBER_OF_WOMEN` INT NULL DEFAULT 0 COMMENT 'Anzahl der Frauen.',
+      `NUMBER_OF_MEN` INT NULL DEFAULT 0 COMMENT 'Anzahl der Männer.',
+      `LOGIB_DATE` DATETIME NULL COMMENT 'Das Datum des Logibnachweises.',
+      `CONSULT_ADMIN` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob Rücksprache mit FaBe nötig ist.
+      Mögliche Werte: 1 (true), 0 (false).',
+      `CONSULT_KAIO` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob Rücksprache mit KAIO nötig ist.
+      Mögliche Werte: 1 (true), 0 (false).',
+      `NEW_VAT_ID` VARCHAR(100) NULL COMMENT 'Die U-ID.',
+      `ORIGIN_INDICATION` VARCHAR(50) NULL DEFAULT 'SD' COMMENT 'Die Herkunftsangabe.',
+      `LOGIB_KMU_DATE` DATETIME NULL COMMENT 'Das Datum des Logibnachweises KMU.',
+      `FK_ILO` VARCHAR(36) COMMENT 'ILO.',
+      `ILO_DATE` DATETIME NULL COMMENT 'Das ILO-Datum.',
+      `IS_ARCHIVED` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob die Firma archiviert ist. Mögliche
+      Werte: 1 (true), 0 (false).',
+      `NOTES_ADMIN` TEXT NULL COMMENT 'Bemerkung FaBe.',
+      `CERTIFICATE_DATE` DATETIME NULL,
+      `TLP` BIT NULL,
+      `FK_MAIN_COMPANY` VARCHAR(36) COMMENT 'Diese Tabelle enthält die Hauptfirmensitz',
+      `FK_USER` VARCHAR(36) NULL COMMENT "Die ID des Benutzers, welcher die Firma eröffnet oder
+      geändert hat.",
+      CONSTRAINT `PK_COMPANY` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Firmeninformationen.'
+
+      ;
+
+      CREATE TABLE `SUB_COMPANY_PROOF`
+      (
+      `FK_COMPANY` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COMPANY.',
+      `FK_PROOF` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_PROOF.',
+      `PROOF_DATE` DATETIME NULL,
+      `IS_REQUIRED` BIT NOT NULL COMMENT 'Kennzeichnet, ob der Nachweis für die Firma erforderlich
+      ist. Mögliche Werte: 0 (false), 1 (true).'
+      )
+      COMMENT = 'Diese Tabelle enthält die Assoziationen zwischen Firmen und Nachweisen.'
+
+      ;
+
+      CREATE TABLE `SUB_COMPANY_WORK_TYPE`
+      (
+      `FK_COMPANY` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COMPANY.',
+      `FK_WORK_TYPE` VARCHAR(36) NOT NULL COMMENT 'Die Arbeitsgattung der Firma. Fremdschlüssel der
+      Tabelle SUB_WORK_TYPE.'
+      )
+      COMMENT = 'Diese Tabelle enthält die Assoziationen zwischen Firmen und Arbeitsgattungen.'
+
+      ;
+
+      CREATE TABLE `SUB_COUNTRY_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_COUNTRY.',
+      `COUNTRY_NAME` VARCHAR(50) NOT NULL COMMENT 'Der Name des Landes.',
+      `COUNTRY_SHORT_NAME` VARCHAR(50) NULL COMMENT 'Der Kurzname des Landes.',
+      `TEL_PREFIX` VARCHAR(50) NULL COMMENT 'Das Prefix der Telefonnummern.',
+      `FROM_DATE` TIMESTAMP(6) ,
+      `TO_DATE` TIMESTAMP(6) NULL ,
+      `FK_COUNTRY` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_COUNTRY_HISTORY` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Länder. Sie ist mit MASTER_LIST verlinkt (Stammdaten).
+      Vom Benutzer nicht editierbar.'
+
+      ;
+
+      CREATE TABLE `SUB_COUNTRY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_COUNTRY.',
+      CONSTRAINT `PK_COUNTRY` PRIMARY KEY (`ID` ASC)
+      )
+
+      ;
+
+
+      ALTER TABLE `SUB_COUNTRY_HISTORY`
+      ADD CONSTRAINT `FK_COUNTRY_HISTORY_COUNTRY`
+      FOREIGN KEY (`FK_COUNTRY`) REFERENCES `SUB_COUNTRY` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      CREATE TABLE `SUB_CRITERION`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_CRITERION.',
+      `FK_TENDER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENDER.',
+      `CRITERION_TEXT` VARCHAR(50) NOT NULL COMMENT 'Das Kriteriumstext.',
+      `WEIGHTING` DECIMAL(10,2) NOT NULL COMMENT 'Die Gewichtung.',
+      CONSTRAINT `PK_CRITERION` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Kriterien.'
+
+      ;
+
+      CREATE TABLE `SUB_DEPARTMENT_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_DEPARTMENT_HISTORY.',
+      `FK_TENANT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      `NAME` VARCHAR(50) NOT NULL COMMENT 'Der Name der Abteilung.',
+      `FK_DIRECTORATE` VARCHAR(36) NOT NULL COMMENT 'Die Direktion der Abteilung.',
+      `IS_INTERNAL` BIT NOT NULL COMMENT 'Kennzeichnet, ob die Abteilung interne oder externe ist.
+      Mögliche Werte: 1 (true), 0 (false)',
+      `SHORT_NAME` VARCHAR(50) ,
+      `ADDRESS` VARCHAR(100),
+      `LOCATION` VARCHAR(100),
+      `FAX` VARCHAR(20),
+      `TEL` VARCHAR(20),
+      `EMAIL` VARCHAR(50),
+      `WEBSITE` VARCHAR(100),
+      `LOGO` BLOB,
+      `IS_ACTIVE` BIT NOT NULL,
+      `FROM_DATE` TIMESTAMP(6) ,
+      `TO_DATE` TIMESTAMP(6) NULL ,
+      `FK_DEPARTMENT` VARCHAR(36),
+
+      CONSTRAINT `PK_DEPARTMENT_HISTORY` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Abteilungen und die Direktionen. Sie ist mit MASTER_LIST
+      verlinkt (Stammdaten). Vom Benutzer nicht editierbar.'
+
+      ;
+
+      CREATE TABLE `SUB_DEPARTMENT`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_DEPARTMENT.',
+      CONSTRAINT `PK_DEPARTMENT` PRIMARY KEY (`ID` ASC)
+      )
+
+      ;
+
+      ALTER TABLE `SUB_DEPARTMENT_HISTORY`
+      ADD CONSTRAINT `FK_DEPARTMENT_HISTORY_DEPARTMENT`
+      FOREIGN KEY (`FK_DEPARTMENT`) REFERENCES `SUB_DEPARTMENT` (`ID`) ON DELETE No Action ON UPDATE
+      No Action
+      ;
+
+      CREATE TABLE `SUB_DOCUMENT`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_DOCUMENT.',
+      `FILE_CONTENT` LONGBLOB NOT NULL COMMENT 'Der Inhalt des Dokuments.',
+      `FILENAME` VARCHAR(255) NOT NULL COMMENT 'Der Name des Dokuments.',
+      `TITLE` VARCHAR(255) NOT NULL COMMENT 'Der Titel des Dokuments.',
+      `VERSION` INT NULL COMMENT 'Die Version des Dokuments.',
+      `CREATION_DATE` DATETIME NOT NULL COMMENT 'Das Erstellungsdatum.',
+      `MODIFICATION_DATE` DATETIME NULL COMMENT 'Das Modifizierungsdatum.',
+      `FK_TENDER` VARCHAR(36) NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENDER.',
+      `FK_COMPANY` VARCHAR(36) NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COMPANY.',
+      `IS_CONFIDENTIAL` BIT NOT NULL COMMENT 'Kennzeichnet, ob das Dokument vertraulich ist.
+      Mögliche Werte: 0 (false), 1 (true).',
+      `CONFIDENTIAL_SET_BY` VARCHAR(50) NULL COMMENT 'Der Name des Benutzers, welcher das Dokument
+      auf vertraulich gesetzt hat.',
+      `DEPARTMENT` VARCHAR(50) NULL COMMENT 'Die Abteilung des Benutzers, der das Dokument
+      hochgeladen hat.',
+      `UPLOADER` VARCHAR(50) NULL COMMENT 'Der Name des Benutzers, welcher das Dokument hochgeladen
+      hat.',
+      `IS_GENERATED` BIT NULL COMMENT 'Kennzeichnet, ob das Dokument generiert wurde. Mögliche
+      Werte: 0 (false), 1 (true).',
+      `FK_ICON` VARCHAR(36) NULL COMMENT 'Fremdschlüssel der Tabelle SUB_ICON.',
+      CONSTRAINT `PK_DOCUMENT` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Dokumente der Submissionen.'
+
+      ;
+
+      CREATE TABLE `SUB_ELIGIBILITY_CRITERION`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_ELIGIBILITY_CRITERION.',
+      `FK_TENDER` VARCHAR(36) NOT NULL COMMENT 'Fremdsclüssel der Tabelle SUB_TENDER.',
+      `CRITERION_TEXT` VARCHAR(50) NULL COMMENT 'Der Kriteriumstext.',
+      CONSTRAINT `PK_ELIGIBILITY_CRITERION` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Eignungskriterien.'
+
+      ;
+
+      CREATE TABLE `SUB_ICON`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_ICON.',
+      `ICON_FILE` BLOB NOT NULL COMMENT 'Das Icon.',
+      CONSTRAINT `PK_Table1` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält alle Icons, die innerhalb der Submiss-Anwendung verwenden
+      werden.'
+
+      ;
+
+      CREATE TABLE `SUB_JOINT_VENTURE`
+      (
+      `FK_COMPANY` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COMPANY.',
+      `FK_TENDERER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENDERER.'
+      )
+      COMMENT = 'Diese Tabelle enthält die ArGe der Submittenten.'
+
+      ;
+
+      CREATE TABLE `SUB_MASTER_LIST`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_MASTER_LIST.',
+      `NAME` VARCHAR(50) NOT NULL COMMENT 'Der Name der Stammdaten (z.B. Objekte, Arbeitsgattungen,
+      usw.).',
+      `IS_EDITABLE` BIT NOT NULL COMMENT 'Kennzeichnet, ob die Liste editierbar ist. Mögliche Werte:
+      1 (true), 0 (false).',
+      `EXTERNAL_TABLE` VARCHAR(50) NULL COMMENT 'Der Name der Tabelle (ausser MASTER_LIST_VALUE), wo
+      die Werte und zusätzliche Attribute gespeichert sind.',
+      CONSTRAINT `PK_MASTER_LIST` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Listen von Stammdaten.'
+
+      ;
+
+      CREATE TABLE `SUB_MASTER_LIST_VALUE_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle
+      SUB_MASTER_LIST_VALUE_HISTORY.',
+      `VALUE1` VARCHAR(255) NOT NULL COMMENT 'Werte der Stammdaten.',
+      `IS_ACTIVE` SMALLINT NOT NULL DEFAULT 1 COMMENT 'Kennzeichnet, ob der Wert aktiv ist oder
+      nicht. Mögliche Werte: 1 (aktiv), 0 (inaktiv).',
+      `FK_TENANT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      `MODIFIED_ON` DATE NULL COMMENT 'Das Änderungsdatum. Wenn "NULL", ist der Stammdatenwert der
+      aktuellste.',
+      `INTERNAL_VERSION` INT NOT NULL COMMENT 'Die interne Version jedes Stammdatenwertes.',
+      `VALUE2` VARCHAR(255) COMMENT 'Werte der Stammdaten.',
+      `FROM_DATE` TIMESTAMP(6) ,
+      `TO_DATE` TIMESTAMP(6) NULL,
+      `FK_MASTER_LIST_VALUE` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle
+      SUB_MASTER_LIST_VALUE.',
+      CONSTRAINT `PK_MASTER_LIST_VALUE_HISTORY` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Werte der Stammdaten.'
+
+      ;
+
+      CREATE TABLE `SUB_MASTER_LIST_VALUE`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_MASTER_LIST_VALUE.',
+      `FK_MASTER_LIST` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_MASTER_LIST.',
+      CONSTRAINT `PK_MASTER_LIST_VALUE` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Werte der Stammdaten.'
+
+      ;
+
+      ALTER TABLE `SUB_MASTER_LIST_VALUE_HISTORY`
+      ADD CONSTRAINT `FK_MASTER_LIST_VALUE_HISTORY_MASTER_LIST_VALUE`
+      FOREIGN KEY (`FK_MASTER_LIST_VALUE`) REFERENCES `SUB_MASTER_LIST_VALUE` (`ID`) ON DELETE No
+      Action ON UPDATE No Action
+      ;
+
+      CREATE TABLE `SUB_OFFER`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_OFFER.',
+      `FK_TENDERER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENDERER.',
+      `IS_AWARDED` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob der Submittent einen Zuschlag
+      gewährt wurde. Mögliche Werte: 1 (true), 0 (false).',
+      `OFFER_DATE` DATETIME COMMENT 'Das Datum der Offerte.',
+      `IS_PART_OFFER` BIT NULL DEFAULT 0 COMMENT 'Teilofferte. Mögliche Werte: 1 (true), 0
+      (false).',
+      `IS_EXCLUDED_FROM_PROCESS` BIT NULL DEFAULT 0 COMMENT 'Verfahrensausscluss. Mögliche Werte: 1
+      (true), 0 (false).',
+      `IS_VARIANT` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob die Offerte eine Variante ist.
+      Mögliche Werte: 1 (true), 0 (false).',
+      `SETTLEMENT` TINYINT COMMENT 'Die Verrechnung. Mögliche Werte: 0 (Ausmass), 1 (Undefiniert), 2
+      (Pauschal), 3 (Global), 4 (Kostendach), 5 (Aufwand), 6 (Aufwand mit Kostendach).',
+      `GROSS_AMOUNT` DECIMAL(10,2) COMMENT 'Der Bruttobetrag.',
+      `GROSS_AMOUNT_CORRECTED` DECIMAL(10,2) NULL COMMENT 'Der korrigierte Bruttobetrag.',
+      `IS_CORRECTED` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob der Bruttobetrag korrigiert ist.
+      Mögliche Werte: 1 (true), 0 (false).',
+      `DISCOUNT` DECIMAL(10,2) NULL COMMENT 'Der Rabatt.',
+      `IS_DISCOUNT_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob Rabatt in %. Mögliche Werte: 1
+      (true), 0 (false).',
+      `VAT` DECIMAL(10,2) COMMENT 'Die MwSt als Zahl oder Prozent.',
+      `DISCOUNT2` DECIMAL(10,2) NULL COMMENT 'Das Skonto.',
+      `IS_DISCOUNT2_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob das Skonto in %. Mögliche Werte:
+      1 (true), 0 (false).',
+      `DISCOUNT2_DAYS` INT NULL COMMENT 'Die Skonto-Tage.',
+      `PRICE_INCREASE` VARCHAR(50) NULL COMMENT 'Die Teuerung.',
+      `MODIFIED_ON` DATETIME NULL COMMENT 'Das Änderungsdatum.',
+      `NOTES` TEXT NULL COMMENT 'Offerteinformationen.',
+      `RANK` INT NULL COMMENT 'Der Rang.',
+      `VARIANT_NOTES` VARCHAR(255) NULL COMMENT 'Bemerkung Variante.',
+      `IS_EMPTY_OFFER` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob die Offerte leer ist. Mögliche
+      Werte: 1 (true), 0 (false).',
+      `APPLICATION_DATE` DATETIME NULL COMMENT 'Das Bewerbungsdatum.',
+      `IS_VAT_PERCENTAGE` BIT NULL DEFAULT 1 COMMENT 'Kennzeichnet, ob die MwSt. in %. Mögliche
+      Werte: 1 (true), 0 (false).',
+      `BUILDING_COSTS` DECIMAL(10,2) NULL COMMENT 'Die Baunebenkosten.',
+      `IS_BUILDING_COSTS_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob die Baunebenkosten in %.
+      Mögliche Werte: 1 (true), 0 (false).',
+      `ANCILLIARY_AMOUNT_GROSS` DECIMAL(10,2) NULL COMMENT 'Nebenkosten brutto.',
+      `IS_ANCILLIARY_AMOUNT_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob Nebekosten in %. Mögliche
+      Werte: 1 (true), 0 (false).',
+      `ANCILLIARY_AMOUNT_VAT` VARCHAR(50) NULL COMMENT 'Die MWST in %. Wert aus Stammdaten.',
+      `OPERATING_COST_GROSS` DECIMAL(10,2) NULL COMMENT 'Betriebskosten, Bruttobetrag.',
+      `OPERATING_COST_NOTES` VARCHAR(100) NULL COMMENT 'Die Kosteninformationen.',
+      `OPERATING_COST_GROSS_CORRECTED` DECIMAL(10,2) NULL COMMENT 'Der korrigierte Bruttobetrag.',
+      `OPERATING_COST_IS_CORRECTED` BIT NULL COMMENT 'Kennzeichnet, ob der Bruttobetrag der
+      Betriebskosten korrigiert ist. Mögliche Werte: 1 (true), 0 (false).',
+      `OPERATING_COST_DISCOUNT` DECIMAL(10,2) NULL COMMENT 'Der Rabatt der Betriebskosten.',
+      `OPERATING_COST_IS_DISCOUNT_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob Rabatt der
+      Betriebskosten in %. Mögliche Werte: 1 (true), 0 (false).',
+      `OPERATING_COST_DISCOUNT2` DECIMAL(10,2) NULL COMMENT 'Das Skonto der Betriebskosten.',
+      `OPERATING_COST_IS_DISCOUNT2_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob das Skonto der
+      Betriebskosten in %. Mögliche Werte: 1 (true), 0 (false).',
+      `OPERATING_COST_VAT` DECIMAL(10,2) NULL COMMENT 'Die MWST der Betriebskosten als Zahl oder
+      Prozent.',
+      `OPERATING_COST_IS_VAT_PERCENTAGE` BIT NULL COMMENT 'Kennzeichnet, ob die MwSt. der
+      Betriebskosten in %. Mögliche Werte: 1 (true), 0 (false).',
+      `FROM_MIGRATION` BIT NULL DEFAULT 0 COMMENT 'Kennzeichnet, ob die Offerte von der Migration
+      stammt. Mögliche Werte: 0 (false), 1 (true).',
+      `IS_DEFAULT_OFFER` BIT NULL,
+      `MIG_PROJECT_NAME` VARCHAR(250) NULL,
+      `MIG_TENDER_NAME` VARCHAR(50) NULL,
+      `MIG_DEPARTMENT` VARCHAR(100) NULL,
+      `MIG_PROJECT_MANAGER` VARCHAR(250) NULL,
+      `MIG_PROCEDURE` VARCHAR(250) NULL,
+      CONSTRAINT `PK_OFFER` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Offerte für alle Submissionen.'
+
+      ;
+
+      CREATE TABLE `SUB_OFFER_CRITERION`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_OFFER_CRITERION.',
+      `FK_OFFER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_OFFER.',
+      `FK_CRITERION` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_CRITERION.',
+      `SCORE` DECIMAL(10,3) NULL COMMENT 'Die Note.',
+      CONSTRAINT `PK_OFFER_CRITERION` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Noten jeder Offerte für alle Submissionskriterien.'
+
+      ;
+
+      CREATE TABLE `SUB_OFFER_ELIGIB_CRITERION`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_OFFER_ELIGIB_CRITERION.',
+      `FK_OFFER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_OFFER.',
+      `FK_ELIGIBILITY_CRITERION` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle
+      SUB_ELIGIBILITY_CRITERION.',
+      `EVALUATION` BIT NOT NULL COMMENT 'Die Bewertung. Mögliche Werte: 1 (true), 0 (false).',
+      `NOTES` TEXT NULL COMMENT 'Bemerkungen.',
+      CONSTRAINT `PK_OFFER_ELIGIBILITY_CRITERION` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Bewertungen für die Eignungskriterien jeder Offerte.'
+
+      ;
+
+      CREATE TABLE `SUB_OFFER_SUBCRITERION`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_OFFER_SUBCRITERION.',
+      `FK_SUBCRITERION` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_SUBCRITERION.',
+      `FK_OFFER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_OFFER.',
+      `SCORE` DECIMAL(10,3) NULL COMMENT 'Die Note.',
+      CONSTRAINT `PK_OFFER_SUBCRITERION` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Noten für die Unterkriterien jeder Offerte.'
+
+      ;
+
+      CREATE TABLE `SUB_PROCEDURE_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL,
+      `FK_TENANT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      `NAME` VARCHAR(100) COMMENT 'Der Name des Verfahrens.',
+      `TYPE` VARCHAR(36) NOT NULL,
+      `VALUE` VARCHAR(255),
+      `IS_ACTIVE` SMALLINT(6),
+      `FROM_DATE` TIMESTAMP(6) ,
+      `TO_DATE` TIMESTAMP(6) NULL ,
+      `FK_PROCEDURE` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_PROCEDURE.',
+      CONSTRAINT `PK_PROCEDURE_HISTORY` PRIMARY KEY (`ID` ASC)
+      );
+
+      CREATE TABLE `SUB_PROCEDURE`
+      (
+      `ID` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_PROCEDURE` PRIMARY KEY (`ID` ASC)
+      );
+
+      ALTER TABLE `SUB_PROCEDURE_HISTORY`
+      ADD CONSTRAINT `FK_PROCEDURE_HISTORY_PROCEDURE`
+      FOREIGN KEY (`FK_PROCEDURE`) REFERENCES `SUB_PROCEDURE` (`ID`) ON DELETE No Action ON UPDATE
+      No Action
+      ;
+
+      CREATE TABLE `SUB_PROJECT`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle PROJECT.',
+      `NAME` VARCHAR(100) NOT NULL COMMENT 'Der Name des Projektes.',
+      `FK_TENANT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT (Mandant).',
+      `FK_OBJECT` VARCHAR(36) NOT NULL COMMENT 'Das Objekt, zudem das Projekt gehört (Wert aus
+      Stammdaten).',
+      `GATT_WTO` BIT NULL COMMENT 'GATT/WTO. Mögliche Werte: 0 (Nein), 1 (Ja).',
+      `PM_DEPARTMENT_NAME` VARCHAR(100) NOT NULL COMMENT 'Der Vorname des Projektleiters der
+      Abteilung.',
+      `FK_PM_EXTERNAL` VARCHAR(36) NULL COMMENT 'Externe Projektleitung.',
+      `FK_DEPARTMENT` VARCHAR(36) NULL COMMENT 'Die Abteilung. Wert aus Stammdaten.',
+      `PROJECT_NUMBER` VARCHAR(50) NULL COMMENT 'Projekt/Kredit-Nummer.',
+      `NOTES` VARCHAR(100) NULL COMMENT 'Die Projektbemerkung.',
+      `CONSTRUCTION_PERMIT` TINYINT NULL COMMENT 'Die Baubewilligung. Mögliche Werte: 0 (vorhanden),
+      1 (ausstehend), 2 (nicht relevant).',
+      `LOAN_APPROVAL` TINYINT NULL COMMENT 'Die Kreditbewilligung. Mögliche Werte: 0 (vorhanden), 1
+      (ausstehend).',
+      `FK_PM_PROCEDURE` VARCHAR(36) NULL COMMENT 'Die Verfahrensleitung (Wert aus der Stammdaten).',
+      `FIRST_TENDER_DATE` TIMESTAMP(6) NULL,
+      CONSTRAINT `PK_PROJECT` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Projekte von allen Mandanten.'
+
+      ;
+
+      CREATE TABLE `SUB_PROOF_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_PROOF_HISTORY.',
+      `NAME` VARCHAR(20) NOT NULL COMMENT 'Die Bezeichnung des Nachweises.',
+      `DESCRIPTION` VARCHAR(255) NULL COMMENT 'Die Beschreibung des Nachweises.',
+      `PROOF_ORDER` SMALLINT NULL COMMENT 'Reihenfolge der Nachweise.',
+      `DESCRIPTION_FR` VARCHAR(255) NULL COMMENT 'Die Beschreibung des Nachweises auf Französisch.',
+      `FK_COUNTRY` VARCHAR(36) NOT NULL COMMENT 'Fremschlüssel der Tabelle SUB_COUNTRY.',
+      `FK_TENANT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      `IS_ACTIVE` SMALLINT(6) COMMENT 'Aktiv.',
+      `IS_REQUIRED` SMALLINT(6) ,
+      `VALIDITY_PERIOD` SMALLINT(6) ,
+      `FROM_DATE` TIMESTAMP(6) ,
+      `TO_DATE` TIMESTAMP(6) NULL ,
+      `FK_PROOF` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_PROOF.',
+      CONSTRAINT `PK_PROOF_HISTORY` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Arten von Nachweisen. Sie ist mit SUB_MASTER_LIST
+      verlinkt (Stammdaten).'
+
+      ;
+
+      CREATE TABLE `SUB_PROOF`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_PROOF.',
+      CONSTRAINT `PK_PROOF` PRIMARY KEY (`ID` ASC)
+      )
+
+      ;
+
+      ALTER TABLE `SUB_PROOF_HISTORY`
+      ADD CONSTRAINT `FK_PROOF_HISTORY_PROOF`
+      FOREIGN KEY (`FK_PROOF`) REFERENCES `SUB_PROOF` (`ID`) ON DELETE No Action ON UPDATE No Action
+      ;
+
+      CREATE TABLE `SUB_SUBCONTRACTOR`
+      (
+      `FK_COMPANY` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COMPANY.',
+      `FK_TENDERER` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENDERER.'
+      )
+      COMMENT = 'Diese Tabelle enthält die Subunternehmer der Submittenten.'
+
+      ;
+
+      CREATE TABLE `SUB_SUBCRITERION`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_SUBCRITERION.',
+      `FK_CRITERION` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_CRITERION.',
+      `SUBCRITERION_TEXT` VARCHAR(50) NOT NULL COMMENT 'Der Unterkriteriumstext.',
+      `WEIGHTING` DECIMAL(10,2) NOT NULL COMMENT 'Die Gewichtung (Prozent).',
+      CONSTRAINT `PK_SUBCRITERION` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Unterkriterien.'
+
+      ;
+
+      CREATE TABLE `SUB_TENANT`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Prmärschlüssel der Tabelle SUB_TENANT.',
+      `NAME` VARCHAR(50) NOT NULL COMMENT 'Der Mandant.',
+      CONSTRAINT `PK_TENANT` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Mandanten.'
+
+      ;
+
+      CREATE TABLE `SUB_TENDER`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_TENDER.',
+      `FK_PROJECT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_PROJECT.',
+      `DESCRIPTION` VARCHAR(100) NULL COMMENT 'Die Beschreibung.',
+      `PROCESS` TINYINT NOT NULL COMMENT 'Das Verfahren. Mögliche Werte: 0 (Selektives), 1
+      (Offenes), 2 (Einladung), 3 (Freihändig), 4 (Freihändig mit Konkurrenz), 5 (Freihändig
+      oberhalb Schwellenwert).',
+      `COST_ESTIMATE` DECIMAL(10,2) NOT NULL COMMENT 'Der Kostenvoranschlag.',
+      `PROCESS_TYPE` TINYINT NOT NULL COMMENT 'Die Verfahrensart. Werte aus Stammdaten.',
+      `PUBLICATION_DATE` DATETIME NULL COMMENT 'Das Publikationsdatum.',
+      `PUBLICATION_DATE_DIRECT_AWARD` DATETIME NULL COMMENT 'Publikation Absicht freihändige
+      Vergabe.',
+      `FK_PM_ADMIN` VARCHAR(36),
+      `PUBLICATION_DATE_AWARD` DATETIME NULL COMMENT 'Die Zuschlagpublikation.',
+      `PM_DEPARTMENT_NAME` VARCHAR(50) NOT NULL COMMENT 'Der Vorname des Projektleiters der
+      Abteilung. ',
+      `FK_PM_EXTERNAL` VARCHAR(36) NULL COMMENT 'Externe Projektleitung.',
+      `IS_LOCKED` BIT NULL COMMENT 'Die Submission ist für Dienststellen gesperrt. Mögliche Werte: 1
+      (true), 0 (false).',
+      `CONSTRUCTION_PERMIT` TINYINT NOT NULL COMMENT 'Die Baubewilligung. Mögliche Werte: 0
+      (vorhanden), 1 (ausstehend), 2 (nicht relevant).',
+      `DEADLINE1` DATETIME NULL COMMENT 'Der 1. Eingabetermin (nur für selektives Verfahren).',
+      `DEADLINE2` DATETIME COMMENT 'Der 2.Eingabetermin (für alle Verfahren).',
+      `APPLICATION_OPENING_DATE` DATETIME NULL COMMENT 'Die Bewerbungsöffnung.',
+      `LOGGED_BY` VARCHAR(50) NULL COMMENT 'Protokolliert durch.',
+      `OFFER_OPENING` DATETIME NULL COMMENT 'Die Offertöffnung.',
+      `NOTES` VARCHAR(100) NULL COMMENT 'Die Submissionsbemerkung.',
+      `FK_HISTORY_WORK_TYPE` VARCHAR(36),
+      `IS_SERVICE_TENDER` BIT COMMENT 'DL-Wettbewerb.',
+      `IS_GEKO_ENTRY` BIT COMMENT 'GeKo - Eintrag',
+      `LOGGED_BY_2` VARCHAR(50) COMMENT 'Protokolliert durch.',
+      `GATT_WTO` BIT COMMENT 'GATT/WTO. Mögliche Werte: 0 (Nein), 1 (Ja).',
+      `LOAN_APPROVAL` TINYINT COMMENT 'Die Kreditbewilligung. Mögliche Werte: 0 (vorhanden), 1
+      (ausstehend).',
+      `CLOSE_DATE` DATETIME,
+      `FK_PROCESS_TYPE` VARCHAR(36),
+      `FK_REASON_NEGOTIATED_PROCEDURE` VARCHAR(36),
+      CONSTRAINT `PK_TENDER` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Submissionen.'
+
+      ;
+
+      ALTER TABLE `SUB_TENDER`
+      ADD CONSTRAINT `FK_TENDER_HISTORY_WORK_TYPE`
+      FOREIGN KEY (`FK_HISTORY_WORK_TYPE`) REFERENCES `SUB_MASTER_LIST_VALUE`
+      (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+      CREATE TABLE `SUB_TENDERER`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_TENDERER.',
+      `FK_TENDER` VARCHAR(36) NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENDER. Wenn leer,
+      handelt es sich um eine migrierte Offerte.',
+      `FK_COMPANY` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_COMPANY.',
+      `MIG_TENDER_ID` VARCHAR(36) NULL,
+      CONSTRAINT `PK_TENDERER` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Submittenten.'
+
+      ;
+
+
+      CREATE TABLE `SUB_DIRECTORATE_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_DIRECTORATE_HISTORY.',
+      `NAME` VARCHAR(100) NOT NULL COMMENT 'Der Direktions.',
+      `IS_ACTIVE` SMALLINT NOT NULL DEFAULT 1 COMMENT 'Kennzeichnet, ob der Wert aktiv ist oder
+      nicht. Mögliche Werte: 1 (aktiv), 0 (inaktiv).',
+      `SHORT_NAME` VARCHAR(20) ,
+      `LOCATION` VARCHAR(100) ,
+      `TEL` VARCHAR(20) ,
+      `ADDRESS` VARCHAR(100) ,
+      `POST_CODE` VARCHAR(20) ,
+      `FK_TENANT` VARCHAR(36) ,
+      `EMAIL` VARCHAR(50) ,
+      `WEBSITE` VARCHAR(100),
+      `FROM_DATE` TIMESTAMP(6),
+      `TO_DATE` TIMESTAMP(6) NULL,
+      `FK_DIRECTORATE` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_DIRECTORATE` PRIMARY KEY (`ID` ASC)
+      )
+      COMMENT = 'Diese Tabelle enthält die Direktionen.'
+
+      ;
+
+      CREATE TABLE `SUB_DIRECTORATE`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_DIRECTORATE.',
+      CONSTRAINT `PK_DIRECTORATE` PRIMARY KEY (`ID` ASC)
+      )
+      ;
+
+      CREATE TABLE `SUB_LOGIB_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL
+      COMMENT 'Der Primärschlüssel der Tabelle
+      SUB_LOGIB_HISTORY.',
+      `NAME`
+      VARCHAR(50) COMMENT 'Enthält die Bezeichnung eines Logib.',
+      `WORKER_NUMBER` INT COMMENT 'Enthält die Anzahl der Mitarbeiter.',
+      `MEN_NUMBER` INT COMMENT 'Enthält eine Anzahl Männer.',
+      `WOMEN_NUMBER` INT COMMENT 'Enthält eine Anzahl Frauen.',
+      `IS_ACTIVE`
+      BIT COMMENT 'Enthält "Ja" oder "Nein", je nachdem ob der Wert aktiv
+      oder inaktiv ist.',
+      `FROM_DATE` TIMESTAMP(6),
+      `TO_DATE` TIMESTAMP(6) NULL,
+      `FK_TENANT` VARCHAR(36) NOT NULL,
+      `FK_LOGIB` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_SUB_LOGIB_HISTORY` PRIMARY KEY (`ID` ASC)
+      );
+
+      CREATE TABLE `SUB_LOGIB`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_LOGIB.',
+      CONSTRAINT `PK_SUB_LOGIB` PRIMARY KEY (`ID` ASC)
+      );
+
+      CREATE TABLE SUB_SIGNATURE_COPY(
+      `ID` VARCHAR(36) NOT NULL,
+      CONSTRAINT PK_SIGNATURE_COPY PRIMARY KEY (`ID` ASC)
+      );
+
+
+      CREATE TABLE SUB_SIGNATURE_HISTORY(
+      ID VARCHAR(36) NOT NULL,
+      FK_TENANT VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      DERECTORATE VARCHAR(255) COMMENT 'Direktion',
+      DEPARTMENT VARCHAR(100),
+      SEL_OPEN_NAME VARCHAR(100),
+      SEL_OPEN_FUNCTION VARCHAR(100),
+      INV_NAME VARCHAR(100),
+      INV_FUNCTION VARCHAR(100) ,
+      NEG_NAME VARCHAR(100),
+      NEG_FUNCTION VARCHAR(100),
+      `FROM_DATE` TIMESTAMP(6),
+      `TO_DATE` TIMESTAMP(6) NULL,
+      `FK_SIGNATURE` VARCHAR(36) NOT NULL,
+      CONSTRAINT PK_SIGNATURE_HISTORY PRIMARY KEY (`ID` ASC)
+      );
+
+      CREATE TABLE SUB_SIGNATURE(
+      ID VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_SIGNATURE` PRIMARY KEY (`ID` ASC)
+      );
+
+
+      CREATE TABLE `SUB_EMAIL_TEMPLATE_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL,
+      `FK_TENANT` VARCHAR(36) NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_TENANT.',
+      `DESCRIPTION` VARCHAR(255) COMMENT 'Beschreibung',
+      `EMAIL_TO` VARCHAR(100) COMMENT 'An.',
+      `EMAIL_CC` VARCHAR(100) COMMENT 'CC.',
+      `EMAIL_BCC` VARCHAR(100)COMMENT 'BCC.',
+      `SUBJECT` VARCHAR(100) COMMENT 'Betreff.',
+      `CONTENT_TEXT` BLOB COMMENT 'Inhaltstext.',
+      `AVAILABLY` VARCHAR(100) COMMENT 'Verfügbar.',
+      `IS_ACTIVE` SMALLINT(6) COMMENT 'Aktiv.',
+      `FROM_DATE` TIMESTAMP(6),
+      `TO_DATE` TIMESTAMP(6) NULL,
+      `FK_EMAIL_TEMPLATE` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_EMAIL_TEMPLATE_HISTORY` PRIMARY KEY (`ID` ASC)
+      );
+
+      CREATE TABLE `SUB_EMAIL_TEMPLATE`
+      (
+      `ID` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_EMAIL_TEMPLATE` PRIMARY KEY (`ID` ASC)
+      );
+
+      CREATE TABLE `SUB_TENDER_STATUS_HISTORY`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle
+      SUB_TENDER_STATUS_HISTORY.',
+      `FK_TENDER` VARCHAR(36) NOT NULL,
+      `ON_DATE` TIMESTAMP(6),
+      `FK_STATUS` VARCHAR(36) NOT NULL,
+      CONSTRAINT `PK_TENDER_STATUS_HISTORY` PRIMARY KEY (`ID` ASC)
+      )
+
+      ;
+
+      CREATE TABLE `SUB_TENDER_STATUS`
+      (
+      `ID` VARCHAR(36) NOT NULL COMMENT 'Der Primärschlüssel der Tabelle SUB_TENDER_STATUS.',
+      `STATUS` VARCHAR(1000) NOT NULL,
+      CONSTRAINT `PK_TENDER_STATUS` PRIMARY KEY (`ID` ASC)
+      )
+
+      ;
+
+      ALTER TABLE `SUB_TENDER_STATUS_HISTORY`
+      ADD CONSTRAINT `FK_TENDER_STATUS_HISTORY_TENDER_STATUS`
+      FOREIGN KEY (`FK_STATUS`) REFERENCES `SUB_TENDER_STATUS` (`ID`) ON DELETE No Action ON UPDATE
+      No Action
+      ;
+
+      ALTER TABLE `SUB_TENDER_STATUS_HISTORY`
+      ADD CONSTRAINT `FK_TENDER_STATUS_HISTORY_TENDER`
+      FOREIGN KEY (`FK_TENDER`) REFERENCES `SUB_TENDER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_COMPANY`
+      ADD INDEX `IXFK_COMPANY_TENANT` (`PROOF_ORDERED_BY` ASC)
+      ;
+
+      ALTER TABLE `SUB_COMPANY_WORK_TYPE`
+      ADD INDEX `IXFK_COMPANY_WORK_TYPE_WORK_TYPE` (`FK_WORK_TYPE` ASC)
+      ;
+
+      ALTER TABLE `SUB_DOCUMENT`
+      ADD INDEX `IXFK_DOCUMENT_COMPANY` (`FK_COMPANY` ASC)
+      ;
+
+      ALTER TABLE `SUB_DOCUMENT`
+      ADD INDEX `IXFK_DOCUMENT_ICON` (`FK_ICON` ASC)
+      ;
+
+      ALTER TABLE `SUB_MASTER_LIST`
+      ADD CONSTRAINT `UQ_MASTER_LIST_NAME` UNIQUE (`NAME` ASC)
+      ;
+
+      ALTER TABLE `SUB_PROCEDURE_HISTORY`
+      ADD INDEX `IXFK_SUB_PROCEDURE_HISTORY_SUB_TENANT` (`FK_TENANT` ASC)
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD INDEX `IXFK_PROJECT_DEPARTMENT` (`FK_DEPARTMENT` ASC)
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD INDEX `IXFK_PROJECT_MASTER_LIST_VALUE` (`FK_OBJECT` ASC)
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD INDEX `IXFK_SUB_PROJECT_SUB_MASTER_LIST_VALUE` (`FK_PM_PROCEDURE` ASC)
+      ;
+
+      ALTER TABLE `SUB_COMPANY`
+      ADD CONSTRAINT `FK_COMPANY_TENANT`
+      FOREIGN KEY (`PROOF_ORDERED_BY`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE Restrict ON UPDATE
+      Restrict
+      ;
+
+      ALTER TABLE `SUB_COMPANY_PROOF`
+      ADD CONSTRAINT `FK_COMPANY_PROOF_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_COMPANY_PROOF`
+      ADD CONSTRAINT `FK_COMPANY_PROOF_PROOF`
+      FOREIGN KEY (`FK_PROOF`) REFERENCES `SUB_PROOF` (`ID`) ON DELETE No Action ON UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_COMPANY_WORK_TYPE`
+      ADD CONSTRAINT `FK_COMPANY_WORK_TYPE_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE
+      ;
+
+      ALTER TABLE `SUB_COMPANY_WORK_TYPE`
+      ADD CONSTRAINT `FK_COMPANY_WORK_TYPE_WORK_TYPE`
+      FOREIGN KEY (`FK_WORK_TYPE`) REFERENCES `SUB_MASTER_LIST_VALUE` (`ID`) ON DELETE Restrict ON
+      UPDATE Restrict
+      ;
+
+      ALTER TABLE `SUB_CRITERION`
+      ADD CONSTRAINT `FK_CRITERION_TENDER`
+      FOREIGN KEY (`FK_TENDER`) REFERENCES `SUB_TENDER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_DEPARTMENT_HISTORY`
+      ADD CONSTRAINT `FK_DEPARTMENT_HISTORY_TENANT`
+      FOREIGN KEY (`FK_TENANT`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_DOCUMENT`
+      ADD CONSTRAINT `FK_DOCUMENT_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE Restrict ON UPDATE
+      Restrict
+      ;
+
+
+      ALTER TABLE `SUB_DEPARTMENT_HISTORY`
+      ADD CONSTRAINT `FK_DEPARTMENT_HISTORY_DIRECTORATE_HISTORY`
+      FOREIGN KEY (`FK_DIRECTORATE`) REFERENCES `SUB_DIRECTORATE_HISTORY` (`ID`) ON DELETE No Action
+      ON UPDATE No Action
+      ;
+
+
+      ALTER TABLE `SUB_DOCUMENT`
+      ADD CONSTRAINT `FK_DOCUMENT_ICON`
+      FOREIGN KEY (`FK_ICON`) REFERENCES `SUB_ICON` (`ID`) ON DELETE Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE `SUB_DOCUMENT`
+      ADD CONSTRAINT `FK_DOCUMENT_TENDER`
+      FOREIGN KEY (`FK_TENDER`) REFERENCES `SUB_TENDER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_ELIGIBILITY_CRITERION`
+      ADD CONSTRAINT `FK_ELIGIBILITY_CRITERION_TENDER`
+      FOREIGN KEY (`FK_TENDER`) REFERENCES `SUB_TENDER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_JOINT_VENTURE`
+      ADD CONSTRAINT `FK_JOINT_VENTURE_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_JOINT_VENTURE`
+      ADD CONSTRAINT `FK_JOINT_VENTURE_TENDERER`
+      FOREIGN KEY (`FK_TENDERER`) REFERENCES `SUB_TENDERER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_MASTER_LIST_VALUE`
+      ADD CONSTRAINT `FK_MASTER_LIST_VALUE_MASTER_LIST`
+      FOREIGN KEY (`FK_MASTER_LIST`) REFERENCES `SUB_MASTER_LIST` (`ID`) ON DELETE No Action ON
+      UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_MASTER_LIST_VALUE_HISTORY`
+      ADD CONSTRAINT `FK_MASTER_LIST_VALUE_HISTORY_TENANT`
+      FOREIGN KEY (`FK_TENANT`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_OFFER`
+      ADD CONSTRAINT `FK_OFFER_TENDERER`
+      FOREIGN KEY (`FK_TENDERER`) REFERENCES `SUB_TENDERER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_OFFER_CRITERION`
+      ADD CONSTRAINT `FK_OFFER_CRITERION_CRITERION`
+      FOREIGN KEY (`FK_CRITERION`) REFERENCES `SUB_CRITERION` (`ID`) ON DELETE No Action ON UPDATE
+      No Action
+      ;
+
+      ALTER TABLE `SUB_OFFER_CRITERION`
+      ADD CONSTRAINT `FK_OFFER_CRITERION_OFFER`
+      FOREIGN KEY (`FK_OFFER`) REFERENCES `SUB_OFFER` (`ID`) ON DELETE No Action ON UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_OFFER_ELIGIB_CRITERION`
+      ADD CONSTRAINT `FK_OFFER_ELIGIBILITY_CRITERION_ELIGIBILITY_CRITERION`
+      FOREIGN KEY (`FK_ELIGIBILITY_CRITERION`) REFERENCES `SUB_ELIGIBILITY_CRITERION` (`ID`) ON
+      DELETE No Action ON UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_OFFER_ELIGIB_CRITERION`
+      ADD CONSTRAINT `FK_OFFER_ELIGIBILITY_CRITERION_OFFER`
+      FOREIGN KEY (`FK_OFFER`) REFERENCES `SUB_OFFER` (`ID`) ON DELETE No Action ON UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_OFFER_SUBCRITERION`
+      ADD CONSTRAINT `FK_OFFER_SUBCRITERION_OFFER`
+      FOREIGN KEY (`FK_OFFER`) REFERENCES `SUB_OFFER` (`ID`) ON DELETE No Action ON UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_OFFER_SUBCRITERION`
+      ADD CONSTRAINT `FK_OFFER_SUBCRITERION_SUBCRITERION`
+      FOREIGN KEY (`FK_SUBCRITERION`) REFERENCES `SUB_SUBCRITERION` (`ID`) ON DELETE No Action ON
+      UPDATE No Action
+      ;
+
+      ALTER TABLE `SUB_PROCEDURE_HISTORY`
+      ADD CONSTRAINT `FK_SUB_PROCEDURE_HISTORY_SUB_TENANT`
+      FOREIGN KEY (`FK_TENANT`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE Restrict ON UPDATE Restrict
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD CONSTRAINT `FK_PROJECT_DEPARTMENT`
+      FOREIGN KEY (`FK_DEPARTMENT`) REFERENCES `SUB_DEPARTMENT` (`ID`) ON DELETE Restrict ON UPDATE
+      Restrict
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD CONSTRAINT `FK_PROJECT_COMPANY`
+      FOREIGN KEY (`FK_PM_EXTERNAL`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE No Action ON UPDATE
+      No Action
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD CONSTRAINT `FK_PROJECT_MASTER_LIST_VALUE`
+      FOREIGN KEY (`FK_OBJECT`) REFERENCES `SUB_MASTER_LIST_VALUE` (`ID`) ON DELETE Restrict ON
+      UPDATE Restrict
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD CONSTRAINT `FK_PROJECT_PM_PROCEDURE`
+      FOREIGN KEY (`FK_PM_PROCEDURE`) REFERENCES `SUB_MASTER_LIST_VALUE` (`ID`) ON DELETE Restrict
+      ON UPDATE Restrict
+      ;
+
+      ALTER TABLE `SUB_PROJECT`
+      ADD CONSTRAINT `FK_PROJECT_TENANT`
+      FOREIGN KEY (`FK_TENANT`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_PROOF_HISTORY`
+      ADD CONSTRAINT `FK_PROOF_HISTORY_COUNTRY`
+      FOREIGN KEY (`FK_COUNTRY`) REFERENCES `SUB_COUNTRY` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_PROOF_HISTORY`
+      ADD CONSTRAINT `FK_PROOF_HISTORY_TENANT`
+      FOREIGN KEY (`FK_TENANT`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_TENDER`
+      ADD CONSTRAINT `FK_TENDER_PROCESS_TYPE`
+      FOREIGN KEY (`FK_PROCESS_TYPE`) REFERENCES
+      `SUB_MASTER_LIST_VALUE`
+      (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+      ALTER TABLE `SUB_SUBCONTRACTOR`
+      ADD CONSTRAINT `FK_SUBCONTRACTOR_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_TENDER`
+      ADD CONSTRAINT `FK_TENDER_COMPANY`
+      FOREIGN KEY (`FK_PM_EXTERNAL`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE No
+      Action ON UPDATE No Action;
+
+      ALTER TABLE `SUB_SUBCONTRACTOR`
+      ADD CONSTRAINT `FK_SUBCONTRACTOR_TENDERER`
+      FOREIGN KEY (`FK_TENDERER`) REFERENCES `SUB_TENDERER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+      ALTER TABLE `SUB_SUBCRITERION`
+      ADD CONSTRAINT `FK_SUBCRITERION_CRITERION`
+      FOREIGN KEY (`FK_CRITERION`) REFERENCES `SUB_CRITERION` (`ID`) ON DELETE No Action ON UPDATE
+      No Action
+      ;
+
+      ALTER TABLE `SUB_TENDER`
+      ADD CONSTRAINT `FK_TENDER_PROJECT`
+      FOREIGN KEY (`FK_PROJECT`) REFERENCES `SUB_PROJECT` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_TENDERER`
+      ADD CONSTRAINT `FK_TENDERER_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE `SUB_TENDERER`
+      ADD CONSTRAINT `FK_TENDERER_TENDER`
+      FOREIGN KEY (`FK_TENDER`) REFERENCES `SUB_TENDER` (`ID`) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE SUB_DIRECTORATE_HISTORY
+      ADD CONSTRAINT FK_DIRECTORATE_HISTORY_DIRECTORATE
+      FOREIGN KEY (FK_DIRECTORATE) REFERENCES SUB_DIRECTORATE (ID) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+      ALTER TABLE SUB_DIRECTORATE_HISTORY
+      ADD CONSTRAINT FK_DIRECTORATE_HISTORY_TENANT
+      FOREIGN KEY (FK_TENANT) REFERENCES SUB_TENANT (ID) ON DELETE No Action ON UPDATE No Action
+      ;
+
+
+      ALTER TABLE SUB_EMAIL_TEMPLATE_HISTORY
+      ADD CONSTRAINT FK_EMAIL_TEMPLATE_HISTORY_EMAIL_TEMPLATE
+      FOREIGN KEY (FK_EMAIL_TEMPLATE) REFERENCES SUB_EMAIL_TEMPLATE (ID) ON DELETE No Action ON
+      UPDATE No Action
+      ;
+
+      ALTER TABLE SUB_EMAIL_TEMPLATE_HISTORY
+      ADD CONSTRAINT FK_EMAIL_TEMPLATE_HISTORY_TENANT
+      FOREIGN KEY (FK_TENANT) REFERENCES SUB_TENANT (ID) ON DELETE No Action ON UPDATE No Action
+      ;
+
+
+      ALTER TABLE SUB_SIGNATURE_HISTORY
+      ADD CONSTRAINT FK_SIGNATURE_HISTORY_TENANT
+      FOREIGN KEY (FK_TENANT) REFERENCES SUB_TENANT (`ID`) ON DELETE No Action ON UPDATE No Action
+      ;
+
+      ALTER TABLE SUB_SIGNATURE_HISTORY
+      ADD CONSTRAINT FK_SIGNATURE_HISTORY_SIGNATURE
+      FOREIGN KEY (FK_SIGNATURE) REFERENCES SUB_SIGNATURE (ID) ON DELETE No Action ON UPDATE No
+      Action
+      ;
+
+
+      ALTER TABLE SUB_COMPANY
+      ADD CONSTRAINT `FK_COMPANY_COUNTRY`
+      FOREIGN KEY (`FK_COUNTRY`) REFERENCES `SUB_COUNTRY` (`ID`) ON DELETE Restrict ON UPDATE
+      Restrict
+      ;
+
+      ALTER TABLE SUB_COMPANY
+      ADD CONSTRAINT `FK_COMPANY_COMPANY_MAIN`
+      FOREIGN KEY (`FK_MAIN_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE Restrict ON UPDATE
+      Restrict
+      ;
+
+      CREATE FULLTEXT INDEX IXF_COMPANY_NAME ON SUB_COMPANY(COMPANY_NAME);
+      CREATE FULLTEXT INDEX IXF_POST_CODE ON SUB_COMPANY(POST_CODE);
+      CREATE FULLTEXT INDEX IXF_LOCATION ON SUB_COMPANY(LOCATION);
+      CREATE FULLTEXT INDEX IXF_COMPANY_TEL ON SUB_COMPANY(COMPANY_TEL);
+      CREATE FULLTEXT INDEX IXF_NOTES ON SUB_COMPANY(NOTES);
+
+
+      ALTER TABLE SUB_LOGIB_HISTORY
+      ADD CONSTRAINT `FK_LOGIB_HISTORY_LOGIB`
+      FOREIGN KEY (`FK_LOGIB`) REFERENCES `SUB_LOGIB` (`ID`) ON DELETE
+      Restrict ON UPDATE Restrict;
+
+      ALTER TABLE SUB_LOGIB_HISTORY
+      ADD CONSTRAINT `FK_LOGIB_HISTORY_TENANT`
+      FOREIGN KEY (`FK_TENANT`) REFERENCES `SUB_TENANT` (`ID`) ON DELETE
+      Restrict ON UPDATE Restrict;
+
+      ALTER TABLE SUB_TENDER ADD
+      CONSTRAINT FK_TENDER_REASON_NEGOTIATED_PROCEDURE
+      FOREIGN KEY (FK_REASON_NEGOTIATED_PROCEDURE) REFERENCES
+      SUB_MASTER_LIST_VALUE (ID) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+      ALTER TABLE `SUB_TENDER` ADD CONSTRAINT `FK_TENDER_PM_PROCEDURE`
+      FOREIGN KEY (`FK_PM_ADMIN`) REFERENCES `SUB_MASTER_LIST_VALUE`
+      (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+      ALTER TABLE `SUB_COMPANY`
+      ADD CONSTRAINT `FK_COMPANY_ILO`
+      FOREIGN KEY (`FK_ILO`) REFERENCES `SUB_MASTER_LIST_VALUE` (`ID`) ON DELETE Restrict ON UPDATE
+      Restrict
+      ;
+
+      ALTER TABLE SUB_COMPANY
+      ADD CONSTRAINT `FK_COMPANY_USER`
+      FOREIGN KEY (`FK_USER`) REFERENCES `aaa_user` (`ID`);
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

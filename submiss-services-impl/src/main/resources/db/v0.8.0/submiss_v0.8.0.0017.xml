@@ -1,0 +1,22 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.8.0.0016">
+
+    <addColumn tableName="SUB_SIGNATURE_PROCESS_TYPE_ENTITLED">
+      <column name="FK_DEPARTMENT" type="VARCHAR(255)">
+      </column>
+    </addColumn>
+    <addForeignKeyConstraint baseColumnNames="FK_DEPARTMENT"
+      baseTableName="SUB_SIGNATURE_PROCESS_TYPE_ENTITLED"
+      constraintName="FK_DEPARTMENT"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_DEPARTMENT"/>
+
+  </changeSet>
+</databaseChangeLog>

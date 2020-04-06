@@ -1,0 +1,51 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import java.util.HashMap;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "PT05"
+	when
+		$submission: SubmissionDTO()
+	if ($submission.getCommissionProcurementProposalDate() == null) do[commissionProcurementProposalDate]
+	else do[commissionProcurementProposalDateFill]
+	if ($submission.getCommissionProcurementProposalReservation() == null) do[commissionProcurementProposalReservation]
+	else do[commissionProcurementProposalReservationFill]
+	if ($submission.getCommissionProcurementProposalSuitabilityAuditText() == null) do[commissionProcurementProposalSuitabilityAuditText]
+	else do[commissionProcurementProposalSuitabilityAuditTextFill]
+	if ($submission.getCommissionProcurementDecisionRecommendation() == null) do[commissionProcurementDecisionRecommendation]
+	else do[commissionProcurementDecisionRecommendationFill]
+	if ($submission.getCommissionProcurementProposalBusiness() == null) do[commissionProcurementProposalBusiness]
+	else do[commissionProcurementProposalBusinessFill]
+	if ($submission.getCommissionProcurementProposalObject() == null) do[commissionProcurementProposalObject]
+	else do[commissionProcurementProposalObjectFill]	
+	then
+		placeholderMappings.put("ba_justification", $submission.getCommissionProcurementProposalReasonGiven());
+	then [commissionProcurementProposalDate]
+		placeholderMappings.put("ba_pro_commission_meeting", "");
+	then [commissionProcurementDecisionRecommendation]
+		placeholderMappings.put("bb_decision_recommendation", "");
+	then [commissionProcurementProposalReservation]
+		placeholderMappings.put("ba_restriction", "");
+	then [commissionProcurementProposalSuitabilityAuditText]
+		placeholderMappings.put("ba_process_exclusion", "");
+	then [commissionProcurementProposalBusiness]
+		placeholderMappings.put("ba_pro_business_type", "");
+	then [commissionProcurementProposalDateFill]
+		placeholderMappings.put("ba_pro_commission_meeting", SubmissConverter.convertToSwissDate($submission.getCommissionProcurementProposalDate()));
+	then [commissionProcurementProposalReservationFill]
+		placeholderMappings.put("ba_restriction", $submission.getCommissionProcurementProposalReservation());	
+	then [commissionProcurementProposalSuitabilityAuditTextFill]
+		placeholderMappings.put("ba_process_exclusion",$submission.getCommissionProcurementProposalSuitabilityAuditText());	
+	then [commissionProcurementDecisionRecommendationFill]
+		placeholderMappings.put("bb_decision_recommendation", $submission.getCommissionProcurementDecisionRecommendation());
+	then [commissionProcurementProposalBusinessFill]
+		placeholderMappings.put("ba_pro_business_type", String.format("%02d", $submission.getCommissionProcurementProposalBusiness().intValue()));
+	then [commissionProcurementProposalObject]
+		placeholderMappings.put("ba_proc_object", "");
+	then [commissionProcurementProposalObjectFill]
+		placeholderMappings.put("ba_proc_object", ", "+ $submission.getCommissionProcurementProposalObject());	
+end

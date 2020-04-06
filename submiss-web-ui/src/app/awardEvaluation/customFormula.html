@@ -1,0 +1,146 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<form name="customFormulaCtrl.customFormulaHTMLForm" id=reopenStatusForm data-ng-submit="customFormulaCtrl.update()"
+  shows-validation-errors>
+  <div class="modal-header">
+    <button type="button" class="close" aria-label="Close" ng-click="customFormulaCtrl.closeWindow(customFormulaCtrl.customFormulaHTMLForm.$dirty)"><span
+        aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">{{customFormulaCtrl.title}}</h4>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-danger" ng-if="customFormulaCtrl.customFormulaHTMLForm.$invalid" role="alert">
+      <field-error form-element-name="errorField" translate name="error"></field-error>
+      <field-error form-element-name="maxErrorField" translate name="error"></field-error>
+      <field-error form-element-name="minErrorField" translate name="error"></field-error>
+    </div>
+    <div class="form-group">
+      <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="maxErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="minErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <div>
+        <div class="form-group">
+          <textarea class="form-control" id="formula" rows="2" data-ng-model="customFormulaCtrl.formula" resize="none"
+            type="text" name="formula" autofocus></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-12">
+        <div class="table-responsive">
+          <table class=" table-condensed">
+            <thead>
+              <tr>
+
+                <th><u>Variablen</u></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+
+                <td><b>ai</b> (Angebotspreis)</td>
+                <td><b>ao</b> (niedrigster Angebotspreis)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-sm-12">
+        <div class="table-responsive">
+          <table class=" table-condensed">
+            <thead>
+              <tr>
+                <th><u>Operatoren</u></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Arithmetische Operatoren:</th>
+                <td>&nbsp;+&nbsp;&nbsp; -&nbsp;&nbsp; *&nbsp;&nbsp; /&nbsp;&nbsp; %</td>
+
+              </tr>
+              <tr>
+                <th>Vergleichs Operatoren:</th>
+                <td>&nbsp;== &nbsp; &nbsp;!= &nbsp; &nbsp; &gt; &nbsp;&nbsp; &lt; &nbsp;&nbsp; &gt;&#61; &nbsp;&nbsp;
+                  &lt;&#61;</td>
+              </tr>
+              <tr>
+                <th>Bedingung:</th>
+                <td>&nbsp;if({Bedingung},{Wahr_Wert},{Falsch_Wert})</td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-sm-12">
+        <div class="table-responsive">
+          <table class=" table-condensed">
+            <thead>
+              </tr>
+              <tr>
+                <th></th>
+              </tr>
+              <tr>
+                <th><u>Funktionen</u></th>
+              </tr>
+
+            </thead>
+            <tbody>
+              <tr>
+                <td><b> {Zahl}^{Exponent} </b> </td>
+                <td>Potenziert {Zahl} mit {Exponent}.</td>
+              </tr>
+
+              <tr>
+
+                <td><b>sqrt({Zahl})</td>
+                <td>Gibt die Quadratwurzel von {Zahl} zurück. </td>
+              </tr>
+              <tr>
+                <th></th>
+              </tr>
+              <tr>
+
+                <td><b>round({Wert}, {Anzahl_Stellen})</b></td>
+                <td>Rundet {Wert} auf die in {Anzahl_Stellen} angegebene Anzahl Stellen. </td>
+              </tr>
+              <tr>
+                <th></th>
+              </tr>
+              <tr>
+
+                <td><b>min({Zahl1}, {Zahl2})</b></td>
+                <td>Gibt die kleinere von zwei Zahlen zurück.</td>
+              </tr>
+              <tr>
+                <th></th>
+              </tr>
+              <tr>
+
+                <td><b>max({Zahl1}, {Zahl2})</b></td>
+                <td>Gibt die grössere von zwei Zahlen zurück.<td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class='row'></div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary" data-dismiss="modal">Speichern</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="customFormulaCtrl.closeWindow(customFormulaCtrl.customFormulaHTMLForm.$dirty)">Abbrechen</button>
+    </div>
+  </div>
+</form>

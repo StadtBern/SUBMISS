@@ -1,0 +1,196 @@
+package rules.submiss.showTemplates;
+
+import ch.bern.submiss.services.api.dto.OfferDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Date;
+import java.math.BigDecimal;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "RU007"
+	when
+		$submission: SubmissionDTO()
+		$offer: OfferDTO()
+		$company: CompanyDTO()
+		if ($offer.getExclusionReason() != null) do[exclusionReason]
+		else do[exclusionReasonEmpty]
+		if ($company.getAddress2() != null) do[address2]
+		else do[address2Empty]
+		if ($offer.getOperatingCostNotes() != null) do[operNotes]
+		else do[operNotesEmpty]
+		if ($offer.getOperatingCostsAmount() != null) do[operAmount]
+		else do[operAmountEmpty]
+        if ($offer.getAmount() != null) do[netAmount]
+		else do[netAmountEmpty]
+		if ($offer.getOfferDate() != null) do[offerDate]
+		else do[offerDateEmpty]
+		if ($submission.getAwardMaxGrade() != null) do[awardMaxGrade]
+		else do[awardMaxGradeEmpty]
+		if ($offer.getBuildingCosts() != null && ($offer.getIsBuildingCostsPercentage() == null || !$offer.getIsBuildingCostsPercentage())) do[buildingCosts]
+		else do[buildingCostsEmpty]
+		if ($offer.getGrossAmountOrCorrected() != null) do[grossAmountOrCorrected]
+		else do[grossAmountOrCorrectedEmpty]
+		if ($offer.getDiscountPercentage() != null && !($offer.getDiscountPercentage().compareTo(BigDecimal.ZERO) == 0)) do[discountPercentage]
+		else do[discountPercentageEmpty]
+		if ($offer.getDiscount2Percentage() != null && !($offer.getDiscount2Percentage().compareTo(BigDecimal.ZERO) == 0)) do[discount2Percentage]
+		else do[discount2PercentageEmpty]
+		if ($offer.getVatPercentage() != null && !($offer.getVatPercentage().compareTo(BigDecimal.ZERO) == 0)) do[vatPercentage]
+		else do[vatPercentageEmpty]
+		if ($offer.getDiscountAmountWithPercentage() != null) do[discountAmountWithPercentage]
+		else do[discountAmountWithPercentageEmpty]
+		if ($offer.getDiscount2AmountWithPercentage() != null) do[discount2AmountWithPercentage]
+		else do[discount2AmountWithPercentageEmpty]
+		if ($offer.getVatAmountWithPercentage() != null) do[vatAmountWithPercentage]
+		else do[vatAmountWithPercentageEmpty]
+		if ($offer.getDiscountBetweenTotal() != null) do[discountBetweenTotal]
+		else do[discountBetweenTotalEmpty]
+		if ($offer.getDiscount2BetweenTotal() != null) do[discount2BetweenTotal]
+		else do[discount2BetweenTotalEmpty]
+		if ($offer.getAmountInclusive() != null) do[amountInclusive]
+		else do[amountInclusiveEmpty]
+		if ($offer.getAncilliaryGrossAmountOrCorrected() != null) do[ancilliaryGrossAmountOrCorrected]
+		else do[ancilliaryGrossAmountOrCorrectedEmpty]
+		if ($offer.getAncilliaryVatAmountWithPercentage() != null) do[ancilliaryVatAmountWithPercentage]
+		else do[ancilliaryVatAmountWithPercentageEmpty]
+		if ($offer.getAncilliaryAmountIncl() != null) do[ancilliaryAmountIncl]
+		else do[ancilliaryAmountInclEmpty]
+		if ($offer.getAncilliaryAmountVat() != null) do[ancilliaryAmountPercentage]
+		else do[ancilliaryAmountPercentageEmpty]
+		if ($offer.getPriceIncrease() !=null) do[priceIncrease]
+		else do[priceIncreaseEmpty]		
+		if ($offer.getAwardTotalScore() != null) do[awardScore]
+		else do[awardScoreEmpty]
+		if ($offer.getApplicationDate() != null) do[applicationDate]
+		else do[applicationDateEmpty]	
+		if($submission.getProject().getObjectName().getValue2()!=null) do[objectBothValues]
+		else do[object]
+		if ($offer.getqExTotalGrade() != null) do[eqTotalScore]
+		else do[eqTotalScoreEmpty]
+		if ($offer.getIsBuildingCostsPercentage() != null && $offer.getIsBuildingCostsPercentage()) do[buildingCostsPercent]
+		else do[buildingCostsPercentEmpty]
+	then
+		placeholderMappings.put("f_company_location", $company.getLocation());
+		placeholderMappings.put("f_company_name", $company.getCompanyName());
+		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());
+		
+	then [exclusionReason]
+		placeholderMappings.put("v2_reason_exclusion", $offer.getExclusionReason());
+	then [exclusionReasonEmpty]
+		placeholderMappings.put("v2_reason_exclusion", "");
+	then [address2]
+		placeholderMappings.put("f_company_address", $company.getAddress1() + "\\n" + $company.getAddress2());
+	then [address2Empty]	
+		placeholderMappings.put("f_company_address", $company.getAddress1());
+	then [operNotes]
+		placeholderMappings.put("o_oper_cost_notes", $offer.getOperatingCostNotes());
+	then [operNotesEmpty]
+		placeholderMappings.put("o_oper_cost_notes", "");
+	then [operAmount]
+		placeholderMappings.put("o_oper_cost_amount", SubmissConverter.convertToCHFCurrency($offer.getOperatingCostsAmount()));
+	then [operAmountEmpty]
+		placeholderMappings.put("o_oper_cost_amount", "");
+	then [netAmount]
+		placeholderMappings.put("o_net_amount", SubmissConverter.convertToCHFCurrency($offer.getAmount()));
+	then [netAmountEmpty]
+		placeholderMappings.put("o_net_amount", "");
+		
+	then [offerDate]
+		placeholderMappings.put("o_offer_date", SubmissConverter.convertToSwissDate($offer.getOfferDate()));
+	then [offerDateEmpty]
+		placeholderMappings.put("o_offer_date", "");
+	then[awardMaxGrade]
+		placeholderMappings.put("z_max_grade", $submission.getAwardMaxGrade().toString());
+	then[awardMaxGradeEmpty]
+		placeholderMappings.put("z_max_grade", "");
+	
+	then[buildingCosts]
+		 placeholderMappings.put("o_building_costs", SubmissConverter.convertToCHFCurrencyWithoutSymbol(SubmissConverter.customRoundNumber($offer.getBuildingCostsPercentage())));
+	then[buildingCostsEmpty]
+		placeholderMappings.put("o_building_costs", "");
+	then[buildingCostsPercent]
+		 placeholderMappings.put("o_building_costs_percent", String.format("%.2f", $offer.getBuildingCosts()) + " %");
+	then[buildingCostsPercentEmpty]
+		placeholderMappings.put("o_building_costs_percent", "");	
+	then[grossAmountOrCorrected]
+		placeholderMappings.put("o_gross_amount_corrected", SubmissConverter.convertToCHFCurrency($offer.getGrossAmountOrCorrected()));
+		placeholderMappings.put("g_amount_cor", SubmissConverter.convertToCHFCurrency($offer.getGrossAmountOrCorrected()));
+	then[grossAmountOrCorrectedEmpty]
+		placeholderMappings.put("o_gross_amount_corrected", "");
+		placeholderMappings.put("g_amount_cor", "");
+	then[discountPercentage]
+		placeholderMappings.put("o_discount_percent", String.format("%.2f", $offer.getDiscountPercentage()) + " %");
+	then[discountPercentageEmpty]
+		placeholderMappings.put("o_discount_percent", "0.00 %");	
+	then[discount2Percentage]
+		placeholderMappings.put("o_discount2_percent", String.format("%.2f", $offer.getDiscount2Percentage()) + " %"); 
+	then[discount2PercentageEmpty]
+		placeholderMappings.put("o_discount2_percent", "0.00 %");
+	then[vatPercentage]
+		placeholderMappings.put("o_vat_amount_percent", String.format("%.2f", $offer.getVatPercentage()) + " %");
+	then[vatPercentageEmpty]
+		placeholderMappings.put("o_vat_amount_percent", "0.00 %");
+	then[discountAmountWithPercentage]
+	    placeholderMappings.put("o_discount", SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getDiscountAmountWithPercentage())));
+	then[discountAmountWithPercentageEmpty]	
+		placeholderMappings.put("o_discount", "");
+	then[discount2AmountWithPercentage]
+	    placeholderMappings.put("o_discount2", SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getDiscount2AmountWithPercentage())));
+	then[discount2AmountWithPercentageEmpty]	
+		placeholderMappings.put("o_discount2", "");
+	then[vatAmountWithPercentage]
+		placeholderMappings.put("o_vat_amount" , SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getVatAmountWithPercentage())));
+	then[vatAmountWithPercentageEmpty]
+		placeholderMappings.put("o_vat_amount" , "");
+	then[discountBetweenTotal]
+		placeholderMappings.put("o_discount_total", SubmissConverter.convertToCHFCurrency($offer.getDiscountBetweenTotal()));
+	then[discountBetweenTotalEmpty]
+		placeholderMappings.put("o_discount_total", "");
+	then[discount2BetweenTotal]
+		placeholderMappings.put("o_discount2_total", SubmissConverter.convertToCHFCurrency($offer.getDiscount2BetweenTotal()));
+	then[discount2BetweenTotalEmpty]
+		placeholderMappings.put("o_discount2_total", "");
+	then[amountInclusive]
+		placeholderMappings.put("o_amount_incl", SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getAmountInclusive()))); 
+	then[amountInclusiveEmpty]
+		placeholderMappings.put("o_amount_incl", "");
+	then[ancilliaryGrossAmountOrCorrected]
+		placeholderMappings.put("o_ancilliary_amount_gross", SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getAncilliaryGrossAmountOrCorrected())));
+	then[ancilliaryGrossAmountOrCorrectedEmpty]
+		placeholderMappings.put("o_ancilliary_amount_gross", "");
+	then[ancilliaryVatAmountWithPercentage]
+		placeholderMappings.put("o_ancilliary_amount_vat", SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getAncilliaryVatAmountWithPercentage())));
+	then[ancilliaryVatAmountWithPercentageEmpty]
+		placeholderMappings.put("o_ancilliary_amount_vat", "");
+	then[ancilliaryAmountIncl]
+		placeholderMappings.put("o_ancilliary_amount_incl", SubmissConverter.convertToCHFCurrency(SubmissConverter.customRoundNumber($offer.getAncilliaryAmountIncl())));
+	then[ancilliaryAmountInclEmpty]
+		placeholderMappings.put("o_ancilliary_amount_incl", "");
+	then[ancilliaryAmountPercentage]
+		placeholderMappings.put("o_ancilliary_amount_percent",  String.format("%.2f", new BigDecimal($offer.getAncilliaryAmountVat())) + " %");
+	then[ancilliaryAmountPercentageEmpty]
+		placeholderMappings.put("o_ancilliary_amount_percent", "0.00 %");
+	then[priceIncrease]
+		placeholderMappings.put("o_price_increase", $offer.getPriceIncrease());
+	then[priceIncreaseEmpty]
+		placeholderMappings.put("o_price_increase", "");
+	then [awardScore]
+		placeholderMappings.put("z_tot_score", $offer.getAwardTotalScore().toString());
+	then [awardScoreEmpty]
+		placeholderMappings.put("z_tot_score", "");									
+	then [applicationDate]
+		placeholderMappings.put("b_application_date", SubmissConverter.convertToSwissDate($offer.getApplicationDate()));
+	then [applicationDateEmpty]
+		placeholderMappings.put("b_application_date", "");
+	then [objectBothValues]
+		placeholderMappings.put("p_object_both_values", $submission.getProject().getObjectName().getValue1()+ ", " + $submission.getProject().getObjectName().getValue2());
+	then [object]
+		placeholderMappings.put("p_object_both_values", $submission.getProject().getObjectName().getValue1());
+	then [eqTotalScore]
+		placeholderMappings.put("e_total_score", String.format("%.3f", $offer.getqExTotalGrade()));
+	then [eqTotalScoreEmpty]
+		placeholderMappings.put("e_total_score", "");												
+	end	

@@ -1,0 +1,22 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.7.0.0041">
+
+    <addColumn tableName="SUB_OFFER">
+      <column name="EXCLUSION_REASON_FIRST_LEVEL" type="TEXT"
+        remarks="Die Ausschluss Begründung in der 1. Stufe"/>
+    </addColumn>
+
+    <addColumn tableName="SUB_OFFER_EXCLUSION_REASON">
+      <column name="LEVEL" type="TINYINT"
+        remarks="Die Stufe">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+  </changeSet>
+</databaseChangeLog>

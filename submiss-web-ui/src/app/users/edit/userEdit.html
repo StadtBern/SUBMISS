@@ -1,0 +1,131 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div id='errorScroll' class="card-box">
+    <form name="userEditCtr.userForm" data-ng-submit="userEditCtr.save()" id="userForm" shows-validation-errors>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="userEditCtr.userForm.$invalid" role="alert">
+          <field-error form-element-name="errorField" translate name="error"></field-error>
+          <field-error form-element-name="departmentMandatoryErrorField" translate name="error"></field-error>
+          <field-error form-element-name="functionErrorField" translate name="error"></field-error>
+        </div>
+        <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="departmentMandatoryErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="functionErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label>Login-Name<span class="mandatory">*</span></label> <input class="form-control" id="username"
+            data-ng-model="userEditCtr.user.username" type="text" name="userName" disabled>
+        </div>
+
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12">
+              <label>Vorname<span class="mandatory">*</span></label> <input class="form-control" id="firstName"
+                data-ng-model="userEditCtr.user.firstName" type="text" name="firstName" disabled>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nachname<span class="mandatory">*</span></label> <input class="form-control" id="lastName"
+            data-ng-model="userEditCtr.user.lastName" placeholder="Bitte Nachnamen eingeben" type="text" name="lastName"
+            disabled>
+        </div>
+        <div class="form-group">
+          <label>E-Mail<span class="mandatory">*</span></label> <input class="form-control" id="email"
+            data-ng-model="userEditCtr.user.email" type="text" name="email" disabled>
+        </div>
+        <div class="form-group">
+          <label>Registriert seit</label> <input class="form-control datepicker" name="registeredDate"
+            id="registrationDate" type="text" data-ng-model="userEditCtr.user.registeredDate" disabled>
+        </div>
+      </div>
+
+      <div class="col-sm-12 col-md-6">
+
+        <div class="form-group">
+          <label>Mandant<span class="mandatory">*</span></label>
+          <ui-select name="tenant" ng-disabled="true" ng-model="userEditCtr.user.tenant" theme="select2">
+            <ui-select-match allow-clear="true" data-placeholder="Bitte auswählen">
+              <span> {{$select.selected.name}}</span>
+            </ui-select-match>
+            <ui-select-choices repeat="item in (userEditCtr.tenants | filter: $select.search)">
+              <span ng-bind="item.name"></span>
+            </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="department">Abteilung(en) pro Direktion<span class="mandatory">*</span></label>
+          <ui-select multiple id="secondaryDepartments" name="secondaryDepartments" autofocus
+            ng-model="userEditCtr.user.secondaryDepartments">
+            <ui-select-match allow-clear="true">{{$item.name}} ({{$item.directorate.shortName}})</ui-select-match>
+            <ui-select-choices
+              repeat="item in userEditCtr.departments | propsFilter: {name: $select.search}  | orderBy:'name'">
+              {{item.name}} ({{item.directorate.shortName}})
+            </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="role">Rolle <span class="mandatory">*</span></label>
+          <ui-select name="role" ng-model="userEditCtr.user.userGroup" theme="select2">
+            <ui-select-match allow-clear="true" data-placeholder="Bitte auswählen">
+              <span> {{$select.selected.description}}</span>
+            </ui-select-match>
+            <ui-select-choices repeat="item in (userEditCtr.roles | filter: $select.search)">
+              <span ng-bind="item.description"></span> </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12">
+              <label>Funktion <span class="mandatory" ng-if="userEditCtr.user.userGroup.name == 'Admin'">*</span>
+              </label> <input class="form-control" id="function" data-ng-model="userEditCtr.user.function" type="text"
+                name="function">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-inline" ng-if="userEditCtr.user.userGroup.name =='Admin'"> <input type="checkbox"
+              data-ng-disabled="userEditCtr.user.id==userEditCtr.loggedInUser.id" id="userAdminRight"
+              data-ng-model="userEditCtr.user.userAdminRight">
+            Benutzerverwaltungs-Recht
+          </label>
+          <label class="checkbox-inline" ng-if="userEditCtr.user.status == 3 || userEditCtr.user.status == 1"> <input
+              type="checkbox" data-ng-disabled="userEditCtr.user.id==userEditCtr.loggedInUser.id" id="active"
+              data-ng-model="userEditCtr.user.active"> Aktiv
+          </label>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12 btn-bar">
+        <button type="submit" class="btn btn-primary">
+          <h
+            ng-if="userEditCtr.user.status == userEditCtr.userStatus.ENABLED_APPROVED || userEditCtr.user.status == userEditCtr.userStatus.DISABLED_APPROVED">
+            Speichern</h>
+          <h
+            ng-if="userEditCtr.user.status == null ||
+			(userEditCtr.user.status != userEditCtr.userStatus.ENABLED_APPROVED && userEditCtr.user.status != userEditCtr.userStatus.DISABLED_APPROVED)">
+            Annehmen</h>
+        </button>
+        <button type="button" ng-if="userEditCtr.user.status == 3 || userEditCtr.user.status == 1"
+          class="btn btn-default" ng-click="userEditCtr.closeWindow(userEditCtr.userForm.$dirty)">Abbrechen</button>
+        <button type="button"
+          ng-if="(userEditCtr.user.status != 3 && userEditCtr.user.status != 1) || userEditCtr.user.status == null"
+          ng-click="userEditCtr.declineUserModal()" class="btn btn-default">Ablehnen</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="European Dynamics SA" id="submiss_v0.7.0.0017">
+
+		<createTable tableName="SUB_TENDER_AWARD_INFO"
+			remarks="Die Tabelle erhält die Verfügungsinformationen der Submission.">
+			<column name="ID" type="VARCHAR(36)"
+				remarks="Primärschlüssel der Tabelle SUB_TENDER_AWARD_INFO.">
+				<constraints nullable="false" />
+			</column>
+			<column name="FK_TENDER" type="VARCHAR(36)"
+				remarks="Fremdschlüssel der Tabelle SUB_TENDER.">
+				<constraints nullable="false" />
+			</column>
+			<column name="AVAILABLE_DATE" type="DATETIME" remarks="Das Verfügungsdatum." />
+			<column name="FREEZE_CLOSE_TENDER" type="BIT"
+				remarks="Der Beschwerdeeingang." />
+			<column name="OBJECT_NAME_READ" type="BIT"
+				remarks="Ob der Wert des Feldes Objektname des ausgewählten Projektes in die Verfügung eingelesen wird." />
+			<column name="PROJECT_NAME_READ" type="BIT"
+				remarks="Ob der Wert des Feldes Projektname des ausgewählten Projektes in die Verfügung eingelesen wird." />
+			<column name="WORKING_CLASS_READ" type="BIT"
+				remarks="Ob der Wert des Feldes Arbeitsgattung der ausgewählten Submission in die Verfügung eingelesen wird." />
+			<column name="DESCRIPTION_READ" type="BIT"
+				remarks="Ob der Wert des Feldes Beschreibung der ausgewählten Submission in die Verfügung eingelesen wird." />
+			<column name="CREATED_ON" type="DATETIME"
+				remarks="Das Datum, dass die Verfügungsinformationen der Submission zum ersten Mal gespeichert wurden." />
+			<column name="CREATED_BY" type="VARCHAR(36)"
+				remarks="Das id des Nutzers, der die Verfügungsinformationen der Submission zum ersten Mal gespeichert hat." />
+			<column name="UPDATED_ON" type="DATETIME"
+				remarks="Das Datum, dass die Verfügungsinformationen der Submission zum letzten Mal gespeichert wurden." />
+			<column name="UPDATED_BY" type="VARCHAR(36)"
+				remarks="Das id des Nutzers, der die Verfügungsinformationen der Submission zum letzten Mal gespeichert hat." />
+		</createTable>
+
+		<addPrimaryKey columnNames="ID" constraintName="PK_TENDER_AWARD_INFO"
+			tableName="SUB_TENDER_AWARD_INFO" />
+		<addForeignKeyConstraint baseColumnNames="FK_TENDER"
+			baseTableName="SUB_TENDER_AWARD_INFO" constraintName="FK_TENDER_AWARD_INFO"
+			onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+			referencedTableName="SUB_TENDER" />
+		<addForeignKeyConstraint baseColumnNames="CREATED_BY"
+			baseTableName="SUB_TENDER_AWARD_INFO" constraintName="FK_CREATED_BY_TENDER_AWARD_INFO"
+			onDelete="SET NULL" onUpdate="NO ACTION" referencedColumnNames="ID"
+			referencedTableName="aaa_user" />
+		<addForeignKeyConstraint baseColumnNames="UPDATED_BY"
+			baseTableName="SUB_TENDER_AWARD_INFO" constraintName="FK_UPDATED_BY_TENDER_AWARD_INFO"
+			onDelete="SET NULL" onUpdate="SET NULL" referencedColumnNames="ID"
+			referencedTableName="aaa_user" />
+	</changeSet>
+
+</databaseChangeLog>

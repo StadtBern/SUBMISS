@@ -1,0 +1,13 @@
+package rules.submiss.showTemplates;
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import java.util.LinkedList;
+import java.util.List;
+global java.util.List templateCodes;
+
+rule "RU009"
+	when
+	$company: CompanyDTO( )
+then 
+	//templates without restrictions should be added here 
+	templateCodes.add("ET12");
+end

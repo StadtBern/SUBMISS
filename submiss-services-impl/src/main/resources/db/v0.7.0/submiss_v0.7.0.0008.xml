@@ -1,0 +1,70 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.6.0.0008">
+
+    <createTable tableName="SUB_LEGAL_HEARING"
+      remarks="Die Tabelle erhält die Rechtliches Gehör Daten der Submission.">
+      <column name="ID" type="VARCHAR(36)"
+        remarks="Primärschlüssel der Tabelle SUB_LEGAL_HEARING">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_TENDER" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_TENDER.">
+        <constraints nullable="false"/>
+      </column>
+      <column name="HEARING_DEADLINE" type="DATETIME" remarks="Das Verfügungsdatum."/>
+      <column name="CANCEL_REASON" type="TEXT" remarks="Die Begründung."/>
+      <column name="CREATED_ON" type="DATETIME"
+        remarks="Das Datum, dass die Submission zum ersten Mal abgebrochen wurde Rechtliches Gehör Daten wurden gespeichert)."/>
+      <column name="CREATED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der die Submission zum ersten Mal abgebrochen hat Rechtliches Gehör Daten gespeichert)."/>
+      <column name="UPDATED_ON" type="DATETIME"
+        remarks="Das Datum, dass die Rechtliches Gehör Daten zum letzten Mal gespeichert wurden."/>
+      <column name="UPDATED_BY" type="VARCHAR(36)"
+        remarks="Das id des Nutzers, der die Rechtliches Gehör Daten zum letzten Mal gespeichert hat."/>
+    </createTable>
+
+    <addPrimaryKey columnNames="ID" constraintName="PK_LEGAL_HEARING"
+      tableName="SUB_LEGAL_HEARING"/>
+    <addForeignKeyConstraint baseColumnNames="FK_TENDER"
+      baseTableName="SUB_LEGAL_HEARING" constraintName="FK_LEGAL_HEARING_TENDER"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_TENDER"/>
+    <addForeignKeyConstraint baseColumnNames="CREATED_BY"
+      baseTableName="SUB_LEGAL_HEARING" constraintName="FK_CREATED_BY_LEGAL_HEARING_USER"
+      onDelete="SET NULL" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+    <addForeignKeyConstraint baseColumnNames="UPDATED_BY"
+      baseTableName="SUB_LEGAL_HEARING" constraintName="FK_UPDATED_BY_LEGAL_HEARING_USER"
+      onDelete="SET NULL" onUpdate="SET NULL" referencedColumnNames="ID"
+      referencedTableName="aaa_user"/>
+
+    <createTable tableName="SUB_LEGAL_HEARING_CANCEL_REASON"
+      remarks="Die Tabelle erhält die Rechtliches Gehör Grunde.">
+      <column name="FK_LEGAL_HEARING" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_LEGAL_HEARING">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FK_HEARING_CANCEL_REASON" type="VARCHAR(36)"
+        remarks="Fremdschlüssel der Tabelle SUB_MASTER_LIST_VALUE">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint baseColumnNames="FK_LEGAL_HEARING"
+      baseTableName="SUB_LEGAL_HEARING_CANCEL_REASON"
+      constraintName="FK_LEGAL_HEARING_CANCEL_REASON_LEGAL_HEARING"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_LEGAL_HEARING"/>
+    <addForeignKeyConstraint baseColumnNames="FK_HEARING_CANCEL_REASON"
+      baseTableName="SUB_LEGAL_HEARING_CANCEL_REASON"
+      constraintName="FK_LEGAL_HEARING_CANCEL_REASON_REASON"
+      onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="ID"
+      referencedTableName="SUB_MASTER_LIST_VALUE"/>
+  </changeSet>
+
+</databaseChangeLog>

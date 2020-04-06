@@ -1,0 +1,333 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">Projektsuche</h2>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <form data-ng-submit="projectSearchCtr.search()">
+      <div class="alert alert-danger" ng-if="projectSearchCtr.invalidDate" role="alert">
+        <field-error ng-if="projectSearchCtr.invalidDate" translate>invalid_date_error_message</field-error>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <h4>Suche nach Projekt</h4>
+        <div class="form-group">
+          <label for="objectName">Objektname</label>
+          <select ui-select2="{allowClear: true}" id="objectName" data-ng-model="projectSearchCtr.searchForm.objectId"
+            ng-change="projectSearchCtr.objectChange()" data-placeholder="Bitte auswählen">
+            <option></option>
+            <option ng-repeat="object in projectSearchCtr.objects" value="{{object.id}}">{{object.value1}}
+              {{projectSearchCtr.objectValue(object.value2)}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="projectNames">Projektname</label>
+          <select ui-select2="{allowClear: true}" multiple id="projectNames"
+            data-ng-model="projectSearchCtr.searchForm.projectNames" data-placeholder="Mehrfachauswahl möglich">
+            <option ng-repeat="projectName in projectSearchCtr.projects" value="{{projectName}}">{{projectName}}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="procedure">Verfahrensleitung</label>
+          <select ui-select2="{allowClear: true}" id="procedure" data-ng-model="projectSearchCtr.searchForm.procedureId"
+            data-placeholder="Bitte auswählen">
+            <option></option>
+            <option ng-repeat="procedure in projectSearchCtr.procedures" value="{{procedure.id}}">{{procedure.value1}}
+            </option>
+          </select>
+        </div>
+
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <h4>Suche nach Submission</h4>
+
+        <div class="form-group">
+          <div class="row">
+            <label class="col-sm-12" for="bis">Verfahrensart</label>
+            <div class="col-sm-12">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="selective" checked="checked"
+                  data-ng-model="projectSearchCtr.searchForm.selective">
+                Selektives
+              </label>
+              <label class="checkbox-inline">
+                <input type="checkbox" id="open" checked="checked" data-ng-model="projectSearchCtr.searchForm.open">
+                Offenes
+              </label>
+              <label class="checkbox-inline">
+                <input type="checkbox" id="invitation" checked="checked"
+                  data-ng-model="projectSearchCtr.searchForm.invitation">
+                Einladung
+              </label>
+            </div>
+            <div class="col-sm-12">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="negotiatedProcedure" checked="checked"
+                  data-ng-model="projectSearchCtr.searchForm.negotiatedProcedure">
+                Freihändig
+              </label>
+              <label class="checkbox-inline">
+                <input type="checkbox" id="negotiatedProcedureWithCompetition" checked="checked"
+                  data-ng-model="projectSearchCtr.searchForm.negotiatedProcedureWithCompetition">
+                Freihändig mit Konkurrenz
+              </label>
+            </div>
+            <div class="col-sm-12">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="negotiatedProcedureAboveThreshold" checked="checked"
+                  data-ng-model="projectSearchCtr.searchForm.negotiatedProcedureAboveThreshold">
+                Freihändig oberhalb Schwellenwert
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="" for="companyWorkTypes">Arbeitsgattung</label>
+          <select ui-select2="{allowClear: true}" multiple id="companyWorkTypes"
+            data-ng-model="projectSearchCtr.searchForm.workTypes" data-placeholder="Mehrfachauswahl möglich"
+            ng-options="workType.value1 + ' ' + workType.value2 for workType in projectSearchCtr.workTypes">
+            <option></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Beschreibung</label>
+          <input class="form-control" id="description" placeholder="" type="text"
+            data-ng-model="projectSearchCtr.searchForm.description">
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <h4>Suche nach Submittent</h4>
+        <div class="form-group">
+          <label>Firmenname</label>
+          <input class="form-control" id="firmenname" placeholder="" type="text"
+            data-ng-model="projectSearchCtr.searchForm.companyName">
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-6">
+              <label class="" for="offerDateFrom">Offertdatum von</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="offerDateFrom" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  name="offerDateFrom" is-open="projectSearchCtr.openOfferDateFrom.opened"
+                  data-ng-model="projectSearchCtr.searchForm.offerDateFrom"
+                  ng-click="projectSearchCtr.openOfferDateFrom()"> <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-click="projectSearchCtr.openOfferDateFrom()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label class="" for="offerDateUntil">Offertdatum bis</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="offerDateUntil" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  name="offerDateUntil" is-open="projectSearchCtr.openOfferDateUntil.opened"
+                  data-ng-model="projectSearchCtr.searchForm.offerDateUntil"
+                  ng-click="projectSearchCtr.openOfferDateUntil()"> <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-click="projectSearchCtr.openOfferDateUntil()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-sm-12">
+        <a class="moreCriteria" role="button" ng-click="projectSearchCtr.isCollapsed = !projectSearchCtr.isCollapsed">
+          <span
+            ng-class="{'fa fa-search-plus': projectSearchCtr.isCollapsed, 'fa fa-search-minus': !projectSearchCtr.isCollapsed}"
+            aria-hidden="true"></span>Weitere Suchkriterien
+        </a>
+      </div>
+
+      <div class="collapse" id="collapseExample" uib-collapse="projectSearchCtr.isCollapsed">
+        <div class="col-sm-12">
+          <div class="row">
+            <div class="col-sm-12 col-md-4">
+              <div class="form-group">
+                <label for="directorates">Direktion</label>
+                <select ui-select2="{allowClear: true}" multiple id="directorates"
+                  data-ng-model="projectSearchCtr.searchForm.directoratesIDs"
+                  ng-change="projectSearchCtr.directorateChange()" data-placeholder="Mehrfachauswahl möglich">
+                  <option ng-repeat="directorate in projectSearchCtr.directorates" value="{{directorate.id}}">
+                    {{directorate.name}}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="departments">Abteilung</label>
+                <select ui-select2="{allowClear: true}" multiple id="departments"
+                  data-ng-model="projectSearchCtr.searchForm.departmentsIDs"
+                  ng-change="projectSearchCtr.departmentChange()" data-placeholder="Mehrfachauswahl möglich">
+                  <option ng-repeat="department in projectSearchCtr.departments" value="{{department.id}}">
+                    {{department.name}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-12 col-md-4">
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="inlineCheckbox1" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.running">
+                      Laufend
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="inlineCheckbox2" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.completed">
+                      Abgeschlossen
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="row">
+                  <label class="col-sm-12" for="bis">Auftragsart</label>
+                  <div class="col-sm-12">
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="constructionIndustry" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.constructionIndustry">
+                      Bauhauptgewerbe
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="relatedTrades" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.relatedTrades">
+                      Baunebengewerbe
+                    </label>
+                  </div>
+                  <div class="col-sm-12">
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="supplyContracts" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.supplyContracts">
+                      Lieferaufträge
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="DLAssignments" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.dLAssignments">
+                      DL-Aufträge
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="isServiceTender" checked="checked"
+                        data-ng-model="projectSearchCtr.searchForm.isServiceTender">
+                      DL-Wettbewerb
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="" for="pmDepartmentName">Projektleitung der Abt.</label>
+                <input class="form-control" value="" id="pmDepartmentName" placeholder="Vorname und Name" type="text"
+                  data-ng-model="projectSearchCtr.searchForm.pmDepartmentName">
+              </div>
+
+              <div class="form-group">
+                <label for="documententitel">Dokumententitel</label>
+                <input class="form-control" id="beschreibung" placeholder="" type="text">
+              </div>
+
+              <label class="" for="erstellungsdatum">Erstellungsdatum</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="von" placeholder="" type="text"
+                  data-date-format='dd.mm.yyyy'>
+                <span class="input-group-addon">
+                  <span class="fa fa-calendar" aria-hidden="true"></span>
+                </span>
+              </div>
+            </div>
+            <div class="col-sm-12 col-md-4">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12 btn-bar">
+        <button type="submit" class="btn btn-primary">Suchen</button>
+        <button type="button" class="btn btn-default"
+          data-ng-click="projectSearchCtr.reloadPage()">Zurücksetzen</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+<div class="row">
+
+  <div class="col-sm-12">
+    <h2 class="page-title">Suchresultate</h2>
+  </div>
+</div>
+<div class="row" id="results">
+  <div class="card-box">
+    <div class="col-sm-12 ToolbarContainer">
+    </div>
+    <div class="col-sm-12">
+      <div>
+        <div ng-table-pagination="projectSearchCtr.tableParams" id="fromStart" template-url="'app/layout/pager.html'">
+        </div>
+        <div class="table-responsive" ng-style="projectSearchCtr.divTableHeight"
+          style="margin: 0; overflow: scroll; max-height: 500px;"
+          scrolly="projectSearchCtr.loadMore(projectSearchCtr.tableParams)">
+          <table ng-table="projectSearchCtr.tableParams" class="table table-striped" show-filter="true"
+            id="StartingPoint">
+            <tr ng-repeat="tender in $data | limitTo:projectSearchCtr.totalDisplay:projectSearchCtr.startingDisplay">
+              <td title="'Objekt'" filter="{ 'objectName' : 'text'}" sortable="'objectName'">
+                {{tender.objectName}}</td>
+              <td title="'Projekt'" filter="{ 'projectName' : 'text'}" sortable="'projectName'">
+                <a
+                  ng-click="projectSearchCtr.navigateToProject(tender.projectId, tender.projectName)">{{tender.projectName}}</a>
+              </td>
+              <td title="'Arbeitsgattung'" filter="{ 'workType' : 'text'}" sortable="'workType'">
+                <a ng-if="projectSearchCtr.secTenderView"
+                  ng-click="projectSearchCtr.navigateToSubmission(tender.id)">{{tender.workType}}</a>
+                <span ng-if="!projectSearchCtr.secTenderView">{{tender.workType}}</span></td>
+              <td title="'Beschreibung'" filter="{ 'description' : 'text'}" sortable="'description'">
+                {{tender.description}}</td>
+              <td title="'Verfahrensart'" filter="{ 'proccess' : 'select'}" filter-data="projectSearchCtr.processes"
+                sortable="'proccess'" translate>
+                <span ng-if="tender.proccess != null" translate>{{tender.proccess}}</span>
+                <span ng-if="tender.proccess == null"></span></td>
+              <td title="'Auftragsart'" filter="{ 'proccessType' : 'text'}" sortable="'proccessType'">
+                {{tender.proccessType}}</td>
+              <td title="'Eingabetermin'" sortable="'submissionDeadline'"
+                filter="{'submissionDeadline': 'dateFilter' }">
+                {{tender.submissionDeadline | date:'dd.MM.yyyy'}}</td>
+              <td title="'Dir./Abt. '" filter="{ 'manDep'  : 'text'}" sortable="'manDep'">
+                {{tender.manDep}}</td>
+              <td width="200" title="'Projektleitung der Abt.'" filter="{ 'projectManagerOfDep': 'text'}"
+                sortable="'projectManagerOfDep'">
+                {{tender.projectManagerOfDep}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="ng-table/filters/dateFilter.html">
+  <div class="input-group">
+		<input class="form-control datepicker" id="submissionDeadline" type="text" name="submissionDeadline" uib-datepicker-popup="dd.MM.yyyy"
+				is-open="projectSearchCtr.openSubmissionDeadlineFilter.opened"
+					ng-model="params.filter()['submissionDeadline']"
+						ng-click="projectSearchCtr.openSubmissionDeadlineFilter()">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" data-ng-click="projectSearchCtr.openSubmissionDeadlineFilter()">
+							<span class="fa fa-calendar"></span>
+						</button>
+					</span>
+	</div>
+</script>

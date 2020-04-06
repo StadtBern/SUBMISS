@@ -1,0 +1,48 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0033">
+    <dropForeignKeyConstraint baseTableName="SUB_OFFER_CRITERION"
+      constraintName="FK_OFFER_CRITERION_CRITERION"/>
+    <addForeignKeyConstraint baseColumnNames="FK_CRITERION"
+      baseTableName="SUB_OFFER_CRITERION"
+      constraintName="FK_OFFER_CRITERION_CRITERION"
+      onDelete="CASCADE"
+      onUpdate="NO ACTION"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_CRITERION"/>
+
+    <dropForeignKeyConstraint baseTableName="SUB_OFFER_CRITERION"
+      constraintName="FK_OFFER_CRITERION_OFFER"/>
+    <addForeignKeyConstraint baseColumnNames="FK_OFFER"
+      baseTableName="SUB_OFFER_CRITERION"
+      constraintName="FK_OFFER_CRITERION_OFFER"
+      onDelete="CASCADE"
+      onUpdate="NO ACTION"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_OFFER"/>
+
+    <dropForeignKeyConstraint baseTableName="SUB_OFFER_SUBCRITERION"
+      constraintName="FK_OFFER_SUBCRITERION_SUBCRITERION"/>
+    <addForeignKeyConstraint baseColumnNames="FK_SUBCRITERION"
+      baseTableName="SUB_OFFER_SUBCRITERION"
+      constraintName="FK_OFFER_SUBCRITERION_SUBCRITERION"
+      onDelete="CASCADE"
+      onUpdate="NO ACTION"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_SUBCRITERION"/>
+
+    <dropForeignKeyConstraint baseTableName="SUB_OFFER_SUBCRITERION"
+      constraintName="FK_OFFER_SUBCRITERION_OFFER"/>
+    <addForeignKeyConstraint baseColumnNames="FK_OFFER"
+      baseTableName="SUB_OFFER_SUBCRITERION"
+      constraintName="FK_OFFER_SUBCRITERION_OFFER"
+      onDelete="CASCADE"
+      onUpdate="NO ACTION"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_OFFER"/>
+  </changeSet>
+</databaseChangeLog>

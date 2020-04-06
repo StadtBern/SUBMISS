@@ -1,0 +1,191 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<h2 class="page-title">{{authorisedSignatoryCtrl.typeName}}</h2>
+	</div>
+</div>
+<div class="row">
+	<div class="card-box">
+		<div class="col-sm-12 ToolbarContainer selectDir">
+			<div class="form-group">
+				<div class="col-sm-12 ToolbarContainer selectDir">
+					<div class="col-sm-3">
+						<ui-select name="template" id="template"
+							on-select="authorisedSignatoryCtrl.getSignaturesByDirectorate(authorisedSignatoryCtrl.chosenDirectorate.directorateId.id)"
+							ng-model="authorisedSignatoryCtrl.chosenDirectorate"
+							theme="select2"> <ui-select-match allow-clear="true">
+						<span ng-bind="$select.selected.shortName"></span> </ui-select-match> <ui-select-choices
+							repeat="direktion in (authorisedSignatoryCtrl.directorates | filter: {shortName: $select.search})">
+						<span ng-bind="direktion.shortName"></span> </ui-select-choices> </ui-select>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-12">
+			<div class="table-responsive">
+				<table class="table table-striped multiEdit">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Selektiv/Offen</th>
+							<th>Einladung</th>
+							<th>Freihändig/Freihändig mit Konkurrenz</th>
+						</tr>
+					</thead>
+					<tbody>
+
+						<tr
+							ng-repeat="signatureObj in authorisedSignatoryCtrl.signatures | unique:'signature.departmentHistory.name'
+							| orderBy: 'signature.departmentHistory.name'">
+
+							<td style="min-width: 240px;">
+								<div data-toggle="tooltip"
+									title="{{signatureObj.signature.departmentHistory.name}}"
+									class="cut-big-entries">
+									<strong>{{signatureObj.signature.departmentHistory.name}}
+										({{signatureObj.signature.departmentHistory.shortName}})</strong>
+
+								</div>
+								<div data-toggle="tooltip" class="cut-big-entries"></div>
+								<div data-toggle="tooltip"
+									title="{{signatureObj.signature.departmentHistory.name}}"
+									class="cut-big-entries">
+									<strong>Kopie an</strong>
+
+								</div>
+							</td>
+
+
+							<td>
+								<div data-toggle="tooltip">
+									<div
+										ng-repeat="signature in authorisedSignatoryCtrl.showSignatureValue('SELECTIVE',signatureObj.signature.departmentHistory.name) "
+										ng-show="$index >= 0">
+										<span
+											ng-show="authorisedSignatoryCtrl.showSignatureValue('SELECTIVE',signatureObj.signature.departmentHistory.name).length>1">
+											{{$index+1}}.</span> {{signature.name}}<span
+											ng-show="signature.name.length >0 && signature.function.length >0 ">
+											,</span> {{signature.function}}
+									</div>
+
+								</div>
+								<button type="button" class="btn action btn-primary" ng-click="authorisedSignatoryCtrl.editSignatureValue('SELECTIVE',signatureObj.signature.departmentHistory.name)">
+									<i class="fa fa-pencil" aria-hidden="true"
+										></i>
+								</button>
+
+
+								<div data-toggle="tooltip">
+									<div
+										ng-repeat="signatureCopy in authorisedSignatoryCtrl.showSignatureCopiesValue('SELECTIVE',signatureObj.signature.departmentHistory.name) "
+										ng-show="$index >= 0">
+										<span
+											ng-show="authorisedSignatoryCtrl.showSignatureCopiesValue('SELECTIVE',signatureObj.signature.departmentHistory.name).length>1">{{$index+1}}.</span>
+										{{signatureCopy.departmentHistory.name}}
+									</div>
+
+								</div>
+
+								<button type="button" class="btn action btn-primary" ng-click="authorisedSignatoryCtrl.editSignatureCopiesValue('SELECTIVE',signatureObj.signature.departmentHistory.name)">
+									<i class="fa fa-pencil" aria-hidden="true">
+										</i>
+								</button>
+
+							</td>
+
+							<td style="min-width: 240px;">
+
+								<div data-toggle="tooltip">
+									<div
+										ng-repeat="signature2 in authorisedSignatoryCtrl.showSignatureValue('INVITATION',signatureObj.signature.departmentHistory.name) "
+										ng-show="$index >= 0">
+										<span
+											ng-show="authorisedSignatoryCtrl.showSignatureValue('INVITATION',signatureObj.signature.departmentHistory.name).length>1">
+											{{$index+1}}.</span> {{signature2.name}}<span
+											ng-show="signature2.name.length >0 && signature2.function.length >0">
+											,</span> {{signature2.function}}
+									</div>
+
+								</div>
+
+								<button type="button" class="btn action btn-primary" ng-click="authorisedSignatoryCtrl.editSignatureValue('INVITATION',signatureObj.signature.departmentHistory.name)">
+									<i class="fa fa-pencil" aria-hidden="true"
+										></i>
+								</button>
+
+
+								<div data-toggle="tooltip">
+									<div
+										ng-repeat="signatureCopy in authorisedSignatoryCtrl.showSignatureCopiesValue('INVITATION',signatureObj.signature.departmentHistory.name) "
+										ng-show="$index >= 0">
+										<span
+											ng-show="authorisedSignatoryCtrl.showSignatureCopiesValue('INVITATION',signatureObj.signature.departmentHistory.name).length>1">{{$index+1}}.</span>
+										{{signatureCopy.departmentHistory.name}}
+									</div>
+
+								</div>
+
+								<button type="button" class="btn action btn-primary" ng-click="authorisedSignatoryCtrl.editSignatureCopiesValue('INVITATION',signatureObj.signature.departmentHistory.name)">
+									<i class="fa fa-pencil" aria-hidden="true"
+										></i>
+								</button>
+
+							</td>
+
+							<td style="min-width: 240px;">
+
+								<div data-toggle="tooltip">
+									<div
+										ng-repeat="signature3 in authorisedSignatoryCtrl.showSignatureValue('NEGOTIATED_PROCEDURE_WITH_COMPETITION',signatureObj.signature.departmentHistory.name) "
+										ng-show="$index >= 0">
+										<span
+											ng-show="authorisedSignatoryCtrl.showSignatureValue('NEGOTIATED_PROCEDURE_WITH_COMPETITION',signatureObj.signature.departmentHistory.name).length>1">
+											{{$index+1}}.</span> {{signature3.name}}<span
+											ng-show="signature3.name.length > 0 && signature3.function.length > 0 ">
+											,</span> {{signature3.function}}
+									</div>
+
+								</div>
+
+								<button type="button" class="btn action btn-primary" ng-click="authorisedSignatoryCtrl.editSignatureValue('NEGOTIATED_PROCEDURE_WITH_COMPETITION',signatureObj.signature.departmentHistory.name)">
+									<i class="fa fa-pencil" aria-hidden="true"
+										></i>
+								</button>
+
+
+								<div data-toggle="tooltip">
+									<div
+										ng-repeat="signatureCopy in authorisedSignatoryCtrl.showSignatureCopiesValue('NEGOTIATED_PROCEDURE_WITH_COMPETITION',signatureObj.signature.departmentHistory.name) "
+										ng-show="$index >=0  ">
+										<span
+											ng-show="authorisedSignatoryCtrl.showSignatureCopiesValue('NEGOTIATED_PROCEDURE_WITH_COMPETITION',signatureObj.signature.departmentHistory.name).length>1">{{$index+1}}.</span>
+										{{signatureCopy.departmentHistory.name}}
+									</div>
+
+								</div>
+
+								<button type="button" class="btn action btn-primary" ng-click="authorisedSignatoryCtrl.editSignatureCopiesValue('NEGOTIATED_PROCEDURE_WITH_COMPETITION',signatureObj.signature.departmentHistory.name)">
+									<i class="fa fa-pencil" aria-hidden="true"
+										></i>
+								</button>
+
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

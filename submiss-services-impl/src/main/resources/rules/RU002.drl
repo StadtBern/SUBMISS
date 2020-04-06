@@ -1,0 +1,40 @@
+package rules.submiss.showTemplates;
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import java.util.LinkedList;
+import java.util.List;
+import ch.bern.submiss.services.api.constants.ProofStatus;
+global java.util.List templateCodes;
+global String userRole;
+global String tenantName;
+global Integer proofStatusNoConsultation;
+
+rule "RU002"
+	when
+	$company: CompanyDTO( )
+	$isRole_admin: Boolean( ) from userRole.equals("Admin")
+	$isRole_PL: Boolean( ) from userRole.equals("PL")
+	$isRole_Dir: Boolean( ) from userRole.equals("Dir")
+	$isRole_SB: Boolean( ) from userRole.equals("SB")
+	$isTenant_SB: Boolean( ) from tenantName.equals("Stadt Bern")
+	$isTenant_EWB: Boolean( ) from tenantName.equals("EWB")
+	$isTenant_KB: Boolean( ) from tenantName.equals("Kanton Bern")
+	$isProof_ALL_PROOF: Boolean( ) from $company.getProofStatus().equals(ProofStatus.ALL_PROOF.getValue())
+	$isProof_NoConsultation: Boolean( ) from proofStatusNoConsultation.equals(ProofStatus.ALL_PROOF.getValue())
+	if ($isRole_admin && !$isProof_NoConsultation) do[FT01]
+	if ($isRole_admin && $isTenant_KB && $isProof_ALL_PROOF) do[FT02]
+	if (($isRole_admin || $isRole_PL || $isRole_Dir || $isRole_SB) && !$isTenant_KB) do[FT03]
+	if ($isRole_admin ) do[FT04]
+	if ($isRole_admin || $isRole_PL || $isRole_Dir || $isRole_SB) do[FT05]
+then 
+	//templates without restrictions should be added here 
+	then[FT01]//Nachweisbrief (FT01)
+		templateCodes.add("FT01");
+	then[FT02]//Zertifikat (FT02)
+		templateCodes.add("FT02");
+	then[FT03]//Firmenblatt einfach FT03
+		templateCodes.add("FT03");
+	then[FT04]//Firmenblatt erweitert(FT04)
+		templateCodes.add("FT04");
+	then[FT05]//Liste Arbeitsgattung(FT05)
+		templateCodes.add("FT05");
+end

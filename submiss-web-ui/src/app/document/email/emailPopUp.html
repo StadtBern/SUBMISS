@@ -1,0 +1,39 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close"
+          ng-click="$close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title">Inhalt der E-Mail Nachweisbrief</h4>
+</div>
+<form>
+  <div class="alert alert-info">
+    <ul><li translate>
+      invalid_open_email_to
+    </li></ul>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="body">Vertragsvorlage</label>
+      <textarea style="width: 100%;" id="body" name="body" ng-value="emailPopUpCtrl.body" rows="10">
+        {{emailPopUpCtrl.body}}
+      </textarea>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal"
+              ng-click="$close()">OK</button>
+    </div>
+  </div>
+</form>

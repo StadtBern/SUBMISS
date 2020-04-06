@@ -1,0 +1,70 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_v0.9.0.0002">
+
+    <createView replaceIfExists="true" viewName="UNION_VIEW">
+      select
+      t.id as id,
+      p.FK_OBJECT as object,
+      t.FK_HISTORY_WORK_TYPE as workType,
+      p.FK_TENANT as tenant_id,
+      p.NAME as projectName
+      from
+      SUB_TENDER as t
+      join
+      SUB_PROJECT as p ON (p.ID = t.FK_PROJECT)
+      union select
+      p.id as id,
+      p.FK_OBJECT as object,
+      null as workType,
+      p.FK_TENANT as tenant,
+      p.NAME as projectName
+      from
+      SUB_PROJECT as p
+    </createView>
+
+    <createView replaceIfExists="true" viewName="VW_AUDIT_PROJECT">
+      SELECT
+      a.id AS id,
+      CONCAT(uafirst.data, ' ', ualast.data) AS userName,
+      a.short_description as shortDescription,
+      from_unixtime(floor(a.created_on / 1000)) as createdOn,
+      CONCAT_WS(' ', mlvh.VALUE1, mlvh.VALUE2) AS objectName,
+      union_select.projectName AS projectName,
+      CONCAT_WS(' ', mlvh1.VALUE1, mlvh1.VALUE2) AS workType,
+      a.opt1 as reason,
+      union_select.tenant_id as tenant_id
+      FROM
+      al_audit a
+      INNER JOIN
+      aaa_user u ON u.id = a.prin_session_id
+      INNER JOIN
+      aaa_user_attributes uafirst ON uafirst.user_id = u.id
+      INNER JOIN
+      aaa_user_attributes ualast ON ualast.user_id = u.id
+      INNER JOIN UNION_VIEW as union_select ON union_select.id = a.reference_id
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE mlv ON mlv.id = union_select.object
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE_HISTORY mlvh ON mlvh.FK_MASTER_LIST_VALUE = mlv.id
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE mlv1 ON mlv1.id = union_select.workType
+      LEFT JOIN
+      SUB_MASTER_LIST_VALUE_HISTORY mlvh1 ON mlvh1.FK_MASTER_LIST_VALUE = mlv1.id
+      WHERE
+      opt3 = '1'
+      and level_id IN (SELECT
+      id
+      FROM
+      al_audit_level
+      WHERE
+      NAME = 'PROJECT_LEVEL')
+      and ualast.name = 'LASTNAME'
+      and uafirst.name = 'FIRSTNAME';
+    </createView>
+  </changeSet>
+</databaseChangeLog>

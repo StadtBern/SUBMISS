@@ -1,0 +1,151 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">Zuschlagsbewertungstabelle</h2>
+    <h4 class="page-title">
+      {{awardCriteriaAssessCtrl.data.submission.workType.value1}}
+      {{awardCriteriaAssessCtrl.data.submission.workType.value2}}, <small>
+        {{awardCriteriaAssessCtrl.data.submission.project.projectName}},
+        {{awardCriteriaAssessCtrl.getObjectInfo(awardCriteriaAssessCtrl.data.submission.project.objectName)}},
+        Mindestnote:
+        {{awardCriteriaAssessCtrl.data.submission.awardMinGrade}},
+        Maximalnote:
+        {{awardCriteriaAssessCtrl.data.submission.awardMaxGrade}}</small>
+    </h4>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <div class="col-sm-12">
+      <div class="alert alert-danger" role="alert" ng-if="awardCriteriaAssessCtrl.notPermittedGrade || awardCriteriaAssessCtrl.notRoundedGrade">
+        <ul ng-if="awardCriteriaAssessCtrl.notPermittedGrade">
+          <li translate>
+            criterion_grade_permitted</li>
+        </ul>
+        <ul ng-if="awardCriteriaAssessCtrl.notRoundedGrade">
+          <li translate>
+            not_rounded_grade</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-12">
+      <div class="col-sm-12 ToolbarContainer">
+        <div class="btn-toolbar pull-left role=" toolbar"="">
+          <button ng-click="awardCriteriaAssessCtrl.cancelButton(awardCriteriaAssessCtrl.awardCriteriaAssessForm.$dirty, true)"
+            type="button" class="btn btn-primary"><i class="fa fa-reply" aria-hidden="true"></i> Zurück
+          </button>
+        </div>
+        <div class="btn-toolbar pull-right role=" toolbar"="">
+          <button type="button" class="btn btn-primary" ng-click="awardCriteriaAssessCtrl.save(awardCriteriaAssessCtrl.awardForm)"
+            data-ng-disabled="appCtrl.getLoggedUser().userGroup.name == awardCriteriaAssessCtrl.group.DIR
+					|| awardCriteriaAssessCtrl.criteriaAssessFormDisabled(awardCriteriaAssessCtrl.currentStatus)">Speichern</button>
+          <button ng-click="awardCriteriaAssessCtrl.cancelButton(awardCriteriaAssessCtrl.awardCriteriaAssessForm.$dirty, false)"
+            type="button" class="btn btn-default" ng-disabled="appCtrl.getLoggedUser().userGroup.name == awardCriteriaAssessCtrl.group.DIR
+					|| awardCriteriaAssessCtrl.criteriaAssessFormDisabled(awardCriteriaAssessCtrl.currentStatus)">Abbrechen</button>
+        </div>
+      </div>
+      <form name="awardCriteriaAssessCtrl.awardCriteriaAssessForm" id="awardCriteriaAssessForm" shows-validation-errors>
+        <div class="card-box">
+          <fieldset ng-disabled="awardCriteriaAssessCtrl.criteriaAssessFormDisabled(awardCriteriaAssessCtrl.currentStatus)">
+            <div>
+              <div id="parent" class="rankWhole fixedCol" style="margin: 0; overflow: scroll; max-height: 500px;">
+                <table id="fixTable" class="table table-striped table-condensed" style="align:center" ng-style="awardCriteriaAssessCtrl.tableStyle">
+                  <thead>
+                    <tr>
+                      <th colspan="6"></th>
+                      <th class="leftborder w10 min-max-width-cols" ng-repeat-start="criterion in awardCriteriaAssessCtrl.criteria track by criterion.id">G</th>
+                      <th class="leftborder min-max-width-cols" colspan="2">
+                        <div data-toggle="tooltip" title="{{criterion.criterionText}}" class="cut-big-entries">
+                          {{criterion.criterionText}}
+                        </div>
+                      </th>
+                      <th class="leftborder w10 min-max-width-cols" ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id"><span
+                          class="italic">G</span></th>
+                      <th class="leftborder min-max-width-cols" colspan="2" ng-repeat-end>
+                        <div data-toggle="tooltip" title="{{subcriterion.subcriterionText}}" class="cut-big-entries">
+                          <span class="italic">UK
+                            {{subcriterion.subcriterionText}}</span>
+                        </div>
+                      </th>
+                      <!-- dummy input just to close the ng-repeat -->
+                      <th ng-hide="true" ng-repeat-end></th>
+                    </tr>
+                    <tr>
+                      <th class="w60"></th>
+                      <th class="leftborder w10 min-max-width-cols">Rang</th>
+                      <th class="leftborder min-max-width-cols" colspan="3">Totale Punkte</th>
+                      <th class="leftborder min-max-width-cols">Netto-Preis exkl. MWST</th>
+                      <th class="leftborder w10 min-max-width-cols" ng-repeat-start="criterion in awardCriteriaAssessCtrl.criteria track by criterion.id">{{awardCriteriaAssessCtrl.formatAmount(criterion.weighting)}}</th>
+                      <th class="leftborder min-max-width-cols">Note</th>
+                      <th class="leftborder min-max-width-cols">Punkte</th>
+                      <th class="leftborder w10 min-max-width-cols" class="cut-big-entries" ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id">{{awardCriteriaAssessCtrl.formatAmount(subcriterion.weighting)}}</th>
+                      <th class="leftborder min-max-width-cols"><span class="italic">Note</span></th>
+                      <th class="leftborder min-max-width-cols" ng-repeat-end><span class="italic">Punkte</span></th>
+                      <!-- dummy input just to close the ng-repeat -->
+                      <th ng-hide="true" ng-repeat-end></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="offer in awardCriteriaAssessCtrl.offers track by offer.id" ng-init="offerIndex=$index"
+                      ng-style="awardCriteriaAssessCtrl.greyedOut(offer)">
+                      <td style="min-width: 240px;">
+                        <div data-toggle="tooltip" title="{{awardCriteriaAssessCtrl.showSubmittentJointVenturesSubcontractors(offer)}}"
+                          class="cut-big-entries">
+                          <strong>{{awardCriteriaAssessCtrl.showSubmittentAndLocation(offer)}}</strong>
+                          <sup ng-if="offer.isVariant"><strong>V</strong></sup>
+                          <strong>{{awardCriteriaAssessCtrl.showJointVenturesSubcontractors(offer)}}</strong>
+                        </div>
+                      </td>
+                      <td class="leftborder w10 min-max-width-cols">{{offer.awardRank}}</td>
+                      <td class="leftborder min-max-width-cols" colspan="3">{{awardCriteriaAssessCtrl.roundScoreToString(offer.awardTotalScore)}}</td>
+                      <td class="leftborder min-max-width-cols">{{awardCriteriaAssessCtrl.customRoundNumber(offer.amount)}}</td>
+                      <td class="leftborder w10 min-max-width-cols" ng-repeat-start="criterion in awardCriteriaAssessCtrl.criteria track by criterion.id"
+                        ng-init="criterionIndex=$index"></td>
+                      <td ng-show="awardCriteriaAssessCtrl.showInputField(criterion, offer)" class="leftborder w40 min-max-width-cols"><input
+                          class="form-control min-max-width-cols" type="number" data-ng-disabled="appCtrl.getLoggedUser().userGroup.name == awardCriteriaAssessCtrl.group.DIR"
+                          min="{{awardCriteriaAssessCtrl.submission.minGrade}}" max="{{awardCriteriaAssessCtrl.submission.maxGrade}}"
+                          data-ng-model="awardCriteriaAssessCtrl.criterionGrade[offerIndex][criterionIndex]"
+                          data-ng-value="awardCriteriaAssessCtrl.getOfferCriterionGrade(offer, criterionIndex)"
+                          ng-change="awardCriteriaAssessCtrl.proofAndCalculateScoreCriterion(offer, offerIndex, criterionIndex, awardCriteriaAssessCtrl.criterionGrade[offerIndex][criterionIndex])"></td>
+                      <td ng-show="!awardCriteriaAssessCtrl.showInputField(criterion, offer)" class="leftborder min-max-width-cols">{{awardCriteriaAssessCtrl.getOfferCriterionGrade(offer,
+                        criterionIndex)}}</td>
+                      <td class="leftborder min-max-width-cols">{{awardCriteriaAssessCtrl.getOfferCriterionScore(offer,
+                        criterionIndex)}}</td>
+                      <td class="leftborder w10 min-max-width-cols" ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id"
+                        ng-init="subcriterionIndex=$index"></td>
+                      <td ng-show="!offer.isExcludedFromAwardProcess" class="leftborder w40 min-max-width-cols"><input
+                          class="form-control min-max-width-cols" type="number" data-ng-disabled="appCtrl.getLoggedUser().userGroup.name == awardCriteriaAssessCtrl.group.DIR"
+                          min="{{awardCriteriaAssessCtrl.submission.minGrade}}" max="{{awardCriteriaAssessCtrl.submission.maxGrade}}"
+                          data-ng-model="awardCriteriaAssessCtrl.subcriterionGrade[offerIndex][criterionIndex][subcriterionIndex]"
+                          data-ng-value="awardCriteriaAssessCtrl.getOfferSubcriterionGrade(offer, criterionIndex, subcriterionIndex)"
+                          ng-change="awardCriteriaAssessCtrl.proofAndCalculateScoreSubcriterion(offer, offerIndex, criterionIndex, subcriterionIndex, awardCriteriaAssessCtrl.subcriterionGrade[offerIndex][criterionIndex][subcriterionIndex])"></td>
+                      <td ng-show="offer.isExcludedFromAwardProcess" class="leftborder min-max-width-cols">{{awardCriteriaAssessCtrl.getOfferSubcriterionGrade(offer,
+                        criterionIndex, subcriterionIndex)}}</td>
+                      <td class="leftborder min-max-width-cols" ng-repeat-end>{{awardCriteriaAssessCtrl.getOfferSubcriterionScore(offer,
+                        criterionIndex, subcriterionIndex)}}</td>
+                      <!-- dummy input just to close the ng-repeat -->
+                      <td ng-hide="true" ng-repeat-end></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

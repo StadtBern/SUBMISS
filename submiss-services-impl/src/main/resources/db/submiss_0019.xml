@@ -1,0 +1,21 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0019">
+    <sql>
+
+      ALTER TABLE `SUB_TENDERER`
+      DROP FOREIGN KEY IF EXISTS `FK_TENDERER_COMPANY`;
+
+      ALTER TABLE `SUB_TENDERER`
+      ADD CONSTRAINT `FK_TENDERER_COMPANY`
+      FOREIGN KEY (`FK_COMPANY`) REFERENCES `SUB_COMPANY` (`ID`) ON DELETE CASCADE ON UPDATE
+      CASCADE;
+
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

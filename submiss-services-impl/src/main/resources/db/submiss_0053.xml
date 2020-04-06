@@ -1,0 +1,18 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_0053">
+    <dropForeignKeyConstraint baseTableName="SUB_SUBCRITERION"
+      constraintName="FK_SUBCRITERION_CRITERION"/>
+    <addForeignKeyConstraint baseColumnNames="FK_CRITERION"
+      baseTableName="SUB_SUBCRITERION"
+      constraintName="FK_SUBCRITERION_CRITERION"
+      onDelete="CASCADE"
+      onUpdate="NO ACTION"
+      referencedColumnNames="ID"
+      referencedTableName="SUB_CRITERION"/>
+  </changeSet>
+</databaseChangeLog>

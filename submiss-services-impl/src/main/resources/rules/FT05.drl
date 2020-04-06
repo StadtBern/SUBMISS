@@ -1,0 +1,21 @@
+package rules.submiss.createDocs;
+
+import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import ch.bern.submiss.services.api.dto.DocumentDTO;
+import ch.bern.submiss.services.api.dto.CountryHistoryDTO;
+import java.util.HashMap;
+import java.util.Date;
+import ch.bern.submiss.services.api.util.SubmissConverter;
+
+global HashMap placeholderMappings;
+
+rule "FT05"
+	when
+		$company: CompanyDTO()
+		$document: DocumentDTO()
+
+	then
+ 	    placeholderMappings.put("s_current_date", SubmissConverter.convertToSwissDate(new Date()));
+	    
+	end

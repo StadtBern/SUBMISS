@@ -1,0 +1,62 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="$close()">
+    <span aria-hidden="true">×</span>
+  </button>
+  <h4 class="modal-title" id="">Unterschriftsberechtigter</h4>
+</div>
+<div class="modal-body">
+  <div class="row">
+    <div class="col-sm-12" id="fields">
+      <label class="control-label" for="field1">Unterschriftsberechtigter</label>
+      <div class="controls">
+        <form role="form" autocomplete="off">
+          <div class="entry input-group col-xs-12"
+            ng-repeat="signature in AuthorisedSignatoryEditCtrl.signatureProcessTypeEntitled">
+
+            <input class="form-control" ng-model="signature.name" placeholder="Name"> <input class="form-control"
+              ng-model="signature.function" placeholder="Funktion">
+            <ui-select name="template" id="template" theme="select2"
+              on-select="AuthorisedSignatoryEditCtrl.setDepartmentForSignature($select.selected.departmentId,$index)"
+              ng-model="signature.departmentHistory">
+              <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.name"></span> </ui-select-match>
+              <ui-select-choices
+                repeat="department in (AuthorisedSignatoryEditCtrl.departments | filter: {name: $select.search})">
+                <span ng-bind="department.name"></span> </ui-select-choices>
+            </ui-select>
+
+            <span class="input-group-btn">
+              <button id="addRowBtn" class="btn btn-default btn-add"
+                ng-click="AuthorisedSignatoryEditCtrl.removeRow($index)"
+                ng-if="$index <= AuthorisedSignatoryEditCtrl.signatureProcessTypeEntitled.length - 1">
+                <i class="fa fa-minus" aria-hidden="true"></i>
+              </button>
+              <button id="addRowBtn" class="btn btn-default btn-add"
+                ng-click="AuthorisedSignatoryEditCtrl.addNewRow($index)"
+                ng-if="$index == AuthorisedSignatoryEditCtrl.signatureProcessTypeEntitled.length - 1">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+              </button>
+            </span>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" ng-click="AuthorisedSignatoryEditCtrl.save()">Speichern</button>
+  <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="$close()">Abbrechen</button>
+</div>

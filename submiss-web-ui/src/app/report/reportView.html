@@ -1,0 +1,233 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2 class="page-title">Auswertungen</h2>
+  </div>
+</div>
+<div class="row">
+  <div id='errorScroll' class="card-box ">
+    <form name="reportViewCtr.htmlReportForm" data-ng-submit="reportViewCtr.generateReport()">
+      <div class="alert alert-danger" ng-if="reportViewCtr.areErrorsPresent('Auswertungen')" role="alert">
+        <ul
+          ng-if="reportViewCtr.invalidDate || !reportViewCtr.htmlReportForm.startDate.$valid || !reportViewCtr.htmlReportForm.endDate.$valid">
+          <li>
+            <field-error translate>invalid_date_error_message</field-error>
+          </li>
+        </ul>
+        <field-error form-element-name="futureDateErrorField" translate></field-error>
+        <field-error form-element-name="startDateAfterEndDateErrorField" translate></field-error>
+      </div>
+      <div class="alert alert-danger" ng-if="reportViewCtr.noResultsReturned" role="alert">
+        <ul ng-if="reportViewCtr.noResultsReturned">
+          <li>
+            <field-error translate>report_no_results</field-error>
+          </li>
+        </ul>
+      </div>
+      <input name="futureDateErrorField" ng-hide="true" data-ng-model="fd">
+      <input name="startDateAfterEndDateErrorField" ng-hide="true" data-ng-model="fd">
+      <div class="col-sm-12 col-md-6 ">
+        <div class="form-group">
+          <label>
+            <h4>Auswertungszeitraum</h4>
+          </label>
+          <div class="row">
+            <div class="col-sm-6"
+              ng-class="{'has-error': !reportViewCtr.htmlReportForm.startDate.$valid || !reportViewCtr.htmlReportForm.startDateAfterEndDateErrorField.$valid}">
+              <label class="" for="startDate">Starttermin</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="startDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  name="startDate" is-open="reportViewCtr.openStartDate.opened"
+                  data-ng-model="reportViewCtr.reportForm.startDate" ng-click="reportViewCtr.openStartDate()"><span
+                  class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-click="reportViewCtr.openStartDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <div class="col-sm-6"
+              ng-class="{'has-error': !reportViewCtr.htmlReportForm.endDate.$valid || !reportViewCtr.htmlReportForm.startDateAfterEndDateErrorField.$valid}">
+              <label class="" for="endDate">Endtermin</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="endDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  name="endDate" is-open="reportViewCtr.openEndDate.opened"
+                  data-ng-model="reportViewCtr.reportForm.endDate" ng-click="reportViewCtr.openEndDate()"><span
+                  class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-click="reportViewCtr.openEndDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12">
+        <h4>Auswertungskriterien</h4>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="object">Objekt</label> <select ui-select2="{allowClear: true}" multiple id="objects"
+            data-ng-model="reportViewCtr.reportForm.objects" data-placeholder="Mehrfachauswahl möglich"
+            ng-change="reportViewCtr.objectChange()">
+            <option ng-repeat="object in reportViewCtr.objects" value="{{object.id}}">{{object.value1}}
+              {{reportViewCtr.objectValue(object.value2)}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="project">Projekt</label> <select ui-select2="{allowClear: true}" multiple id="projects"
+            data-ng-model="reportViewCtr.reportForm.projects" data-placeholder="Mehrfachauswahl möglich"
+            ng-change="reportViewCtr.projectChange()">
+            <option ng-repeat="project in reportViewCtr.projects" value="{{project.id}}">{{project.projectName}}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="projectCreditNos">Projekt / Kredit-Nummer</label> <select ui-select2="{allowClear: true}" multiple
+            id="projectCreditNos" data-ng-model="reportViewCtr.reportForm.projectCreditNos"
+            data-placeholder="Mehrfachauswahl möglich">
+            <option ng-repeat="projectCreditNo in reportViewCtr.projectsCreditNos" value="{{projectCreditNo}}">
+              {{projectCreditNo}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="workTypes">Arbeitsgattung</label> <select ui-select2="{allowClear: true}" multiple id="workTypes"
+            data-ng-model="reportViewCtr.reportForm.workTypes" data-placeholder="Mehrfachauswahl möglich"
+            ng-options="workType.value1 + ' ' + workType.value2 for workType in reportViewCtr.workTypes">
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="company">Firma</label>
+          <div class="input-group">
+            <ui-select ng-paste="$event.preventDefault()" multiple id="companies" onkeypress="return false;"
+              name="companies" ng-model="reportViewCtr.reportForm.companies">
+              <ui-select-match allow-clear="true">{{$item.companyName}}</ui-select-match>
+              <ui-select-choices repeat="item in reportViewCtr.reportForm.companies" value="{{item}}">
+                {{item.companyName}}</ui-select-choices>
+            </ui-select>
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button" title="Suche" data-ng-click="reportViewCtr.addCompany()">
+                <span class="fa fa-search"></span>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-6">
+
+        <div class="form-group">
+          <label for="procedures">Verfahren</label> <select ui-select2="{allowClear: true}" multiple id="procedures"
+            data-ng-model="reportViewCtr.reportForm.procedures" data-placeholder="Mehrfachauswahl möglich">
+            <option data-ng-repeat="procedure in reportViewCtr.procedures" value="{{procedure.value}}">
+              {{procedure.label}}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="directorates">Direktion</label> <select ui-select2="{allowClear: true}" multiple id="directorates"
+            data-ng-model="reportViewCtr.reportForm.directorates" data-placeholder="Mehrfachauswahl möglich">
+            <option ng-repeat="directorate in reportViewCtr.directorates" value="{{directorate.id}}">
+              {{directorate.name}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="department">Abteilung</label> <select ui-select2="{allowClear: true}" multiple id="departments"
+            data-ng-model="reportViewCtr.reportForm.departments" data-placeholder="Mehrfachauswahl möglich">
+            <option ng-repeat="department in reportViewCtr.departments" value="{{department.id}}">{{department.name}}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="projectManagers">Projektleitung der Abt.</label> <select ui-select2="{allowClear: true}" multiple
+            id="projectManagers" data-ng-model="reportViewCtr.reportForm.projectManagers"
+            data-placeholder="Mehrfachauswahl möglich">
+            <option ng-repeat="projectManager in reportViewCtr.projectManagers" value="{{projectManager}}">
+              {{projectManager}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-sm-12 col-md-12">
+        <h4>
+          Totalisierung nach:<span class="mandatory">*</span>
+        </h4>
+      </div>
+      <div class="col-sm-12 col-md-12">
+        <div class="form-group ">
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="row">
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="procedure" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByProcedure"> Verfahren</label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="object" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByObject"> Objekt</label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="project" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByProject"> Projekt</label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="projectCreditNo"
+                      data-ng-model="reportViewCtr.reportForm.totalizationBy" name="total"
+                      value="totalByProjectCreditNo"> Projekt / Kredit-Nummer</label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="projectManager" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByProjectManager"> Projektleiter der Abt.</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 ">
+              <div class="row">
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="workType" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByWorkType"> Arbeitsgattung</label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="directorate" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByDirectorate"> Direktion </label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="department" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByDepartment"> Abteilung </label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="company" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByCompany"> Firma</label>
+                </div>
+                <div class="form-group col-sm-2">
+                  <label><input type="radio" id="year" data-ng-model="reportViewCtr.reportForm.totalizationBy"
+                      name="total" value="totalByYear"> Jahr</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-sm-12 col-md-12 btn-bar ">
+        <button type="submit" class="btn btn-primary">Generieren</button>
+        <button type="button" class="btn btn-default"
+          data-ng-click="reportViewCtr.resetValues(true)">Zurücksetzen</button>
+      </div>
+    </form>
+
+  </div>
+</div>
