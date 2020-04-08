@@ -5,18 +5,18 @@ First off, thank you for considering contributing to Submiss!
 ### 1. Where do I go from here?
 
 If you've noticed a bug or have a question that doesn't belong on the
-[wiki](https://github.com/StadtBern/) (provide with project's GitHub URL), then
-[search the issue tracker](https://github.com/StadtBern/) (provide with project's GitHub URL)
+[wiki](https://github.com/StadtBern/SUBMISS/wiki), then
+[search the issue tracker](https://github.com/StadtBern/SUBMISS/issues) 
 to see if someone else in the community has already created a ticket regarding your issue.
-If not, feel free to go ahead and [make one](https://github.com/StadtBern/) (provide with project's GitHub URL)!
+If not, feel free to go ahead and [make one](https://github.com/StadtBern/SUBMISS/issues)!
 
 ### 2. Did you find a bug?
 
 * **Ensure the bug was not already reported** by searching on GitHub under 
-[Issues](https://github.com/StadtBern/) (provide with project's GitHub URL).
+[Issues](https://github.com/StadtBern/SUBMISS/issues).
 
 * If you're unable to find an open issue addressing the problem, 
-[open a new one](https://github.com/StadtBern/) (provide with project's GitHub URL). 
+[open a new one](https://github.com/StadtBern/SUBMISS/issues). 
 Be sure to include a **title and clear description**, as much relevant information as possible, 
 and a **code sample** or an **executable test case** demonstrating the expected behavior that is not happening.
 
@@ -25,7 +25,7 @@ and a **code sample** or an **executable test case** demonstrating the expected 
 At this point, you're ready to make your changes! Feel free to ask for help!
 
 If this is something you think you can fix, then
-[fork (RepoName)](https://help.github.com/articles/fork-a-repo)
+[fork SUBMISS](https://help.github.com/articles/fork-a-repo)
 and create a branch with a descriptive name.
 
 A good branch name would be (where issue #325 is the ticket you're working on):
@@ -55,7 +55,7 @@ At this point, you should switch back to your master branch and make sure it's
 up to date with the master branch:
 
 ```sh
-git remote add upstream git@github.com/StadtBern/Submiss.git
+git remote add upstream git@github.com/StadtBern/SUBMISS.git
 git checkout master
 git pull upstream master
 ```
@@ -87,15 +87,3 @@ git checkout 325-add-mynewchanges
 git pull --rebase upstream develop
 git push --force-with-lease 325-add-mynewchanges
 ```
-
-### 8. Merging a pull request (maintainers only)
-
-A pull request can only be merged into develop by a maintainer if:
-
-* It is passing the tests.
-* It has been approved by at least two maintainers. If it was a maintainer who
-  opened the pull request, only one extra approval is needed.
-* It has no requested changes.
-* It is up to date with current develop.
-
-Any maintainer is allowed to merge a pull request if all of these conditions are met.

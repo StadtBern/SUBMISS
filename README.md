@@ -13,6 +13,15 @@ These two tenants share the same company database in Submiss.
 
 * [Maven](https://maven.apache.org/) - Dependency Management
 
+## Quick Build
+
+* JDK 1.8.x
+* Maven 3.x
+
+```
+mvn clean install -DskipTests
+```
+
 ## Contributing Guidelines
 
 Please read the [contributing](CONTRIBUTING.md) file for the process of submitting pull requests to us.
@@ -28,4 +37,4 @@ One healthy social atmosphere is very important to us, wherefore we rate our Cod
 
 ## License
 
-This project is licensed under the European Union Public License - see the [license](LICENSE.md) file for details.
+This project is licensed under the European Union Public Licence - see the [license](LICENSE.md) file for details.
