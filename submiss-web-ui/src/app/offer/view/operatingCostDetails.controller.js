@@ -274,6 +274,18 @@
     }
 
     function save() {
+      SubmissionService.isStatusChanged($stateParams.offer.submittent.submissionId.id, vm.currentStatus)
+        .success(function (data) {
+          proceedWithSave();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            QFormJSRValidation.markErrors($scope,
+              $scope.operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm, response);
+          }
+        });
+    }
+
+    function proceedWithSave() {
       // If the form contains invalid numerical values, prevent it from being saved and updated.
       if ($scope.operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid ||
         $scope.operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected.$invalid ||
@@ -327,6 +339,7 @@
           });
       }
     }
+
     /** Function to reset the offer values */
     function resetOfferValues() {
       OfferService.resetOfferValues(vm.offer)

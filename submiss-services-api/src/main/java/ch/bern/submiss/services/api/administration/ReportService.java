@@ -13,9 +13,9 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.util.Map;
 import ch.bern.submiss.services.api.dto.ReportDTO;
 import ch.bern.submiss.services.api.dto.ReportResultsDTO;
+import java.util.Map;
 
 
 /**
@@ -62,4 +62,9 @@ public interface ReportService {
    * @return the number of results by report
    */
   Long getNumberOfResultsByReport(ReportDTO reportDTO);
+
+  /**
+   * Security check for Report.
+   */
+  void reportSecurityCheck();
 }

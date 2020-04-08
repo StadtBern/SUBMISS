@@ -24,8 +24,8 @@
 
   /** @ngInject */
   function AuthorisedSignatoryEditController($rootScope, $scope, $state,
-    StammdatenService, $stateParams, $filter, AppConstants, entryId,
-    $uibModalInstance, directorate) {
+    StammdatenService, $stateParams, $filter, AppConstants, AppService, entryId,
+    $uibModalInstance, directorate, QFormJSRValidation) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -42,6 +42,7 @@
     vm.removeRow = removeRow;
     vm.save = save;
     vm.setDepartmentForSignature = setDepartmentForSignature;
+    vm.closeModal = closeModal;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -82,10 +83,12 @@
     function addNewRow(index) {
       var newRow = {};
       vm.signatureProcessTypeEntitled.splice(index + 1, 0, newRow);
+      vm.dirtyFlag = true;
     }
 
     function removeRow(index) {
       vm.signatureProcessTypeEntitled.splice(index, 1);
+      vm.dirtyFlag = true;
     }
 
     function setDepartmentForSignature(selectedDepartment, index) {
@@ -105,7 +108,31 @@
           }, {
             reload: true
           });
+        }).error(function (response, status) {
+          if (status === 400) {
+            vm.errorFieldsVisible = true;
+            QFormJSRValidation.markErrors($scope,
+              $scope.editForm, response);
+          }
         });
+    }
+
+    function closeModal() {
+      if (vm.dirtyFlag || vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('stammdaten.authorisedSignatory', {
+              directorate: directorate
+            }, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
+      }
     }
   }
 })();

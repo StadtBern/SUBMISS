@@ -13,23 +13,18 @@
 
 package ch.bern.submiss.web.forms;
 
-import java.util.List;
-
+import ch.bern.submiss.services.api.constants.EmailTemplate;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import ch.bern.submiss.services.api.constants.EmailTemplate;
+import java.util.List;
 
 /**
  * The Class EmailTemplateTenantForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class EmailTemplateTenantForm {
-
-  /** The id. */
-  private String id;
+public class EmailTemplateTenantForm extends AbstractForm {
 
   /** The tenant. */
   private TenantForm tenant;
@@ -54,24 +49,6 @@ public class EmailTemplateTenantForm {
 
   /** The available part. */
   private EmailTemplate.AVAILABLE_PART availablePart;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the tenant.

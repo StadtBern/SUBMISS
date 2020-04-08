@@ -12,95 +12,91 @@
   -->
 
 <div class="search-modal-div">
-	<div class="modal-header">
-		<button type="button" class="close" aria-label="Close"
-			ng-click="$close()">
-			<span aria-hidden="true">&times;</span>
-		</button>
-		<h4 class="modal-title">Submission verschieben</h4>
-	</div>
-	<div class="modal-body">
-		<div class="row">
-			<div class="card-box">
-				<div class="col-sm-12">
-					<div class="alert alert-danger"
-						ng-if="projectSearchModalCtrl.notSelected" role="alert">
-						<ul ng-if="projectSearchModalCtrl.notSelected">
-							<li translate>no_project_selected</li>
-						</ul>
-					</div>
-				</div>
-				<form data-ng-submit="projectSearchModalCtrl.search()">
-					<div class="col-sm-12 col-md-4">
-						<div class="form-group">
-							<label for="objectName">Objektname</label> <select
-								ui-select2="{allowClear: true}" id="objectName"
-								data-ng-model="projectSearchModalCtrl.searchForm.objectId"
-								ng-change="projectSearchModalCtrl.objectChange()"
-								data-placeholder="Bitte auswählen">
-								<option></option>
-								<option ng-repeat="object in projectSearchModalCtrl.objects"
-									value="{{object.id}}">{{object.value1}}
-									{{projectSearchModalCtrl.objectValue(object.value2)}}</option>
-							</select>
-						</div>
-					</div>
-					<div class="col-sm-12 col-md-4">
-						<div class="form-group">
-							<label for="projectNames">Projektname</label> <select
-								ui-select2="{allowClear: true}" multiple id="projectNames"
-								data-ng-model="projectSearchModalCtrl.searchForm.projectNames"
-								data-placeholder="Mehrfachauswahl möglich">
-								<option
-									ng-repeat="projectName in projectSearchModalCtrl.projects"
-									value="{{projectName}}">{{projectName}}</option>
-							</select>
-						</div>
-					</div>
+  <div class="modal-header">
+    <button type="button" class="close" aria-label="Close" ng-click="projectSearchModalCtrl.closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">Submission verschieben</h4>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="card-box">
+        <form name="projectSearchModalCtrl.projectSearchForm" data-ng-submit="projectSearchModalCtrl.search()"
+          shows-validation-errors>
 
-					<div class="col-sm-12 col-md-12 btn-bar">
-						<button type="submit" class="btn btn-primary">Suchen</button>
-						<button type="button" class="btn btn-default" ng-click="cancel()">Abbrechen</button>
-					</div>
+          <div class="alert alert-danger" ng-if="projectSearchModalCtrl.projectSearchForm.$invalid" role="alert"
+            id="ErrorAnchor">
+            <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+          </div>
+          <div class="col-sm-12">
+            <div class="alert alert-danger" ng-if="projectSearchModalCtrl.notSelected" role="alert">
+              <ul ng-if="projectSearchModalCtrl.notSelected">
+                <li translate>no_project_selected</li>
+              </ul>
+            </div>
+          </div>
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
 
-				</form>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-12">
-				<h4 class="modal-title">Suchresultate</h4>
-			</div>
-		</div>
-		<div class="row" id="results">
-			<div class="card-box">
-				<div class="col-sm-12 ToolbarContainer"></div>
-				<div class="col-sm-12">
-					<div>
-						<div ng-table-pagination="projectSearchModalCtrl.tableParams"
-							template-url="'app/layout/pager.html'"></div>
-						<div class="table-responsive">
-							<table ng-table="projectSearchModalCtrl.tableParams"
-								class="table table-striped" show-filter="true">
-								<tr ng-repeat="project in $data">
-									<td><input type="radio" name="projectGroup"
-										ng-value="project"
-										ng-model="projectSearchModalCtrl.selectedProject" /></td>
-									<td title="'Projektname'" filter="{ 'projectName' : 'text'}"
-										sortable="'projectName'">{{project.projectName}}</td>
-									<td title="'Objekt'" filter="{ 'objectName' : 'text'}"
-										sortable="'objectName'">{{project.objectName}}</td>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="modal-footer">
-			<button type="button" class="btn btn-primary"
-				ng-click="projectSearchModalCtrl.moveProjectData(projectSearchModalCtrl.selectedProject)">Verschieben</button>
-		</div>
+          <div class="col-sm-12 col-md-4">
+            <div class="form-group">
+              <label for="objectName">Objektname</label> <select ui-select2="{allowClear: true}" id="objectName"
+                data-ng-model="projectSearchModalCtrl.searchForm.objectId"
+                ng-change="projectSearchModalCtrl.objectChange()" data-placeholder="Bitte auswählen">
+                <option></option>
+                <option ng-repeat="object in projectSearchModalCtrl.objects" value="{{object.id}}">{{object.value1}}
+                  {{projectSearchModalCtrl.objectValue(object.value2)}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-12 col-md-4">
+            <div class="form-group">
+              <label for="projectNames">Projektname</label> <select ui-select2="{allowClear: true}" multiple
+                id="projectNames" data-ng-model="projectSearchModalCtrl.searchForm.projectNames"
+                data-placeholder="Mehrfachauswahl möglich">
+                <option ng-repeat="projectName in projectSearchModalCtrl.projects" value="{{projectName}}">
+                  {{projectName}}</option>
+              </select>
+            </div>
+          </div>
 
-	</div>
+          <div class="col-sm-12 col-md-12 btn-bar">
+            <button type="submit" class="btn btn-primary">Suchen</button>
+            <button type="button" class="btn btn-default" ng-click="projectSearchModalCtrl.closeModal()">Abbrechen</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+        <h4 class="modal-title">Suchresultate</h4>
+      </div>
+    </div>
+    <div class="row" id="results">
+      <div class="card-box">
+        <div class="col-sm-12 ToolbarContainer"></div>
+        <div class="col-sm-12">
+          <div>
+            <div ng-table-pagination="projectSearchModalCtrl.tableParams" template-url="'app/layout/pager.html'"></div>
+            <div class="table-responsive">
+              <table ng-table="projectSearchModalCtrl.tableParams" class="table table-striped" show-filter="true">
+                <tr ng-repeat="project in $data">
+                  <td><input type="radio" name="projectGroup" ng-value="project"
+                      ng-model="projectSearchModalCtrl.selectedProject" /></td>
+                  <td title="'Projektname'" filter="{ 'projectName' : 'text'}" sortable="'projectName'">
+                    {{project.projectName}}</td>
+                  <td title="'Objekt'" filter="{ 'objectName' : 'text'}" sortable="'objectName'">{{project.objectName}}
+                  </td>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary"
+        ng-click="projectSearchModalCtrl.moveProjectData(projectSearchModalCtrl.selectedProject)">Verschieben</button>
+    </div>
+
+  </div>
 </div>
-
-

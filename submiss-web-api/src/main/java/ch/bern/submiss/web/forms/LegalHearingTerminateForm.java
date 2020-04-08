@@ -13,52 +13,40 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class LegalHearingTerminateForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LegalHearingTerminateForm {
+public class LegalHearingTerminateForm extends AbstractForm {
 
-  /** The id. */
-  private String id;
-
-  /** The deadline. */
+  /**
+   * The deadline.
+   */
   private Date deadline;
 
-  /** The reason. */
+  /**
+   * The reason.
+   */
   private String reason;
 
-  /** The termination reason. */
+  /**
+   * The termination reason.
+   */
   private Set<MasterListValueForm> terminationReason;
 
-  /** The submission. */
+  /**
+   * The submission.
+   */
   private String submissionId;
 
-  /** The deadline view value. */
+  /**
+   * The deadline view value.
+   */
   private String deadlineViewValue;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the deadline.
@@ -126,7 +114,7 @@ public class LegalHearingTerminateForm {
   /**
    * Sets the submission.
    *
-   * @param submission the new submission
+   * @param submissionId the new submission
    */
   public void setSubmission(String submissionId) {
     this.submissionId = submissionId;
@@ -149,5 +137,4 @@ public class LegalHearingTerminateForm {
   public void setDeadlineViewValue(String deadlineViewValue) {
     this.deadlineViewValue = deadlineViewValue;
   }
-
 }

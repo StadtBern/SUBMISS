@@ -17,6 +17,8 @@ import ch.bern.submiss.services.api.administration.CriterionService;
 import ch.bern.submiss.services.api.administration.OfferService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
+import ch.bern.submiss.services.api.constants.TemplateConstants;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.AwardAssessDTO;
 import ch.bern.submiss.services.api.dto.AwardDTO;
@@ -28,6 +30,7 @@ import ch.bern.submiss.services.api.dto.OfferCriterionLiteDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.OfferSubcriterionLiteDTO;
 import ch.bern.submiss.services.api.dto.SubcriterionDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SuitabilityDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.ValidationMessages;
@@ -40,12 +43,12 @@ import ch.bern.submiss.services.impl.model.CriterionEntity;
 import ch.bern.submiss.services.impl.model.FormalAuditEntity;
 import ch.bern.submiss.services.impl.model.OfferCriterionEntity;
 import ch.bern.submiss.services.impl.model.OfferEntity;
-import ch.bern.submiss.services.impl.model.OfferSubriterionEntity;
+import ch.bern.submiss.services.impl.model.OfferSubcriterionEntity;
 import ch.bern.submiss.services.impl.model.QCriterionEntity;
 import ch.bern.submiss.services.impl.model.QFormalAuditEntity;
 import ch.bern.submiss.services.impl.model.QOfferCriterionEntity;
 import ch.bern.submiss.services.impl.model.QOfferEntity;
-import ch.bern.submiss.services.impl.model.QOfferSubriterionEntity;
+import ch.bern.submiss.services.impl.model.QOfferSubcriterionEntity;
 import ch.bern.submiss.services.impl.model.QSubcriterionEntity;
 import ch.bern.submiss.services.impl.model.QSubmissionEntity;
 import ch.bern.submiss.services.impl.model.QSubmittentEntity;
@@ -57,18 +60,23 @@ import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
 import javax.transaction.Transactional;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -137,7 +145,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
   /**
    * The q offer subriterion entity.
    */
-  QOfferSubriterionEntity qOfferSubriterionEntity = QOfferSubriterionEntity.offerSubriterionEntity;
+  QOfferSubcriterionEntity qOfferSubriterionEntity = QOfferSubcriterionEntity.offerSubcriterionEntity;
   /**
    * The q offer criterion entity.
    */
@@ -229,43 +237,76 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
   }
 
   @Override
-  public void deleteCriterion(String id) {
+  public Set<ValidationError> deleteCriterion(String id, Timestamp pageRequestedOn) {
 
-    LOGGER.log(Level.CONFIG, "Executing method deleteCriterion, Parameters: id: {0}", id);
+    LOGGER.log(Level.CONFIG, "Executing method deleteCriterion, Parameters: id: {0}, "
+        + "pageRequestedOn: {1}",
+      new Object[]{id, pageRequestedOn});
 
     CriterionEntity criterion = em.find(CriterionEntity.class, id);
-    String submissionId = criterion.getSubmission().getId();
-    String deletedCriterionType = criterion.getCriterionType();
-    if (criterion.getCriterionType().equals(LookupValues.AWARD_CRITERION_TYPE)
-      || criterion.getCriterionType().equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)) {
-      CriterionEntity priceCriterion =
-        new JPAQueryFactory(em).select(qCriterionEntity).from(qCriterionEntity)
-          .where(qCriterionEntity.submission.eq(criterion.getSubmission()).and(
-            (qCriterionEntity.criterionType.eq(LookupValues.PRICE_AWARD_CRITERION_TYPE))))
-          .fetchOne();
-      priceCriterion.setWeighting(priceCriterion.getWeighting() + criterion.getWeighting());
-      em.persist(priceCriterion);
+    Set<ValidationError> optimisticLockErrors = deleteCriterionOptimisticLock(criterion, pageRequestedOn);
+    if (optimisticLockErrors.isEmpty()) {
+      deleteCriterionProcess(criterion);
     }
-    em.remove(criterion);
-    if (deletedCriterionType.equals(LookupValues.EVALUATED_CRITERION_TYPE)) {
-      // Retrieve all Bewertetes Kriterien of submission.
-      List<CriterionEntity> evaluatedCriterionEntities =
-        new JPAQueryFactory(em).select(qCriterionEntity).from(qCriterionEntity)
-          .where(qCriterionEntity.submission.id.eq(submissionId)
-            .and(qCriterionEntity.criterionType.eq(LookupValues.EVALUATED_CRITERION_TYPE)))
-          .fetch();
-      // If submission has no Bewertetes Kriterien then set offer rank to null.
-      if (evaluatedCriterionEntities.isEmpty()) {
-        Integer sortOrder = 1;
-        List<OfferEntity> offerEntities =
-          new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
-            .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)).fetch();
-        Collections.sort(offerEntities, ComparatorUtil.sortOfferEntities);
-        for (OfferEntity offerEntity : offerEntities) {
-          offerEntity.setqExRank(sortOrder);
-          offerEntity.getSubmittent().setSortOrder(sortOrder);
-          em.merge(offerEntity);
-          sortOrder++;
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Checking for Optimistic Lock errors.
+   *
+   * @param criterion the criterion
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the error
+   */
+  private Set<ValidationError> deleteCriterionOptimisticLock(CriterionEntity criterion, Timestamp pageRequestedOn) {
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    // Check if criterion is deleted by another user
+    if (criterion == null) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.DELETED_BY_ANOTHER_USER_ERROR_FIELD,
+          ValidationMessages.CRITERION_DELETED));
+    }
+    // If the criterion exists, check if there are any updates by another user
+    else {
+      optimisticLockErrors = awardCheckForChangesByOtherUsers(criterion.getSubmission().getId(), pageRequestedOn);
+    }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * The delete criterion process.
+   *
+   * @param criterion the criterion
+   */
+  private void deleteCriterionProcess(CriterionEntity criterion) {
+
+    LOGGER.log(Level.CONFIG, "Executing method deleteCriterionProcess, Parameters: criterion: {0}",
+      criterion);
+
+    if (criterion != null) {
+      String submissionId = criterion.getSubmission().getId();
+      String deletedCriterionType = criterion.getCriterionType();
+      em.remove(criterion);
+      if (deletedCriterionType.equals(LookupValues.EVALUATED_CRITERION_TYPE)) {
+        // Retrieve all Bewertetes Kriterien of submission.
+        List<CriterionEntity> evaluatedCriterionEntities =
+          new JPAQueryFactory(em).select(qCriterionEntity).from(qCriterionEntity)
+            .where(qCriterionEntity.submission.id.eq(submissionId)
+              .and(qCriterionEntity.criterionType.eq(LookupValues.EVALUATED_CRITERION_TYPE)))
+            .fetch();
+        // If submission has no Bewertetes Kriterien then set offer rank to null.
+        if (evaluatedCriterionEntities.isEmpty()) {
+          Integer sortOrder = 1;
+          List<OfferEntity> offerEntities =
+            new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
+              .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)).fetch();
+          Collections.sort(offerEntities, ComparatorUtil.sortOfferEntities);
+          for (OfferEntity offerEntity : offerEntities) {
+            offerEntity.setqExRank(sortOrder);
+            offerEntity.getSubmittent().setSortOrder(sortOrder);
+            em.merge(offerEntity);
+            sortOrder++;
+          }
         }
       }
     }
@@ -456,7 +497,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
             else if (!offerCriterionEntity.getCriterion().getSubcriteria().isEmpty()) {
               double subcriterionScore = 0;
               double offerCriterionGrade = 0;
-              for (OfferSubriterionEntity offerSubcriterionEntity : offerEntity
+              for (OfferSubcriterionEntity offerSubcriterionEntity : offerEntity
                 .getOfferSubcriteria()) {
                 if (offerSubcriterionEntity.getSubcriterion().getCriterion().getId()
                   .equals(offerCriterionEntity.getCriterion().getId())
@@ -702,8 +743,10 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
             offerCriterion.setGrade(null);
           }
         }
-        List<OfferSubriterionEntity> offerSubcriteria = offer.getOfferSubcriteria();
-        for (OfferSubriterionEntity offerSubcriterion : offerSubcriteria) {
+        // there is one specific scenario, when under ZB the  Undercriteria are not 100% this getter -> offer.getOfferSubcriteria() returns an empty Subcriteria Entity
+        // that's the call is necessary
+        List<OfferSubcriterionEntity> offerSubcriteria =  getSubCriteriaByOfferId(offer.getId());
+        for (OfferSubcriterionEntity offerSubcriterion : offerSubcriteria) {
           if (offerSubcriterion.getSubcriterion().getCriterion().getCriterionType()
             .equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)
             || offerSubcriterion.getSubcriterion().getCriterion().getCriterionType()
@@ -753,14 +796,14 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
               .equals(LookupValues.PRICE_AWARD_CRITERION_TYPE) && offer.getAmount() != null
               && minPrice != null && priceFormula != null) {
               offerCriterion
-                .setGrade(mathParser.calculate(offer.getAmount(), minPrice, priceFormula));
+                .setGrade(calculateGrade(offer.getAmount(), minPrice, priceFormula));
             }
             if (offerCriterion.getCriterion().getCriterionType()
               .equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)) {
               if (offer.getOperatingCostsAmount() != null
                 && offer.getOperatingCostsAmount().compareTo(BigDecimal.ZERO) != 0
                 && minOperatingCost != null && operatingCostFormula != null) {
-                offerCriterion.setGrade(mathParser.calculate(offer.getOperatingCostsAmount(),
+                offerCriterion.setGrade(calculateGrade(offer.getOperatingCostsAmount(),
                   minOperatingCost, operatingCostFormula));
               } else {
                 offerCriterion.setGrade(null);
@@ -809,7 +852,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
           qOfferEntity.submittent.submissionId.id.eq(criterionEntity.getSubmission().getId()))
         .fetch();
     for (OfferEntity offer : offerEntities) {
-      OfferSubriterionEntity offerCriterionEntity = new OfferSubriterionEntity();
+      OfferSubcriterionEntity offerCriterionEntity = new OfferSubcriterionEntity();
       offerCriterionEntity.setOffer(offer);
       offerCriterionEntity.setSubriterion(subcriterionEntity);
       em.persist(offerCriterionEntity);
@@ -818,13 +861,41 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
   }
 
   @Override
-  public void deleteSubcriterion(String id) {
+  public Set<ValidationError> deleteSubcriterion(String id, Timestamp pageRequestedOn) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method deleteSubcriterion, Parameters: id: {0}", id);
+      "Executing method deleteSubcriterion, Parameters: id: {0}"
+        + "pageRequestedOn: {1}",
+      new Object[]{id, pageRequestedOn});
 
     SubcriterionEntity subcriterion = em.find(SubcriterionEntity.class, id);
-    em.remove(subcriterion);
+    Set<ValidationError> optimisticLockErrors = deleteSubCriterionOptimisticLock(subcriterion, pageRequestedOn);
+    if (optimisticLockErrors.isEmpty()) {
+      em.remove(subcriterion);
+    }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Checking for Optimistic Lock errors.
+   *
+   * @param subCriterion the subCriterion
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the error
+   */
+  private Set<ValidationError> deleteSubCriterionOptimisticLock(SubcriterionEntity subCriterion, Timestamp pageRequestedOn) {
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    // Check if subCriterion is deleted by another user
+    if (subCriterion == null) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.DELETED_BY_ANOTHER_USER_ERROR_FIELD,
+          ValidationMessages.SUBCRITERION_DELETED));
+    }
+    // If the subCriterion exists, check if there are any updates by another user
+    else {
+      optimisticLockErrors = awardCheckForChangesByOtherUsers(subCriterion.getCriterion().getSubmission().getId(), pageRequestedOn);
+    }
+    return optimisticLockErrors;
   }
 
   @Override
@@ -1307,59 +1378,76 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
   }
 
   @Override
-  public void updateOfferCriteria(List<SuitabilityDTO> suitabilityDTOs) {
+  public Set<ValidationError> updateOfferCriteria(List<SuitabilityDTO> suitabilityDTOs) {
 
-    LOGGER.log(Level.CONFIG, "Executing method updateOfferCriteria");
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateOfferCriteria, Parameters: suitabilityDTOs: {0}",
+      suitabilityDTOs);
 
-    // Create temporary list in order to apply the order and then set value to qExRank.
-    List<OfferEntity> offerEntities = new ArrayList<>();
-    boolean evaluatedCriteriaExists = false;
-    for (SuitabilityDTO suitabilityDTO : suitabilityDTOs) {
-      OfferEntity offer = em.find(OfferEntity.class, suitabilityDTO.getOfferId());
-      offer.setqExRank(suitabilityDTO.getqExRank());
-      offer.setqExExaminationIsFulfilled(suitabilityDTO.getqExExaminationIsFulfilled());
-      /*
-       * Update status according to values that have already set during formal examination of the
-       * submittent.
-       */
-      updateOfferExStatus(offer);
-      offer.setqExSuitabilityNotes(suitabilityDTO.getqExSuitabilityNotes());
-      offer.setqExTotalGrade(suitabilityDTO.getqExTotalGrade());
-      offer.setqExStatus(suitabilityDTO.getqExStatus());
-      for (CriterionLiteDTO criterionLiteDTO : suitabilityDTO.getMustCriterion()) {
-        OfferCriterionEntity offerCriterionEntity =
-          em.find(OfferCriterionEntity.class, criterionLiteDTO.getCriterionId());
-        offerCriterionEntity.setGrade(criterionLiteDTO.getGrade());
-        offerCriterionEntity.setIsFulfilled(criterionLiteDTO.getIsFulfilled());
-        em.merge(offerCriterionEntity);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      // Create temporary list in order to apply the order and then set value to qExRank.
+      List<OfferEntity> offerEntities = new ArrayList<>();
+      boolean evaluatedCriteriaExists = false;
+      for (SuitabilityDTO suitabilityDTO : suitabilityDTOs) {
+        OfferEntity offer = em.find(OfferEntity.class, suitabilityDTO.getOfferId());
+
+        if (!suitabilityDTO.getOfferVersion().equals(offer.getVersion())) {
+          optimisticLockErrors
+            .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+              ValidationMessages.OPTIMISTIC_LOCK));
+          return optimisticLockErrors;
+        }
+
+        offer.setqExRank(suitabilityDTO.getqExRank());
+        offer.setqExExaminationIsFulfilled(suitabilityDTO.getqExExaminationIsFulfilled());
+        /*
+         * Update status according to values that have already set during formal examination of the
+         * submittent.
+         */
+        updateOfferExStatus(offer);
+        offer.setqExSuitabilityNotes(suitabilityDTO.getqExSuitabilityNotes());
+        offer.setqExTotalGrade(suitabilityDTO.getqExTotalGrade());
+        offer.setqExStatus(suitabilityDTO.getqExStatus());
+        for (CriterionLiteDTO criterionLiteDTO : suitabilityDTO.getMustCriterion()) {
+          OfferCriterionEntity offerCriterionEntity =
+            em.find(OfferCriterionEntity.class, criterionLiteDTO.getCriterionId());
+          offerCriterionEntity.setGrade(criterionLiteDTO.getGrade());
+          offerCriterionEntity.setIsFulfilled(criterionLiteDTO.getIsFulfilled());
+          em.merge(offerCriterionEntity);
+        }
+
+        for (CriterionLiteDTO criterionLiteDTO : suitabilityDTO.getEvaluatedCriterion()) {
+          OfferCriterionEntity offerCriterionEntity =
+            em.find(OfferCriterionEntity.class, criterionLiteDTO.getCriterionId());
+          offerCriterionEntity.setGrade(criterionLiteDTO.getGrade());
+          offerCriterionEntity.setScore(criterionLiteDTO.getScore());
+          evaluatedCriteriaExists = true;
+
+        }
+        /* update OfferSubcriteria */
+        updateOfferSubcriteria(suitabilityDTO.getOfferSubcriteria(), offer);
+        em.merge(offer);
+        offerEntities.add(offer);
       }
-
-      for (CriterionLiteDTO criterionLiteDTO : suitabilityDTO.getEvaluatedCriterion()) {
-        OfferCriterionEntity offerCriterionEntity =
-          em.find(OfferCriterionEntity.class, criterionLiteDTO.getCriterionId());
-        offerCriterionEntity.setGrade(criterionLiteDTO.getGrade());
-        offerCriterionEntity.setScore(criterionLiteDTO.getScore());
-        evaluatedCriteriaExists = true;
-
+      // Sort criteria with rank and update qExRank value.
+      if (evaluatedCriteriaExists) {
+        Collections.sort(offerEntities, ComparatorUtil.sortOfferEntitiesWithRank);
+      } else {
+        Collections.sort(offerEntities, ComparatorUtil.sortOfferEntities);
       }
-      /* update OfferSubcriteria */
-      updateOfferSubcriteria(suitabilityDTO.getOfferSubcriteria(), offer);
-      em.merge(offer);
-      offerEntities.add(offer);
+      /* inform rank field */
+      for (OfferEntity offer : offerEntities) {
+        offer.setqExRank(Integer.valueOf(offerEntities.indexOf(offer) + 1));
+        offer.getSubmittent().setSortOrder(offer.getqExRank());
+        em.merge(offer);
+      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
     }
-    // Sort criteria with rank and update qExRank value.
-    if (evaluatedCriteriaExists) {
-      Collections.sort(offerEntities, ComparatorUtil.sortOfferEntitiesWithRank);
-    } else {
-      Collections.sort(offerEntities, ComparatorUtil.sortOfferEntities);
-    }
-    /* inform rank field */
-    for (OfferEntity offer : offerEntities) {
-      offer.setqExRank(Integer.valueOf(offerEntities.indexOf(offer) + 1));
-      offer.getSubmittent().setSortOrder(offer.getqExRank());
-      em.merge(offer);
-    }
-
+    return optimisticLockErrors;
   }
 
   /**
@@ -1375,7 +1463,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       "Executing method updateOfferSubcriteria, Parameters: offer: {0}", offer);
 
     for (OfferSubcriterionLiteDTO offerSubcriterionLiteDTO : offerSubcriterionLiteDTOs) {
-      OfferSubriterionEntity offerSubcriterionEntity = new JPAQueryFactory(em)
+      OfferSubcriterionEntity offerSubcriterionEntity = new JPAQueryFactory(em)
         .select(qOfferSubriterionEntity).from(qOfferSubriterionEntity)
         .where(qOfferSubriterionEntity.offer.eq(offer).and(qOfferSubriterionEntity.subcriterion.id
           .eq(offerSubcriterionLiteDTO.getOfferSubcriterionId())))
@@ -1444,7 +1532,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       /* update OfferSubcriteria */
       for (OfferSubcriterionLiteDTO offerSubcriterionLiteDTO : awardAssessDTO
         .getOfferSubcriteria()) {
-        OfferSubriterionEntity offerSubcriterionEntity = em.find(OfferSubriterionEntity.class,
+        OfferSubcriterionEntity offerSubcriterionEntity = em.find(OfferSubcriterionEntity.class,
           offerSubcriterionLiteDTO.getOfferSubcriterionId());
         offerSubcriterionEntity.setGrade(offerSubcriterionLiteDTO.getGrade());
         offerSubcriterionEntity.setScore(offerSubcriterionLiteDTO.getScore());
@@ -1641,7 +1729,8 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       new Object[]{grade, weighting});
 
     if (grade != null && weighting != null) {
-      return BigDecimal.valueOf(grade.doubleValue() * weighting.doubleValue() / 100);
+      BigDecimal weight = new BigDecimal(weighting);
+      return grade.multiply(weight).divide(BigDecimal.valueOf(100),3, RoundingMode.HALF_UP);
     }
     return null;
   }
@@ -1681,15 +1770,10 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     if (offerEntities.get(0).getSubmittent().getSubmissionId().getProcess() == Process.SELECTIVE) {
       // In case of selective process, exclude applicants who have been excluded from the process,
       // from the ranking.
-      for (Iterator<OfferEntity> iterator = offerEntities.iterator(); iterator.hasNext(); ) {
-        OfferEntity offerEntity = iterator.next();
-        if (offerEntity.getSubmittent().getIsApplicant() != null
-          && offerEntity.getSubmittent().getIsApplicant().equals(Boolean.TRUE)
-          && offerEntity.getExcludedFirstLevel() != null
-          && offerEntity.getExcludedFirstLevel().equals(Boolean.TRUE)) {
-          iterator.remove();
-        }
-      }
+      offerEntities.removeIf(offerEntity -> offerEntity.getSubmittent().getIsApplicant() != null
+        && offerEntity.getSubmittent().getIsApplicant().equals(Boolean.TRUE)
+        && offerEntity.getExcludedFirstLevel() != null
+        && offerEntity.getExcludedFirstLevel().equals(Boolean.TRUE));
     }
     /*
      * Create a new offer list as copy of the existing, in order to sort it according to the ranking
@@ -1763,7 +1847,8 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
           // get all offers of the sumbission
           offerEntities = new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
             .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
-              .and(qOfferEntity.isEmptyOffer.isFalse()))
+              .and(qOfferEntity.isEmptyOffer.isFalse().or(qOfferEntity.isEmptyOffer.isNull()))
+              .and(qOfferEntity.excludedFirstLevel.isFalse().or(qOfferEntity.excludedFirstLevel.isNull())))
             .fetch();
 
           // iterate the offers of the submission to find the lowest price, because they are needed
@@ -1799,7 +1884,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
                 && (offer.getIsExcludedFromProcess() == null
                 || !offer.getIsExcludedFromProcess())) {
                 BigDecimal grade =
-                  mathParser.calculate(offer.getAmount(), minPrice, calculationFormula);
+                  calculateGrade(offer.getAmount(), minPrice, calculationFormula);
                 // If the calculated grade exceeds the maximum grade, return an error accordingly.
                 if (grade.compareTo(submissionEntity.getAwardMaxGrade()) > 0 && !maxErrorFound) {
                   errors.add(new ValidationError(MAX_ERROR_FIELD,
@@ -1904,7 +1989,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
                   && minOperatingCost != null && calculationFormula != null
                   && (offer.getIsExcludedFromProcess() == null
                   || !offer.getIsExcludedFromProcess())) {
-                  grade = mathParser.calculate(offer.getOperatingCostsAmount(), minOperatingCost,
+                  grade = calculateGrade(offer.getOperatingCostsAmount(), minOperatingCost,
                     calculationFormula);
                   // If the calculated grade exceeds the maximum grade, return an error accordingly.
                   if (grade.compareTo(submissionEntity.getAwardMaxGrade()) > 0 && !maxErrorFound) {
@@ -2049,7 +2134,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       /* check OfferSubcriteria */
       for (OfferSubcriterionLiteDTO offerSubcriterionLiteDTO : awardAssessDTO
         .getOfferSubcriteria()) {
-        OfferSubriterionEntity offerSubcriterionEntity = em.find(OfferSubriterionEntity.class,
+        OfferSubcriterionEntity offerSubcriterionEntity = em.find(OfferSubcriterionEntity.class,
           offerSubcriterionLiteDTO.getOfferSubcriterionId());
 
         if (ObjectUtils.compare(offerSubcriterionEntity.getGrade(),
@@ -2067,7 +2152,14 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
   @Override
   public BigDecimal calculateGrade(BigDecimal currentAmount, BigDecimal minAmount,
     String expression) {
-    return mathParser.calculate(currentAmount, minAmount, expression);
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOfferCriteria, Parameters: currentAmount: {0}, "
+        + "minAmount: {1}, expression: {2}",
+      new Object[]{currentAmount, minAmount, expression});
+
+    return mathParser.calculate(currentAmount, minAmount, expression)
+      .setScale(2, RoundingMode.HALF_UP);
   }
 
   @Override
@@ -2249,7 +2341,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     for (OfferSubcriterionLiteDTO offerSubcriterionLiteDTO : offerSubcriterionLiteDTOs) {
       offerSubcriterionIds.add(offerSubcriterionLiteDTO.getOfferSubcriterionId());
     }
-    List<OfferSubriterionEntity> offerSubcriterionEntities;
+    List<OfferSubcriterionEntity> offerSubcriterionEntities;
     // Get the offer subcriterion entities.
     if (offerId != null) {
       // Fetch offer subcriteria in case of suitability/examination.
@@ -2264,7 +2356,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     }
     // Match the offerSubcriterionLiteDTOs with the offerSubcriterionEntities.
     for (OfferSubcriterionLiteDTO offerSubcriterionLiteDTO : offerSubcriterionLiteDTOs) {
-      for (OfferSubriterionEntity offerSubcriterionEntity : offerSubcriterionEntities) {
+      for (OfferSubcriterionEntity offerSubcriterionEntity : offerSubcriterionEntities) {
         // Check if the offerSubcriterionLiteDTO and offerSubcriterionEntity match. The checking
         // functionality changes if suitability/examination or award.
         if ((offerSubcriterionLiteDTO.getOfferSubcriterionId()
@@ -2383,8 +2475,498 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       }
       // If no operating costs amount exists, delete the operating cost criterion.
       if (!amountExists) {
-        deleteCriterion(operatingCostCriterion.getId());
+        deleteCriterionProcess(operatingCostCriterion);
       }
     }
+  }
+
+  @Override
+  public Set<ValidationError> checkForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method checkForChangesByOtherUsers, Parameters: submissionId: {0}, "
+        + "pageRequestedOn: {1}",
+      new Object[]{submissionId, pageRequestedOn});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // Create a list with all timestamps
+    List<Timestamp> timestamps = getAllTimestamps(submissionId);
+
+    // Check if at least one timestamp from the list is after pageRequestedOn timestamp
+    Optional<Timestamp> timestampCheck = timestamps.stream().filter(timestamp ->
+      timestamp.after(pageRequestedOn)).findFirst();
+
+    /*
+     * If timestampCheck isPresent that means that
+     * a criterion/subcriterion/offer criterion/offer subcriterion
+     * is created or edited by another user
+     */
+    if (timestampCheck.isPresent()) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Get all timestamps for optimistic lock checking.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getAllTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAllTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    List<Timestamp> timestamps = new ArrayList<>();
+    // add the Criterion createdOn timestamps
+    timestamps.addAll(getCriterionCreatedOnTimestamps(submissionId));
+    // add the Criterion updatedOn timestamps
+    timestamps.addAll(getSubCriterionCreatedOnTimestamps(submissionId));
+    // add the Subcriterion createdOn timestamps
+    timestamps.addAll(getCriterionUpdatedOnTimestamps(submissionId));
+    // add the Subcriterion updatedOn timestamps
+    timestamps.addAll(getSubCriterionUpdatedOnTimestamps(submissionId));
+    // add the offer Criterion createdOn timestamps
+    timestamps.addAll(getOfferCriterionCreatedOnTimestamps(submissionId));
+    // add the offer Criterion updatedOn timestamps
+    timestamps.addAll(getOfferCriterionUpdatedOnTimestamps(submissionId));
+
+    /*
+     * In order to proceed with adding the offer Subcriterion createdOn/updatedOn timestamps
+     * we have to retrieve the criterionIds and subCriterionIds based on the submissionId first.
+     */
+    List<String> criterionIds = getCriterionIds(submissionId);
+    List<String> subCriterionIds = getSubCriterionIds(criterionIds);
+
+    // add the offer Subcriterion createdOn timestamps
+    timestamps.addAll(getOfferSubCriterionCreatedOnTimestamps(subCriterionIds));
+    // add the offer Subcriterion updatedOn timestamps
+    timestamps.addAll(getOfferSubCriterionUpdatedOnTimestamps(subCriterionIds));
+
+    return timestamps;
+  }
+
+  /**
+   * Get the criterion createdOn timestamps.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getCriterionCreatedOnTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getCriterionCreatedOnTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qCriterionEntity.createdOn).from(qCriterionEntity)
+      .where(
+        qCriterionEntity.submission.id.eq(submissionId).and(qCriterionEntity.createdOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the criterion updatedOn timestamps.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getCriterionUpdatedOnTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getCriterionUpdatedOnTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qCriterionEntity.updatedOn).from(qCriterionEntity)
+      .where(
+        qCriterionEntity.submission.id.eq(submissionId).and(qCriterionEntity.updatedOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the sub criterion createdOn timestamps.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getSubCriterionCreatedOnTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getSubCriterionCreatedOnTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qSubcriterionEntity.createdOn).from(qSubcriterionEntity)
+      .where(qSubcriterionEntity.criterion.id.in(
+        new JPAQueryFactory(em).select(qCriterionEntity.id).from(qCriterionEntity)
+          .where(qCriterionEntity.submission.id.eq(submissionId)))
+        .and(qSubcriterionEntity.createdOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the sub criterion updatedOn timestamps.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getSubCriterionUpdatedOnTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getSubCriterionUpdatedOnTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qSubcriterionEntity.updatedOn).from(qSubcriterionEntity)
+      .where(qSubcriterionEntity.criterion.id.in(
+        new JPAQueryFactory(em).select(qCriterionEntity.id).from(qCriterionEntity)
+          .where(qCriterionEntity.submission.id.eq(submissionId)))
+        .and(qSubcriterionEntity.updatedOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the offer criterion createdOn timestamps based on the submission id.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getOfferCriterionCreatedOnTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOfferCriterionCreatedOnTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qOfferCriterionEntity.createdOn).from(qOfferCriterionEntity)
+      .where(qOfferCriterionEntity.criterion.id.in(
+        new JPAQueryFactory(em).select(qCriterionEntity.id).from(qCriterionEntity)
+          .where(qCriterionEntity.submission.id.eq(submissionId)))
+        .and(qOfferCriterionEntity.createdOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the offer criterion updatedOn timestamps based on the submission id.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamps
+   */
+  private List<Timestamp> getOfferCriterionUpdatedOnTimestamps(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOfferCriterionUpdatedOnTimestamps, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qOfferCriterionEntity.updatedOn).from(qOfferCriterionEntity)
+      .where(qOfferCriterionEntity.criterion.id.in(
+        new JPAQueryFactory(em).select(qCriterionEntity.id).from(qCriterionEntity)
+          .where(qCriterionEntity.submission.id.eq(submissionId)))
+        .and(qOfferCriterionEntity.updatedOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the offer criterion createdOn timestamps based on the subCriterionIds.
+   *
+   * @param subCriterionIds the subCriterionIds
+   * @return the timestamps
+   */
+  private List<Timestamp> getOfferSubCriterionCreatedOnTimestamps(List<String> subCriterionIds) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOfferSubCriterionCreatedOnTimestamps, Parameters: subCriterionIds: {0}",
+      subCriterionIds);
+
+    return new JPAQueryFactory(em).select(qOfferSubriterionEntity.createdOn).from(qOfferSubriterionEntity)
+      .where(qOfferSubriterionEntity.subcriterion.id.in(subCriterionIds)
+        .and(qOfferSubriterionEntity.createdOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the offer criterion updatedOn timestamps based on the subCriterionIds.
+   *
+   * @param subCriterionIds the subCriterionIds
+   * @return the timestamps
+   */
+  private List<Timestamp> getOfferSubCriterionUpdatedOnTimestamps(List<String> subCriterionIds) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOfferSubCriterionUpdatedOnTimestamps, Parameters: subCriterionIds: {0}",
+      subCriterionIds);
+
+    return new JPAQueryFactory(em).select(qOfferSubriterionEntity.updatedOn).from(qOfferSubriterionEntity)
+      .where(qOfferSubriterionEntity.subcriterion.id.in(subCriterionIds)
+        .and(qOfferSubriterionEntity.updatedOn.isNotNull()))
+      .fetch();
+  }
+
+  /**
+   * Get the criterion ids based on the submission id.
+   *
+   * @param submissionId the submissionId
+   * @return the criterionIds
+   */
+  private List<String> getCriterionIds(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getCriterionIds, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qCriterionEntity.id).from(qCriterionEntity)
+      .where(qCriterionEntity.submission.id.eq(submissionId))
+      .fetch();
+  }
+
+  /**
+   * Get the sub criterion ids based on the criterion ids.
+   *
+   * @param criterionIds the criterionIds
+   * @return the subCriterionIds
+   */
+  private List<String> getSubCriterionIds(List<String> criterionIds) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getSubCriterionIds, Parameters: criterionIds: {0}",
+      criterionIds);
+
+    return new JPAQueryFactory(em).select(qSubcriterionEntity.id).from(qSubcriterionEntity)
+      .where(qSubcriterionEntity.criterion.id.in(criterionIds))
+      .fetch();
+  }
+
+  @Override
+  public boolean criterionExists(String criterionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method criterionExists, Parameters: criterionId: {0}",
+      criterionId);
+
+    CriterionEntity criterionEntity = em.find(CriterionEntity.class, criterionId);
+    return criterionEntity != null;
+  }
+
+  @Override
+  public boolean subCriterionExists(String subCriterionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method subCriterionExists, Parameters: subCriterionId: {0}",
+      subCriterionId);
+
+    SubcriterionEntity subcriterionEntity = em.find(SubcriterionEntity.class, subCriterionId);
+    return subcriterionEntity != null;
+  }
+
+  @Override
+  public boolean offerCriterionExists(String offerCriterionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method offerCriterionExists, Parameters: offerCriterionId: {0}",
+      offerCriterionId);
+
+    OfferCriterionEntity offerCriterionEntity =
+      em.find(OfferCriterionEntity.class, offerCriterionId);
+    return offerCriterionEntity != null;
+  }
+
+  @Override
+  public Set<ValidationError> suitabilityCheckForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn, List<SuitabilityDTO> suitabilityDTOs) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method suitabilityCheckForChangesByOtherUsers, Parameters: submissionId: {0}, "
+        + "pageRequestedOn: {1}, suitabilityDTOs: {2}",
+      new Object[]{submissionId, pageRequestedOn, suitabilityDTOs});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // First, check if at least one criterion/subcriterion was created or updated by another user
+    boolean checkSavedCriteria = !checkForChangesByOtherUsers(submissionId, pageRequestedOn)
+      .isEmpty();
+
+    // Then check if at least one offer criterion/subcriterion was deleted by another user
+    Optional<SuitabilityDTO> checkDeletedCriteria = suitabilityDTOs.stream()
+      .filter(suitabilityDTO -> {
+        boolean checkMustCriteria = suitabilityDTO.getMustCriterion().stream()
+          .anyMatch(criterionLiteDTO -> !offerCriterionExists(criterionLiteDTO.getCriterionId()));
+        boolean checkEvaluatedCriteria = suitabilityDTO.getMustCriterion().stream()
+          .anyMatch(criterionLiteDTO -> !offerCriterionExists(criterionLiteDTO.getCriterionId()));
+        boolean checkSubCriteria = suitabilityDTO.getOfferSubcriteria().stream()
+          /*
+           * For some reason the OfferSubCriterion ID is mapped with the SubCriterion ID in the db.
+           * So we call subCriterionExists to compare the given IDs with the SubCriterion IDs in the db.
+           */
+          .anyMatch(criterionLiteDTO ->
+            !subCriterionExists(criterionLiteDTO.getOfferSubcriterionId()));
+        return checkMustCriteria || checkEvaluatedCriteria || checkSubCriteria;
+      })
+      .findFirst();
+
+    if (checkSavedCriteria || checkDeletedCriteria.isPresent()) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD, ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  @Override
+  public Set<ValidationError> examinationLockedByAnotherUser(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method examinationLockedByAnotherUser, Parameters: submissionId: {0}",
+      submissionId);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionDTO submission = submissionService.getSubmissionById(submissionId);
+    if (submission.getExaminationIsLocked() != null
+      && submission.getExaminationIsLocked()) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.EXAMINATION_LOCKED));
+    }
+    return optimisticLockErrors;
+  }
+
+  @Override
+  public Set<ValidationError> awardLockedByAnotherUser(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method awardLockedByAnotherUser, Parameters: submissionId: {0}",
+      submissionId);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionDTO submission = submissionService.getSubmissionById(submissionId);
+    if (submission.getAwardIsLocked() != null
+      && submission.getAwardIsLocked()) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.AWARD_LOCKED));
+    }
+    return optimisticLockErrors;
+  }
+
+  @Override
+  public Set<ValidationError> awardCheckForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method awardCheckForChangesByOtherUsers, Parameters: submissionId: {0}, "
+        + "pageRequestedOn: {1}",
+      new Object[]{submissionId, pageRequestedOn});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // First, check if at least one criterion/subcriterion was created or updated by another user
+    boolean checkSavedCriteria = !checkForChangesByOtherUsers(submissionId, pageRequestedOn)
+      .isEmpty();
+    // Then, check if submission is updated by another user comparing with the pageRequestedOn timestamp
+    Timestamp submissionUpdatedOn = getSubmissionUpdatedOnTimestamp(submissionId);
+    boolean isSubmissionUpdated = pageRequestedOn.before(submissionUpdatedOn);
+
+    if (checkSavedCriteria || isSubmissionUpdated) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Get the submission updatedOn timestamp.
+   *
+   * @param submissionId the submissionId
+   * @return the timestamp
+   */
+  private Timestamp getSubmissionUpdatedOnTimestamp(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getSubmissionUpdatedOnTimestamp, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qSubmissionEntity.updatedOn)
+      .from(qSubmissionEntity)
+      .where(qSubmissionEntity.id.eq(submissionId)
+        .and(qSubmissionEntity.updatedOn.isNotNull()))
+      .fetchOne();
+  }
+
+  /**
+   * Gets the version of submission.
+   *
+   * @param submissionId the submissionId
+   * @return the version
+   */
+  private Long getSubmissionVersion(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getSubmissionVersion, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).select(qSubmissionEntity.version)
+      .from(qSubmissionEntity)
+      .where(qSubmissionEntity.id.eq(submissionId))
+      .fetchOne();
+  }
+
+  @Override
+  public Set<ValidationError> examinationCheckForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn, Long submissionVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method formalAuditCheckForChangesByOtherUsers, Parameters: submissionId: {0}, "
+        + "pageRequestedOn: {1}, submissionVersion: {2}",
+      new Object[]{submissionId, pageRequestedOn, submissionVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // First, check if at least one criterion/subcriterion was created or updated by another user
+    boolean checkSavedCriteria = !checkForChangesByOtherUsers(submissionId, pageRequestedOn)
+      .isEmpty();
+    // Then check if the submission version is changed by another user
+    Long currentSubmissionVersion = getSubmissionVersion(submissionId);
+    boolean isSubmissionUpdated = !currentSubmissionVersion.equals(submissionVersion);
+
+    if (checkSavedCriteria || isSubmissionUpdated) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+
+    return optimisticLockErrors;
+  }
+
+  @Override
+  public void awardEvaluationViewSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      submissionService.getSubmissionProcess(submissionId).getValue() + LookupValues.DOT +
+        SecurityOperation.AWARD_EVALUATION_VIEW.getValue(), submissionId);
+  }
+
+  @Override
+  public void awardEvaluationEditSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      submissionService.getSubmissionProcess(submissionId).getValue() + LookupValues.DOT +
+        SecurityOperation.AWARD_EVALUATION_EDIT.getValue(), submissionId);
+  }
+
+  /**
+   * Get SubCriteria from a specific offer
+   * @param offerId
+   * @return
+   */
+  private List<OfferSubcriterionEntity> getSubCriteriaByOfferId(String offerId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getSubCriteria, Parameters: offerId: {0}",
+      offerId);
+
+    return new JPAQueryFactory(em).select(qOfferSubriterionEntity).from(qOfferSubriterionEntity)
+      .where(qOfferSubriterionEntity.offer.id.in(offerId))
+      .fetch();
   }
 }

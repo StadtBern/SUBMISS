@@ -13,79 +13,89 @@
 
 package ch.bern.submiss.web.forms;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
 /**
  * The Class SubmissionCancelForm.
  */
-public class SubmissionCancelForm {
+public class SubmissionCancelForm extends AbstractForm {
 
-  /** The id. */
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   private SubmissionForm submission;
 
-  /** The available date. */
+  /**
+   * The available date.
+   */
   private Date availableDate;
 
-  /** The freeze close submission. */
+  /**
+   * The freeze close submission.
+   */
   private Boolean freezeCloseSubmission;
-  
-  /** The object name read. */
+
+  /**
+   * The object name read.
+   */
   private Boolean objectNameRead;
 
-  /** The project name read. */
+  /**
+   * The project name read.
+   */
   private Boolean projectNameRead;
 
-  /** The working class read. */
+  /**
+   * The working class read.
+   */
   private Boolean workingClassRead;
 
-  /** The description read. */
+  /**
+   * The description read.
+   */
   private Boolean descriptionRead;
 
-  /** The reason. */
+  /**
+   * The reason.
+   */
   private String reason;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   private String createdBy;
 
-  /** The created on. */
-  private Date createdOn;
+  /**
+   * The created on.
+   */
+  private Timestamp createdOn;
 
-  /** The updated by. */
+  /**
+   * The updated by.
+   */
   private String updatedBy;
 
-  /** The updated on. */
-  private Date updatedOn;
+  /**
+   * The updated on.
+   */
+  private Timestamp updatedOn;
 
-  /** The cancelled by. */
+  /**
+   * The cancelled by.
+   */
   private String cancelledBy;
 
-  /** The cancelled on. */
+  /**
+   * The cancelled on.
+   */
   private Date cancelledOn;
 
-  /** The work types. */
+  /**
+   * The work types.
+   */
   private Set<MasterListValueForm> workTypes;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -254,7 +264,7 @@ public class SubmissionCancelForm {
    *
    * @return the created on
    */
-  public Date getCreatedOn() {
+  public Timestamp getCreatedOn() {
     return createdOn;
   }
 
@@ -263,7 +273,7 @@ public class SubmissionCancelForm {
    *
    * @param createdOn the new created on
    */
-  public void setCreatedOn(Date createdOn) {
+  public void setCreatedOn(Timestamp createdOn) {
     this.createdOn = createdOn;
   }
 
@@ -290,7 +300,7 @@ public class SubmissionCancelForm {
    *
    * @return the updated on
    */
-  public Date getUpdatedOn() {
+  public Timestamp getUpdatedOn() {
     return updatedOn;
   }
 
@@ -299,7 +309,7 @@ public class SubmissionCancelForm {
    *
    * @param updatedOn the new updated on
    */
-  public void setUpdatedOn(Date updatedOn) {
+  public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
   }
 
@@ -349,7 +359,7 @@ public class SubmissionCancelForm {
   }
 
   /**
-   * Sets the work types.
+   * Sets the work types. N
    *
    * @param workTypes the new work types
    */
@@ -359,13 +369,14 @@ public class SubmissionCancelForm {
 
   @Override
   public String toString() {
-    return "SubmissionCancelForm [id=" + id + ", submission=" + submission + ", availableDate="
-        + availableDate + ", freezeCloseSubmission=" + freezeCloseSubmission + ", objectNameRead="
-        + objectNameRead + ", projectNameRead=" + projectNameRead + ", workingClassRead="
-        + workingClassRead + ", descriptionRead=" + descriptionRead + ", reason=" + reason
-        + ", createdBy=" + createdBy + ", createdOn=" + createdOn + ", updatedBy=" + updatedBy
-        + ", updatedOn=" + updatedOn + ", cancelledBy=" + cancelledBy + ", cancelledOn="
-        + cancelledOn + ", workTypes=" + workTypes + "]";
+    return "SubmissionCancelForm [id=" + super.getId() + ", submission=" + submission
+      + ", availableDate="
+      + availableDate + ", freezeCloseSubmission=" + freezeCloseSubmission + ", objectNameRead="
+      + objectNameRead + ", projectNameRead=" + projectNameRead + ", workingClassRead="
+      + workingClassRead + ", descriptionRead=" + descriptionRead + ", reason=" + reason
+      + ", createdBy=" + createdBy + ", createdOn=" + createdOn + ", updatedBy=" + updatedBy
+      + ", updatedOn=" + updatedOn + ", cancelledBy=" + cancelledBy + ", cancelledOn="
+      + cancelledOn + ", workTypes=" + workTypes + "]";
   }
 }
 

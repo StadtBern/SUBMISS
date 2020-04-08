@@ -30,18 +30,22 @@
     /***********************************************************************
      * Local variables.
      **********************************************************************/
-
+    var submittentenliste_offertubersichtStatus = [70, 80, 110, 150];
+    var formellePrufungStatus = [120, 140];
+    var zuschlagsbewertungStatus = [160, 190];
     /***********************************************************************
      * Exported variables.
      **********************************************************************/
     vm.submission = null;
     vm.status = AppConstants.STATUS;
     vm.group = AppConstants.GROUP;
+    vm.tabStatus = null;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
     vm.offerTabVisible = offerTabVisible;
     vm.isAwardEvaluationTabVisible = isAwardEvaluationTabVisible;
+    vm.getStatusSubTab = getStatusSubTab;
     // Activating the controller.
     activate();
 
@@ -74,6 +78,7 @@
         } else {
           vm.currentStatus = data;
         }
+        vm.tabStatus = data;
       });
     }
 
@@ -84,6 +89,18 @@
         vm.secFormalAuditView = AppService.isOperationPermitted(AppConstants.OPERATION.FORMAL_AUDIT_VIEW, vm.submission.process);
         hasOfferOpeningBeenClosedBefore(vm.submission.id);
       });
+    }
+
+    function getStatusSubTab(status) {
+      var statusSubTab = -1;
+      if (submittentenliste_offertubersichtStatus.includes(status)) {
+        statusSubTab = 0;
+      } else if (formellePrufungStatus.includes(status)) {
+        statusSubTab = 1;
+      } else if (zuschlagsbewertungStatus.includes(status)) {
+        statusSubTab = 2;
+      }
+      return statusSubTab;
     }
 
     /** Function to determine if the offer tab is visible */
@@ -108,7 +125,7 @@
           (vm.submission.process === AppConstants.PROCESS.SELECTIVE &&
             !vm.submission.isServiceTender));
       }
-      return null
+      return false;
     }
   }
 })();

@@ -27,7 +27,7 @@
   function ExaminationService($http, AppConstants) {
     return {
       addCriterionToSubmission: function (criterion) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/criterion', criterion);
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/criterion/add', criterion);
       },
       readCriteriaOfSubmission: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/submission/' + submissionId);
@@ -38,29 +38,29 @@
       updateSubmissionFormalAuditExaminationStatus: function (submissionId) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/examination/formal/' + submissionId);
       },
-      deleteCriterion: function (id) {
-        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/criterion/' + id);
+      deleteCriterion: function (id, pageRequestedOn) {
+        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/criterion/' + id + '/' + pageRequestedOn);
       },
       updateExamination: function (examination) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/criterion/', examination);
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/criterion/update', examination);
       },
       readSubcriteriaOfCriterion: function (criterionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/subcriterion/' + criterionId);
       },
-      deleteSubcriterion: function (id) {
-        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/subcriterion/' + id);
+      deleteSubcriterion: function (id, pageRequestedOn) {
+        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/subcriterion/' + id + '/' + pageRequestedOn);
       },
-      addSubcriterionToCriterion: function (subcriterion) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/subcriterion', subcriterion);
+      addSubcriterionToCriterion: function (submissionId, submissionVersion, subcriterion) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/' + submissionId + '/' + submissionVersion + '/subcriterion/add', subcriterion);
       },
-      closeFormalAudit: function (submissionId) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/formal/close/' + submissionId);
+      closeFormalAudit: function (submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/formal/close/' + submissionId + '/' + submissionVersion);
       },
       closeExamination: function (examinationForm) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/examination/close', examinationForm);
       },
       readOfferCriteria: function (submissionId, type) {
-        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/qualification/' + submissionId + '/' + type);
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/qualification/' + submissionId + '/' + type + '/offerCriteria');
       },
       exportOfferCriteria: function (submissionId, type) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/export/' + submissionId + '/' + type, {
@@ -85,20 +85,30 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/checkforchanges/' + submissionId + '/' + fileId + '/' + type);
 
       },
-      updateOfferCriteria: function (suitabilities) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/qualification/', suitabilities);
+      updateOfferCriteria: function (suitabilities, submissionId, pageRequestedOn) {
+        return $http.post(
+          AppConstants.URLS.RESOURCE_PROVIDER + '/examination/qualification/' + submissionId + '/' + pageRequestedOn + '/offerCriteria', suitabilities);
       },
-      reopenFormalAudit: function (reopen, id) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/formal/' + id, reopen);
+      reopenFormalAudit: function (reopen, id, version) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/formal/' + id + '/' + version, reopen);
       },
-      reopenExamination: function (reopen, id) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/examination/' + id, reopen);
+      reopenExamination: function (reopen, id, version) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/examination/' + id + '/' + version, reopen);
       },
       getExaminationSubmittentListWithCriteria: function (submissionId, type, all) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/qualification/' + submissionId + '/' + type + '/view/' + all);
       },
       generateProofDocNegotiatedProcedure: function (submittents) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/generate/proofs', submittents, {});
+      },
+      examinationLockedByAnotherUser: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/examinationLockedByAnotherUser/' + submissionId);
+      },
+      awardLockedByAnotherUser: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardLockedByAnotherUser/' + submissionId);
+      },
+      checkExaminationOptimisticLock: function (submissionId, pageRequestedOn, submissionVersion) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/optimisticLock/' + submissionId + '/' + pageRequestedOn + '/' + submissionVersion);
       }
     };
   }

@@ -139,21 +139,28 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadCountries();
-      vm.loadWorkTypes();
-      vm.loadILO();
-      vm.getUserAllowedTemplates();
-      vm.secSentEmail = AppService.isOperationPermitted(
-        AppConstants.OPERATION.SENT_EMAIL, null);
-      /* if the user has the right to view proof status Fabe, the add it to the drop down */
-      var secMainTenantBeschaffungswesenView = AppService.isOperationPermitted(
-        AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW, null);
-      if (secMainTenantBeschaffungswesenView) {
-        vm.proofStatuses.push({
-          id: "WITH_FABE",
-          title: 'Rücksprache mit der Fachstelle Beschaffungswesen'
+      CompanyService.loadCompanySearch()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.loadCountries();
+            vm.loadWorkTypes();
+            vm.loadILO();
+            vm.getUserAllowedTemplates();
+            vm.secSentEmail = AppService.isOperationPermitted(
+              AppConstants.OPERATION.SENT_EMAIL, null);
+            /* if the user has the right to view proof status Fabe, the add it to the drop down */
+            var secMainTenantBeschaffungswesenView = AppService.isOperationPermitted(
+              AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW, null);
+            if (secMainTenantBeschaffungswesenView) {
+              vm.proofStatuses.push({
+                id: "WITH_FABE",
+                title: 'Rücksprache mit der Fachstelle Beschaffungswesen'
+              });
+            }
+          }
         });
-      }
     }
     /***********************************************************************
      * $scope destroy.
@@ -364,34 +371,34 @@
     }
 
     function getCompanyNames(query) {
-      return CompanyService.getCompanyNames(query).then(function (response) {
+      return CompanyService.getCompanyNames(query, vm.searchForm.archived).then(function (response) {
         return response.data;
       });
     }
 
     function getCompanyPostcodes(query) {
-      return CompanyService.getCompanyPostcodes(query).then(
+      return CompanyService.getCompanyPostcodes(query, vm.searchForm.archived).then(
         function (response) {
           return response.data;
         });
     }
 
     function getCompanyLocations(query) {
-      return CompanyService.getCompanyLocations(query).then(
+      return CompanyService.getCompanyLocations(query, vm.searchForm.archived).then(
         function (response) {
           return response.data;
         });
     }
 
     function getCompanyTelephones(query) {
-      return CompanyService.getCompanyTelephones(query).then(
+      return CompanyService.getCompanyTelephones(query, vm.searchForm.archived).then(
         function (response) {
           return response.data;
         });
     }
 
     function getCompanyNotes(query) {
-      return CompanyService.getCompanyNotes(query).then(function (response) {
+      return CompanyService.getCompanyNotes(query, vm.searchForm.archived).then(function (response) {
         return response.data;
       });
     }

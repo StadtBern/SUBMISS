@@ -25,7 +25,7 @@
 
   /** @ngInject */
   function ProjectSearchModalCtrl($scope, $location, $anchorScroll, $state,
-    ProjectService, StammdatenService, SubmissionService, NgTableParams, $filter, $locale, $uibModalInstance, submission) {
+    AppService, ProjectService, StammdatenService, QFormJSRValidation, SubmissionService, NgTableParams, $filter, $locale, $uibModalInstance, submission) {
     const vm = this;
 
     /***********************************************************************
@@ -48,6 +48,7 @@
     vm.loadObjects = loadObjects;
     vm.objectValue = objectValue;
     vm.moveProjectData = moveProjectData;
+    vm.closeModal = closeModal;
 
     activate();
 
@@ -139,18 +140,39 @@
       }
     }
 
-    $scope.cancel = function () {
-      $uibModalInstance.close();
-    };
-
     function moveProjectData(result) {
       if (!angular.equals({}, result)) {
-        SubmissionService.moveProjectData(submission.id, result.projectId).success(function (data) {
-          $uibModalInstance.close();
-          $state.reload();
-        });
+        SubmissionService.moveProjectData(submission.id, submission.version, result.projectId, result.projectVersion)
+          .success(function (data) {
+            $uibModalInstance.close();
+            $state.reload();
+          }).error(function (response, status) {
+            if (status === 400 || status === 409) {
+              vm.errorFieldsVisible = true;
+              QFormJSRValidation.markErrors($scope,
+                $scope.projectSearchModalCtrl.projectSearchForm, response);
+            }
+          });
       } else {
         vm.notSelected = true;
+      }
+    }
+
+    function closeModal() {
+      if (vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('submissionView', {
+              id: submission.id
+            }, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
       }
     }
   }

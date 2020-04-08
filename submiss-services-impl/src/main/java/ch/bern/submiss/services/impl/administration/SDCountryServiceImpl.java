@@ -13,11 +13,15 @@
 
 package ch.bern.submiss.services.impl.administration;
 
+import ch.bern.submiss.services.api.util.ValidationMessages;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,11 +65,6 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
   @Inject
   private AuditBean audit;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDCountryService#readAll()
-   */
   @Override
   public List<CountryHistoryDTO> readAll() {
 
@@ -73,14 +72,14 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
 
     JPAQuery<CountryHistoryEntity> query = new JPAQuery<>(em);
 
-    /**
+    /*
      * Query to take a list with all countries sorted by name.
      */
     List<CountryHistoryEntity> countryEntities = query.select(qCountryHistoryEntity)
       .from(qCountryHistoryEntity).where(qCountryHistoryEntity.toDate.isNull())
       .orderBy(qCountryHistoryEntity.countryName.asc()).fetch();
 
-    /**
+    /*
      * Country Schweiz must be shown first in the list: So make a loop and search for the country
      * with the specific id which belongs to Schweiz. When the id is the same, hold the current
      * position of the list (countryIndex).
@@ -94,7 +93,7 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
       countryIndex++;
     }
 
-    /**
+    /*
      * Firstly save the object from this position in a temporary object and remove it from the list.
      * And then add the temporary object in the first position and return the list.
      */
@@ -105,11 +104,6 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
     return CountryHistoryMapper.INSTANCE.toCountryHistoryDTO(countryEntities);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDCountryService#getCountryHistoryDTOs()
-   */
   @Override
   public List<CountryHistoryDTO> getCountryHistoryDTOs() {
 
@@ -119,11 +113,6 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
       .selectFrom(qCountryHistoryEntity).where(qCountryHistoryEntity.toDate.isNull()).fetch()));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDCountryService#countryToTypeData()
-   */
   @Override
   public List<MasterListTypeDataDTO> countryToTypeData() {
 
@@ -138,13 +127,6 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
     return typeDTOs;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDCountryService#getCountryEntryById(java.lang.
-   * String)
-   */
   @Override
   public CountryHistoryDTO getCountryEntryById(String entryId) {
 
@@ -156,13 +138,6 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
       .selectFrom(qCountryHistoryEntity).where(qCountryHistoryEntity.id.eq(entryId)).fetchOne());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDCountryService#isCountryNameUnique(java.lang.
-   * String, java.lang.String)
-   */
   @Override
   public boolean isCountryNameUnique(String countryName, String id) {
 
@@ -183,30 +158,24 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
       .fetchCount() == 0);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDCountryService#saveCountryEntry(ch.bern.submiss.
-   * services.api.dto.CountryHistoryDTO)
-   */
   @Override
-  public void saveCountryEntry(CountryHistoryDTO countryHistoryDTO) {
+  public Set<ValidationError> saveCountryEntry(CountryHistoryDTO countryHistoryDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveCountryEntry, Parameters: countryHistoryDTO: {0}",
       countryHistoryDTO);
 
+    Set<ValidationError> error = new HashSet<>();
     CountryHistoryEntity countryHistEntity;
     // Check if an old entry is being updated or a new entry is created.
     if (StringUtils.isBlank(countryHistoryDTO.getId())) {
+      // Creating a new country entity.
+      CountryEntity countryEntity = new CountryEntity();
+      em.persist(countryEntity);
       // Creating a new entry.
       countryHistEntity = CountryHistoryMapper.INSTANCE.toCountryHistory(countryHistoryDTO);
       // Set current date to fromDate property.
       countryHistEntity.setFromDate(new Timestamp(new Date().getTime()));
-      // Creating a new country entity.
-      CountryEntity countryEntity = new CountryEntity();
-      em.persist(countryEntity);
       // Assign the country entity to the country history entity.
       countryHistEntity.setCountryId(countryEntity);
 
@@ -215,6 +184,12 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
       // In case of updating an old entry, find the entry and set the current date to the toDate
       // property.
       countryHistEntity = em.find(CountryHistoryEntity.class, countryHistoryDTO.getId());
+      // If the current version is 1, then return an optimisticLockErrorField
+      if (countryHistEntity.getVersion() == 1) {
+        error
+          .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+        return error;
+      }
       countryHistEntity.setToDate(new Timestamp(new Date().getTime()));
       em.merge(countryHistEntity);
       // Now that the old entry is added to the history, create its new instance.
@@ -231,6 +206,7 @@ public class SDCountryServiceImpl extends BaseService implements SDCountryServic
     }
     // Save the new entry.
     em.persist(countryHistEntity);
+    return error;
   }
 
   /**

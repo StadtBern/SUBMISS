@@ -12,24 +12,31 @@
   -->
 
 <div class="modal-header">
-  <button type="button" class="close" aria-label="Close" ng-click="$close()">
+  <button type="button" class="close" aria-label="Close" ng-click="awardCriterionAddCtrl.closeModal()">
     <span aria-hidden="true">&times;</span>
   </button>
   <h4 class="modal-title">Zuschlagskriterium hinzufügen</h4>
 </div>
-<form name="awardCriterionAddCtrl.criterionForm" id="criterionForm" data-ng-submit="awardCriterionAddCtrl.criterionSave(awardCriterionAddCtrl.criterion.criterionText)"
+<form name="awardCriterionAddCtrl.criterionForm" id="criterionForm"
+  data-ng-submit="awardCriterionAddCtrl.criterionSave(awardCriterionAddCtrl.criterion.criterionText)"
   shows-validation-errors>
   <div class="modal-body">
-    <div class="alert alert-danger" ng-if="awardCriterionAddCtrl.criterionForm.$invalid" role="alert">
+    <div class="alert alert-danger" ng-if="awardCriterionAddCtrl.criterionForm.errorField.$invalid
+    || awardCriterionAddCtrl.criterionForm.optimisticLockErrorField.$invalid" role="alert">
       <field-error form-element-name="errorField" translate name="error"></field-error>
+      <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
     </div>
     <div class="form-group">
-      <input name="errorField" ng-hide="true" data-ng-model="fd"></input> <label for="user">Kriterium<span class="mandatory">*</span></label>
-      <input ng-if="!awardCriterionAddCtrl.isOperatingCost" autofocus data-ng-model="awardCriterionAddCtrl.criterion.criterionText"
-        class="form-control" id="criterionText" name="criterionText" type="text">
-      <input ng-if="awardCriterionAddCtrl.isOperatingCost" autofocus ng-init="awardCriterionAddCtrl.criterion.criterionText = 'Betriebskosten'"
-        data-ng-model="awardCriterionAddCtrl.criterion.criterionText" class="form-control" id="criterionText" name="criterionText"
-        type="text">
+      <input name="errorField" ng-hide="true" data-ng-model="fd"></input> <label for="user">Kriterium<span
+          class="mandatory">*</span></label>
+      <input ng-if="!awardCriterionAddCtrl.isOperatingCost" autofocus
+        data-ng-model="awardCriterionAddCtrl.criterion.criterionText" class="form-control" id="criterionText"
+        name="criterionText" type="text">
+      <input ng-if="awardCriterionAddCtrl.isOperatingCost" autofocus
+        ng-init="awardCriterionAddCtrl.criterion.criterionText = 'Betriebskosten'"
+        data-ng-model="awardCriterionAddCtrl.criterion.criterionText" class="form-control" id="criterionText"
+        name="criterionText" type="text">
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
     </div>
     <div class="form-group">
       <label for="">Gewichtung<span class="mandatory">*</span> </label>
@@ -40,7 +47,11 @@
     </div>
     <div class="modal-footer">
       <button type="submit" class="btn btn-primary">Speichern</button>
-      <button type="button" class="btn btn-default" ng-click="$close()">Abbrechen</button>
+      <button type="button" class="btn btn-default" ng-click="awardCriterionAddCtrl.closeModal()">Abbrechen</button>
+      <div ng-if="awardCriterionAddCtrl.criterionForm.$dirty">
+        <input ng-hide="true" data-ng-model="awardCriterionAddCtrl.dirtyFlag"
+          ng-init="awardCriterionAddCtrl.dirtyFlag=true">
+      </div>
     </div>
   </div>
 </form>

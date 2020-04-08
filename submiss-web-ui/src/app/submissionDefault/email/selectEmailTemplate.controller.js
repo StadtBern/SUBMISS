@@ -92,7 +92,11 @@
     //Function that returns all Abteilungen
     function loadEmailTemplates() {
       SubmissionService.loadEmailTemplates(id)
-        .success(function (data) {
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            $uibModalInstance.close();
+            return;
+          }
           vm.templates = data;
           if (vm.templates[0].availablePart === "PROJECT_PART") {
             vm.template = vm.templates[vm.templates.length - 1];

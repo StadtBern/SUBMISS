@@ -226,18 +226,19 @@
           !vm.commissionProcurementProposalForm.invalidBusiness) {
           vm.commissionProcurementProposalForm.business = Number(vm.submission.commissionProcurementProposalBusiness);
         }
-        CommissionProcurementProposalService.updateCommissionProcurementProposal(vm.commissionProcurementProposalForm, vm.submission.id).success(function (data) {
-          vm.saved = true;
-          defaultReload();
-        }).error(function (response, status) {
-          if (status === 400) { // Validation errors.
-            vm.errorFieldsVisible = true;
-            response = handleResponse(response);
-            $anchorScroll();
-            QFormJSRValidation.markErrors($scope,
-              $scope.commissionProcurementProposalCtrl.commissionProcurementForm, response);
-          }
-        });
+        CommissionProcurementProposalService.updateCommissionProcurementProposal(vm.commissionProcurementProposalForm, vm.submission.id, vm.submission.version)
+          .success(function (data) {
+            vm.saved = true;
+            defaultReload();
+          }).error(function (response, status) {
+            if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+              vm.errorFieldsVisible = true;
+              response = handleResponse(response);
+              $anchorScroll('ErrorAnchor');
+              QFormJSRValidation.markErrors($scope,
+                $scope.commissionProcurementProposalCtrl.commissionProcurementForm, response);
+            }
+          });
       }
     }
 
@@ -358,11 +359,12 @@
               // Close the commission procurement proposal.
               vm2.closeCommissionProcurementProposal = function (response) {
                 if (response) {
-                  CommissionProcurementProposalService.closeCommissionProcurementProposal(vm.submission.id)
+                  console.log(response)
+                  CommissionProcurementProposalService.closeCommissionProcurementProposal(vm.submission.id, vm.submission.version)
                     .success(function (data) {
                       defaultReload();
                     }).error(function (response, status) {
-                      if (status === 400) { // Validation errors.
+                      if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
                         vm.errorFieldsVisible = true;
                         $anchorScroll('ErrorAnchor');
                         QFormJSRValidation.markErrors($scope,
@@ -378,7 +380,7 @@
             }
           });
         }).error(function (response, status) {
-          if (status === 400) { // Validation errors.
+          if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
             vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.commissionProcurementProposalCtrl.commissionProcurementForm, response);
@@ -395,10 +397,17 @@
           var reopenForm = {
             reopenReason: response
           };
-          CommissionProcurementProposalService.reopenCommissionProcurementProposal(reopenForm, $stateParams.id)
+          CommissionProcurementProposalService.reopenCommissionProcurementProposal(reopenForm, vm.submission.id, vm.submission.version)
             .success(function (data) {
               defaultReload();
-            }).error(function (response, status) {});
+            }).error(function (response, status) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+                vm.errorFieldsVisible = true;
+                $anchorScroll('ErrorAnchor');
+                QFormJSRValidation.markErrors($scope,
+                  $scope.commissionProcurementProposalCtrl.commissionProcurementForm, response);
+              }
+            });
         }
       });
     }

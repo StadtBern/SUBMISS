@@ -25,6 +25,27 @@
       requireBase: false
     });
 
+    $stateProvider
+    .state(
+      "403", {
+        url: "/forbidden",
+        controller: "InfoScreenController",
+        controllerAs: "infoScreenCtr",
+        templateUrl: "app/layout/info-screen.html",
+        data: {
+          isPublic: true,
+          title: "Keine Zugriffberechtigung",
+          body: "Sie haben bedauerlicherweise keine Zugangsberechtigung. "
+            + "Bitte navigieren Sie zurück auf die vorherige Seite oder "
+            + "auf die Suche, um nach einer Submisison/Projekt zu suchen.",
+          icon: "fa fa-exclamation-triangle fa-3x"
+        },
+        ncyBreadcrumb: {
+          skip: true
+        }
+      })
+
+
     /** Default route. The function-hack is necessary as preventing an
      * event in the default route causes ui-router to go to an infinite
      * digest loop. (see: https://github.com/angular-ui/ui-router/issues/600)

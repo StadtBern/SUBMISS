@@ -39,7 +39,7 @@
 
     return {
       createSubmission: function (submission) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission',
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/create',
           submission);
       },
       readProjectSubmissions: function (projectId) {
@@ -49,19 +49,19 @@
       },
       deleteSubmission: function (id) {
         return $http.delete(
-          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/' + id);
+          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/delete/' + id);
       },
       readSubmission: function (id) {
         return $http.get(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/' + id);
       },
       updateSubmission: function (submission) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission',
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/update',
           submission);
       },
       setCompanyToSubmission: function (submissionId, companyId) {
         return $http.put(
-          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/' + submissionId +
+          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/addSubmittent/' + submissionId +
           '/?' + companyId);
       },
       readCompaniesBySubmission: function (id) {
@@ -120,10 +120,10 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +
           '/submission/awardNoticesCreatedDate/' + submissionId);
       },
-      closeSubmission: function (submissionId) {
+      closeSubmission: function (submissionId, version) {
         return $http.post(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/close/' +
-          submissionId);
+          submissionId + '/version/'  + version);
       },
       reopenSubmission: function (submissionId, reopen) {
         return $http.post(
@@ -148,7 +148,12 @@
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/award/info/' +
           submissionId);
       },
-      saveAwardInfo: function (awardInfo) {
+      createAwardInfo: function (awardInfo) {
+        return $http.post(
+          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/saveAwardInfo',
+          awardInfo);
+      },
+      updateAwardInfo: function (awardInfo) {
         return $http.put(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/saveAwardInfo',
           awardInfo);
@@ -171,7 +176,11 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +
           '/submission/awardInfoFirstLevel/' + submissionId);
       },
-      saveAwardInfoFirstLevel: function (awardInfo) {
+      createAwardInfoFirstLevel: function (awardInfo) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
+          '/submission/saveAwardInfoFirstLevel', awardInfo);
+      },
+      updateAwardInfoFirstLevel: function (awardInfo) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER +
           '/submission/saveAwardInfoFirstLevel', awardInfo);
       },
@@ -185,10 +194,10 @@
           AppConstants.URLS.RESOURCE_PROVIDER + '/email/' + submissionId,
           emailTemplate);
       },
-      moveProjectData: function (submissionId, projectId) {
-        return $http.get(
+      moveProjectData: function (submissionId, submissionVersion, projectId, projectVersion) {
+        return $http.put(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/moveProjectData/' +
-          submissionId + '/' + projectId);
+          submissionId + '/' + submissionVersion + '/' + projectId + '/' + projectVersion);
       },
       lockSubmission: function (submissionId, type) {
         return $http.put(
@@ -204,6 +213,34 @@
         return $http.get(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/submittents/' +
           submissionId);
+      },
+      submissionExists: function (submissionId) {
+        return $http.get(
+          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/exists/' +
+          submissionId);
+      },
+      isStatusChanged: function (submissionId, status) {
+        return $http.get(
+          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/isStatusChanged/' +
+          submissionId + '/' + status);
+      },
+      loadSubmissionCreate: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/loadSubmissionCreate');
+      },
+      loadDocumentArea: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/loadDocumentArea/' + submissionId);
+      },
+      loadFormalAudit: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/loadFormalAudit/' + submissionId);
+      },
+      loadSuitabilityAudit: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/loadSuitabilityAudit/' + submissionId);
+      },
+      loadApplicants: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/loadApplicants/' + submissionId);
+      },
+      loadSubmission: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/loadSubmission/' + submissionId);
       }
     };
   }

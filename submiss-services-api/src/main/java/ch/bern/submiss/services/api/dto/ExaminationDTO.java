@@ -14,6 +14,7 @@
 package ch.bern.submiss.services.api.dto;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**

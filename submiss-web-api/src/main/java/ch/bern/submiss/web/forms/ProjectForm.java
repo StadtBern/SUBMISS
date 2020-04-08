@@ -15,21 +15,19 @@ package ch.bern.submiss.web.forms;
 
 import ch.bern.submiss.services.api.constants.ConstructionPermit;
 import ch.bern.submiss.services.api.constants.LoanApproval;
-import java.sql.Timestamp;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.sql.Timestamp;
 
 /**
  * Form for creating or updating a project.
- *
+ * <p>
  * We ignore unknown properties in order to facilitate using the same model for view and update at
  * client side.
  *
  * @author European Dynamics SA
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProjectForm {
-
-  private String id;
+public class ProjectForm extends AbstractForm {
 
   private String projectName;
 
@@ -58,14 +56,6 @@ public class ProjectForm {
   private String createdBy;
 
   private Timestamp createdOn;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
   public TenantForm getTenant() {
     return tenant;
@@ -162,7 +152,7 @@ public class ProjectForm {
   public void setProjectName(String projectName) {
     this.projectName = projectName;
   }
-  
+
   public String getCreatedBy() {
     return createdBy;
   }

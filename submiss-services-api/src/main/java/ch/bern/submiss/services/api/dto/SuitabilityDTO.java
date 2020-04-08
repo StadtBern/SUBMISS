@@ -22,31 +22,54 @@ import java.util.List;
  */
 public class SuitabilityDTO {
 
-  /** The offer id. */
+  /**
+   * The offer id.
+   */
   private String offerId;
 
-  /** The q ex rank. */
+  /**
+   * The offer version.
+   */
+  private Long offerVersion;
+
+  /**
+   * The q ex rank.
+   */
   private Integer qExRank;
 
-  /** The must criterion. */
+  /**
+   * The must criterion.
+   */
   private List<CriterionLiteDTO> mustCriterion;
 
-  /** The evaluated criterion. */
+  /**
+   * The evaluated criterion.
+   */
   private List<CriterionLiteDTO> evaluatedCriterion;
 
-  /** The q ex status. */
+  /**
+   * The q ex status.
+   */
   private Boolean qExStatus;
 
-  /** The q ex total grade. */
+  /**
+   * The q ex total grade.
+   */
   private BigDecimal qExTotalGrade;
 
-  /** The q ex examination is fulfilled. */
+  /**
+   * The q ex examination is fulfilled.
+   */
   private Boolean qExExaminationIsFulfilled;
 
-  /** The q ex suitability notes. */
+  /**
+   * The q ex suitability notes.
+   */
   private String qExSuitabilityNotes;
 
-  /** The offer subcriteria. */
+  /**
+   * The offer subcriteria.
+   */
   private List<OfferSubcriterionLiteDTO> offerSubcriteria;
 
   /**
@@ -211,11 +234,19 @@ public class SuitabilityDTO {
     this.offerSubcriteria = offerSubcriteria;
   }
 
+  public Long getOfferVersion() {
+    return offerVersion;
+  }
+
+  public void setOfferVersion(Long offerVersion) {
+    this.offerVersion = offerVersion;
+  }
+
   @Override
   public String toString() {
     return "SuitabilityDTO [offerId=" + offerId + ", qExRank=" + qExRank + ", qExStatus="
-        + qExStatus + ", qExTotalGrade=" + qExTotalGrade + ", qExExaminationIsFulfilled="
-        + qExExaminationIsFulfilled + ", qExSuitabilityNotes=" + qExSuitabilityNotes + "]";
+      + qExStatus + ", qExTotalGrade=" + qExTotalGrade + ", qExExaminationIsFulfilled="
+      + qExExaminationIsFulfilled + ", qExSuitabilityNotes=" + qExSuitabilityNotes + "]";
   }
 
 }

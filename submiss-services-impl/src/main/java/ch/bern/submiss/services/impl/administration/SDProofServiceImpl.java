@@ -30,6 +30,7 @@ import ch.bern.submiss.services.api.dto.ProofProvidedMapDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SubmittentDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.ProofHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.ProofToTypeDataMapper;
 import ch.bern.submiss.services.impl.mappers.TenantMapper;
@@ -38,17 +39,21 @@ import ch.bern.submiss.services.impl.model.ProofHistoryEntity;
 import ch.bern.submiss.services.impl.model.QProofHistoryEntity;
 import ch.bern.submiss.services.impl.model.QSubmittentProofProvidedEntity;
 import ch.bern.submiss.services.impl.model.SubmittentProofProvidedEntity;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
@@ -100,11 +105,6 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
   @Inject
   private AuditBean audit;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDProofService#proofToTypeData()
-   */
   @Override
   public List<MasterListTypeDataDTO> proofToTypeData() {
 
@@ -123,12 +123,6 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
     return typeDTOs;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDProofService#getProofEntryById(java.lang.String)
-   */
   @Override
   public ProofHistoryDTO getProofEntryById(String entryId) {
 
@@ -140,13 +134,6 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
       .selectFrom(qProofHistoryEntity).where(qProofHistoryEntity.id.eq(entryId)).fetchOne());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDProofService#isProofNameAndCountryUnique(java.
-   * lang.String, java.lang.String, java.lang.String)
-   */
   @Override
   public boolean isProofNameAndCountryUnique(String proofId, String proofName, String countryId) {
 
@@ -165,17 +152,10 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
         qProofHistoryEntity.id.notEqualsIgnoreCase(proofId),
         qProofHistoryEntity.tenant.id.in(security.getPermittedTenants(getUser())),
         qProofHistoryEntity.country.id.eq(countryId),
-        qProofHistoryEntity.proofName.eq(proofName))
+        qProofHistoryEntity.name.eq(proofName))
       .fetchCount() == 0);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDProofService#getAllCurrentProofEntries(java.lang.
-   * String)
-   */
   @Override
   public List<ProofHistoryDTO> getAllCurrentProofEntries(String tenantId) {
 
@@ -194,20 +174,14 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
       .fetch());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDProofService#saveProofsEntry(ch.bern.submiss.
-   * services.api.dto.ProofHistoryDTO)
-   */
   @Override
-  public void saveProofsEntry(ProofHistoryDTO proofHistoryDTO) {
+  public Set<ValidationError> saveProofsEntry(ProofHistoryDTO proofHistoryDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveProofsEntry. Parameters: proofHistoryDTO {0}",
       proofHistoryDTO);
 
+    Set<ValidationError> error =  new HashSet<>();
     ProofHistoryEntity proofHistEntity;
     boolean newEntryCreated = false;
     boolean countryChanged = false;
@@ -245,6 +219,11 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
       // In case of updating an old entry, find the entry and set the current date to the toDate
       // property.
       proofHistEntity = em.find(ProofHistoryEntity.class, proofHistoryDTO.getId());
+      if (proofHistEntity.getVersion() == 1) {
+        error
+          .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+        return error;
+      }
       proofHistEntity.setToDate(new Timestamp(new Date().getTime()));
       int oldProofOrder = proofHistEntity.getProofOrder();
       // Check if the country property has been changed.
@@ -284,7 +263,24 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
     }
     // Save the new entry.
     em.persist(proofHistEntity);
+    em.flush();
     proofHistoryDTO = ProofHistoryMapper.INSTANCE.toProofHistoryDTO(proofHistEntity);
+    actionsAfterSave(proofHistoryDTO, newEntryCreated, countryChanged, requiredChanged,
+      activeChanged);
+    return error;
+  }
+
+  /**
+   * Actions after saving a proof entry.
+   *
+   * @param proofHistoryDTO the proofHistoryDTO
+   * @param newEntryCreated the newEntryCreated
+   * @param countryChanged the countryChanged
+   * @param requiredChanged the requiredChanged
+   * @param activeChanged the activeChanged
+   */
+  private void actionsAfterSave(ProofHistoryDTO proofHistoryDTO, boolean newEntryCreated,
+    boolean countryChanged, boolean requiredChanged, boolean activeChanged) {
     cacheBean.updateproofsEntry(proofHistoryDTO);
     cacheBean.updateProofList(proofHistoryDTO);
     cacheBean.updateMostRecenProofsEntry(proofHistoryDTO);

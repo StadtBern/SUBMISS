@@ -30,15 +30,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 @Table(name = "SUB_PROOF_HISTORY")
-public class ProofHistoryEntity {
-
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  @Column(name = "NAME")
-  private String proofName;
+public class ProofHistoryEntity extends AbstractStammdatenEntity {
 
   @Column(name = "DESCRIPTION")
   private String description;
@@ -75,23 +67,6 @@ public class ProofHistoryEntity {
   @ManyToOne
   @JoinColumn(name = "FK_PROOF")
   private ProofEntity proofId;
-
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getProofName() {
-    return proofName;
-  }
-
-  public void setProofName(String proofName) {
-    this.proofName = proofName;
-  }
 
   public String getDescription() {
     return description;
@@ -180,6 +155,4 @@ public class ProofHistoryEntity {
   public void setProofId(ProofEntity proofId) {
     this.proofId = proofId;
   }
-
-
 }

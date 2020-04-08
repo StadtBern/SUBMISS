@@ -18,7 +18,7 @@ import java.util.Arrays;
 /**
  * The Class TenantDTO.
  */
-public class TenantDTO extends AbstractDTO {
+public class TenantDTO extends AbstractStammdatenDTO {
 
   /** The is main. */
   private Boolean isMain;

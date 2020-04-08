@@ -13,41 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.persistence.OptimisticLockException;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.eurodyn.qlack2.fuse.aaa.api.dto.UserAttributeDTO;
-import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.sql.SQLExpressions;
-
 import ch.bern.submiss.services.api.administration.CompanyProofService;
 import ch.bern.submiss.services.api.administration.CompanyService;
 import ch.bern.submiss.services.api.administration.SDTenantService;
@@ -107,6 +72,38 @@ import ch.bern.submiss.services.impl.model.QTenantEntity;
 import ch.bern.submiss.services.impl.model.TenantEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import ch.bern.submiss.services.impl.util.DBUtils;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.UserAttributeDTO;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.sql.SQLExpressions;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.transaction.Transactional;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class CompanyServiceImpl.
@@ -245,8 +242,8 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       "Executing method search, Parameters: companySearchDTO: {0}, page: {1}, pageItems: {2}, sortColumn: {3}, sortType: {4}",
       new Object[]{companySearchDTO, page, pageItems, sortColumn, sortType});
 
-    List<CompanyEntity> companies = filter(companySearchDTO, page, pageItems, sortColumn, sortType);
-    /**
+    List<CompanyEntity> companies = searchResults(companySearchDTO, page, pageItems, sortColumn, sortType);
+    /*
      * check if the user is permitted to view proof status FABE, so that the DTO is updated with the
      * correct proof status
      */
@@ -291,7 +288,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
 
     query.select(company).from(company).where(company.id.in(companiesIDs));
 
-    /** Apply ordering */
+    /* Apply ordering */
     if (sortColumn.equals("id")) {
       query.orderBy(sortType.equals("asc") ? company.id.asc() : company.id.desc());
     } else if (sortColumn.equals("companyName")) {
@@ -301,7 +298,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       query.orderBy(sortType.equals("asc") ? company.companyTel.asc() : company.companyTel.desc());
     } else if (sortColumn.equals("postCode")) {
       query.orderBy(sortType.equals("asc") ? company.postCode.asc() : company.postCode.desc());
-      /**
+      /*
        * if the user is permitted to view proof status FABE sort on the field proofStatusFabe of the
        * table
        */
@@ -336,42 +333,64 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
   }
 
   /**
-   * Filter.
+   * The company search results.
    *
-   * @param companyDTO the company DTO
-   * @param page the page
-   * @param pageItems the page items
+   * @param companyDTO the company search DTO
+   * @param page       the page
+   * @param pageItems  the page items
    * @param sortColumn the sort column
-   * @param sortType the sort type
-   * @return the list
+   * @param sortType   the sort type
+   * @return the results
    */
-  private List<CompanyEntity> filter(CompanySearchDTO companyDTO, int page, int pageItems,
+  private List<CompanyEntity> searchResults(CompanySearchDTO companyDTO, int page, int pageItems,
     String sortColumn, String sortType) {
+
     LOGGER.log(Level.CONFIG,
-      "Executing method filter, Parameters: companyDTO: {0}, page: {1}, pageItems: {2}, sortColumn: {3}, sortType: {4}",
+      "Executing method searchResults, Parameters: companyDTO: {0}, page: {1}, pageItems: {2}, "
+        + "sortColumn: {3}, sortType: {4}",
       new Object[]{companyDTO, page, pageItems, sortColumn, sortType});
 
     JPAQuery<CompanyEntity> query = new JPAQuery<>(em);
     QCompanyEntity company = QCompanyEntity.companyEntity;
 
-    /**
+    /*
      * check if the user is permitted to view proof status FABE, so that the query is performed on
      * the correct proof status
      */
     boolean canViewProofStatusFabe = security.isPermitted(getUserId(),
       SecurityOperation.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW.getValue(), null);
 
-    // -1 when the option to show all results is selected
-    if (pageItems == -1) {
-      query.select(company).from(company)
-        .where(getWhereClause(company, companyDTO, canViewProofStatusFabe)).distinct();
-    } else {
-      query.select(company).from(company)
-        .where(getWhereClause(company, companyDTO, canViewProofStatusFabe)).distinct()
-        .offset((page - 1) * pageItems).limit(pageItems);
+    query.select(company).from(company)
+      .where(getWhereClause(company, companyDTO, canViewProofStatusFabe)).distinct();
+
+    /* add offset and limit if option is not Alle */
+    if (pageItems != -1) {
+      query.offset((page - 1) * pageItems).limit(pageItems);
     }
 
-    /** Apply ordering */
+    /* Apply ordering */
+    sortingSearchResults(query, company, sortColumn, sortType, canViewProofStatusFabe);
+
+    return query.fetch();
+  }
+
+  /**
+   * Sorting the search results.
+   *
+   * @param query                  the query
+   * @param company                the company search DTO
+   * @param sortColumn             the sort column
+   * @param sortType               the sort type
+   * @param canViewProofStatusFabe the can view proof status fabe
+   */
+  private void sortingSearchResults(JPAQuery<CompanyEntity> query, QCompanyEntity company,
+    String sortColumn, String sortType, boolean canViewProofStatusFabe) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method sortingSearchResults, Parameters: query: {0}, company: {1}, sortColumn: {2}, "
+        + "sortType: {3}, canViewProofStatusFabe: {4}",
+      new Object[]{query, company, sortColumn, sortType, canViewProofStatusFabe});
+
     if (sortColumn.equals("id")) {
       query.orderBy(sortType.equals("asc") ? company.id.asc() : company.id.desc());
     } else if (sortColumn.equals("companyName")) {
@@ -381,7 +400,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       query.orderBy(sortType.equals("asc") ? company.companyTel.asc() : company.companyTel.desc());
     } else if (sortColumn.equals("postCode")) {
       query.orderBy(sortType.equals("asc") ? company.postCode.asc() : company.postCode.desc());
-      /**
+      /*
        * if the user is permitted to view proof status FABE sort on the field proofStatusFabe of the
        * table
        */
@@ -413,24 +432,48 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       query.orderBy(sortType.equals("asc") ? company.fiftyPlusFactor.asc()
         : company.fiftyPlusFactor.desc());
     }
-    return query.fetch();
   }
 
   /**
    * Gets the where clause.
    *
-   * @param entity the entity
-   * @param companyDTO the company DTO
+   * @param entity                 the entity
+   * @param companyDTO             the company search DTO
    * @param canViewProofStatusFabe the can view proof status fabe
    * @return the where clause
    */
   private BooleanBuilder getWhereClause(QCompanyEntity entity, CompanySearchDTO companyDTO,
     boolean canViewProofStatusFabe) {
+
     LOGGER.log(Level.CONFIG,
-      "Executing method getWhereClause, Parameters: entity: {0}, companyDTO: {1}, canViewProofStatusFabe: {2}",
+      "Executing method getWhereClause, Parameters: entity: {0}, "
+        + "companyDTO: {1}, canViewProofStatusFabe: {2}",
       new Object[]{entity, companyDTO, canViewProofStatusFabe});
 
     BooleanBuilder whereClause = new BooleanBuilder();
+    /* Searching */
+    getWhereClauseSearching(entity, companyDTO, canViewProofStatusFabe, whereClause);
+    /* Filtering */
+    getWhereClauseFiltering(entity, companyDTO, canViewProofStatusFabe, whereClause);
+
+    return whereClause;
+  }
+
+  /**
+   * Gets the where clause for searching.
+   *
+   * @param entity                 the entity
+   * @param companyDTO             the company search DTO
+   * @param canViewProofStatusFabe the can view proof status fabe
+   * @param whereClause            the where clause
+   */
+  private void getWhereClauseSearching(QCompanyEntity entity, CompanySearchDTO companyDTO,
+    boolean canViewProofStatusFabe, BooleanBuilder whereClause) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getWhereClauseSearching, Parameters: entity: {0}, "
+        + "companyDTO: {1}, canViewProofStatusFabe: {2}, whereClause: {3}",
+      new Object[]{entity, companyDTO, canViewProofStatusFabe, whereClause});
 
     if (StringUtils.isNotBlank(companyDTO.getCompanyName())) {
       whereClause.and(entity.companyName.like("%" + companyDTO.getCompanyName() + "%"));
@@ -458,8 +501,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           .fetch();
       whereClause.and(entity.workTypes.any().in(workTypeEntities));
     }
-
-    /**
+    /*
      * if the user is permitted to view proof status FABE query on the field proofStatusFabe of the
      * table
      */
@@ -470,7 +512,6 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         whereClause.and(entity.proofStatus.eq(companyDTO.getProofStatus().getValue()));
       }
     }
-
     if (companyDTO.getIlo() != null) {
       MasterListValueEntity ilo =
         new JPAQueryFactory(em).select(qMasterListValueEntity).from(qMasterListValueEntity)
@@ -479,15 +520,13 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           .fetchOne();
       whereClause.and(entity.ilo.eq(ilo));
     }
-
     if (StringUtils.isNotBlank(companyDTO.getNotes())) {
       whereClause.and(entity.notes.like("%" + companyDTO.getNotes() + "%"));
     }
     if (companyDTO.getArchived() != null) {
       whereClause.and(entity.archived.eq(companyDTO.getArchived()));
     }
-
-    /**
+    /*
      * Selecting LogibStatus, search for the two values(logIb,logIbARGIB) for the correct result
      * LogibStatus corresponds to a combination of logIb and logIbARGIB
      */
@@ -500,14 +539,28 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     if (companyDTO.getLogibStatus() == LogibStatus.LOGIB_ARGIB) {
       whereClause.and(entity.logIb.eq(0).and(entity.logIbARGIB.eq(1)));
     }
-
     if (companyDTO.getTlp() != null && companyDTO.getTlp().equals(true)) {
       whereClause.and(entity.tlp.eq(companyDTO.getTlp()));
     }
+  }
 
-    /** Apply filtering */
+  /**
+   * Gets the where clause for filtering.
+   *
+   * @param entity                 the entity
+   * @param companyDTO             the company search DTO
+   * @param canViewProofStatusFabe the can view proof status fabe
+   * @param whereClause            the where clause
+   */
+  private void getWhereClauseFiltering(QCompanyEntity entity, CompanySearchDTO companyDTO,
+    boolean canViewProofStatusFabe, BooleanBuilder whereClause) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getWhereClauseFiltering, Parameters: entity: {0}, "
+        + "companyDTO: {1}, canViewProofStatusFabe: {2}, whereClause: {3}",
+      new Object[]{entity, companyDTO, canViewProofStatusFabe, whereClause});
+
     if (companyDTO.getFilter() != null) {
-
       if (StringUtils.isNotBlank(companyDTO.getFilter().getCompanyName())) {
         whereClause.and(entity.companyName
           .like("%" + companyDTO.getFilter().getCompanyName().toLowerCase() + "%"));
@@ -516,21 +569,11 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         whereClause.and(entity.companyTel.like("%" + companyDTO.getFilter().getCompanyTel() + "%"));
       }
       if (StringUtils.isNotBlank(companyDTO.getFilter().getPostCode())) {
-        whereClause.and(entity.postCode.like("%" + companyDTO.getFilter().getPostCode() + "%"))
-          .or(entity.location.like("%" + companyDTO.getFilter().getPostCode() + "%"));
+        whereClause.and((entity.postCode.like("%" + companyDTO.getFilter().getPostCode() + "%"))
+          .or(entity.location.like("%" + companyDTO.getFilter().getPostCode() + "%")));
       }
       if (StringUtils.isNotBlank(companyDTO.getFilter().getWorkTypes())) {
-        List<MasterListValueEntity> workTypes = new JPAQueryFactory(em)
-          .select(qMasterListValueEntity).from(qMasterListValueEntity)
-          .where(qMasterListValueEntity.masterListValueHistory.any()
-            .in(new JPAQueryFactory(em).select(qMasterListValueHistoryEntity)
-              .from(qMasterListValueHistoryEntity)
-              .where(qMasterListValueHistoryEntity.value2
-                .like("%" + companyDTO.getFilter().getWorkTypes().toLowerCase() + "%")
-                .or(qMasterListValueHistoryEntity.value1
-                  .like("%" + companyDTO.getFilter().getWorkTypes().toLowerCase() + "%")))
-              .fetch()))
-          .fetch();
+        List<MasterListValueEntity> workTypes = fetchFilteringWorkTypes(companyDTO);
         whereClause.and(entity.workTypes.any().in(workTypes));
       }
       if (StringUtils.isNotBlank(companyDTO.getFilter().getApprenticeFactor())) {
@@ -552,7 +595,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           whereClause.and(entity.logIb.eq(0).and(entity.logIbARGIB.eq(1)));
         }
       }
-      /**
+      /*
        * if the user is permitted to view proof status FABE query on the field proofStatusFabe of
        * the table
        */
@@ -570,16 +613,28 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           .eq(companyDTO.getFilter().getCertificateDate()));
       }
     }
-
-    return whereClause;
   }
 
   /**
-   * (non-Javadoc)
+   * Fetching work types for filtering.
    *
-   * @see ch.bern.submiss.services.api.administration.CompanyService#companyCount(ch.bern.submiss .
-   * services.api.dto.CompanySearchDTO)
+   * @param companyDTO the company search DTO
+   * @return the work types
    */
+  private List<MasterListValueEntity> fetchFilteringWorkTypes(CompanySearchDTO companyDTO) {
+    return new JPAQueryFactory(em)
+      .select(qMasterListValueEntity).from(qMasterListValueEntity)
+      .where(qMasterListValueEntity.masterListValueHistory.any()
+        .in(new JPAQueryFactory(em).select(qMasterListValueHistoryEntity)
+          .from(qMasterListValueHistoryEntity)
+          .where(qMasterListValueHistoryEntity.value2
+            .like("%" + companyDTO.getFilter().getWorkTypes().toLowerCase() + "%")
+            .or(qMasterListValueHistoryEntity.value1
+              .like("%" + companyDTO.getFilter().getWorkTypes().toLowerCase() + "%")))
+          .fetch()))
+      .fetch();
+  }
+
   @Override
   public long companyCount(CompanySearchDTO companyDTO) {
     LOGGER.log(Level.CONFIG, "Executing method companyCount, Parameters: companyDTO: {0}",
@@ -588,7 +643,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     JPAQuery<CompanyEntity> query = new JPAQuery<>(em);
     QCompanyEntity entity = QCompanyEntity.companyEntity;
 
-    /**
+    /*
      * check if the user is permitted to view proof status FABE, so that the query is performed on
      * the correct proof status
      */
@@ -599,27 +654,49 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       .where(getWhereClause(entity, companyDTO, canViewProofStatusFabe)).fetchCount();
   }
 
-  /**
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.CompanyService#fullTextSearch(java.lang.String,
-   * java.lang.String)
-   */
   @Override
-  public List<String> fullTextSearch(String column, String query) {
-    LOGGER.log(Level.CONFIG, "Executing method fullTextSearch, Parameters: column: {0}, query: {1}",
-      new Object[]{column, query});
+  public List<String> fullTextSearch(String column, String query, boolean archived) {
 
-    QCompanyEntity entity = QCompanyEntity.companyEntity;
+    LOGGER.log(Level.CONFIG, "Executing method fullTextSearch, Parameters: column: {0}, "
+        + "query: {1}, archived: {2}",
+      new Object[]{column, query, archived});
 
-    /** build search expression */
-    StringPath path = getStringPath(column, entity);
-    BooleanExpression expression = DBUtils.getFullTextSearchExpression(query, path);
+    /* The results list */
+    List<String> queryResults = new ArrayList<>();
+    /* The search column */
+    StringPath searchPath = getStringPath(column, qCompanyEntity);
+    /* The archived column */
+    BooleanPath archivedPath = qCompanyEntity.archived;
 
-    /** execute query */
-    JPAQuery<CompanyEntity> jpaQuery = new JPAQuery<>(em);
-    return jpaQuery.select(path).distinct().from(entity).where(expression).fetch();
+    if (searchPath != null) {
+      /* execute query */
+      JPAQuery<CompanyEntity> jpaQuery = new JPAQuery<>(em);
+      queryResults = jpaQuery.select(searchPath).distinct().from(qCompanyEntity)
+        .where(searchPath.like("%" + query + "%").and(archivedPath.eq(archived)))
+        .fetch();
+    }
+    return queryResults;
+  }
 
+  /**
+   * Get the text search where clause.
+   *
+   * @param query the search query
+   * @param searchPath the searchPath
+   * @param archivedPath the archivedPath
+   * @param archived the archived value
+   * @return the where clause
+   */
+  private BooleanBuilder getFullTextSearchWhereClause(String query, StringPath searchPath,
+    BooleanPath archivedPath, boolean archived) {
+
+    LOGGER.log(Level.CONFIG, "Executing method getFullTextSearchWhereClause, "
+        + "Parameters: query: {0}, searchPath: {1}, archivedPath: {2}, archived: {3}",
+      new Object[]{query, searchPath, archivedPath, archived});
+
+    return new BooleanBuilder()
+      .and(DBUtils.getFullTextSearchExpression(query, searchPath))
+      .and(archivedPath.eq(archived));
   }
 
   /**
@@ -653,7 +730,6 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       default:
         break;
     }
-
     return path;
   }
 
@@ -674,7 +750,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     if (company.getBranches() != null) {
       companyEntity.setBranches(mapCompanyBranchesDTOtoEntities(company.getBranches()));
     }
-    /**
+    /*
      * Getting the tenant of the user that creates the company and add it to tenant of the company
      */
     TenantEntity tenantEntity =
@@ -699,7 +775,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       companyEntity.setFiftyPlusColleagues(0);
     }
 
-    /**
+    /*
      * by creating a company if the user don't select anyone proofstatus automatically it sets
      * itself to NOT_ACTIVE value for ProofStatus by checking the checkboxes proofStatus is changing
      * The proof status FABE can be viewed only by users with certain rights, so it will be set only
@@ -719,7 +795,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       }
     }
 
-    /**
+    /*
      * Set proof to a just created Company depending on Company Country. If the company country
      * exists and is the same with the proof country we take the proofs of this country else if
      * there is not a proof country like company country the company get the proofs of Germany's
@@ -794,12 +870,18 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
   @Override
   public CompanyDTO getCompanyById(String id) {
     LOGGER.log(Level.CONFIG, "Executing method getCompanyById, Parameters: id: {0}", id);
+    CompanyEntity companyEntity = em.find(CompanyEntity.class, id);
+    return getCompanyDTO(companyEntity);
+  }
+
+  private CompanyDTO getCompanyDTO(CompanyEntity companyEntity) {
+
+    LOGGER.log(Level.CONFIG, "Executing method getCompanyDTO, Parameters: companyEntity: {0}",
+      companyEntity);
 
     CompanyDTO companyDTO = new CompanyDTO();
-    CompanyEntity companyEntity = em.find(CompanyEntity.class, id);
-
     if (companyEntity != null) {
-      /**
+      /*
        * check if the user is permitted to view proof status FABE, so that the DTO is updated with
        * the correct proof status
        */
@@ -807,128 +889,226 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         SecurityOperation.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW.getValue(), null);
       companyDTO =
         CompanyWithProofStatusMapper.INSTANCE.toCompanyDTO(companyEntity, canViewProofStatusFabe);
+      setModUser(companyEntity, companyDTO);
+      setCountry(companyEntity, companyDTO);
+      setIlo(companyEntity, companyDTO);
+      setWorkTypes(companyEntity, companyDTO);
+      setBranches(companyEntity, companyDTO);
+      setCanBeDeleted(companyDTO);
+      checkKaioFabeValidity(companyDTO);
+    }
+    return companyDTO;
+  }
 
-      if (companyEntity.getModUser() != null) {
-        UserDTO user = userService.getUserById(companyEntity.getModUser());
+  /**
+   * Set the mod user.
+   *
+   * @param companyEntity the companyEntity
+   * @param companyDTO    the companyDTO
+   */
+  private void setModUser(CompanyEntity companyEntity, CompanyDTO companyDTO) {
 
-        if (user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()) != null
-          && user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData() != null) {
-          companyDTO
-            .setModUserLastName(user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData());
-        }
-        if (user.getAttribute(USER_ATTRIBUTES.TENANT.getValue()) != null
-          && user.getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData() != null) {
-          TenantDTO tenant = sdTenantService
-            .getTenantById(user.getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData());
-          companyDTO.setModUserTenant(tenant.getName());
-        }
-        if (user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()) != null
-          && user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() != null) {
-          companyDTO
-            .setModUserName(user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData());
-        }
+    LOGGER.log(Level.CONFIG, "Executing method setModUser, Parameters: companyEntity: {0}, "
+        + "companyDTO: {1}",
+      new Object[]{companyEntity, companyDTO});
+
+    if (companyEntity.getModUser() != null) {
+      UserDTO user = userService.getUserById(companyEntity.getModUser());
+      if (user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()) != null
+        && user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData() != null) {
+        companyDTO
+          .setModUserLastName(user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData());
       }
-
-      if (companyEntity.getCountry() != null) {
-        CountryHistoryEntity countryEntity = new JPAQueryFactory(em).select(qCountryHistoryEntity)
-          .from(qCountryHistoryEntity).where(qCountryHistoryEntity.countryId
-            .eq(companyEntity.getCountry()).and(qCountryHistoryEntity.toDate.isNull()))
-          .fetchOne();
-        CountryHistoryDTO countryDTO =
-          CountryHistoryMapper.INSTANCE.toCountryHistoryDTO(countryEntity);
-        companyDTO.setCountry(countryDTO);
+      if (user.getAttribute(USER_ATTRIBUTES.TENANT.getValue()) != null
+        && user.getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData() != null) {
+        TenantDTO tenant = sdTenantService
+          .getTenantById(user.getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData());
+        companyDTO.setModUserTenant(tenant.getName());
       }
+      if (user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()) != null
+        && user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() != null) {
+        companyDTO
+          .setModUserName(user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData());
+      }
+    }
+  }
 
-      if (companyEntity.getIlo() != null) {
+  /**
+   * Set the country.
+   *
+   * @param companyEntity the companyEntity
+   * @param companyDTO    the companyDTO
+   */
+  private void setCountry(CompanyEntity companyEntity, CompanyDTO companyDTO) {
 
-        MasterListValueHistoryEntity iloEntity = new JPAQueryFactory(em)
+    LOGGER.log(Level.CONFIG, "Executing method setCountry, Parameters: companyEntity: {0}, "
+        + "companyDTO: {1}",
+      new Object[]{companyEntity, companyDTO});
+
+    if (companyEntity.getCountry() != null) {
+      CountryHistoryEntity countryEntity = new JPAQueryFactory(em).select(qCountryHistoryEntity)
+        .from(qCountryHistoryEntity).where(qCountryHistoryEntity.countryId
+          .eq(companyEntity.getCountry()).and(qCountryHistoryEntity.toDate.isNull()))
+        .fetchOne();
+      CountryHistoryDTO countryDTO =
+        CountryHistoryMapper.INSTANCE.toCountryHistoryDTO(countryEntity);
+      companyDTO.setCountry(countryDTO);
+    }
+  }
+
+  /**
+   * Set the Ilo.
+   *
+   * @param companyEntity the companyEntity
+   * @param companyDTO    the companyDTO
+   */
+  private void setIlo(CompanyEntity companyEntity, CompanyDTO companyDTO) {
+
+    LOGGER.log(Level.CONFIG, "Executing method setIlo, Parameters: companyEntity: {0}, "
+        + "companyDTO: {1}",
+      new Object[]{companyEntity, companyDTO});
+
+    if (companyEntity.getIlo() != null) {
+      MasterListValueHistoryEntity iloEntity = new JPAQueryFactory(em)
+        .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+        .where(qMasterListValueHistoryEntity.masterListValueId.eq(companyEntity.getIlo())
+          .and(qMasterListValueHistoryEntity.toDate.isNull()))
+        .fetchOne();
+      MasterListValueHistoryDTO iloDTO =
+        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(iloEntity);
+      companyDTO.setIlo(iloDTO);
+    }
+  }
+
+  /**
+   * Set the Work Types.
+   *
+   * @param companyEntity the companyEntity
+   * @param companyDTO    the companyDTO
+   */
+  private void setWorkTypes(CompanyEntity companyEntity, CompanyDTO companyDTO) {
+
+    LOGGER.log(Level.CONFIG, "Executing method setWorkTypes, Parameters: companyEntity: {0}, "
+        + "companyDTO: {1}",
+      new Object[]{companyEntity, companyDTO});
+
+    if (companyEntity.getWorkTypes() != null) {
+      Set<MasterListValueHistoryDTO> workTypeDTOs = new HashSet<>();
+      for (MasterListValueEntity workType : companyEntity.getWorkTypes()) {
+        MasterListValueHistoryEntity workTypeEntity = new JPAQueryFactory(em)
           .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-          .where(qMasterListValueHistoryEntity.masterListValueId.eq(companyEntity.getIlo())
+          .where(qMasterListValueHistoryEntity.masterListValueId.eq(workType)
             .and(qMasterListValueHistoryEntity.toDate.isNull()))
           .fetchOne();
-
-        MasterListValueHistoryDTO iloDTO =
-          MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(iloEntity);
-        companyDTO.setIlo(iloDTO);
-
+        MasterListValueHistoryDTO workTypeDTO =
+          MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(workTypeEntity);
+        workTypeDTOs.add(workTypeDTO);
       }
+      companyDTO.setWorkTypes(workTypeDTOs);
+    }
+  }
 
-      if (companyEntity.getWorkTypes() != null) {
-        Set<MasterListValueHistoryDTO> workTypeDTOs = new HashSet<>();
-        for (MasterListValueEntity workType : companyEntity.getWorkTypes()) {
-          MasterListValueHistoryEntity workTypeEntity = new JPAQueryFactory(em)
-            .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-            .where(qMasterListValueHistoryEntity.masterListValueId.eq(workType)
-              .and(qMasterListValueHistoryEntity.toDate.isNull()))
-            .fetchOne();
+  /**
+   * Set the branches.
+   *
+   * @param companyEntity the companyEntity
+   * @param companyDTO    the companyDTO
+   */
+  private void setBranches(CompanyEntity companyEntity, CompanyDTO companyDTO) {
 
-          MasterListValueHistoryDTO workTypeDTO =
-            MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(workTypeEntity);
+    LOGGER.log(Level.CONFIG, "Executing method setBranches, Parameters: companyEntity: {0}, "
+        + "companyDTO: {1}",
+      new Object[]{companyEntity, companyDTO});
 
-          workTypeDTOs.add(workTypeDTO);
-
-        }
-        companyDTO.setWorkTypes(workTypeDTOs);
+    if (companyEntity.getBranches() != null) {
+      List<CompanyDTO> branchDTOs = new ArrayList<>();
+      for (CompanyEntity branch : companyEntity.getBranches()) {
+        CompanyEntity branchEntity = new JPAQueryFactory(em).select(qCompanyEntity)
+          .from(qCompanyEntity).where(qCompanyEntity.id.eq(branch.getId())).fetchOne();
+        CompanyDTO branchDTO = CompanyMapper.INSTANCE.toCompanyDTO(branchEntity);
+        branchDTOs.add(branchDTO);
       }
+      companyDTO.setBranches(branchDTOs);
+    }
+  }
 
-      if (companyEntity.getBranches() != null) {
+  /**
+   * Set the canBeDeleted value.
+   *
+   * @param companyDTO the companyDTO
+   */
+  private void setCanBeDeleted(CompanyDTO companyDTO) {
 
-        List<CompanyDTO> branchDTOs = new ArrayList<>();
-        for (CompanyEntity branch : companyEntity.getBranches()) {
-          CompanyEntity branchEntity = new JPAQueryFactory(em).select(qCompanyEntity)
-            .from(qCompanyEntity).where(qCompanyEntity.id.eq(branch.getId())).fetchOne();
+    LOGGER.log(Level.CONFIG, "Executing method setCanBeDeleted, Parameters: companyDTO: {0}",
+      companyDTO);
 
-          CompanyDTO branchDTO = CompanyMapper.INSTANCE.toCompanyDTO(branchEntity);
-          branchDTOs.add(branchDTO);
-        }
-        companyDTO.setBranches(branchDTOs);
-      }
-      /** initialize a default boolean to false */
-      companyDTO.setCanBeDeleted(false);
-      /** get the users tenant infos and set on tenant variable */
-      UserAttributeDTO userTenant = getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue());
-      TenantDTO tenant = sdTenantService.getTenantById(userTenant.getData());
-      /** not allow null to go further */
-      if (companyDTO.getCreateOn() != null) {
-        /**
-         * create a Calendar object and add to the company's creation date another 7 days
-         */
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(companyDTO.getCreateOn());
-        calendar.add(Calendar.DATE, 7);
-        /**
-         * insert to the validationDate variable the creation date of the company plus 7 days to
-         * know the limit
-         */
-        Timestamp validationDate = new Timestamp(calendar.getTimeInMillis());
-        /** set as start the creation date */
-        Instant start = companyDTO.getCreateOn().toInstant();
-        Instant stop =
-          validationDate.toInstant(); /** set to stop the ending date of the validation */
-        /** so that the period is between start and stop */
-        Instant now = Instant.now(); /** now is the current date and time variable */
-        /**
-         * the current date and time must be in between of the start and the stop period so that the
-         * boolean(isValid) variable be true
-         */
-        Boolean isValid = (!now.isBefore(start)) && (now.isBefore(stop));
-        /**
-         * for user of another tenant(not Stadt Bern) and the current date is in between the start
-         * and stop dates make the CanBeDeleted true
-         */
-        if (!tenant.getIsMain() && isValid) {
-          companyDTO.setCanBeDeleted(true);
-        }
-      }
-      /**
-       * for main tenant users (stadtBern users) always is given the right to delete a company if it
-       * is not participating in an offer
+    /* initialize a default boolean to false */
+    companyDTO.setCanBeDeleted(false);
+    /* get the users tenant infos and set on tenant variable */
+    UserAttributeDTO userTenant = getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue());
+    TenantDTO tenant = sdTenantService.getTenantById(userTenant.getData());
+    /* not allow null to go further */
+    if (companyDTO.getCreateOn() != null) {
+      /*
+       * create a Calendar object and add to the company's creation date another 7 days
        */
-      if (tenant.getIsMain()) {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(companyDTO.getCreateOn());
+      calendar.add(Calendar.DATE, 7);
+      /*
+       * insert to the validationDate variable the creation date of the company plus 7 days to
+       * know the limit
+       */
+      Timestamp validationDate = new Timestamp(calendar.getTimeInMillis());
+      /* set as start the creation date */
+      Instant start = companyDTO.getCreateOn().toInstant();
+      Instant stop =
+        validationDate.toInstant(); // set to stop the ending date of the validation
+      /* so that the period is between start and stop */
+      Instant now = Instant.now(); // now is the current date and time variable
+      /*
+       * the current date and time must be in between of the start and the stop period so that the
+       * boolean(isValid) variable be true
+       */
+      boolean isValid = (!now.isBefore(start)) && (now.isBefore(stop));
+      /*
+       * for user of another tenant(not Stadt Bern) and the current date is in between the start
+       * and stop dates make the CanBeDeleted true
+       */
+      if (!tenant.getIsMain() && isValid) {
         companyDTO.setCanBeDeleted(true);
       }
     }
-    return companyDTO;
+    /*
+     * for main tenant users (stadtBern users) always is given the right to delete a company if it
+     * is not participating in an offer
+     */
+    if (tenant.getIsMain()) {
+      companyDTO.setCanBeDeleted(true);
+    }
+  }
+
+  /**
+   * Checks if KAIO or FaBe company has active or inactive nachweise.
+   *
+   * @param companyDTO the companyDTO
+   */
+  private void checkKaioFabeValidity(CompanyDTO companyDTO) {
+
+    LOGGER.log(Level.CONFIG, "Executing method checkKaioFabeValidity, "
+        + "Parameters: companyDTO: {0}",
+      companyDTO);
+
+    if (companyDTO.getConsultKaio() || companyDTO.getConsultAdmin()) {
+      List<CompanyProofDTO> proofs = getProofByCompanyId(companyDTO.getId());
+      AtomicBoolean isValid = new AtomicBoolean(true);
+      proofs.forEach(companyProofDTO -> {
+        if (checkProofValidity(companyProofDTO)) {
+          isValid.set(false);
+        }
+      });
+      companyDTO.setKaioFabeActive(isValid.get());
+    }
   }
 
   /**
@@ -976,16 +1156,16 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     UserDTO user = getUser();
     JPAQuery<TenantEntity> query = new JPAQuery<>(em);
 
-    /**
+    /*
      * Find current system offers when they are not from migration and not default.
      */
-    /**
+    /*
      * add the security constraints in the query. An offer can be viewed if it belongs to the tenant
      * of the user and if its submission is in a permitted status or it is from migration
      */
     List<String> allowedSubmissionsStatus = security.securityCheckSubmissionListStatus(user);
     List<String> tenantIds = security.getPermittedTenants(user);
-    /**
+    /*
      * get the submissions of the permitted tenants It would be nicer if in the query we had just
      * added a predicate stating that the id of the tenant is in the given list, but querydsl does
      * not support more than four levels of entity path
@@ -995,7 +1175,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       .from(qSubmissionEntity).where(qSubmissionEntity.project.tenant.id.in(tenantIds)).fetch();
 
     List<OfferEntity> offerEntities = new ArrayList<>();
-    /**
+    /*
      * the migrated offers are offers of the main tenant, so they can be viewed only by users of the
      * main tenant
      */
@@ -1091,7 +1271,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       CompanyOfferDTO companyOfferDTO = new CompanyOfferDTO();
       if (!o.getFromMigration()) {
 
-        /**
+        /*
          * Convert object history entity to object DTO and set the value to companyOfferDTO
          **/
         MasterListValueHistoryEntity objectEntity = new JPAQueryFactory(em)
@@ -1106,7 +1286,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         companyOfferDTO
           .setProjectName(o.getSubmittent().getSubmissionId().getProject().getProjectName());
         companyOfferDTO.setProjectId(o.getSubmittent().getSubmissionId().getProject().getId());
-        /**
+        /*
          * Convert workType history entity to worktType DTO and set the value to companyOfferDTO
          **/
         MasterListValueHistoryEntity workType = new JPAQueryFactory(em)
@@ -1119,7 +1299,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(workType);
         companyOfferDTO.setWorkType(workTypeDTO.getValue1() + " " + workTypeDTO.getValue2());
 
-        /**
+        /*
          * Calculate amount (Betrag) and set value to companyOfferDTO
          */
         companyOfferDTO.setAmmount(calculateAmount(o));
@@ -1131,7 +1311,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         companyOfferDTO.setProcess(o.getSubmittent().getSubmissionId().getProcess());
         companyOfferDTO.setSubmissionId(o.getSubmittent().getSubmissionId().getId());
 
-        /**
+        /*
          * Convert processType history entity to processType DTO and set the value to
          * companyOfferDTO
          **/
@@ -1148,7 +1328,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           CompanyMapper.INSTANCE.toCompanyDTO(o.getSubmittent().getJointVentures()));
         companyOfferDTO.setSubcontractors(
           CompanyMapper.INSTANCE.toCompanyDTO(o.getSubmittent().getSubcontractors()));
-        /**
+        /*
          * Convert department history entity to department DTO and set the value to companyOfferDTO
          **/
         DepartmentHistoryEntity departmentEntity =
@@ -1190,7 +1370,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         companyOfferDTO.setMigratedSubmission(o.getMigratedSubmission());
 
       }
-      /**
+      /*
        * in order to indicate if an offer is permitted to be viewed it must be checked if it is from
        * migration (migration offers can not be viewed) and if it meets the security constraints
        */
@@ -1214,19 +1394,19 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
   public List<CompanyProofDTO> getProofByCompanyId(String id) {
     LOGGER.log(Level.CONFIG, "Executing method getProofByCompanyId, Parameters: id: {0}", id);
 
-    /**
+    /*
      * Query to take all companyProofs via companyId
      */
     List<CompanyProofEntity> companyProofEntities =
       new JPAQueryFactory(em).select(qCompanyProofEntity).from(qCompanyProofEntity)
         .where(qCompanyProofEntity.companyId.id.eq(id)).fetch();
 
-    /**
+    /*
      * create a list that the function returns
      */
     List<CompanyProofDTO> companyProofDTOs = new ArrayList<>();
-    /**
-     * Take for every companyProof using proofId ,all the ProofHistory and add them by one by one to
+    /*
+     * Take for every companyProof using proofId ,all the ProofHistory and add them one by one to
      * the returning companyProof list
      */
     for (CompanyProofEntity companyProof : companyProofEntities) {
@@ -1240,12 +1420,28 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         CompanyProofDTOMapper.INSTANCE.toCompanyProofDTO(companyProof);
       if (proofHistoryDTO != null && proofHistoryDTO.getActive().equals(1)) {
         companyProofDTO.setProof(proofHistoryDTO);
+        companyProofDTO.setInvalid(checkProofValidity(companyProofDTO));
         companyProofDTOs.add(companyProofDTO);
       }
 
     }
     Collections.sort(companyProofDTOs, ComparatorUtil.sortCompanyProofDTOs);
     return companyProofDTOs;
+  }
+
+  /**
+   * Checks proof validity.
+   *
+   * @param companyProofDTO the companyProofDTO
+   * @return true if proof is invalid
+   */
+  private boolean checkProofValidity(CompanyProofDTO companyProofDTO) {
+    return
+      (companyProofDTO.getRequired() && companyProofDTO.getProofDate() == null)
+        || (companyProofDTO.getRequired() && companyProofDTO.getProofDate() != null
+        && companyProofDTO.getProof().getValidityPeriod() != null
+        && !LocalDate.now().isBefore(companyProofDTO.getProofDate().toLocalDateTime()
+        .toLocalDate().plusMonths(companyProofDTO.getProof().getValidityPeriod())));
   }
 
   /**
@@ -1272,7 +1468,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     if (offer.getIsDiscountPercentage()) {
       discount = grossAmmount * offer.getDiscount() / 100;
     }
-    /** Calculate building costs */
+    /* Calculate building costs */
     if (offer.getIsBuildingCostsPercentage() != null && offer.getIsBuildingCostsPercentage()) {
       if (discount != null) {
         buildingCosts = (grossAmmount - discount) * offer.getBuildingCosts() / 100;
@@ -1280,7 +1476,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         buildingCosts = grossAmmount * offer.getBuildingCosts() / 100;
       }
     }
-    /** Calculate discount2 */
+    /* Calculate discount2 */
     if (offer.getIsDiscount2Percentage() != null && offer.getIsDiscount2Percentage()
       && discount != null) {
       if (buildingCosts != null) {
@@ -1289,7 +1485,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         discount2 = ((grossAmmount - discount) * offer.getDiscount2()) / 100;
       }
     }
-    /** Check the variables (grossAmmount, discount, buildingCosts, discount2) not to be null */
+    /* Check the variables (grossAmmount, discount, buildingCosts, discount2) not to be null */
     if (grossAmmount != null) {
       if (discount == null) {
         discount = 0.0;
@@ -1389,7 +1585,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
           em.merge(companyProofEntity);
         }
       }
-      /**
+      /*
        * Get the proof history map in order to get the ProofHistoryDTO that needs to be checked.
        */
       Map<String, ProofHistoryDTO> proofHistoryMap = cacheBean.getActiveProofs();
@@ -1449,27 +1645,22 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       boolean changeProofStatus = true;
       int proofStatus = ProofStatus.NOT_ACTIVE.getValue();
       List<CompanyProofEntity> companyProofEntities = new ArrayList<>();
-      /** create a new variable to check the ProofStatus if it must change */
+      /* create a new variable to check the ProofStatus if it must change */
       if (companyProofDTOs != null && !companyProofDTOs.isEmpty()) {
         // Set the hasChanged value for every company proof DTO.
         companyProofService.updateHasChangedValues(companyProofDTOs, companyEntity.getId());
         boolean valuesSetToNull = false;
         for (CompanyProofDTO companyProofDTO : companyProofDTOs) {
-          /**
+          /*
            * ProofStatus is changed when the validityPeriod is above the date
            */
-          /** The validity period for a proof must be 1 year exactly. */
-          /** Check validity date */
-          if (changeProofStatus && companyProofDTO.getRequired()
-            && companyProofDTO.getProofDate() == null
-            || (companyProofDTO.getRequired() && companyProofDTO.getProofDate() != null
-            && companyProofDTO.getProof().getValidityPeriod() != null
-            && !LocalDate.now().isBefore(companyProofDTO.getProofDate().toLocalDateTime()
-            .toLocalDate().plusMonths(companyProofDTO.getProof().getValidityPeriod())))) {
+          /* The validity period for a proof must be 1 year exactly. */
+          /* Check validity date */
+          if (changeProofStatus && checkProofValidity(companyProofDTO)) {
             changeProofStatus = false;
           }
 
-          /** In every update of a Proof the system must save the date and the User */
+          /* In every update of a Proof the system must save the date and the User */
           if (companyProofDTO.isHasChanged()) {
             CompanyProofEntity companyProofEntity =
               CompanyProofDTOMapper.INSTANCE.toCompanyProof(companyProofDTO);
@@ -1483,14 +1674,14 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
               valuesSetToNull = true;
             }
             if (companyProofEntity != null) {
-              /** By update take the current date and time */
+              /* By update take the current date and time */
               companyProofEntity.setModDate(new Timestamp(System.currentTimeMillis()));
 
               TenantEntity tenant = em.find(TenantEntity.class,
                   getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData());
-              /** Set modUser */
-              companyProofEntity.setModUser(tenant.getName() + " "
-                  + getUser().getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() + " "
+              /* Set modUser */
+              companyProofEntity.setModUser(tenant.getName() + LookupValues.SPACE
+                  + getUser().getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() + LookupValues.SPACE
                   + getUser().getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData());
               em.merge(companyProofEntity);
               em.flush();
@@ -1509,7 +1700,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
       } else {
         // Update company proof status only when company status was ALL_PROOF or NOT_ACTIVE.
         companyEntity.setProofStatus(proofStatus);
-        /**
+        /*
          * if the checkbox FABE is checked, then the proof status FABE (which will be viewed only by
          * users who have the right to view this proof status) is set to FABE, otherwise it is set
          * to the calculated as the normal proof status
@@ -1685,14 +1876,14 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     boolean changeProofStatus = true;
     int proofStatus = ProofStatus.NOT_ACTIVE.getValue();
 
-    /** check the company proofs, in order to determine the proof status */
+    /* check the company proofs, in order to determine the proof status */
     List<CompanyProofEntity> companyProofEntities =
       new JPAQueryFactory(em).select(qCompanyProofEntity).from(qCompanyProofEntity)
         .where(qCompanyProofEntity.companyId.id.eq(companyDTO.getId())).fetch();
 
     List<CompanyProofDTO> companyProofDTOs = new ArrayList<>();
 
-    /**
+    /*
      * for every companyProof using proofId ,add all the ProofHistory one by one to the companyProof
      * list
      */
@@ -1714,17 +1905,12 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
 
     if (companyProofDTOs != null && !companyProofDTOs.isEmpty()) {
       for (CompanyProofDTO companyProofDTO : companyProofDTOs) {
-        /**
+        /*
          * ProofStatus is changed when the validityPeriod is above the date
          */
-        /** The validity period for a proof must be 1 year exactly. */
-        /** Check validity date */
-        if (changeProofStatus && companyProofDTO.getRequired()
-          && companyProofDTO.getProofDate() == null
-          || (companyProofDTO.getRequired() && companyProofDTO.getProofDate() != null
-          && companyProofDTO.getProof().getValidityPeriod() != null
-          && !LocalDate.now().isBefore(companyProofDTO.getProofDate().toLocalDateTime()
-          .toLocalDate().plusMonths(companyProofDTO.getProof().getValidityPeriod())))) {
+        /* The validity period for a proof must be 1 year exactly. */
+        /* Check validity date */
+        if (changeProofStatus && checkProofValidity(companyProofDTO)) {
           changeProofStatus = false;
         }
       }
@@ -1798,5 +1984,69 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
   public int retrieveCompanyProofStatus(String companyId) {
     CompanyEntity company = em.find(CompanyEntity.class, companyId);
     return company.getProofStatus();
+  }
+
+  @Override
+  public void companyCreateSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method companyCreateSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_CREATE.getValue(), null);
+  }
+
+  @Override
+  public void companyOffersSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method companyOffersSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_OFFERS_VIEW.getValue(), null);
+  }
+
+  @Override
+  public void companyProofsSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method companyProofsSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_PROOFS_VIEW.getValue(), null);
+  }
+
+  @Override
+  public void companyDeleteSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method companyDeleteSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_DELETE.getValue(), null);
+  }
+
+  @Override
+  public void companyUpdateSecurityCheck() {
+
+
+    LOGGER.log(Level.CONFIG, "Executing method companyUpdateSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_UPDATE.getValue(), null);
+  }
+
+  @Override
+  public void companyViewSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method companyViewSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_VIEW.getValue(), null);
+  }
+
+  @Override
+  public void companySearchSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method companySearchSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_SEARCH.getValue(), null);
   }
 }

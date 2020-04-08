@@ -309,21 +309,21 @@
     }
 
     function getCompanyNames(query) {
-      return CompanyService.getCompanyNames(query)
+      return CompanyService.getCompanyNames(query, false)
         .then(function (response) {
           return response.data;
         });
     }
 
     function getCompanyTelephones(query) {
-      return CompanyService.getCompanyTelephones(query)
+      return CompanyService.getCompanyTelephones(query, false)
         .then(function (response) {
           return response.data;
         });
     }
 
     function getCompanyNotes(query) {
-      return CompanyService.getCompanyNotes(query)
+      return CompanyService.getCompanyNotes(query, false)
         .then(function (response) {
           return response.data;
         });

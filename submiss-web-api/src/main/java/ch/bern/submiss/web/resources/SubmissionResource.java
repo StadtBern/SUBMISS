@@ -14,6 +14,7 @@
 package ch.bern.submiss.web.resources;
 
 import ch.bern.submiss.services.api.administration.LegalHearingService;
+import ch.bern.submiss.services.api.administration.ProjectService;
 import ch.bern.submiss.services.api.administration.RuleService;
 import ch.bern.submiss.services.api.administration.SDProofService;
 import ch.bern.submiss.services.api.administration.SubmissionCloseService;
@@ -52,11 +53,14 @@ import ch.bern.submiss.web.mappers.SubmittentFormMapper;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.fasterxml.jackson.annotation.JsonView;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -69,6 +73,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiService;
 
@@ -152,27 +157,42 @@ public class SubmissionResource {
   private SDProofService sDProofService;
 
   /**
-   * Creates the.
+   * The project service.
+   */
+  @OsgiService
+  @Inject
+  private ProjectService projectService;
+
+  /**
+   * Creates a new submission.
    *
    * @param submission the submission to be created
    * @return Ok
    */
   @POST
+  @Path("/create")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response create(@Valid SubmissionForm submission) {
-    Set<ValidationError> errors = validation(null, submission);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    submissionService.submissionCreateSecurityCheck();
+    // Check for validation errors
+    Set<ValidationError> validationErrors = validation(null, submission);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
-
+    // Check for optimistic locking in Project before creating the new submission
+    Set<ValidationError> optimisticLockErrors = projectService
+      .optimisticLockProject(submission.getProject().getId(), submission.getProject().getVersion());
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+    // If there are no errors proceed with submission creation
     String id =
       submissionService.createSubmission(SubmissionMapper.INSTANCE.toSubmissionDTO(submission));
     // Return JSON with the project id
     ProjectForm form = new ProjectForm();
     form.setId(id);
     return Response.ok(form).build();
-
   }
 
   /**
@@ -183,7 +203,7 @@ public class SubmissionResource {
    * @return Ok
    */
   @PUT
-  @Path("/{submissionId}")
+  @Path("/addSubmittent/{submissionId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response setCompanyToSubmission(@PathParam("submissionId") String submissionId,
     @QueryParam("companyId") List<String> companyIds) {
@@ -195,21 +215,31 @@ public class SubmissionResource {
   }
 
   /**
-   * Update.
+   * Updates a submission.
    *
    * @param submission the submission
    * @return Ok
    */
   @PUT
+  @Path("/update")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response update(@Valid SubmissionForm submission) {
-    Set<ValidationError> errors = validation(null, submission);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    Set<ValidationError> validationErrors = validation(null, submission);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
-    submissionService.updateSubmission(SubmissionMapper.INSTANCE.toSubmissionDTO(submission));
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      optimisticLockErrors = submissionService
+        .updateSubmission(SubmissionMapper.INSTANCE.toSubmissionDTO(submission));
+    } catch (OptimisticLockException e) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -220,8 +250,13 @@ public class SubmissionResource {
    */
   @DELETE
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/{id}")
+  @Path("/delete/{id}")
   public Response deleteSubmission(@PathParam("id") String id) {
+    // Check if submission is already deleted by another user
+    if (!submissionService.submissionExists(id)) {
+      throw new OptimisticLockException(ValidationMessages.SUBMISSION_DELETED);
+    }
+    // Check if submission has submittents
     Boolean submissionHasSubmittent = false;
     if (id != null) {
       submissionHasSubmittent = submissionService.findIfSubmissionHasSubmittent(id);
@@ -246,6 +281,11 @@ public class SubmissionResource {
   @Path("/{id}")
   public Response getSubmissionById(@PathParam("id") String id) {
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(id);
+    if (submissionDTO == null) {
+      throw new OptimisticLockException(ValidationMessages.SUBMISSION_NOT_FOUND);
+    }
+    // set the timestamp of the GET request from user
+    submissionDTO.setPageRequestedOn(new Timestamp(new Date().getTime()));
     return Response.ok(submissionDTO).build();
   }
 
@@ -367,13 +407,23 @@ public class SubmissionResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/examination/update")
   public Response updateFormalAuditExamination(@Valid List<SubmittentForm> submittentForms) {
-    Set<ValidationError> errors = validateFormalAuditUpdate(submittentForms);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    // Check for validation errors
+    Set<ValidationError> validationErrors = validateFormalAuditUpdate(submittentForms);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
-    submissionService.updateFormalAuditExamination(
-      SubmittentFormMapper.INSTANCE.toSubmittentDTO(submittentForms));
-    return Response.ok().build();
+    // Check for optimistic lock errors
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      optimisticLockErrors = submissionService.updateFormalAuditExamination(
+        SubmittentFormMapper.INSTANCE.toSubmittentDTO(submittentForms));
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD, ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -405,7 +455,7 @@ public class SubmissionResource {
           } else if (submittentForm.getFormalAuditNotes().length() < 10) {
             // If mandatory field value does not reach minimum length.
             errors.add(new ValidationError("formalAuditNotesLength",
-              ValidationMessages.SUITABILITY_AUDIT_CLOSE_MESSAGE));
+              ValidationMessages.SUITABILITY_TEXT_ERROR_MESSAGE));
             errors.add(new ValidationError(NOTES + i,
               ValidationMessages.SUITABILITY_TEXT_ERROR_MESSAGE));
           }
@@ -446,9 +496,9 @@ public class SubmissionResource {
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/formal/close/{id}")
-  public Response closeFormalAudit(@PathParam("id") String id) {
-
+  @Path("/formal/close/{id}/{version}")
+  public Response closeFormalAudit(@PathParam("id") String id, @PathParam("version") Long version) {
+    submissionService.checkOptimisticLockSubmission(id, version);
     Set<ValidationError> errors = new HashSet<>();
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(id);
 
@@ -490,8 +540,18 @@ public class SubmissionResource {
         }
         // Document not created.
         else if (result.equals(ValidationMessages.DOCUMENT_SHOULD_BE_CREATED)) {
-          errors.add(new ValidationError("mandatoryDocument",
+          errors.add(new ValidationError(ValidationMessages.DOCUMENT_ERROR_FIELD,
             ValidationMessages.DOCUMENT_SHOULD_BE_CREATED));
+        }
+        // Proof document not created
+        else if (result.equals(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED)) {
+          errors.add(new ValidationError(ValidationMessages.PROOF_DOCUMENT_ERROR_FIELD,
+            ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED));
+        }
+        // Legal hearing document not created
+        else if (result.equals(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED)) {
+          errors.add(new ValidationError(ValidationMessages.LEGAL_HEARING_ERROR_FIELD,
+            ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED));
         }
       }
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -510,6 +570,8 @@ public class SubmissionResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/examination/close")
   public Response closeExamination(@Valid ExaminationForm examinationForm) {
+    submissionService.checkOptimisticLockSubmission(examinationForm.getSubmissionId(),
+      examinationForm.getSubmissionVersion());
     List<String> results = submissionService.closeExamination(examinationForm.getSubmissionId(),
       examinationForm.getMinGrade(), examinationForm.getMaxGrade());
     // Check if errors have occurred.
@@ -538,6 +600,12 @@ public class SubmissionResource {
         } else if (result.equals(ValidationMessages.DOCUMENT_SHOULD_BE_CREATED)) {
           errors.add(new ValidationError("mandatoryDocument",
             ValidationMessages.DOCUMENT_SHOULD_BE_CREATED));
+        } else if (result.equals(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED)) {
+          errors.add(new ValidationError("mandatoryLegalHearingDocument",
+            ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED));
+        } else if (result.equals(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED)) {
+          errors.add(new ValidationError("mandatoryProofDocument",
+            ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED));
         }
         // If minimum or maximum grades are set as null and are also mandatory fields. 
         else if (result.equals(NULL_MIN_GRADE_MAX_GRADE)) {
@@ -577,8 +645,10 @@ public class SubmissionResource {
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopen/offer/{id}")
-  public Response reopenOffer(@Valid ReopenForm reopenForm, @PathParam("id") String id) {
+  @Path("/reopen/offer/{id}/{version}")
+  public Response reopenOffer(@Valid ReopenForm reopenForm, @PathParam("id") String id,
+    @PathParam("version") Long version) {
+    submissionService.checkOptimisticLockSubmission(id, version);
     submissionService.reopenOffer(reopenForm.getReopenReason(), id);
     return Response.ok().build();
   }
@@ -593,8 +663,10 @@ public class SubmissionResource {
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopen/formal/{id}")
-  public Response reopenFormalAudit(@Valid ReopenForm reopenForm, @PathParam("id") String id) {
+  @Path("/reopen/formal/{id}/{version}")
+  public Response reopenFormalAudit(@Valid ReopenForm reopenForm, @PathParam("id") String id,
+    @PathParam("version") Long version) {
+    submissionService.checkOptimisticLockSubmission(id, version);
     submissionService.reopenFormalAudit(reopenForm.getReopenReason(), id);
     return Response.ok().build();
   }
@@ -608,25 +680,29 @@ public class SubmissionResource {
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopen/examination/{id}")
-  public Response reopenExamination(@Valid ReopenForm reopenForm, @PathParam("id") String id) {
+  @Path("/reopen/examination/{id}/{version}")
+  public Response reopenExamination(@Valid ReopenForm reopenForm, @PathParam("id") String id,
+    @PathParam("version") Long version) {
+    submissionService.checkOptimisticLockSubmission(id, version);
     submissionService.reopenExamination(reopenForm.getReopenReason(), id);
     return Response.ok().build();
   }
 
   /**
-   * Reopen award.
+   * Reopen manual award.
    *
-   * @param submissionId the submission id
-   * @param reopenReason the reopen reason
+   * @param reopenForm the reopen form
+   * @param id the submission id
+   * @param version the submission version
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/update/award/{submissionId}/reason/{reopenReason}")
-  public Response reopenAward(@PathParam("submissionId") String submissionId,
-    @PathParam("reopenReason") String reopenReason) {
-    submissionService.reopenManualAward(submissionId, reopenReason);
+  @Path("/reopen/manualAward/{id}/{version}")
+  public Response reopenManualAward(@Valid ReopenForm reopenForm,
+    @PathParam("id") String id, @PathParam("version") Long version) {
+    submissionService.checkOptimisticLockSubmission(id, version);
+    submissionService.reopenManualAward(id, reopenForm.getReopenReason());
     return Response.ok().build();
   }
 
@@ -831,9 +907,11 @@ public class SubmissionResource {
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopen/awardEvaluation/{submissionId}")
+  @Path("/reopen/awardEvaluation/{submissionId}/{submissionVersion}")
   public Response reopenAwardEvaluation(@Valid ReopenForm reopenForm,
-    @PathParam("submissionId") String submissionId) {
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService.reopenAwardEvaluation(reopenForm.getReopenReason(), submissionId);
     return Response.ok().build();
   }
@@ -909,7 +987,7 @@ public class SubmissionResource {
    * @param submissionId the submission id
    * @return the response
    */
-  @PUT
+  @GET
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/manualAwardReopenCheck/{submissionId}")
   public Response manualAwardReopenCheck(@PathParam("submissionId") String submissionId) {
@@ -941,7 +1019,7 @@ public class SubmissionResource {
   }
 
   /**
-   * Update legal hearing terminate.
+   * Updates the legal hearing terminate.
    *
    * @param legalHearingTerminate the legal hearing terminate
    * @param submissionId the submission id
@@ -956,12 +1034,40 @@ public class SubmissionResource {
     @PathParam("submissionId") String submissionId) {
     Set<ValidationError> errors = validateLegalHearingTerminate(legalHearingTerminate);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    legalHearingService.updateLegalHearingTermination(
-      LegalHearingTerminateFormMapper.INSTANCE.toLegalHearingTerminateDTO(legalHearingTerminate),
-      submissionId);
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = legalHearingService.updateLegalHearingTermination(
+      LegalHearingTerminateFormMapper.INSTANCE.toLegalHearingTerminateDTO(legalHearingTerminate), submissionId);
+
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Creates a legal hearing terminate entry the first time .
+   *
+   * @param legalHearingTerminate the legal hearing terminate
+   * @param submissionId the submission id
+   * @return the response
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/legal/hearing/terminate/{submissionId}")
+  public Response createLegalHearingTerminate(
+    @Valid LegalHearingTerminateForm legalHearingTerminate,
+    @PathParam("submissionId") String submissionId) {
+    Set<ValidationError> errors = validateLegalHearingTerminate(legalHearingTerminate);
+    if (!errors.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
+    }
+    Set<ValidationError> optimisticLockErrors = legalHearingService.createLegalHearingTermination(
+      LegalHearingTerminateFormMapper.INSTANCE.toLegalHearingTerminateDTO(legalHearingTerminate), submissionId);
+
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -978,11 +1084,9 @@ public class SubmissionResource {
     @PathParam("submissionId") String submissionId) {
     LegalHearingTerminateDTO l = legalHearingService
       .getSubmissionLegalHearingTermination(submissionId);
-    if (l != null) {
-      return Response.ok(l).build();
-    } else {
-      return Response.status(Response.Status.NO_CONTENT).build();
-    }
+    return (l != null)
+      ? Response.ok(l).build()
+      : Response.status(Status.NO_CONTENT).build();
   }
 
   /**
@@ -1029,12 +1133,14 @@ public class SubmissionResource {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/close/{submissionId}")
-  public Response closeSubmission(@PathParam("submissionId") String submissionId) {
-    submissionService.updateSubmissionStatus(submissionId,
+  @Path("/close/{submissionId}/version/{version}")
+  public Response closeSubmission(@PathParam("submissionId") String submissionId, @PathParam("version") Long version) {
+    Set<ValidationError> optimisticLockErrors = submissionService.updateSubmissionStatus(submissionId, version,
       TenderStatus.PROCEDURE_COMPLETED.getValue(), AuditMessages.CLOSE_SUBMISSION.name(),
       null, LookupValues.EXTERNAL_LOG);
-    return Response.ok().build();
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -1136,42 +1242,61 @@ public class SubmissionResource {
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
-    legalHearingService.updateExcludedSubmittent(
-      LegalHearingExclusionFormMapper.INSTANCE
-        .toLegalHearingExclusionDTO(legalHearingExclusionForm.getLegalExclusions()),
-      legalHearingExclusionForm.getExclusionDate(), legalHearingExclusionForm.getSubmissionId(),
-      legalHearingExclusionForm.getFirstLevelExclusionDate());
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      optimisticLockErrors = legalHearingService.updateExcludedSubmittent(
+        LegalHearingExclusionFormMapper.INSTANCE
+          .toLegalHearingExclusionDTO(legalHearingExclusionForm.getLegalExclusions()),
+        legalHearingExclusionForm.getExclusionDate(), legalHearingExclusionForm.getSubmissionId(),
+        legalHearingExclusionForm.getSubmissionVersion(), legalHearingExclusionForm.getFirstLevelExclusionDate());
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD, ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
    * Close application opening.
    *
    * @param submissionId the submission id
+   * @param submissionVersion the submissionVersion
    * @return the response
    */
-  @POST
+  @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/closeApplicationOpening/{submissionId}")
-  public Response closeApplicationOpening(@PathParam("submissionId") String submissionId) {
-    boolean areApplicationDatesFilled = submissionService.applicationDatesFilled(submissionId);
-    boolean existingApplicantOverviewDocument =
-      submissionService.applicantOverviewDocumentExists(submissionId);
-    Set<ValidationError> errors = new HashSet<>();
-    if (!areApplicationDatesFilled) {
-      errors.add(new ValidationError("missingApplicationDatesErrorField",
-        ValidationMessages.MISSING_APPLICATION_DATES));
-    }
-    if (!existingApplicantOverviewDocument) {
-      errors.add(new ValidationError("noApplicantDocumentErrorField",
-        ValidationMessages.NO_APPLICANT_OVERVIEW_DOCUMENT));
-    }
+  @Path("/closeApplicationOpening/{submissionId}/{submissionVersion}")
+  public Response closeApplicationOpening(@PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    Set<ValidationError> errors = closeApplicationOpeningValidation(submissionId);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService.closeApplicationOpening(submissionId);
     return Response.ok().build();
+  }
+
+  /**
+   * Validates closeApplicationOpening.
+   *
+   * @param submissionId the submissionId
+   * @return the errors
+   */
+  private Set<ValidationError> closeApplicationOpeningValidation(String submissionId) {
+    Set<ValidationError> validationErrors = new HashSet<>();
+    if (!submissionService.applicationDatesFilled(submissionId)) {
+      validationErrors.add(new ValidationError(ValidationMessages.MISSING_APPLICATION_DATES_ERROR_FIELD,
+        ValidationMessages.MISSING_APPLICATION_DATES));
+    }
+    if (!submissionService.applicantOverviewDocumentExists(submissionId)) {
+      validationErrors.add(new ValidationError(ValidationMessages.NO_APPLICANT_DOCUMENT_ERROR_FIELD,
+        ValidationMessages.NO_APPLICANT_OVERVIEW_DOCUMENT));
+    }
+    return validationErrors;
   }
 
   /**
@@ -1198,9 +1323,11 @@ public class SubmissionResource {
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopenApplicationOpening/{submissionId}")
+  @Path("/reopenApplicationOpening/{submissionId}/{submissionVersion}")
   public Response reopenApplicationOpening(@Valid ReopenForm reopenForm,
-    @PathParam("submissionId") String submissionId) {
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService.reopenApplicationOpening(reopenForm.getReopenReason(), submissionId);
     return Response.ok().build();
   }
@@ -1221,22 +1348,48 @@ public class SubmissionResource {
   }
 
   /**
-   * Updates the award infos.
+   * Creates the award info entry.
    *
    * @param awardInfo the awardInfo entity to be created
-   * @return empty response
+   * @return empty response or the error
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/saveAwardInfo")
+  public Response createAwardInfo(@Valid AwardInfoForm awardInfo) {
+    Set<ValidationError> errors = validateAwardInfo(awardInfo);
+    if (!errors.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
+    }
+    Set<ValidationError> optimisticLockErrors = submissionCloseService
+      .createAwardInfo(AwardInfoFormMapper.INSTANCE.toAwardInfoDTO(awardInfo));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Updates the award info entry.
+   *
+   * @param awardInfo the awardInfo entity to be updated
+   * @return empty response or the error
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/saveAwardInfo")
-  public Response saveAwardInfo(@Valid AwardInfoForm awardInfo) {
+  public Response updateAwardInfo(@Valid AwardInfoForm awardInfo) {
     Set<ValidationError> errors = validateAwardInfo(awardInfo);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    submissionCloseService.saveAwardInfo(AwardInfoFormMapper.INSTANCE.toAwardInfoDTO(awardInfo));
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = submissionCloseService
+      .updateAwardInfo(AwardInfoFormMapper.INSTANCE.toAwardInfoDTO(awardInfo));
+
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -1279,20 +1432,43 @@ public class SubmissionResource {
    * @param awardInfo the awardInfoFirstLevel entity to be created
    * @return empty response
    */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/saveAwardInfoFirstLevel")
+  public Response createAwardInfoFirstLevel(@Valid AwardInfoFirstLevelForm awardInfo) {
+    Set<ValidationError> errors = validateAwardInfoFirstLevel(awardInfo);
+    if (!errors.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
+    }
+    Set<ValidationError> optimisticLockErrors = submissionCloseService.createAwardInfoFirstLevel(
+      AwardInfoFirstLevelFormMapper.INSTANCE.toAwardInfoFirstLevelDTO(awardInfo));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Updates the award infos first level.
+   *
+   * @param awardInfo the awardInfoFirstLevel entity to be created
+   * @return empty response
+   */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/saveAwardInfoFirstLevel")
-  public Response saveAwardInfoFirstLevel(@Valid AwardInfoFirstLevelForm awardInfo) {
+  public Response updateAwardInfoFirstLevel(@Valid AwardInfoFirstLevelForm awardInfo) {
     Set<ValidationError> errors = validateAwardInfoFirstLevel(awardInfo);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    submissionCloseService.saveAwardInfoFirstLevel(
+    Set<ValidationError> optimisticLockErrors = submissionCloseService.updateAwardInfoFirstLevel(
       AwardInfoFirstLevelFormMapper.INSTANCE.toAwardInfoFirstLevelDTO(awardInfo));
-    return Response.ok().build();
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
   }
-
 
   /**
    * Validate award info first level.
@@ -1521,9 +1697,11 @@ public class SubmissionResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/updateSelectiveFormalAudit")
   public Response updateSelectiveFormalAudit(@Valid List<SubmittentForm> submittentForms) {
-    submissionService
+    Set<ValidationError> optimisticLockErrors = submissionService
       .updateSelectiveFormalAudit(SubmittentFormMapper.INSTANCE.toSubmittentDTO(submittentForms));
-    return Response.ok().build();
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -1553,12 +1731,10 @@ public class SubmissionResource {
   @Path("/submissionCancelNavigation/{submissionId}")
   public Response submissionCancelNavigation(@PathParam("submissionId") String submissionId) {
     boolean navigationPossible = submissionService.submissionCancelNavigation(submissionId);
-    if (!navigationPossible) {
-      return Response.status(Response.Status.BAD_REQUEST).build();
-    }
-    return Response.ok().build();
+    return (navigationPossible)
+      ? Response.ok().build()
+      : Response.status(Status.BAD_REQUEST).build();
   }
-
 
   /**
    * Move project data.
@@ -1567,14 +1743,18 @@ public class SubmissionResource {
    * @param projectId the project id
    * @return the response
    */
-  @GET
+  @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/moveProjectData/{submissionId}/{projectId}")
+  @Path("/moveProjectData/{submissionId}/{submissionVersion}/{projectId}/{projectVersion}")
   public Response moveProjectData(@PathParam("submissionId") String submissionId,
-    @PathParam("projectId") String projectId) {
-    submissionService.moveProjectData(submissionId, projectId);
-    return Response.ok().build();
+    @PathParam("submissionVersion") Long submissionVersion, @PathParam("projectId") String projectId,
+    @PathParam("projectVersion") Long projectVersion) {
+    Set<ValidationError> optimisticLockErrors =
+      submissionService.moveProjectData(submissionId, submissionVersion, projectId, projectVersion);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -1622,5 +1802,124 @@ public class SubmissionResource {
   public Response getSubmittentsCount(@PathParam("id") String id) {
     int count = submissionService.getSubmittentsCount(id);
     return Response.ok(count).build();
+  }
+
+  /**
+   * Checks if submission exists.
+   *
+   * @param id the submission id
+   * @return true if exists, otherwise the error for deleted submission
+   */
+  @GET
+  @Path("/exists/{id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response submissionExists(@PathParam("id") String id) {
+    if (submissionService.submissionExists(id)) {
+      return Response.ok(true).build();
+    }
+    Set<ValidationError> submissionDeleted = new HashSet<>();
+    submissionDeleted
+      .add(new ValidationError(ValidationMessages.DELETED_BY_ANOTHER_USER_ERROR_FIELD,
+        ValidationMessages.SUBMISSION_DELETED));
+    return Response.status(Response.Status.BAD_REQUEST).entity(submissionDeleted).build();
+  }
+
+  @GET
+  @Path("/isStatusChanged/{id}/{status}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response isStatusChanged(@PathParam("id") String id, @PathParam("status") String status) {
+    if (submissionService.isStatusChanged(id, status)) {
+      Set<ValidationError> statusChanged = new HashSet<>();
+      statusChanged
+        .add(new ValidationError(ValidationMessages.STATUS_CHANGED_ERROR_FIELD, ValidationMessages.STATUS_CHANGED));
+      return Response.status(Response.Status.BAD_REQUEST).entity(statusChanged).build();
+    }
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Submission Create form.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadSubmissionCreate")
+  public Response loadSubmissionCreate() {
+    submissionService.submissionCreateSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Document Area.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadDocumentArea/{submissionId}")
+  public Response loadDocumentArea(@PathParam("submissionId") String submissionId) {
+    submissionService.submissionDocumentAreaSecurityCheck(submissionId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Formal Audit.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadFormalAudit/{submissionId}")
+  public Response loadFormalAudit(@PathParam("submissionId") String submissionId) {
+    submissionService.formalAuditSecurityCheck(submissionId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Formal Audit.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadSuitabilityAudit/{submissionId}")
+  public Response loadSuitabilityAudit(@PathParam("submissionId") String submissionId) {
+    submissionService.suitabilityAuditSecurityCheck(submissionId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Applicants List.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadApplicants/{submissionId}")
+  public Response loadApplicants(@PathParam("submissionId") String submissionId) {
+    submissionService.applicantsSecurityCheck(submissionId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Submission.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadSubmission/{submissionId}")
+  public Response loadSubmission(@PathParam("submissionId") String submissionId) {
+    submissionService.submissionViewSecurityCheck(submissionId);
+    return Response.ok().build();
   }
 }

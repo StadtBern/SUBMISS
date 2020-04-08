@@ -13,6 +13,7 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,20 +22,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class SubmittentProofProvided.
  */
 @Entity
 @Table(name = "SUB_TENDERER_PROOF_PROVIDED")
-public class SubmittentProofProvidedEntity {
-  
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid")
-  @GenericGenerator(name = "uuid", strategy = "uuid2")
-  private String id;
+public class SubmittentProofProvidedEntity extends AbstractEntity {
   
   /** The submittent. */
   @ManyToOne
@@ -55,22 +52,18 @@ public class SubmittentProofProvidedEntity {
   private Integer level;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The created on.
    */
-  public String getId() {
-    return id;
-  }
+  @CreationTimestamp
+  @Column(name = "CREATED_ON")
+  private Timestamp createdOn;
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The updated on.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
   /**
    * Gets the submittent.
@@ -142,5 +135,41 @@ public class SubmittentProofProvidedEntity {
    */
   public void setLevel(Integer level) {
     this.level = level;
+  }
+
+  /**
+   * Gets the created on.
+   *
+   * @return the created on
+   */
+  public Timestamp getCreatedOn() {
+    return createdOn;
+  }
+
+  /**
+   * Sets the created on.
+   *
+   * @param createdOn the new created on
+   */
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  /**
+   * Gets the updatedOn.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updatedOn.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
   }
 }

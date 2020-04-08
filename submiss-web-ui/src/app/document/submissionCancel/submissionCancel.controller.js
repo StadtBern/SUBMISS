@@ -133,17 +133,29 @@
           vm.submissionCancel.workTypes.push(workType);
         }
       }
-      SubmissionCancelService.setSubmissionCancel(vm.submissionCancel)
-        .success(function (data) {
-          $state.reload();
-        }).error(function (response, status) {
-          if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) { // Validation errors.
-            $anchorScroll();
-            QFormJSRValidation.markErrors($scope,
-              $scope.submissionCancelCtrl.submissionCancelHtmlForm, response);
-          }
-        });
-
+      if (angular.isUndefined(vm.submissionCancel.id) || vm.submissionCancel.id === null) {
+        SubmissionCancelService.createSubmissionCancel(vm.submissionCancel)
+          .success(function (data) {
+            $state.reload();
+          }).error(function (response, status) {
+            if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+              $anchorScroll();
+              QFormJSRValidation.markErrors($scope,
+                $scope.submissionCancelCtrl.submissionCancelHtmlForm, response);
+            }
+          });
+      } else {
+        SubmissionCancelService.updateSubmissionCancel(vm.submissionCancel)
+          .success(function (data) {
+            $state.reload();
+          }).error(function (response, status) {
+            if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+              $anchorScroll();
+              QFormJSRValidation.markErrors($scope,
+                $scope.submissionCancelCtrl.submissionCancelHtmlForm, response);
+            }
+          });
+      }
     }
 
     /** Date modal functionality */
@@ -215,10 +227,14 @@
             // Modal Success Handler
           }, function (response) { // Modal Dismiss Handler
             if (response === 'ja') {
-              SubmissionCancelService.cancelSubmission($stateParams.submissionId).success(function (data) {
+              SubmissionCancelService.cancelSubmission($stateParams.submissionId, vm.submissionCancel.id, vm.submissionCancel.version).success(function (data) {
                 $state.reload();
               }).error(function (response, status) {
-
+                if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) { // Validation errors.
+                  $anchorScroll();
+                  QFormJSRValidation.markErrors($scope,
+                    $scope.submissionCancelCtrl.submissionCancelHtmlForm, response);
+                }
               });
               return true;
             } else {

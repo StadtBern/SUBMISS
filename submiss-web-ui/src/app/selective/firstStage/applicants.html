@@ -12,145 +12,134 @@
   -->
 
 <div class="row">
-	<div class="col-sm-12">
-		<h2 class="page-title">
-			{{applicantsCtrl.submission.workType.value1}}
-			{{applicantsCtrl.submission.workType.value2}},
-			<small>&nbsp;{{applicantsCtrl.submission.project.projectName}},
-				&nbsp;{{applicantsCtrl.getObjectInfo(applicantsCtrl.submission.project.objectName)}}
-			</small>
-		</h2>
-	</div>
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{applicantsCtrl.submission.workType.value1}}
+      {{applicantsCtrl.submission.workType.value2}},
+      <small>&nbsp;{{applicantsCtrl.submission.project.projectName}},
+        &nbsp;{{applicantsCtrl.getObjectInfo(applicantsCtrl.submission.project.objectName)}}
+      </small>
+    </h2>
+  </div>
 </div>
-<div class="row">	
-	<div class="card-box">
-		<form name="applicantsForm" id="applicantsForm" shows-validation-errors>
-			<div class="col-sm-12">
-	          <div class="alert alert-danger" ng-if="applicantsForm.$invalid" role="alert">
-	       		 <field-error form-element-name="applicantHasApplicationErrorField" translate name="error"></field-error>
-	       		 <field-error form-element-name="applicantHasSubcontractorsOrJointVentureErrorField" translate name="error"></field-error>
-	       		 <field-error form-element-name="noApplicantDocumentErrorField" translate name="error"></field-error>
-	       		 <field-error form-element-name="missingApplicationDatesErrorField" translate name="error"></field-error>
-	          </div> 
-	          <input name="applicantHasApplicationErrorField" ng-hide="true" data-ng-model="fd">
-	          <input name="applicantHasSubcontractorsOrJointVentureErrorField" ng-hide="true" data-ng-model="fd">
-	          <input name="noApplicantDocumentErrorField" ng-hide="true" data-ng-model="fd">
-	          <input name="missingApplicationDatesErrorField" ng-hide="true" data-ng-model="fd">
-	        </div>
-        </form>
-		<div class="col-sm-12">
-		<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
-		<div ng-include src="'app/selective/firstStage/firstStageTabs.html'"></div>
-			<div role="tabpanel" class="tab-pane" id="subList">
-				<div class="row">
-					<div class="col-sm-12 ToolbarContainer">
-						<div class="btn-toolbar pull-right" role="toolbar">
-							<button type="button"
-								data-ng-click="applicantsCtrl.addApplicants()"
-								class="btn btn-primary" data-toggle="modal"
-								data-ng-disabled="!applicantsCtrl.secApplicantsAdd
+<div class="row">
+  <div class="card-box">
+    <form name="applicantsForm" id="applicantsForm" shows-validation-errors>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="applicantsForm.$invalid" role="alert">
+          <field-error form-element-name="applicantHasApplicationErrorField" translate name="error"></field-error>
+          <field-error form-element-name="applicantHasSubcontractorsOrJointVentureErrorField" translate name="error">
+          </field-error>
+          <field-error form-element-name="noApplicantDocumentErrorField" translate name="error"></field-error>
+          <field-error form-element-name="missingApplicationDatesErrorField" translate name="error"></field-error>
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+          <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
+        </div>
+        <input name="applicantHasApplicationErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="applicantHasSubcontractorsOrJointVentureErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="noApplicantDocumentErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="missingApplicationDatesErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd">
+      </div>
+    </form>
+    <div class="col-sm-12">
+      <div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+      <div ng-include src="'app/selective/firstStage/firstStageTabs.html'"></div>
+      <div role="tabpanel" class="tab-pane" id="subList">
+        <div class="row">
+          <div class="col-sm-12 ToolbarContainer">
+            <div class="btn-toolbar pull-right" role="toolbar">
+              <button type="button" data-ng-click="applicantsCtrl.addApplicants()" class="btn btn-primary"
+                data-toggle="modal" data-ng-disabled="!applicantsCtrl.secApplicantsAdd
 									|| applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED
-									|| applicantsCtrl.isCompletedOrCancelled"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Bewerber hinzufügen
-							</button>
-							<button type="button"
-								class="btn btn-primary" data-toggle="modal"
-								data-ng-click="applicantsCtrl.closeApplicationOpening()"
-								data-ng-disabled="!applicantsCtrl.secApplicationOpeningClose || applicantsCtrl.firstLevelSubmissionFieldsEmpty()
+									|| applicantsCtrl.isCompletedOrCancelled" data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Bewerber hinzufügen
+              </button>
+              <button type="button" class="btn btn-primary" data-toggle="modal"
+                data-ng-click="applicantsCtrl.closeApplicationOpening()" data-ng-disabled="!applicantsCtrl.secApplicationOpeningClose || applicantsCtrl.firstLevelSubmissionFieldsEmpty()
 									|| applicantsCtrl.currentStatus < applicantsCtrl.status.APPLICATION_OPENING_STARTED
 									|| applicantsCtrl.isCompletedOrCancelled"
-								ng-if="applicantsCtrl.currentStatus < applicantsCtrl.status.APPLICATION_OPENING_CLOSED">
-								<span class="fa fa-plus" aria-hidden="true"></span> Bewerbungsöffnung abschliessen
-							</button>
-							<button type="button"
-								class="btn btn-primary" data-toggle="modal"
-								ng-click="applicantsCtrl.reopenApplicationOpening()"
-								ng-if="applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED"
-								ng-disabled="!applicantsCtrl.secApplicationOpeningReopen
+                ng-if="applicantsCtrl.currentStatus < applicantsCtrl.status.APPLICATION_OPENING_CLOSED">
+                <span class="fa fa-plus" aria-hidden="true"></span> Bewerbungsöffnung abschliessen
+              </button>
+              <button type="button" class="btn btn-primary" data-toggle="modal"
+                ng-click="applicantsCtrl.reopenApplicationOpening()"
+                ng-if="applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED" ng-disabled="!applicantsCtrl.secApplicationOpeningReopen
 									|| applicantsCtrl.currentStatus >= applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
 									|| applicantsCtrl.isCompletedOrCancelled">
-								<span class="fa fa-plus" aria-hidden="true"></span> Bewerbungsöffnung wiederaufnehmen
-							</button>
-						</div>
-					</div>
-				</div>
-				<div class="tab-content">
-					<div class="row" id="results">
-						<div class="card-box">
-							<div class="col-sm-12 ToolbarContainer"></div>
-							<div class="col-sm-12">
-								<div>
-									<div ng-table-pagination="applicantsCtrl.tableParams"
-										template-url="'app/layout/pager.html'"></div>
-									<div id="accordionTable"
-										class="table-responsive tableBtnAction">
-										<table class="table table-condensed"
-											ng-table="applicantsCtrl.tableParams"
-											style="border-collapse: collapse;"
-											template-pagination="custom/pager"
-											 show-filter="true">
-												<tr>
-													<th colspan="2">Bewerber</th>
-													<th>P</span></th>
-													<th class="w80">Aktion</th>
-												</tr>
-												<tbody id="applicant" ng-repeat="applicant in $data | orderBy : 'companyName'"  
-													accordion-group is-open="false">
-													<tr  accordion-heading id="{{applicant.offer.id}}" ng-click="applicantsCtrl.openApplicantDetails(applicant)">
-														<td>
-															<span class="fa fa-caret-right" aria-hidden="true" ng-if="!applicant.show"></span>
-															<span class="fa fa-caret-down" aria-hidden="true" ng-if="applicant.show"></span></td>
-														<td>{{applicant.submittent.submittentNameArgeSub}} </td>
-														<td>
-															<span class="fa fa-circle green" aria-hidden="true"
-																ng-if="applicantsCtrl.currentStatus >= applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
+                <span class="fa fa-plus" aria-hidden="true"></span> Bewerbungsöffnung wiederaufnehmen
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="tab-content">
+          <div class="row" id="results">
+            <div class="card-box">
+              <div class="col-sm-12 ToolbarContainer"></div>
+              <div class="col-sm-12">
+                <div>
+                  <div ng-table-pagination="applicantsCtrl.tableParams" template-url="'app/layout/pager.html'"></div>
+                  <div id="accordionTable" class="table-responsive tableBtnAction">
+                    <table class="table table-condensed" ng-table="applicantsCtrl.tableParams"
+                      style="border-collapse: collapse;" template-pagination="custom/pager" show-filter="true">
+                      <tr>
+                        <th colspan="2">Bewerber</th>
+                        <th>P</span></th>
+                        <th class="w80">Aktion</th>
+                      </tr>
+                      <tbody id="applicant" ng-repeat="applicant in $data | orderBy : 'companyName'" accordion-group
+                        is-open="false">
+                        <tr accordion-heading id="{{applicant.offer.id}}"
+                          ng-click="applicantsCtrl.openApplicantDetails(applicant)">
+                          <td>
+                            <span class="fa fa-caret-right" aria-hidden="true" ng-if="!applicant.show"></span>
+                            <span class="fa fa-caret-down" aria-hidden="true" ng-if="applicant.show"></span></td>
+                          <td>{{applicant.submittent.submittentNameArgeSub}} </td>
+                          <td>
+                            <span class="fa fa-circle green" aria-hidden="true" ng-if="applicantsCtrl.currentStatus >= applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
 																	&& !applicant.offer.excludedFirstLevel"></span>
-															<span class="fa fa-circle-thin" aria-hidden="true"
-																ng-if="applicantsCtrl.currentStatus < applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
+                            <span class="fa fa-circle-thin" aria-hidden="true" ng-if="applicantsCtrl.currentStatus < applicantsCtrl.status.SUITABILITY_AUDIT_COMPLETED_S
 																	|| applicant.offer.excludedFirstLevel"></span>
-														</td>
-														<td>
-															<button type="button" class="btn action btn-primary"
-																ng-click="applicantsCtrl.deleteApplicationModal(applicant.offer.id)"
-																ng-disabled="!applicantsCtrl.secApplicationDelete
+                          </td>
+                          <td>
+                            <button type="button" class="btn action btn-primary"
+                              ng-click="applicantsCtrl.deleteApplicationModal(applicant.offer.id, applicant.offer.version)"
+                              ng-disabled="!applicantsCtrl.secApplicationDelete
 																	|| applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED
-																	|| applicantsCtrl.isCompletedOrCancelled"
-																title="Bewerbung löschen">
-																<span class="fa fa-eraser" aria-hidden="true"></span>
-															</button>						
-															<button type="button" class="btn action btn-primary"
-																ng-click="applicantsCtrl.deleteApplicantModal(applicant.submittent.id)"
-																ng-disabled="!applicantsCtrl.secApplicantDelete
+																	|| applicantsCtrl.isCompletedOrCancelled" title="Bewerbung löschen">
+                              <span class="fa fa-eraser" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn action btn-primary"
+                              ng-click="applicantsCtrl.deleteApplicantModal(applicant.submittent.id)" ng-disabled="!applicantsCtrl.secApplicantDelete
 																	|| applicantsCtrl.currentStatus >= applicantsCtrl.status.APPLICATION_OPENING_CLOSED
-																	|| applicantsCtrl.isCompletedOrCancelled"
-																title="Aktuellen Bewerber entfernen">
-																<span class="fa fa-trash-o" aria-hidden="true"></span>
-															</button>
-															<button type="button" class="btn action btn-primary" title="Firma ansehen"
-																ng-disabled="!applicantsCtrl.secCompanyView"
-																ng-click="applicantsCtrl.navigateToCompany(applicant.submittent.companyId.id)">
-																<span class="fa fa-eye" aria-hidden="true"></span>
-															</button>
-														</td>
-													</tr>
-													<tr>
-														<td colspan="9" class="hiddenRow" ng-if="applicant.show">
-															<div ng-include class="col-sm-12" src="'app/selective/firstStage/applicantTabs.html'"></div>
-															<div ui-view  class="col-sm-12"></div>
-														</td>
-													</tr>
-												</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+																	|| applicantsCtrl.isCompletedOrCancelled" title="Aktuellen Bewerber entfernen">
+                              <span class="fa fa-trash-o" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn action btn-primary" title="Firma ansehen"
+                              ng-disabled="!applicantsCtrl.secCompanyView"
+                              ng-click="applicantsCtrl.navigateToCompany(applicant.submittent.companyId.id)">
+                              <span class="fa fa-eye" aria-hidden="true"></span>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="9" class="hiddenRow" ng-if="applicant.show">
+                            <div ng-include class="col-sm-12" src="'app/selective/firstStage/applicantTabs.html'"></div>
+                            <div ui-view class="col-sm-12"></div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="text/ng-template" id="custom/pager">

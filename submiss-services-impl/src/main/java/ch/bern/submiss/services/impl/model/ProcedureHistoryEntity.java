@@ -13,34 +13,23 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import ch.bern.submiss.services.api.constants.Process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
-
-import ch.bern.submiss.services.api.constants.Process;
 
 /**
  * The Class ProcedureHistoryEntity.
  */
 @Entity
 @Table(name = "SUB_PROCEDURE_HISTORY")
-public class ProcedureHistoryEntity {
-
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
+public class ProcedureHistoryEntity  extends AbstractEntity {
 
   @ManyToOne
   @JoinColumn(name = "FK_TENANT")
@@ -69,14 +58,6 @@ public class ProcedureHistoryEntity {
   @ManyToOne
   @JoinColumn(name = "FK_PROCESS_TYPE")
   private MasterListValueEntity processType;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
   public TenantEntity getTenant() {
     return tenant;
@@ -141,6 +122,4 @@ public class ProcedureHistoryEntity {
   public void setProcessType(MasterListValueEntity processType) {
     this.processType = processType;
   }
-  
-  
 }

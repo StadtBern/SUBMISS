@@ -13,20 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-import com.querydsl.jpa.impl.JPAQuery;
 import ch.bern.submiss.services.api.administration.ProcedureService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
 import ch.bern.submiss.services.api.constants.AuditEvent;
@@ -38,12 +24,27 @@ import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.ProcedureHistoryDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
-import ch.bern.submiss.services.impl.mappers.MasterListValueMapper;
-import ch.bern.submiss.services.impl.mappers.ProcedureDTOMapper;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.ProcedureHistoryDTOMapper;
-import ch.bern.submiss.services.impl.mappers.TenantMapper;
 import ch.bern.submiss.services.impl.model.ProcedureHistoryEntity;
 import ch.bern.submiss.services.impl.model.QProcedureHistoryEntity;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.jpa.impl.JPAQuery;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class ProcedureServiceImpl.
@@ -70,14 +71,6 @@ public class ProcedureServiceImpl extends BaseService implements ProcedureServic
   @Inject
   private AuditBean audit;
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.ProcedureService#readProcedure(java.lang.String,
-   * ch.bern.submiss.services.api.constants.Process, java.lang.String)
-   */
   @Override
   public ProcedureHistoryDTO readProcedure(String processType, Process proccess, String tenant) {
 
@@ -98,11 +91,6 @@ public class ProcedureServiceImpl extends BaseService implements ProcedureServic
     return ProcedureHistoryDTOMapper.INSTANCE.toProcedureHistoryDTO(procedureH);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProcedureService#readProceduresByTenant()
-   */
   @Override
   public List<ProcedureHistoryDTO> readProceduresByTenant() {
 
@@ -132,12 +120,6 @@ public class ProcedureServiceImpl extends BaseService implements ProcedureServic
     return sortProcedureResults(procedureHListDTO);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProcedureService#readProcedureById(java.lang.
-   * String)
-   */
   @Override
   public ProcedureHistoryDTO readProcedureById(String id) {
 
@@ -153,52 +135,36 @@ public class ProcedureServiceImpl extends BaseService implements ProcedureServic
     return ProcedureHistoryDTOMapper.INSTANCE.toProcedureHistoryDTO(procedureH);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.ProcedureService#insertNewProcedure(ch.bern.submiss
-   * .services.api.dto.ProcedureHistoryDTO)
-   */
   @Override
-  public void insertNewProcedure(ProcedureHistoryDTO dto) {
+  public Set<ValidationError> insertNewProcedure(ProcedureHistoryDTO dto) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method insertNewProcedure, Parameters: dto: {0}",
       dto);
 
+    Set<ValidationError> error = new HashSet<>();
     // In this part we deactivate the old value by updating
-    JPAQuery<ProcedureHistoryEntity> query = new JPAQuery<>(em);
-    QProcedureHistoryEntity qProcedureHistoryEntity =
-      QProcedureHistoryEntity.procedureHistoryEntity;
-    ProcedureHistoryEntity procedureH =
-      query.select(qProcedureHistoryEntity).from(qProcedureHistoryEntity)
-        .where(qProcedureHistoryEntity.processType
-          .eq(MasterListValueMapper.INSTANCE.toMasterListValue(dto.getProcessType()))
-          .and(qProcedureHistoryEntity.procedure
-            .eq(ProcedureDTOMapper.INSTANCE.toProcedure(dto.getProcedure())))
-          .and(qProcedureHistoryEntity.process.eq(dto.getProcess()))
-          .and(qProcedureHistoryEntity.toDate.isNull()))
-        .fetchOne();
-
-    procedureH.setToDate(new Timestamp(System.currentTimeMillis()));
-    procedureH.setActive(false);
-    em.merge(procedureH);
-
-    // In this part we creating the new ProcedureHistoryEntity
-    ProcedureHistoryEntity procHE = new ProcedureHistoryEntity();
-    procHE.setFromDate(null);
-    procHE.setTenant(TenantMapper.INSTANCE.toTenant(dto.getTenant()));
-    procHE.setProcess(dto.getProcess());
-    procHE.setProcessType(MasterListValueMapper.INSTANCE.toMasterListValue(dto.getProcessType()));
-    procHE.setProcedure(ProcedureDTOMapper.INSTANCE.toProcedure(dto.getProcedure()));
-    procHE.setValue(dto.getValue());
-
-    em.persist(procHE);
+    ProcedureHistoryEntity procedureHistEntity = em.find(ProcedureHistoryEntity.class, dto.getId());
+    // If the current version is 1, then return an optimisticLockErrorField
+    if (procedureHistEntity.getVersion() == 1) {
+      error
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+      return error;
+    }
+    procedureHistEntity.setToDate(new Timestamp(new Date().getTime()));
+    procedureHistEntity.setActive(false);
+    em.merge(procedureHistEntity);
+    // Now that the old entry is added to the history, create its new instance.
+    procedureHistEntity = ProcedureHistoryDTOMapper.INSTANCE.toProcedureHistory(dto);
+    procedureHistEntity.setId(null);
+    procedureHistEntity.setFromDate(new Timestamp(new Date().getTime()));
+    procedureHistEntity.setToDate(null);
+    em.persist(procedureHistEntity);
 
     audit.createLogAudit(AuditLevel.REFERENCE_DATA_LEVEL.name(), AuditEvent.CREATE.name(),
       AuditGroupName.REFERENCE_DATA.name(), AuditMessages.PROCEDURE_ADDED.name(), getUser().getId(),
-      procHE.getId(), null, null, LookupValues.INTERNAL_LOG);
+      procedureHistEntity.getId(), null, null, LookupValues.INTERNAL_LOG);
+    return error;
   }
 
   /**
@@ -225,18 +191,14 @@ public class ProcedureServiceImpl extends BaseService implements ProcedureServic
     definedOrder.add(Process.OPEN);
     definedOrder.add(Process.SELECTIVE);
 
-    Collections.sort(procedureHListDTO, new Comparator<ProcedureHistoryDTO>() {
-
-      @Override
-      public int compare(ProcedureHistoryDTO o1, ProcedureHistoryDTO o2) {
-        int compareResult = o1.getProcessTypeHistory().getValue1()
-          .compareTo(o2.getProcessTypeHistory().getValue1());
-        if (compareResult == 0) {
-          return Integer.valueOf(definedOrder.indexOf(o1.getProcess()))
-            .compareTo(Integer.valueOf(definedOrder.indexOf(o2.getProcess())));
-        } else {
-          return compareResult;
-        }
+    Collections.sort(procedureHListDTO, (o1, o2) -> {
+      int compareResult = o1.getProcessTypeHistory().getValue1()
+        .compareTo(o2.getProcessTypeHistory().getValue1());
+      if (compareResult == 0) {
+        return Integer.valueOf(definedOrder.indexOf(o1.getProcess()))
+          .compareTo(Integer.valueOf(definedOrder.indexOf(o2.getProcess())));
+      } else {
+        return compareResult;
       }
     });
     return procedureHListDTO;

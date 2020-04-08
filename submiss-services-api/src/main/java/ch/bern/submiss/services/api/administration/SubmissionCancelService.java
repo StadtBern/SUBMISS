@@ -14,8 +14,10 @@
 package ch.bern.submiss.services.api.administration;
 
 import ch.bern.submiss.services.api.dto.SubmissionCancelDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The Interface SubmissionCancelService.
@@ -31,12 +33,28 @@ public interface SubmissionCancelService {
   SubmissionCancelDTO getBySubmissionId(String submissionId);
 
   /**
-   * Updates or creates (if not exists) a submission cancel entity.
+   * Updates the SubmissionCancelEntity with cancelled_on and cancelled_by values.
    *
-   * @param submissionCancel the submission cancel entity
-   * @return the UUID of the created submissionCancel entity
+   * @param submissionCancelId the submissionCancelId
+   * @param submissionCancelVersion the submissionCancelVersion
    */
-  String set(SubmissionCancelDTO submissionCancel);
+  Set<ValidationError> cancellingSubmission(String submissionCancelId, Long submissionCancelVersion);
+
+  /**
+   * Creates a submission cancel entity.
+   *
+   * @param submissionCancel the SubmissionCancelDTO
+   * @return the error
+   */
+  Set<ValidationError> createSubmissionCancel(SubmissionCancelDTO submissionCancel);
+
+  /**
+   * Updates the submission cancel entity.
+   *
+   * @param submissionCancel the SubmissionCancelDTO
+   * @return the error
+   */
+  Set<ValidationError> updateSubmissionCancel(SubmissionCancelDTO submissionCancel);
 
   /**
    * Gets the available date of the submission cancel entity by submission id.

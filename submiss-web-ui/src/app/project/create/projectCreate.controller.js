@@ -93,9 +93,16 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadObjects();
-      vm.loadProcedures();
-      vm.loadDepartments();
+      ProjectService.loadProjectCreate()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.loadObjects();
+            vm.loadProcedures();
+            vm.loadDepartments();
+          }
+        });
     }
 
     /***********************************************************************
@@ -163,7 +170,10 @@
         vm.project.pmExternal = vm.pmExternal;
       }
       ProjectService.createProject(vm.project)
-        .success(function (data) {
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          }
           $state.go('project.view', {
             id: data.id
           });

@@ -161,7 +161,7 @@
           function (response, status) {
             if (status === 400) { // Validation errors.
               QFormJSRValidation.markErrors($scope,
-                $scope.offerListViewCtrl.offerForm,
+                $scope.subcontractorDetailsCtrl.subcontractorForm,
                 response);
             }
           });

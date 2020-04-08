@@ -21,7 +21,7 @@
 <div class="row">
   <div class="card-box">
     <div class="col-sm-12 ToolbarContainer">
-      <div class="col-sm-6 pull-left">
+      <div class="col-sm-8 pull-left">
         <div class="">
           <label>Nachweisstatus:</label> <span> <text ng-if="companyDocumentAreaCtrl.data.company.proofStatus === 1">
               <img src="../../../assets/images/greenFlag.png" alt="Alle Nachweise" /> Alle Nachweise vorhanden</text>
@@ -35,6 +35,14 @@
               <img src="../../../assets/images/ban.png" alt="KAIO" />
               Rücksprache mit KAIO ZKB / FaBe</text>
           </span>
+        </div>
+        <div class=""
+          ng-if="companyDocumentAreaCtrl.data.companyTask.createdOn!=null && companyDocumentAreaCtrl.data.companyTask.createdBy!=null">
+          <label>
+            Pendenz an FaBe zur Nachweisaufforderung erfolgt am
+            {{companyDocumentAreaCtrl.data.companyTask.createdOn | date:"dd.MM.yyyy"}} durch
+            {{companyDocumentAreaCtrl.data.companyTask.createdBy}}
+          </label>
         </div>
         <div class="" ng-if="companyDocumentAreaCtrl.data.company.proofDocModOn!=null">
           <label> Nachweise bestellt durch
@@ -65,11 +73,11 @@
         </div>
 
       </div>
-      <div class="col-sm-6 pull-left">
+      <div class="col-sm-4 pull-left">
         <div class="btn-toolbar pull-right" role="toolbar">
           <button ng-click="companyDocumentAreaCtrl.requestProofs()"
             ng-show="companyDocumentAreaCtrl.secProofVerificationRequest"
-            ng-disabled="companyDocumentAreaCtrl.data.company.proofStatus === 1" type="submit"
+            ng-disabled="companyDocumentAreaCtrl.data.company.proofStatus === 1 || companyDocumentAreaCtrl.data.company.kaioFabeActive" type="submit"
             class="btn btn-primary">Nachweisaufforderung
             gewünscht</button>
         </div>
@@ -140,7 +148,8 @@
               <div class="col-sm-7">
                 <button type="submit" class="btn btn-primary"
                   ng-click="companyDocumentAreaCtrl.createAndPrintDocument = false">Erstellen</button>
-                <button type="submit" class="btn btn-primary" ng-disabled="companyDocumentAreaCtrl.chosenTemplate.shortCode === 'FT05'"
+                <button type="submit" class="btn btn-primary"
+                  ng-disabled="companyDocumentAreaCtrl.chosenTemplate.shortCode === 'FT05'"
                   ng-click="companyDocumentAreaCtrl.createAndPrintDocument = true">Erstellen
                   und Drucken</button>
               </div>

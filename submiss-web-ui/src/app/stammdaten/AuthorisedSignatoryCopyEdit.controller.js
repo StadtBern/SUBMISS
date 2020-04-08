@@ -24,8 +24,8 @@
 
   /** @ngInject */
   function AuthorisedSignatoryCopyEditController($rootScope, $scope, $state,
-    StammdatenService, $uibModalInstance, $stateParams, $filter,
-    AppConstants, entryId, directorate) {
+    StammdatenService, $uibModalInstance, $stateParams, $filter, AppService,
+    AppConstants, entryId, directorate, QFormJSRValidation) {
     const vm = this;
     /***********************************************************************
      * Local variables.
@@ -37,13 +37,14 @@
     vm.entryId = entryId;
     vm.typeDataEntry = {};
     vm.signatureCopies = {};
-    vm.addNewRow = addNewRow;
-    vm.removeRow = removeRow;
-    vm.setDepartmentForSignatureCopy = setDepartmentForSignatureCopy;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
     vm.save = save;
+    vm.addNewRow = addNewRow;
+    vm.removeRow = removeRow;
+    vm.setDepartmentForSignatureCopy = setDepartmentForSignatureCopy;
+    vm.closeModal = closeModal;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -88,10 +89,12 @@
     function addNewRow(index) {
       var newRow = {};
       vm.signatureCopies.splice(index + 1, 0, newRow);
+      vm.dirtyFlag = true;
     }
 
     function removeRow(index) {
       vm.signatureCopies.splice(index, 1);
+      vm.dirtyFlag = true;
     }
 
     function setDepartmentForSignatureCopy(selectedDepartment, index) {
@@ -109,10 +112,30 @@
             reload: true
           });
         }).error(function (response, status) {
-
+        if (status === 400) {
+          vm.errorFieldsVisible = true;
+          QFormJSRValidation.markErrors($scope,
+            $scope.editForm, response);
+        }
       });
-
     }
 
+    function closeModal() {
+      if (vm.dirtyFlag || vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('stammdaten.authorisedSignatory', {
+              directorate: directorate
+            }, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
+      }
+    }
   }
 })();

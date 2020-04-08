@@ -28,7 +28,7 @@
 
     return {
       updateAward: function (award) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardCriterion', award);
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardCriterion/update', award);
       },
       canOperatingCostAwardCriterionBeAdded: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/submission/operatingCostAwardCriterion/' + submissionId);
@@ -36,22 +36,28 @@
       getCalculationFormulas: function (tenantId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/submission/calculationFormulas/' + tenantId);
       },
-      updateOfferCriteriaAward: function (awardAssessList) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardAssess/', awardAssessList);
+      updateOfferCriteriaAward: function (awardAssessList, submissionId, pageRequestedOn) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardAssess/' + submissionId + '/' + pageRequestedOn + '/update', awardAssessList);
       },
-      closeAwardEvaluation: function (awardedOfferIds, submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/closeAwardEvaluation/' + submissionId, awardedOfferIds);
+      closeAwardEvaluation: function (awardedOfferIds, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/closeAwardEvaluation/' + submissionId + '/' + submissionVersion, awardedOfferIds);
       },
       awardEvaluationCloseNoErrors: function (criteria, submissionId, awardMinGrade, awardMaxGrade) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardEvaluationCloseNoErrors/' +
           submissionId + '/' + awardMinGrade + '/' + awardMaxGrade, criteria);
       },
-      reopenAwardEvaluation: function (reopen, submissionId) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/awardEvaluation/' + submissionId, reopen);
+      reopenAwardEvaluation: function (reopen, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/awardEvaluation/' + submissionId + '/' + submissionVersion, reopen);
       },
       updateCustomCalculationFormula: function (calculationFormula, isPrice, submissionId) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/updateCustomCalculationFormula/' + isPrice +
           '/' + submissionId, calculationFormula);
+      },
+      checkAwardOptimisticLock: function (submissionId, pageRequestedOn) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/award/optimisticLock/' + submissionId + '/' + pageRequestedOn);
+      },
+      loadAwardEvaluation: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/loadAwardEvaluation/' + submissionId);
       }
     };
   }

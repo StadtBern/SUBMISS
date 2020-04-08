@@ -36,9 +36,8 @@ public class ProcedureResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/procedureList")
 	public Response readProceduresByTenant() {
-
-		List<ProcedureHistoryDTO> procedures = new ArrayList<>();
-		procedures.addAll(procedureService.readProceduresByTenant());
+    List<ProcedureHistoryDTO> procedures = new ArrayList<>(
+      procedureService.readProceduresByTenant());
 		return Response.ok(procedures).build();
 	}
 }

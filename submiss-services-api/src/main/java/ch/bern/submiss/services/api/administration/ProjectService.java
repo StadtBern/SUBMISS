@@ -13,10 +13,12 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.util.List;
 import ch.bern.submiss.services.api.dto.ProjectDTO;
 import ch.bern.submiss.services.api.dto.SearchDTO;
 import ch.bern.submiss.services.api.dto.TenderDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.util.List;
+import java.util.Set;
 
 /**
  * ProjectService is the interface for all classes that implement Project related behaviour.
@@ -73,8 +75,9 @@ public interface ProjectService {
    * Updates a project.
    *
    * @param project the project with the updated values
+   * @return the error
    */
-  void updateProject(ProjectDTO project);
+  Set<ValidationError> updateProject(ProjectDTO project);
 
   /**
    * Retrieve sorted all projects that satisfy fields from searchForm.
@@ -145,5 +148,47 @@ public interface ProjectService {
    * @return the all project managers
    */
   List<String> getAllProjectManagers();
+
+  /**
+   * Checks if project has been edited by another user.
+   *
+   * @param projectId the project id
+   * @return the error
+   */
+  Set<ValidationError> optimisticLockProject(String projectId, Long currentVersion);
+
+  /**
+   * Checks if project exists.
+   *
+   * @param projectId the project id
+   * @return true if project exists
+   */
+  boolean projectExists(String projectId);
+
+  /**
+   * Security check for Project Create.
+   */
+  void projectCreateSecurityCheck();
+
+  /**
+   * Security check for Project Edit.
+   * @param id
+   */
+  void projectEditSecurityCheck(String id);
+
+  /**
+   * Security check for Project Details.
+   */
+  void projectDetailsSecurityCheck(String projectId);
+
+  /**
+   * Security check for Submission List.
+   */
+  void submissionListSecurityCheck(String projectId);
+
+  /**
+   * Security check for Project Search.
+   */
+  void projectSearchSecurityCheck();
 
 }

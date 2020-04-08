@@ -188,15 +188,27 @@
             }
           }
         }
-        SubmissionService.saveAwardInfoFirstLevel(vm.awardInfoFirstLevel)
-          .success(function (data) {
-            defaultReload();
-          }).error(function (response, status) {
-            if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) { // Validation errors.
-              QFormJSRValidation.markErrors($scope,
-                $scope.awardInfoFirstLevelCtrl.awardInfoFirstLevelHtmlForm, response);
-            }
-          });
+        if (angular.isUndefined(vm.awardInfoFirstLevel.id) || vm.awardInfoFirstLevel.id === null) {
+          SubmissionService.createAwardInfoFirstLevel(vm.awardInfoFirstLevel)
+            .success(function (data) {
+              defaultReload();
+            }).error(function (response, status) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+                QFormJSRValidation.markErrors($scope,
+                  $scope.awardInfoFirstLevelCtrl.awardInfoFirstLevelHtmlForm, response);
+              }
+            });
+        } else {
+          SubmissionService.updateAwardInfoFirstLevel(vm.awardInfoFirstLevel)
+            .success(function (data) {
+              defaultReload();
+            }).error(function (response, status) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+                QFormJSRValidation.markErrors($scope,
+                  $scope.awardInfoFirstLevelCtrl.awardInfoFirstLevelHtmlForm, response);
+              }
+            });
+        }
       }
     }
 

@@ -46,7 +46,14 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      getMasterListTypes();
+      StammdatenService.loadSD()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            getMasterListTypes();
+          }
+        });
     }
 
     /***********************************************************************

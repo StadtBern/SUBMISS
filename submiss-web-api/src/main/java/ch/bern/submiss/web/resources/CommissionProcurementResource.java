@@ -19,14 +19,16 @@ import ch.bern.submiss.services.api.constants.SuitabilityAuditDropdownChoices;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
-import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.web.forms.CommissionProcurementDecisionForm;
 import ch.bern.submiss.web.forms.CommissionProcurementProposalForm;
 import ch.bern.submiss.web.forms.OfferForm;
 import ch.bern.submiss.web.forms.ReopenForm;
+import ch.bern.submiss.web.mappers.CommissionProcurementDecisionFormMapper;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -44,6 +48,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.ops4j.pax.cdi.api.OsgiService;
 
 
@@ -89,36 +94,88 @@ public class CommissionProcurementResource {
   public Response getSubmissionForCommissionProcurementProposal(
     @PathParam("submissionId") String submissionId) {
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(submissionId);
+    // set the timestamp of the GET request from user
+    submissionDTO.setPageRequestedOn(new Timestamp(new Date().getTime()));
     return Response.ok(submissionDTO).build();
   }
 
   /**
    * Update the commission procurement proposal
    */
-  @POST
+  @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/updateCommissionProcurementProposal/{submissionId}")
+  @Path("/updateCommissionProcurementProposal/{submissionId}/{submissionVersion}")
   public Response updateCommissionProcurementProposal(@Valid CommissionProcurementProposalForm form,
-    @PathParam("submissionId") String submissionId) {
-    /* Calling validation function  */
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    // Check for validation errors
     Set<ValidationError> errors = commissionProcurementProposalValidation(form);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    /* Updating values of submission */
+    // Check for optimistic lock errors
+    Set<ValidationError> optimisticLockErrors = updatingCommissionProcurementProposal(form,
+      submissionId, submissionVersion);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Update CommissionProcurementProposal.
+   *
+   * @param form         the CommissionProcurementProposalForm
+   * @param submissionId the submissionId
+   */
+  private Set<ValidationError> updatingCommissionProcurementProposal(
+    CommissionProcurementProposalForm form, String submissionId, Long submissionVersion) {
+
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(submissionId);
-    submissionDTO.setCommissionProcurementProposalBusiness(form.getBusiness());
-    submissionDTO.setCommissionProcurementProposalDate(form.getDate());
-    submissionDTO.setCommissionProcurementProposalObject(form.getObject());
-    submissionDTO.setCommissionProcurementProposalPreRemarks(form.getPreRemarks());
-    submissionDTO.setCommissionProcurementProposalReservation(form.getReservation());
-    submissionDTO.setCommissionProcurementProposalSuitabilityAuditDropdown(
-      form.getSuitabilityAuditDropdown());
-    submissionDTO
-      .setCommissionProcurementProposalSuitabilityAuditText(form.getSuitabilityAuditText());
-    submissionDTO.setCommissionProcurementProposalReasonGiven(form.getReasonGiven());
-    submissionService.updateSubmission(submissionDTO);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    if (!submissionVersion.equals(submissionDTO.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    try {
+      /* Updating values of submission */
+      submissionDTO.setCommissionProcurementProposalBusiness(form.getBusiness());
+      submissionDTO.setCommissionProcurementProposalDate(form.getDate());
+      submissionDTO.setCommissionProcurementProposalObject(form.getObject());
+      submissionDTO.setCommissionProcurementProposalPreRemarks(form.getPreRemarks());
+      submissionDTO.setCommissionProcurementProposalReservation(form.getReservation());
+      submissionDTO.setCommissionProcurementProposalSuitabilityAuditDropdown(
+        form.getSuitabilityAuditDropdown());
+      submissionDTO
+        .setCommissionProcurementProposalSuitabilityAuditText(form.getSuitabilityAuditText());
+      submissionDTO.setCommissionProcurementProposalReasonGiven(form.getReasonGiven());
+      // Update the submission.
+      submissionService.updateSubmission(submissionDTO);
+      // Update the award recipients.
+      List<OfferDTO> offerDTOs = getOfferDTOS(form);
+      offerService.updateAwardRecipients(offerDTOs);
+      /* Set submission status to commission procurement proposal started if not already set */
+      if (!submissionService.getCurrentStatusOfSubmission(submissionId)
+        .equals(TenderStatus.COMMISSION_PROCUREMENT_PROPOSAL_STARTED.getValue())) {
+        submissionService.startCommissionProcurementProposal(submissionDTO.getId());
+      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Get the offer DTOs
+   *
+   * @param form the CommissionProcurementProposalForm
+   * @return the DTOs
+   */
+  private List<OfferDTO> getOfferDTOS(CommissionProcurementProposalForm form) {
     // Create list where offer ids are going to be stored.
     List<String> offerIds = new ArrayList<>();
     // Map offer ids to offer forms (award recipients).
@@ -135,14 +192,7 @@ public class CommissionProcurementResource {
       offerDTO.setAwardRecipientFreeTextField(
         offerIdsToOfferForms.get(offerDTO.getId()).getAwardRecipientFreeTextField());
     }
-    // Update the award recipients.
-    offerService.updateAwardRecipients(offerDTOs);
-    /* Set submission status to commission procurement proposal started if not already set */
-    if (!submissionService.getCurrentStatusOfSubmission(submissionId)
-      .equals(TenderStatus.COMMISSION_PROCUREMENT_PROPOSAL_STARTED.getValue())) {
-      submissionService.startCommissionProcurementProposal(submissionDTO);
-    }
-    return Response.ok().build();
+    return offerDTOs;
   }
 
   /**
@@ -178,7 +228,8 @@ public class CommissionProcurementResource {
         errors.add(new ValidationError("procurementPreRemarksErrorField",
           ValidationMessages.CPP_PRE_REMARKS_ERROR_MESSAGE));
       }
-      if (form.getSuitabilityAuditText() != null && form.getSuitabilityAuditText().length() > 500) {
+      if (form.getSuitabilityAuditText() != null
+        && form.getSuitabilityAuditText().length() > 10000) {
         errors.add(new ValidationError("procurementSuitabilityAuditText",
           ValidationMessages.CPP_SUITABILITY_AUDIT_TEXT_ERROR_MESSAGE));
         errors.add(new ValidationError("procurementSuitabilityAuditTextErrorField",
@@ -257,12 +308,14 @@ public class CommissionProcurementResource {
    *
    * @param submissionId the submission id
    */
-  @POST
+  @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/closeCommissionProcurementProposal/{submissionId}")
+  @Path("/closeCommissionProcurementProposal/{submissionId}/{submissionVersion}")
   public Response closeCommissionProcurementProposal(
-    @PathParam("submissionId") String submissionId) {
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService.closeCommissionProcurementProposal(submissionId);
     return Response.ok().build();
   }
@@ -270,15 +323,17 @@ public class CommissionProcurementResource {
   /**
    * This function implements the reopening of the commission procurement proposal.
    *
-   * @param reopenForm the reopen form
+   * @param reopenForm   the reopen form
    * @param submissionId the submission id
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopen/commissionProcurementProposal/{submissionId}")
+  @Path("/reopen/commissionProcurementProposal/{submissionId}/{submissionVersion}")
   public Response reopenCommissionProcurementProposal(@Valid ReopenForm reopenForm,
-    @PathParam("submissionId") String submissionId) {
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService
       .reopenCommissionProcurementProposal(reopenForm.getReopenReason(), submissionId);
     return Response.ok().build();
@@ -287,36 +342,48 @@ public class CommissionProcurementResource {
   /**
    * Update the commission procurement decision
    */
-  @POST
+  @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/updateCommissionProcurementDecision/{submissionId}")
+  @Path("/updateCommissionProcurementDecision/{submissionId}/{submissionVersion}")
   public Response updateCommissionProcurementDecision(
     @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion,
     @Valid CommissionProcurementDecisionForm commissionProcurementDecisionForm) {
+    // Check for validation errors
+    Set<ValidationError> errors = commissionProcurementDecisionValidation(
+      commissionProcurementDecisionForm);
+    if (!errors.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
+    }
+    // Check for optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = submissionService
+      .updateCommissionProcurementDecision(
+        CommissionProcurementDecisionFormMapper.INSTANCE
+          .toCommissionProcurementDecisionDTO(commissionProcurementDecisionForm), submissionId,
+        submissionVersion);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Validate commissionProcurementDecision.
+   *
+   * @param form the form
+   * @return the error
+   */
+  private Set<ValidationError> commissionProcurementDecisionValidation(
+    CommissionProcurementDecisionForm form) {
     Set<ValidationError> errors = new HashSet<>();
-    if (commissionProcurementDecisionForm.getRecommendation() != null
-      && commissionProcurementDecisionForm.getRecommendation().length()
-      > MAX_DECISION_RECOMMENDATION_LENGTH) {
+    if (form.getRecommendation() != null
+      && form.getRecommendation().length() > MAX_DECISION_RECOMMENDATION_LENGTH) {
       errors.add(new ValidationError("decisionRecommendation",
         ValidationMessages.DECISION_RECOMMENDATION_ERROR_MESSAGE));
       errors.add(new ValidationError("decisionRecommendationErrorField",
         ValidationMessages.DECISION_RECOMMENDATION_ERROR_MESSAGE));
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
-    // Updating values of submission.
-    SubmissionDTO submissionDTO = submissionService.getSubmissionById(submissionId);
-    submissionDTO.setCommissionProcurementDecisionRecommendation(
-      commissionProcurementDecisionForm.getRecommendation());
-    submissionService.updateSubmission(submissionDTO);
-    // Set submission status to commission procurement decision started if not already set.
-    if (!submissionService.getCurrentStatusOfSubmission(submissionId)
-      .equals(TenderStatus.COMMISSION_PROCUREMENT_DECISION_STARTED.getValue())) {
-      submissionService.updateSubmissionStatus(submissionId,
-        TenderStatus.COMMISSION_PROCUREMENT_DECISION_STARTED.getValue(), null, null,
-        LookupValues.INTERNAL_LOG);
-    }
-    return Response.ok().build();
+    return errors;
   }
 
   /**
@@ -344,12 +411,14 @@ public class CommissionProcurementResource {
    *
    * @param submissionId the submission id
    */
-  @POST
+  @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/closeCommissionProcurementDecision/{submissionId}")
+  @Path("/closeCommissionProcurementDecision/{submissionId}/{submissionVersion}")
   public Response closeCommissionProcurementDecision(
-    @PathParam("submissionId") String submissionId) {
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService.closeCommissionProcurementDecision(submissionId);
     return Response.ok().build();
   }
@@ -357,15 +426,17 @@ public class CommissionProcurementResource {
   /**
    * This function implements the reopening of the commission procurement decision.
    *
-   * @param reopenForm the reopen form
+   * @param reopenForm   the reopen form
    * @param submissionId the submission id
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopen/commissionProcurementDecision/{submissionId}")
+  @Path("/reopen/commissionProcurementDecision/{submissionId}/{submissionVersion}")
   public Response reopenCommissionProcurementDecision(@Valid ReopenForm reopenForm,
-    @PathParam("submissionId") String submissionId) {
+    @PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     submissionService
       .reopenCommissionProcurementDecision(reopenForm.getReopenReason(), submissionId);
     return Response.ok().build();

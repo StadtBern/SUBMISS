@@ -13,86 +13,79 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class LegalHearingTerminateEntity.
  */
 @Entity
 @Table(name = "SUB_LEGAL_HEARING")
-public class LegalHearingTerminateEntity {
+public class LegalHearingTerminateEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-  
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDER")
   private SubmissionEntity submission;
-  
-  /** The deadline. */
+
+  /**
+   * The deadline.
+   */
   @Column(name = "HEARING_DEADLINE")
   private Date deadline;
-  
-  /** The reason. */
+
+  /**
+   * The reason.
+   */
   @Column(name = "CANCEL_REASON")
   private String reason;
-  
-  /** The termination reason. */
+
+  /**
+   * The termination reason.
+   */
   @ManyToMany
-  @JoinTable(name = "SUB_LEGAL_HEARING_CANCEL_REASON", joinColumns = {@JoinColumn(name = "FK_LEGAL_HEARING")},
-      inverseJoinColumns = {@JoinColumn(name = "FK_HEARING_CANCEL_REASON")})
+  @JoinTable(name = "SUB_LEGAL_HEARING_CANCEL_REASON", joinColumns = {
+    @JoinColumn(name = "FK_LEGAL_HEARING")},
+    inverseJoinColumns = {@JoinColumn(name = "FK_HEARING_CANCEL_REASON")})
   private Set<MasterListValueEntity> terminationReason;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
-  
-  /** The created on. */
-  @Column(name = "CREATED_ON")
-  private Date createdOn;
-  
-  /** The updated by. */
-  @Column(name = "UPDATED_BY")
-  private String updatedBy;
-  
-  /** The updated on. */
-  @Column(name = "UPDATED_ON")
-  private Date updatedOn;
-  
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The created on.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @CreationTimestamp
+  @Column(name = "CREATED_ON")
+  private Timestamp createdOn;
+
+  /**
+   * The updated by.
+   */
+  @Column(name = "UPDATED_BY")
+  private String updatedBy;
+
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
   /**
    * Gets the submission.
@@ -189,7 +182,7 @@ public class LegalHearingTerminateEntity {
    *
    * @return the created on
    */
-  public Date getCreatedOn() {
+  public Timestamp getCreatedOn() {
     return createdOn;
   }
 
@@ -198,7 +191,7 @@ public class LegalHearingTerminateEntity {
    *
    * @param createdOn the new created on
    */
-  public void setCreatedOn(Date createdOn) {
+  public void setCreatedOn(Timestamp createdOn) {
     this.createdOn = createdOn;
   }
 
@@ -225,7 +218,7 @@ public class LegalHearingTerminateEntity {
    *
    * @return the updated on
    */
-  public Date getUpdatedOn() {
+  public Timestamp getUpdatedOn() {
     return updatedOn;
   }
 
@@ -234,9 +227,7 @@ public class LegalHearingTerminateEntity {
    *
    * @param updatedOn the new updated on
    */
-  public void setUpdatedOn(Date updatedOn) {
+  public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
   }
-  
-  
 }

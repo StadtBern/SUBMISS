@@ -13,6 +13,7 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,16 +22,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "SUB_SUBCRITERION")
-public class SubcriterionEntity {
-
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
+public class SubcriterionEntity extends AbstractEntity {
 
   @ManyToOne
   @JoinColumn(name = "FK_CRITERION")
@@ -42,13 +40,19 @@ public class SubcriterionEntity {
   @Column(name = "WEIGHTING")
   private Double weighting;
 
-  public String getId() {
-    return id;
-  }
+  /**
+   * The created on.
+   */
+  @CreationTimestamp
+  @Column(name = "CREATED_ON")
+  private Timestamp createdOn;
 
-  public void setId(String id) {
-    this.id = id;
-  }
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
   public CriterionEntity getCriterion() {
     return criterion;
@@ -74,6 +78,19 @@ public class SubcriterionEntity {
     this.weighting = weighting;
   }
 
+  public Timestamp getCreatedOn() {
+    return createdOn;
+  }
 
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
 
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
 }

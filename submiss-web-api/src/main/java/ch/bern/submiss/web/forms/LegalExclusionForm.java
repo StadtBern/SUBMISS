@@ -13,60 +13,55 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class LegalExclusionForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LegalExclusionForm {
-  /** The id. */
-  private String id;
+public class LegalExclusionForm extends AbstractForm {
 
-  /** The submittent. */
+  /**
+   * The submittent.
+   */
   private SubmittentForm submittent;
 
-  /** The exclusion deadline. */
+  /**
+   * The exclusion deadline.
+   */
   private Date exclusionDeadline;
 
-  /** The proofs provided. */
+  /**
+   * The proofs provided.
+   */
   private Boolean proofsProvided;
 
-  /** The exists exl reasons. */
+  /**
+   * The exists exl reasons.
+   */
   private Boolean existsExlReasons;
 
-  /** The must crit fulfilled. */
+  /**
+   * The must crit fulfilled.
+   */
   private Boolean mustCritFulfilled;
 
-  /** The exclusion reason. */
+  /**
+   * The exclusion reason.
+   */
   private String exclusionReason;
 
-  /** The exclusion reasons. */
+  /**
+   * The exclusion reasons.
+   */
   private Set<ExclusionReasonForm> exclusionReasons;
 
-  /** The level. */
+  /**
+   * The level.
+   */
   private Integer level;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submittent.

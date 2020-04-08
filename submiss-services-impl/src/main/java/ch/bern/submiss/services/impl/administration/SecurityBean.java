@@ -13,6 +13,9 @@
 
 package ch.bern.submiss.services.impl.administration;
 
+import ch.bern.submiss.services.api.administration.SubmissionService;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import com.eurodyn.qlack2.fuse.aaa.api.UserService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +60,7 @@ import ch.bern.submiss.services.api.constants.Process;
  * The Class SecurityBean.
  */
 @Singleton
-public class SecurityBean {
+public class SecurityBean{
 
   /**
    * The Constant LOGGER.
@@ -109,6 +112,10 @@ public class SecurityBean {
   @OsgiService
   @Inject
   private UserGroupService userGroupService;
+
+  @OsgiService
+  @Inject
+  private UserService userService;
   /**
    * The sd tenant service.
    */
@@ -119,6 +126,9 @@ public class SecurityBean {
    */
   @Inject
   private CacheBean cacheBean;
+
+  @Inject
+  private SubmissionService submissionService;
 
   /**
    * Verify that the given user has the necessary access rights to perform the given operation, if
@@ -449,28 +459,11 @@ public class SecurityBean {
         + "projectEntity: {1}, submissionEntity: {2}, whereClause: {3}",
       new Object[]{userDTO, projectEntity, submissionEntity, whereClause});
 
-    // get the aaa resources having to do with the department the user can see projects from
-    Set<ResourceDTO> resources = operationService.getResourceForOperation(userDTO.getId(),
-      SecurityOperation.RESOURCE_PROJECT_VIEW.getValue(), true);
     List<String> tenants = new ArrayList<>();
     List<String> directorates = new ArrayList<>();
     List<String> departments = new ArrayList<>();
-    for (ResourceDTO resource : resources) {
-      if (resource.getName().equals(SecurityResource.TENANT.getValue())) {
-        // the user has access to all projects of this tenant
-        String tenant = resource.getObjectID();
-        tenants.add(tenant);
-        whereClause.and(projectEntity.tenant.id.eq(tenant));
-      } else if (resource.getName().equals(SecurityResource.DIRECTORATE.getValue())) {
-        // the user has access to all projects of this directorate
-        String directorate = resource.getObjectID();
-        directorates.add(directorate);
-      } else if (resource.getName().equals(SecurityResource.DEPARTMENT.getValue())) {
-        // the user has access to all projects of this department
-        String department = resource.getObjectID();
-        departments.add(department);
-      }
-    }
+    getResourcesByUser(userDTO, tenants, directorates, departments);
+
     if (!tenants.isEmpty()) {
       whereClause.and(projectEntity.tenant.id.in(tenants));
     }
@@ -481,6 +474,25 @@ public class SecurityBean {
     }
     if (!departments.isEmpty()) {
       whereClause.and(projectEntity.department.id.in(departments));
+    }
+  }
+
+  private void getResourcesByUser(UserDTO userDTO, List<String> tenants, List<String> directorates,List<String> departments) {
+    // get the aaa resources having to do with the department the user can see projects from
+    Set<ResourceDTO> resources = operationService.getResourceForOperation(userDTO.getId(),
+      SecurityOperation.RESOURCE_PROJECT_VIEW.getValue(), true);
+    for (ResourceDTO resource : resources) {
+      if (resource.getName().equals(SecurityResource.TENANT.getValue())) {
+        // the user has access to all projects of this tenant
+        tenants.add(resource.getObjectID());
+        //whereClause.and(projectEntity.tenant.id.eq(tenant));
+      } else if (resource.getName().equals(SecurityResource.DIRECTORATE.getValue())) {
+        // the user has access to all projects of this directorate
+        directorates.add(resource.getObjectID());
+      } else if (resource.getName().equals(SecurityResource.DEPARTMENT.getValue())) {
+        // the user has access to all projects of this department
+        departments.add(resource.getObjectID());
+      }
     }
   }
 
@@ -1099,5 +1111,87 @@ public class SecurityBean {
         }
       }
     }
+  }
+
+  /**
+   * Finds if it is allowed to access a Operation
+   * @param userId
+   * @param operation
+   * @param resource
+   * @throws AuthorisationException
+   */
+  public void isPermittedOperationForUser(String userId, String operation, String resource) {
+
+    LOGGER.log(Level.CONFIG, "Executing method isPermittedOperationForUser, Parameters: "
+        + "userId: {0}, operation{1}, resource: {2}",
+      new Object[]{userId, operation, resource});
+
+    Set<String> userGroups = userGroupService.getUserGroupsIds(userId);
+    if ( resource != null ){
+      isResourcePermittedForUser(userId, operation, resource);
+    }
+    if (!userGroups.isEmpty() && userGroups.size() == 1) {
+      String groupId = userGroups.iterator().next();
+      if (!isPermittedForGroup(groupId, operation, null)) {
+        throw new AuthorisationException(groupId, operation);
+      }
+    }
+
+  }
+
+  /**
+   *  @param userId
+   * @param resourceId
+   * @param resource
+   */
+  private void isResourcePermittedForUser(String userId, String operation,
+    String resourceId) {
+
+    LOGGER.log(Level.CONFIG, "Executing method isResourcePermittedForUser, Parameters: "
+        + "userId: {0}, resourceId{1}",
+      new Object[]{userId, resourceId});
+
+    final SubmissionDTO submissionDTO = submissionService.getSubmissionByResourceId(resourceId);
+    if (submissionDTO == null) {
+      //TODO throw 404
+    } else {
+      UserDTO userDTO = new UserDTO();
+      userDTO.setId(userId);
+      if (!getPermittedDepartments(userDTO)
+        .contains(submissionDTO.getProject().getDepartment().getDepartmentId().getId())) {
+        throw new AuthorisationException(userId, resourceId);
+      }
+
+      String userGroupName = getUserGroupName(userDTO);
+      if (userGroupName != null &&
+        (userGroupName.equals(Group.DIR.getValue()) || userGroupName.equals(Group.PL.getValue()))
+        && submissionDTO.getIsLocked()
+        && (!operation
+        .equals(ch.bern.submiss.services.api.constants.SecurityOperation.PROJECT.getValue())
+        && !operation.equals(SecurityOperation.TENDER_LIST_VIEW.getValue()))) {
+        throw new AuthorisationException(userId, resourceId);
+      }
+
+
+      if (!submissionDTO.getProject().getTenant().getId().equals(
+        userService.getUserById(userId).getAttribute(USER_ATTRIBUTES.TENANT.getValue())
+          .getData())) {
+        throw new AuthorisationException(userId, resourceId);
+      }
+    }
+  }
+
+  private String getUserGroupName(UserDTO user) {
+    LOGGER.log(Level.CONFIG, "Executing method getGroupName, Parameters: user {0}", user);
+    String groupName = null;
+    if (user != null) {
+      Set<String> groupIds = userGroupService.getUserGroupsIds(user.getId());
+      // in our system each user belongs to one group only
+      for (String groupId : groupIds) {
+        GroupDTO group = userGroupService.getGroupByID(groupId, true);
+        groupName = group.getName();
+      }
+    }
+    return groupName;
   }
 }

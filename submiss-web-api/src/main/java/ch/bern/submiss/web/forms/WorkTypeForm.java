@@ -13,7 +13,7 @@
 
 package ch.bern.submiss.web.forms;
 
-public class WorkTypeForm extends AbstractForm {
+public class WorkTypeForm extends AbstractStammdatenForm {
 
   private String workTypeNumber;
 

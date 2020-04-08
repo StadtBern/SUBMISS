@@ -11,165 +11,139 @@
   ~  under the Licence.
   -->
 
-<form name="projectUpdateCtr.projectForm"
-	data-ng-submit="projectUpdateCtr.save()" id="projectForm"
-	shows-validation-errors>
-	<div id='errorScroll' class="card-box">
-		<div class="col-sm-12">
-			<div class="alert alert-danger"
-				ng-if="projectUpdateCtr.projectForm.$invalid" role="alert">
-				<field-error form-element-name="errorField" translate name="error"></field-error>
-				<field-error form-element-name="projectNameErrorField" translate></field-error>
-				<field-error form-element-name="pmDepartmentNameErrorField"
-					translate></field-error>
-				<field-error form-element-name="projectNumberErrorField" translate></field-error>
-				<field-error form-element-name="uniqueNameErrorField" translate></field-error>
-				<field-error form-element-name="projectNotesErrorField" translate></field-error>
-			</div>
-			<input name="errorField" ng-hide="true" data-ng-model="fd">
+<form name="projectUpdateCtr.projectForm" data-ng-submit="projectUpdateCtr.save()" id="projectForm"
+  shows-validation-errors>
+  <div id='errorScroll' class="card-box">
+    <div class="col-sm-12">
+      <div class="alert alert-danger" ng-if="projectUpdateCtr.projectForm.$invalid" role="alert">
+        <field-error form-element-name="errorField" translate name="error"></field-error>
+        <field-error form-element-name="projectNameErrorField" translate></field-error>
+        <field-error form-element-name="pmDepartmentNameErrorField" translate></field-error>
+        <field-error form-element-name="projectNumberErrorField" translate></field-error>
+        <field-error form-element-name="uniqueNameErrorField" translate></field-error>
+        <field-error form-element-name="projectNotesErrorField" translate></field-error>
+        <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+      </div>
+      <input name="errorField" ng-hide="true" data-ng-model="fd">
       <input name="projectNameErrorField" ng-hide="true" data-ng-model="fd">
-			<input name="pmDepartmentNameErrorField" ng-hide="true" data-ng-model="fd">
+      <input name="pmDepartmentNameErrorField" ng-hide="true" data-ng-model="fd">
       <input name="projectNumberErrorField" ng-hide="true" data-ng-model="fd">
       <input name="uniqueNameErrorField" ng-hide="true" data-ng-model="fd">
-			<input name="projectNotesErrorField" ng-hide="true" data-ng-model="fd">
-		</div>
-		<div class="col-sm-12">
-			<div class="alert alert-danger"
-				ng-if="projectUpdateCtr.moreThanOneError" role="alert" translate>
-				company_add_only_one_extern</div>
-		</div>
-		<div class="col-sm-12 col-md-6">
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.objectName.$invalid}">
-				<label for="objectName">Objektname<span class="mandatory">*</span></label>
-				<ui-select name="objectName"
-					ng-disabled="projectUpdateCtr.hasStatusAfterOfferOpeningClosed"
-					ng-model="projectUpdateCtr.project.objectName" theme="select2"
-					data-ng-disabled="!projectUpdateCtr.secProjectEdit"> <ui-select-match
-					allow-clear="true"> <span>
-					{{$select.selected.value1}} <span
-					ng-if="$select.selected.value2 != null">,
-						{{$select.selected.value2}}</span>
-				</span> </ui-select-match> <ui-select-choices
-					repeat="item in (projectUpdateCtr.objects | filter: $select.search)">
-				{{item.value1}} <span ng-if="item.value2 != null">,
-					{{item.value2}}</span> </ui-select-choices> </ui-select>
-			</div>
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.projectName.$invalid}">
-				<label for="projectName">Projektname<span class="mandatory">*</span></label>
-				<input class="form-control"
-					data-ng-model="projectUpdateCtr.project.projectName" type="text"
-					name="projectName">
+      <input name="projectNotesErrorField" ng-hide="true" data-ng-model="fd">
+      <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+    </div>
+    <div class="col-sm-12">
+      <div class="alert alert-danger" ng-if="projectUpdateCtr.moreThanOneError" role="alert" translate>
+        company_add_only_one_extern</div>
+    </div>
+    <div class="col-sm-12 col-md-6">
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.objectName.$invalid}">
+        <label for="objectName">Objektname<span class="mandatory">*</span></label>
+        <ui-select name="objectName" ng-disabled="projectUpdateCtr.hasStatusAfterOfferOpeningClosed"
+          ng-model="projectUpdateCtr.project.objectName" theme="select2"
+          data-ng-disabled="!projectUpdateCtr.secProjectEdit">
+          <ui-select-match allow-clear="true"> <span>
+              {{$select.selected.value1}} <span ng-if="$select.selected.value2 != null">,
+                {{$select.selected.value2}}</span>
+            </span> </ui-select-match>
+          <ui-select-choices repeat="item in (projectUpdateCtr.objects | filter: $select.search)">
+            {{item.value1}} <span ng-if="item.value2 != null">,
+              {{item.value2}}</span> </ui-select-choices>
+        </ui-select>
+      </div>
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.projectName.$invalid}">
+        <label for="projectName">Projektname<span class="mandatory">*</span></label>
+        <input class="form-control" data-ng-model="projectUpdateCtr.project.projectName" type="text" name="projectName">
 
-			</div>
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.procedure.$invalid}">
-				<label for="procedure">Verfahrensleitung<span
-					class="mandatory">*</span></label>
-				<ui-select name="procedure"
-					ng-model="projectUpdateCtr.project.procedure" theme="select2"
-					data-ng-disabled="!projectUpdateCtr.secProjectEdit"> <ui-select-match
-					allow-clear="true"> <span>
-					{{$select.selected.value1}}</span> </ui-select-match> <ui-select-choices
-					repeat="item in (projectUpdateCtr.procedures | filter: $select.search)">
-				<span ng-bind="item.value1"></span> </ui-select-choices> </ui-select>
+      </div>
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.procedure.$invalid}">
+        <label for="procedure">Verfahrensleitung<span class="mandatory">*</span></label>
+        <ui-select name="procedure" ng-model="projectUpdateCtr.project.procedure" theme="select2"
+          data-ng-disabled="!projectUpdateCtr.secProjectEdit">
+          <ui-select-match allow-clear="true"> <span>
+              {{$select.selected.value1}}</span> </ui-select-match>
+          <ui-select-choices repeat="item in (projectUpdateCtr.procedures | filter: $select.search)">
+            <span ng-bind="item.value1"></span> </ui-select-choices>
+        </ui-select>
 
-			</div>
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.pmDepartmentName.$invalid}">
-				<label class="" for="projektleitung">Projektleitung der Abt.<span
-					class="mandatory">*</span></label> <input class="form-control"
-					data-ng-model=projectUpdateCtr.project.pmDepartmentName
-					id="projektleitung" type="text" name="pmDepartmentName">
-			</div>
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.department.$invalid}">
-				<label for="department">Abteilung<span class="mandatory">*</span></label>
-				<ui-select name="mainDepartment"
-					ng-model="projectUpdateCtr.project.department" theme="select2"
-					data-ng-disabled="!projectUpdateCtr.secProjectEdit || projectUpdateCtr.hasStatusAfterOfferOpeningClosed">
-				<ui-select-match allow-clear="true"> <span>
-					{{$select.selected.name}}</span> </ui-select-match> <ui-select-choices
-					repeat="item in (projectUpdateCtr.departments | filter: $select.search) track by item.id">
-				<span ng-bind="item.name"></span> </ui-select-choices> </ui-select>
+      </div>
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.pmDepartmentName.$invalid}">
+        <label class="" for="projektleitung">Projektleitung der Abt.<span class="mandatory">*</span></label> <input
+          class="form-control" data-ng-model=projectUpdateCtr.project.pmDepartmentName id="projektleitung" type="text"
+          name="pmDepartmentName">
+      </div>
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.department.$invalid}">
+        <label for="department">Abteilung<span class="mandatory">*</span></label>
+        <ui-select name="mainDepartment" ng-model="projectUpdateCtr.project.department" theme="select2"
+          data-ng-disabled="!projectUpdateCtr.secProjectEdit || projectUpdateCtr.hasStatusAfterOfferOpeningClosed">
+          <ui-select-match allow-clear="true"> <span>
+              {{$select.selected.name}}</span> </ui-select-match>
+          <ui-select-choices repeat="item in (projectUpdateCtr.departments | filter: $select.search) track by item.id">
+            <span ng-bind="item.name"></span> </ui-select-choices>
+        </ui-select>
 
-			</div>
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.directorate.$invalid}">
-				<label for="directorate">Direktion<span class="mandatory">*</span></label>
-				<input class="form-control" disabled id="directorate"
-					data-ng-model="projectUpdateCtr.project.department.directorate.name"
-					type="text" name="directorate">
-			</div>
-		</div>
-		<div class="col-sm-12 col-md-6">
-			<div class="form-group">
-				<label for="bauleitung">Externe Projektleitung</label>
-				<div class="input-group">
-					<input type="text" id="pmExternal" disabled name="pmExternal"
-						class="form-control"
-						data-ng-model="projectUpdateCtr.project.pmExternal.companyName">
-					<span class="input-group-btn">
-						<button class="btn btn-primary" type="button"
-							ng-if="projectUpdateCtr.project.pmExternal.companyName != null"
-							data-ng-click="projectUpdateCtr.project.pmExternal = null; projectUpdateCtr.moreThanOneError = false">
-							<span class="fa fa-trash"></span>
-						</button>
-						<button class="btn btn-primary" type="button"
-							data-ng-click="projectUpdateCtr.addCompany()">
-							<span class="fa fa-search"></span>
-						</button>
-					</span>
-				</div>
-			</div>
-			<div class="form-group"
-				ng-class="{'has-error': projectUpdateCtr.projectForm.projectNumber.$invalid}">
-				<label for="projectNumber">Projekt/Kredit-Nummer</label> <input
-					class="form-control" id="projectNumber"
-					data-ng-model="projectUpdateCtr.project.projectNumber" type="text"
-					name="projectNumber">
-			</div>
-			<div class="form-group">
-				<label for="projektbemerkung">Projektbemerkung</label>
-				<textarea class="form-control" id="projektbemerkung"
-					name="projectNotes" data-ng-model="projectUpdateCtr.project.notes"
-					rows="1"></textarea>
-			</div>
-			<div class="form-group">
-				<label for="constructionPermit">Baubewilligung</label><select
-					ui-select2="{allowClear: true}" id="constructionPermit"
-					name="constructionPermit"
-					data-ng-model="projectUpdateCtr.project.constructionPermit"
-					data-ng-disabled="!projectUpdateCtr.secProjectEdit"
-					data-ng-options="o.value as o.label for o in projectUpdateCtr.constructionPermitOptions"
-					translate>
-					<option></option>
-				</select>
-			</div>
-			<div class="form-group">
-				<label for="loanApproval">Kreditbewilligung</label> <select
-					ui-select2="{allowClear: true}" id="gattWto" name="loanApproval"
-					data-ng-model="projectUpdateCtr.project.loanApproval"
-					data-ng-disabled="!projectUpdateCtr.secProjectEdit"
-					data-ng-options="o.value as o.label for o in projectUpdateCtr.loanApprovalOptions"
-					translate>
-					<option></option>
-				</select>
-			</div>
-			<div class="form-group">
-				<label for="gatt">GATT / WTO</label> <select
-					ui-select2="{allowClear: true}" id="gattWto" name="gattWto"
-					data-ng-model="projectUpdateCtr.project.gattWto"
-					data-ng-disabled="!projectUpdateCtr.secProjectEdit"
-					data-ng-options="o.value as o.label for o in projectUpdateCtr.options"
-					translate>
-					<option></option>
-				</select>
-			</div>
-		</div>
-		<button type="submit" class="btn btn-primary">Speichern</button>
-		<button type="button" class="btn btn-default" data-dismiss="modal"
-			ng-click="projectUpdateCtr.closeWindow(projectUpdateCtr.projectForm.$dirty)">Abbrechen</button>
-	</div>
+      </div>
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.directorate.$invalid}">
+        <label for="directorate">Direktion<span class="mandatory">*</span></label>
+        <input class="form-control" disabled id="directorate"
+          data-ng-model="projectUpdateCtr.project.department.directorate.name" type="text" name="directorate">
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-6">
+      <div class="form-group">
+        <label for="bauleitung">Externe Projektleitung</label>
+        <div class="input-group">
+          <input type="text" id="pmExternal" disabled name="pmExternal" class="form-control"
+            data-ng-model="projectUpdateCtr.project.pmExternal.companyName">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="button"
+              ng-if="projectUpdateCtr.project.pmExternal.companyName != null"
+              data-ng-click="projectUpdateCtr.project.pmExternal = null; projectUpdateCtr.moreThanOneError = false">
+              <span class="fa fa-trash"></span>
+            </button>
+            <button class="btn btn-primary" type="button" data-ng-click="projectUpdateCtr.addCompany()">
+              <span class="fa fa-search"></span>
+            </button>
+          </span>
+        </div>
+      </div>
+      <div class="form-group" ng-class="{'has-error': projectUpdateCtr.projectForm.projectNumber.$invalid}">
+        <label for="projectNumber">Projekt/Kredit-Nummer</label> <input class="form-control" id="projectNumber"
+          data-ng-model="projectUpdateCtr.project.projectNumber" type="text" name="projectNumber">
+      </div>
+      <div class="form-group">
+        <label for="projektbemerkung">Projektbemerkung</label>
+        <textarea class="form-control" id="projektbemerkung" name="projectNotes"
+          data-ng-model="projectUpdateCtr.project.notes" rows="1"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="constructionPermit">Baubewilligung</label><select ui-select2="{allowClear: true}"
+          id="constructionPermit" name="constructionPermit" data-ng-model="projectUpdateCtr.project.constructionPermit"
+          data-ng-disabled="!projectUpdateCtr.secProjectEdit"
+          data-ng-options="o.value as o.label for o in projectUpdateCtr.constructionPermitOptions" translate>
+          <option></option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="loanApproval">Kreditbewilligung</label> <select ui-select2="{allowClear: true}" id="gattWto"
+          name="loanApproval" data-ng-model="projectUpdateCtr.project.loanApproval"
+          data-ng-disabled="!projectUpdateCtr.secProjectEdit"
+          data-ng-options="o.value as o.label for o in projectUpdateCtr.loanApprovalOptions" translate>
+          <option></option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="gatt">GATT / WTO</label> <select ui-select2="{allowClear: true}" id="gattWto" name="gattWto"
+          data-ng-model="projectUpdateCtr.project.gattWto" data-ng-disabled="!projectUpdateCtr.secProjectEdit"
+          data-ng-options="o.value as o.label for o in projectUpdateCtr.options" translate>
+          <option></option>
+        </select>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-6">
+      <button type="submit" class="btn btn-primary" ng-disabled="!projectUpdateCtr.projectForm.$dirty">Speichern</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal"
+        ng-click="projectUpdateCtr.closeWindow(projectUpdateCtr.projectForm.$dirty)">Abbrechen</button>
+    </div>
+  </div>
 </form>

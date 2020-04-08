@@ -13,16 +13,8 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.ops4j.pax.cdi.api.OsgiService;
-
+import ch.bern.submiss.services.api.constants.AuditGroupName;
+import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import com.eurodyn.qlack2.fuse.auditing.api.AuditClientService;
 import com.eurodyn.qlack2.fuse.auditing.api.AuditLoggingService;
 import com.eurodyn.qlack2.fuse.auditing.api.dto.AuditLogDTO;
@@ -31,9 +23,13 @@ import com.eurodyn.qlack2.fuse.auditing.api.dto.SortDTO;
 import com.eurodyn.qlack2.fuse.auditing.api.enums.AuditLogColumns;
 import com.eurodyn.qlack2.fuse.auditing.api.enums.SearchOperator;
 import com.eurodyn.qlack2.fuse.auditing.api.enums.SortOperator;
-
-import ch.bern.submiss.services.api.constants.AuditGroupName;
-import ch.bern.submiss.services.api.dto.SubmissUserDTO;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.ops4j.pax.cdi.api.OsgiService;
 
 /**
  * The Class AuditBean.
@@ -111,6 +107,18 @@ public class AuditBean {
       auditLog.setOpt3(logType);
     }
     auditLoggingService.logAudit(auditLog);
+  }
+
+  /**
+   * Get audits for submission.
+   *
+   * @param submissionId the submissionId
+   * @return the audit list
+   */
+  public List<AuditLogDTO> getAuditBySubmissionId(String submissionId) {
+    List<String> referenceIds = new ArrayList<>();
+    referenceIds.add(submissionId);
+    return auditLoggingService.listAudits(null, referenceIds, null, null, null, false, null);
   }
 
   /**

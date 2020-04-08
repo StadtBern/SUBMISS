@@ -13,60 +13,55 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class AwardInfoFirstLevelForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AwardInfoFirstLevelForm {
+public class AwardInfoFirstLevelForm extends AbstractForm {
 
-  /** The id. */
-  private String id;
-  
-  /** The submission. */
+  /**
+   * The submission.
+   */
   private SubmissionForm submission;
 
-  /** The available date. */
+  /**
+   * The available date.
+   */
   private Date availableDate;
-  
-  /** The object name read. */
+
+  /**
+   * The object name read.
+   */
   private Boolean objectNameRead;
 
-  /** The project name read. */
+  /**
+   * The project name read.
+   */
   private Boolean projectNameRead;
 
-  /** The working class read. */
+  /**
+   * The working class read.
+   */
   private Boolean workingClassRead;
 
-  /** The description read. */
+  /**
+   * The description read.
+   */
   private Boolean descriptionRead;
-  
-  /** The reason. */
+
+  /**
+   * The reason.
+   */
   private String reason;
-  
-  /** The offers. */
+
+  /**
+   * The offers.
+   */
   private List<AwardInfoOfferFirstLevelForm> offers;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -188,12 +183,12 @@ public class AwardInfoFirstLevelForm {
   /**
    * Sets the reason.
    *
-   * @param addedAwardRecipients the new reason
+   * @param reason the new reason
    */
   public void setReason(String reason) {
     this.reason = reason;
   }
-  
+
   /**
    * Gets the offers.
    *

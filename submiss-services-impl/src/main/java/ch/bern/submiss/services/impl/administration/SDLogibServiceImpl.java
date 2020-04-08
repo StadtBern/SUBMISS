@@ -13,21 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import ch.bern.submiss.services.api.administration.SDLogibService;
 import ch.bern.submiss.services.api.constants.AuditEvent;
 import ch.bern.submiss.services.api.constants.AuditGroupName;
@@ -35,10 +20,25 @@ import ch.bern.submiss.services.api.constants.AuditLevel;
 import ch.bern.submiss.services.api.dto.LogibHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.LogibHistoryDTOMapper;
 import ch.bern.submiss.services.impl.mappers.LogibToTypeDataMapper;
 import ch.bern.submiss.services.impl.model.LogibHistoryEntity;
 import ch.bern.submiss.services.impl.model.QLogibHistoryEntity;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class SDLogibServiceImpl.
@@ -59,11 +59,6 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
   @Inject
   private AuditBean audit;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDLogibService#readLogib()
-   */
   @Override
   public LogibHistoryDTO readLogib() {
 
@@ -77,11 +72,6 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
     return LogibHistoryDTOMapper.INSTANCE.toLogibHistoryDTO(logibEntity);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDLogibService#readLogibArgib()
-   */
   @Override
   public LogibHistoryDTO readLogibArgib() {
 
@@ -97,11 +87,6 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
     return LogibHistoryDTOMapper.INSTANCE.toLogibHistoryDTO(logibArgibEntity);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDLogibService#logibToTypeData()
-   */
   @Override
   public List<MasterListTypeDataDTO> logibToTypeData() {
 
@@ -119,12 +104,6 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
     return typeDTOs;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDLogibService#getLogibEntryById(java.lang.String)
-   */
   @Override
   public LogibHistoryDTO getLogibEntryById(String entryId) {
 
@@ -136,21 +115,22 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
       .selectFrom(qLogibHistoryEntity).where(qLogibHistoryEntity.id.eq(entryId)).fetchOne());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDLogibService#saveLogibEntry(ch.bern.submiss.
-   * services.api.dto.LogibHistoryDTO)
-   */
   @Override
-  public void saveLogibEntry(LogibHistoryDTO logibHistoryDTO) {
+  public Set<ValidationError> saveLogibEntry(LogibHistoryDTO logibHistoryDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveLogibEntry, Parameters: logibHistoryDTO: {0}",
       logibHistoryDTO);
 
+    Set<ValidationError> error = new HashSet<>();
     // Find the entry and set the current date to the toDate property.
     LogibHistoryEntity logibHistEntity = em.find(LogibHistoryEntity.class, logibHistoryDTO.getId());
+    // If the current version is 1, then return an optimisticLockErrorField
+    if (logibHistEntity.getVersion() == 1) {
+      error
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+      return error;
+    }
     logibHistEntity.setToDate(new Timestamp(new Date().getTime()));
     em.merge(logibHistEntity);
     // Now that the old entry is added to the history, create its new instance.
@@ -165,6 +145,7 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
     em.persist(logibHistEntity);
 
     auditLog(logibHistEntity.getLogibId().getId(), AuditEvent.UPDATE.name(), null);
+    return error;
   }
 
   /**
@@ -179,5 +160,4 @@ public class SDLogibServiceImpl extends BaseService implements SDLogibService {
       AuditGroupName.REFERENCE_DATA.name(), message, getUser().getId(),
       id, null, null, LookupValues.INTERNAL_LOG);
   }
-
 }

@@ -13,372 +13,458 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import ch.bern.submiss.services.api.util.SubmissConverter;
+import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonView;
-
-import ch.bern.submiss.services.api.util.SubmissConverter;
-import ch.bern.submiss.services.api.util.View;
-
 /**
  * The Class OfferDTO.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OfferDTO {
+public class OfferDTO extends AbstractDTO {
 
-  /** The id. */
-  @JsonView(View.Public.class)
-  private String id;
+  /**
+   * Amount gross amount or gross amount corrected.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal grossAmountOrCorrected;
+  /**
+   * the percentage of discount.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal discountPercentage;
+  /**
+   * the percentage of discount2.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal discount2Percentage;
+  /**
+   * the percentage of vat.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal vatPercentage;
+  /**
+   * the amount of discount after percentage value.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal discountAmountWithPercentage;
+  /**
+   * the amount of discount2 after percentage value.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal discount2AmountWithPercentage;
+  /**
+   * the amount of Mwst Inclusive.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal amountInclusive;
+  /**
+   * the amount mwst Incl minus discount.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal discountBetweenTotal;
+  /**
+   * the amount mwst Incl minus discount and discount2.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal discount2BetweenTotal;
+  /**
+   * the amount of vat after percentage value.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal vatAmountWithPercentage;
+  /**
+   * the amount of vat after percentage value.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal ancilliaryVatAmountWithPercentage;
+  /**
+   * the amount of ancilliary amount inclusive.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal ancilliaryAmountIncl;
+  /**
+   * the amount of vat after percentage value.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal ancilliaryGrossAmountOrCorrected;
+  /**
+   * the amount of vat after percentage value.
+   */
+  @JsonView(View.Internal.class)
+  BigDecimal ancilliaryVatPercentage;
 
-  /** The submittent. */
+  @JsonView(View.Internal.class)
+  BigDecimal buildingCostsPercentage;
+  /**
+   * The submittent.
+   */
   @JsonView(View.Public.class)
   private SubmittentDTO submittent;
-
-  /** The is awarded. */
+  /**
+   * The is awarded.
+   */
   @JsonView(View.Internal.class)
   private Boolean isAwarded;
-
-  /** The offer date. */
+  /**
+   * The offer date.
+   */
   @JsonView(View.Internal.class)
   private Date offerDate;
-
-  /** The is part offer. */
+  /**
+   * The is part offer.
+   */
   @JsonView(View.Internal.class)
   private Boolean isPartOffer;
-
-  /** The is excluded from process. */
+  /**
+   * The is excluded from process.
+   */
   @JsonView(View.Internal.class)
   private Boolean isExcludedFromProcess;
-
-  /** The excluded first level. */
+  /**
+   * The excluded first level.
+   */
   @JsonView(View.Internal.class)
   private Boolean excludedFirstLevel;
-
-  /** The is variant. */
+  /**
+   * The is variant.
+   */
   @JsonView(View.Public.class)
   private Boolean isVariant;
-
-  /** The settlement. */
+  /**
+   * The settlement.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO settlement;
-
-  /** The gross amount. */
+  /**
+   * The gross amount.
+   */
   @JsonView(View.Internal.class)
   private Double grossAmount;
-
-  /** The gross amount corrected. */
+  /**
+   * The gross amount corrected.
+   */
   @JsonView(View.Internal.class)
   private Double grossAmountCorrected;
-
-  /** The is corrected. */
+  /**
+   * The is corrected.
+   */
   @JsonView(View.Internal.class)
   private Boolean isCorrected;
-
-  /** The discount. */
+  /**
+   * The discount.
+   */
   @JsonView(View.Internal.class)
   private Double discount;
-
-  /** The is discount percentage. */
+  /**
+   * The is discount percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isDiscountPercentage;
-
-  /** The vat. */
+  /**
+   * The vat.
+   */
   @JsonView(View.Internal.class)
   private Double vat;
-
-  /** The discount 2. */
+  /**
+   * The discount 2.
+   */
   @JsonView(View.Internal.class)
   private Double discount2;
-
-  /** The is discount 2 percentage. */
+  /**
+   * The is discount 2 percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isDiscount2Percentage;
-
-  /** The discount 2 days. */
+  /**
+   * The discount 2 days.
+   */
   @JsonView(View.Internal.class)
   private Integer discount2Days;
-
-  /** The price increase. */
+  /**
+   * The price increase.
+   */
   @JsonView(View.Internal.class)
   private String priceIncrease;
-
-  /** The modified on. */
+  /**
+   * The modified on.
+   */
   @JsonView(View.Internal.class)
   private Date modifiedOn;
-
-  /** The notes. */
+  /**
+   * The notes.
+   */
   @JsonView(View.Internal.class)
   private String notes;
-
-  /** The rank. */
+  /**
+   * The rank.
+   */
   @JsonView(View.Public.class)
   private Integer rank;
-
-  /** The variant notes. */
+  /**
+   * The variant notes.
+   */
   @JsonView(View.Internal.class)
   private String variantNotes;
-
-  /** The is empty offer. */
+  /**
+   * The is empty offer.
+   */
   @JsonView(View.Public.class)
   private Boolean isEmptyOffer;
-
-  /** The application date. */
+  /**
+   * The application date.
+   */
   @JsonView(View.Internal.class)
   private Date applicationDate;
-
-  /** The is vat percentage. */
+  /**
+   * The is vat percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isVatPercentage;
-
-  /** The building costs. */
+  /**
+   * The building costs.
+   */
   @JsonView(View.Internal.class)
   private Double buildingCosts;
-
-  /** The is building costs percentage. */
+  /**
+   * The is building costs percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isBuildingCostsPercentage;
-
-  /** The ancilliary amount gross. */
+  /**
+   * The ancilliary amount gross.
+   */
   @JsonView(View.Internal.class)
   private Double ancilliaryAmountGross;
-
-  /** The is ancilliary amount percentage. */
+  /**
+   * The is ancilliary amount percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isAncilliaryAmountPercentage;
-
-  /** The ancilliary amount vat. */
+  /**
+   * The ancilliary amount vat.
+   */
   @JsonView(View.Internal.class)
   private String ancilliaryAmountVat;
-
-  /** The operating cost gross. */
+  /**
+   * The operating cost gross.
+   */
   @JsonView(View.Internal.class)
   private Double operatingCostGross;
-
-  /** The operating cost notes. */
+  /**
+   * The operating cost notes.
+   */
   @JsonView(View.Internal.class)
   private String operatingCostNotes;
-
-  /** The operating cost gross corrected. */
+  /**
+   * The operating cost gross corrected.
+   */
   @JsonView(View.Internal.class)
   private Double operatingCostGrossCorrected;
-
-  /** The is operating cost corrected. */
+  /**
+   * The is operating cost corrected.
+   */
   @JsonView(View.Internal.class)
   private Boolean isOperatingCostCorrected;
-
-  /** The operating cost discount. */
+  /**
+   * The operating cost discount.
+   */
   @JsonView(View.Internal.class)
   private Double operatingCostDiscount;
-
-  /** The is operating cost discount percentage. */
+  /**
+   * The is operating cost discount percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isOperatingCostDiscountPercentage;
-
-  /** The operating cost discount 2. */
+  /**
+   * The operating cost discount 2.
+   */
   @JsonView(View.Internal.class)
   private Double operatingCostDiscount2;
-
-  /** The is operating cost discount 2 percentage. */
+  /**
+   * The is operating cost discount 2 percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean isOperatingCostDiscount2Percentage;
-
-  /** The operating cost vat. */
+  /**
+   * The operating cost vat.
+   */
   @JsonView(View.Internal.class)
   private Double operatingCostVat;
-
-  /** The operating cost is vat percentage. */
+  /**
+   * The operating cost is vat percentage.
+   */
   @JsonView(View.Internal.class)
   private Boolean operatingCostIsVatPercentage;
-
-  /** The migreated PM. */
+  /**
+   * The migreated PM.
+   */
   @JsonView(View.Internal.class)
   private String migreatedPM;
-
-  /** The migrated procedure. */
+  /**
+   * The migrated procedure.
+   */
   @JsonView(View.Internal.class)
   private String migratedProcedure;
-
-  /** The migrated department. */
+  /**
+   * The migrated department.
+   */
   @JsonView(View.Internal.class)
   private String migratedDepartment;
-
-  /** The migrated submission. */
+  /**
+   * The migrated submission.
+   */
   @JsonView(View.Internal.class)
   private String migratedSubmission;
-
-  /** The migrated project. */
+  /**
+   * The migrated project.
+   */
   @JsonView(View.Internal.class)
   private String migratedProject;
-
-  /** The from migration. */
+  /**
+   * The from migration.
+   */
   @JsonView(View.Internal.class)
   private Boolean fromMigration;
-
-  /** The amount. */
+  /**
+   * The amount.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal amount;
-
-  /** The discount in percentage. */
+  /**
+   * The discount in percentage.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal discountInPercentage;
-
-  /** The discount 2 in percentage. */
+  /**
+   * The discount 2 in percentage.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal discount2InPercentage;
-
-  /** The operating costs in percentage. */
+  /**
+   * The operating costs in percentage.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal operatingCostsInPercentage;
-
-  /** The building costs in percentage. */
+  /**
+   * The building costs in percentage.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal buildingCostsInPercentage;
-
-  /** The is default offer. */
+  /**
+   * The is default offer.
+   */
   @JsonView(View.Internal.class)
   private Boolean isDefaultOffer;
-
-  /** The q ex total grade. */
+  /**
+   * The q ex total grade.
+   */
   @JsonView(View.Public.class)
   private BigDecimal qExTotalGrade;
-
-  /** The q ex status. */
+  /**
+   * The q ex status.
+   */
   @JsonView(View.Public.class)
   private Boolean qExStatus;
-
-  /** The q ex examination is fulfilled. */
+  /**
+   * The q ex examination is fulfilled.
+   */
   @JsonView(View.Public.class)
   private Boolean qExExaminationIsFulfilled;
-
-  /** The q ex suitability notes. */
+  /**
+   * The q ex suitability notes.
+   */
   @JsonView(View.Public.class)
   private String qExSuitabilityNotes;
-
-  /** The offer criteria. */
+  /**
+   * The offer criteria.
+   */
   @JsonView(View.Public.class)
   private List<OfferCriterionDTO> offerCriteria;
-
-  /** The offer subcriteria. */
+  /**
+   * The offer subcriteria.
+   */
   @JsonView(View.Public.class)
   private List<OfferSubcriterionDTO> offerSubcriteria;
-
-  /** The award rank. */
+  /**
+   * The award rank.
+   */
   @JsonView(View.Public.class)
   private Integer awardRank;
-
-  /** The award total score. */
+  /**
+   * The award total score.
+   */
   @JsonView(View.Public.class)
   private BigDecimal awardTotalScore;
-
-  /** The operating costs amount. */
+  /**
+   * The operating costs amount.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal operatingCostsAmount;
-
-  /** The q ex rank. */
+  /**
+   * The q ex rank.
+   */
   @JsonView(View.Public.class)
   private Integer qExRank;
-
-  /** The award recipient free text field. */
+  /**
+   * The award recipient free text field.
+   */
   @JsonView(View.Public.class)
   private String awardRecipientFreeTextField;
-
-  /** The is excluded from award process. */
+  /**
+   * The is excluded from award process.
+   */
   /*
    * this field is not in OfferEntity, it is used for the award form to display excluded offers
    * grayed out and is set under certain cases
    */
   @JsonView(View.Public.class)
   private Boolean isExcludedFromAwardProcess;
-
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @JsonView(View.Internal.class)
   private Timestamp createdOn;
-
-  /** The created by. */
+  /**
+   * The updated on.
+   */
+  @JsonView(View.Internal.class)
+  private Timestamp updatedOn;
+  /**
+   * The created by.
+   */
   @JsonView(View.Internal.class)
   private String createdBy;
-
-  /** The application information. */
+  /**
+   * The application information.
+   */
   @JsonView(View.Internal.class)
   private String applicationInformation;
-
-  /** The exclusion reason. */
+  /**
+   * The exclusion reason.
+   */
   @JsonView(View.Internal.class)
   private String exclusionReason;
-
-  /** The exclusion reasons. */
+  /**
+   * The exclusion reasons.
+   */
   @JsonView(View.Internal.class)
   private Set<MasterListValueHistoryDTO> exclusionReasons;
-
-  /** Amount gross amount or gross amount corrected. */
-  @JsonView(View.Internal.class)
-  BigDecimal grossAmountOrCorrected;
-
-  /** the percentage of discount. */
-  @JsonView(View.Internal.class)
-  BigDecimal discountPercentage;
-
-  /** the percentage of discount2. */
-  @JsonView(View.Internal.class)
-  BigDecimal discount2Percentage;
-
-  /** the percentage of vat. */
-  @JsonView(View.Internal.class)
-  BigDecimal vatPercentage;
-
-  /** the amount of discount after percentage value. */
-  @JsonView(View.Internal.class)
-  BigDecimal discountAmountWithPercentage;
-
-  /** the amount of discount2 after percentage value. */
-  @JsonView(View.Internal.class)
-  BigDecimal discount2AmountWithPercentage;
-
-  /** the amount of Mwst Inclusive. */
-  @JsonView(View.Internal.class)
-  BigDecimal amountInclusive;
-
-  /** the amount mwst Incl minus discount. */
-  @JsonView(View.Internal.class)
-  BigDecimal discountBetweenTotal;
-
-  /** the amount mwst Incl minus discount and discount2. */
-  @JsonView(View.Internal.class)
-  BigDecimal discount2BetweenTotal;
-
-  /** the amount of vat after percentage value. */
-  @JsonView(View.Internal.class)
-  BigDecimal vatAmountWithPercentage;
-
-  /** the amount of vat after percentage value. */
-  @JsonView(View.Internal.class)
-  BigDecimal ancilliaryVatAmountWithPercentage;
-
-  /** the amount of ancilliary amount inclusive. */
-  @JsonView(View.Internal.class)
-  BigDecimal ancilliaryAmountIncl;
-
-  /** the amount of vat after percentage value. */
-  @JsonView(View.Internal.class)
-  BigDecimal ancilliaryGrossAmountOrCorrected;
-
-  /** the amount of vat after percentage value. */
-  @JsonView(View.Internal.class)
-  BigDecimal ancilliaryVatPercentage;
-  
-  @JsonView(View.Internal.class)
-  BigDecimal buildingCostsPercentage;
-
-  /** The exclusion reason first level. */
+  /**
+   * The exclusion reason first level.
+   */
   @JsonView(View.Internal.class)
   private String exclusionReasonFirstLevel;
 
-  /** The exclusion reasons first level. */
+  /**
+   * The exclusion reasons first level.
+   */
   @JsonView(View.Internal.class)
   private Set<MasterListValueHistoryDTO> exclusionReasonsFirstLevel;
 
@@ -388,7 +474,7 @@ public class OfferDTO {
    * @return the gross amount or corrected
    */
   public BigDecimal getGrossAmountOrCorrected() {
-    if (getIsCorrected() && getIsCorrected() != null) {
+    if (getIsCorrected() != null && getIsCorrected()) {
       grossAmountOrCorrected = BigDecimal.valueOf(getGrossAmountCorrected());
     } else {
       grossAmountOrCorrected = BigDecimal.valueOf(getGrossAmount());
@@ -420,7 +506,7 @@ public class OfferDTO {
     if (grossAmountOrCorrected != null && getDiscountPercentage() != null) {
       if (getIsDiscountPercentage() != null && getIsDiscountPercentage()) {
         discountAmountWithPercentage =
-            (grossAmountOrCorrected.divide(new BigDecimal(100))).multiply(getDiscountPercentage());
+          (grossAmountOrCorrected.divide(new BigDecimal(100))).multiply(getDiscountPercentage());
       } else {
         discountAmountWithPercentage = BigDecimal.valueOf(getDiscount());
       }
@@ -439,10 +525,10 @@ public class OfferDTO {
     if (getGrossAmountOrCorrected() != null && getDiscountPercentage() != null) {
       if (getIsDiscountPercentage() != null && getIsDiscountPercentage()) {
         discountBetweenTotal = getGrossAmountOrCorrected().subtract((getGrossAmountOrCorrected()
-            .divide(new BigDecimal(100)).multiply(getDiscountPercentage())));
+          .divide(new BigDecimal(100)).multiply(getDiscountPercentage())));
       } else {
         discountBetweenTotal =
-            getGrossAmountOrCorrected().subtract(BigDecimal.valueOf(getDiscount()));
+          getGrossAmountOrCorrected().subtract(BigDecimal.valueOf(getDiscount()));
       }
       return discountBetweenTotal;
     } else {
@@ -463,9 +549,9 @@ public class OfferDTO {
     }
     return discount2Percentage;
   }
-  
+
   public BigDecimal getBuildingCostsPercentage() {
-      return BigDecimal.valueOf(getBuildingCosts());
+    return BigDecimal.valueOf(getBuildingCosts());
   }
 
   /**
@@ -477,7 +563,7 @@ public class OfferDTO {
     if (getDiscountBetweenTotal() != null && getDiscount2Percentage() != null) {
       if (getIsDiscount2Percentage() != null && getIsDiscount2Percentage()) {
         discount2AmountWithPercentage = (getDiscountBetweenTotal().divide(new BigDecimal(100)))
-            .multiply(getDiscount2Percentage());
+          .multiply(getDiscount2Percentage());
       } else {
         discount2AmountWithPercentage = BigDecimal.valueOf(getDiscount2());
       }
@@ -496,11 +582,11 @@ public class OfferDTO {
     if (getDiscountBetweenTotal() != null && getDiscount2Percentage() != null) {
       if (getIsDiscount2Percentage() != null && getIsDiscount2Percentage()) {
         discount2BetweenTotal = getDiscountBetweenTotal()
-            .subtract(((getDiscountBetweenTotal().divide(new BigDecimal(100)))
-                .multiply(getDiscount2Percentage())));
+          .subtract(((getDiscountBetweenTotal().divide(new BigDecimal(100)))
+            .multiply(getDiscount2Percentage())));
       } else {
         discount2BetweenTotal =
-            getDiscountBetweenTotal().subtract(BigDecimal.valueOf(getDiscount2()));
+          getDiscountBetweenTotal().subtract(BigDecimal.valueOf(getDiscount2()));
       }
       return discount2BetweenTotal;
     } else {
@@ -535,7 +621,7 @@ public class OfferDTO {
     if (getDiscount2BetweenTotal() != null && getVatPercentage() != null) {
       if (getIsVatPercentage() != null && getIsVatPercentage()) {
         vatAmountWithPercentage =
-            ((getDiscount2BetweenTotal().divide(new BigDecimal(100))).multiply(getVatPercentage()));
+          ((getDiscount2BetweenTotal().divide(new BigDecimal(100))).multiply(getVatPercentage()));
       } else {
         vatAmountWithPercentage = BigDecimal.valueOf(getVat());
       }
@@ -568,7 +654,7 @@ public class OfferDTO {
     if (getGrossAmountCorrected() != null && getAncilliaryAmountGross() != null) {
       if (getIsAncilliaryAmountPercentage() != null && getIsAncilliaryAmountPercentage()) {
         ancilliaryGrossAmountOrCorrected = (getGrossAmountOrCorrected().divide(new BigDecimal(100)))
-            .multiply(BigDecimal.valueOf(getAncilliaryAmountGross()));
+          .multiply(BigDecimal.valueOf(getAncilliaryAmountGross()));
       } else {
         ancilliaryGrossAmountOrCorrected = BigDecimal.valueOf(getAncilliaryAmountGross());
       }
@@ -604,8 +690,8 @@ public class OfferDTO {
   public BigDecimal getAncilliaryVatAmountWithPercentage() {
     if (getAncilliaryGrossAmountOrCorrected() != null && getAncilliaryAmountVat() != null) {
       ancilliaryVatAmountWithPercentage =
-          (getAncilliaryGrossAmountOrCorrected().divide(new BigDecimal(100)))
-              .multiply(new BigDecimal(getAncilliaryAmountVat()));
+        (getAncilliaryGrossAmountOrCorrected().divide(new BigDecimal(100)))
+          .multiply(new BigDecimal(getAncilliaryAmountVat()));
       return ancilliaryVatAmountWithPercentage;
     } else {
       return BigDecimal.ZERO;
@@ -619,31 +705,13 @@ public class OfferDTO {
    */
   public BigDecimal getAncilliaryAmountIncl() {
     if (getAncilliaryGrossAmountOrCorrected() != null
-        && getAncilliaryVatAmountWithPercentage() != null) {
+      && getAncilliaryVatAmountWithPercentage() != null) {
       ancilliaryAmountIncl =
-          getAncilliaryGrossAmountOrCorrected().add(getAncilliaryVatAmountWithPercentage());
+        getAncilliaryGrossAmountOrCorrected().add(getAncilliaryVatAmountWithPercentage());
       return ancilliaryAmountIncl;
     } else {
       return BigDecimal.ZERO;
     }
-  }
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
   }
 
   /**
@@ -1271,7 +1339,7 @@ public class OfferDTO {
    * Sets the checks if is operating cost discount percentage.
    *
    * @param isOperatingCostDiscountPercentage the new checks if is operating cost discount
-   *        percentage
+   *                                          percentage
    */
   public void setIsOperatingCostDiscountPercentage(Boolean isOperatingCostDiscountPercentage) {
     this.isOperatingCostDiscountPercentage = isOperatingCostDiscountPercentage;
@@ -1308,7 +1376,7 @@ public class OfferDTO {
    * Sets the checks if is operating cost discount 2 percentage.
    *
    * @param isOperatingCostDiscount2Percentage the new checks if is operating cost discount 2
-   *        percentage
+   *                                           percentage
    */
   public void setIsOperatingCostDiscount2Percentage(Boolean isOperatingCostDiscount2Percentage) {
     this.isOperatingCostDiscount2Percentage = isOperatingCostDiscount2Percentage;
@@ -1439,7 +1507,6 @@ public class OfferDTO {
   public void setMigratedProject(String migratedProject) {
     this.migratedProject = migratedProject;
   }
-
 
 
   /**
@@ -1930,64 +1997,76 @@ public class OfferDTO {
    * @param exclusionReasonsFirstLevel the new exclusion reasons first level
    */
   public void setExclusionReasonsFirstLevel(
-      Set<MasterListValueHistoryDTO> exclusionReasonsFirstLevel) {
+    Set<MasterListValueHistoryDTO> exclusionReasonsFirstLevel) {
     this.exclusionReasonsFirstLevel = exclusionReasonsFirstLevel;
   }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
    */
-  @Override
-  public String toString() {
-    return "OfferDTO [id=" + id + ", isAwarded=" + isAwarded + ", offerDate=" + offerDate
-        + ", isPartOffer=" + isPartOffer + ", isExcludedFromProcess=" + isExcludedFromProcess
-        + ", excludedFirstLevel=" + excludedFirstLevel + ", isVariant=" + isVariant
-        + ", grossAmount=" + grossAmount + ", grossAmountCorrected=" + grossAmountCorrected
-        + ", isCorrected=" + isCorrected + ", discount=" + discount + ", isDiscountPercentage="
-        + isDiscountPercentage + ", vat=" + vat + ", discount2=" + discount2
-        + ", isDiscount2Percentage=" + isDiscount2Percentage + ", discount2Days=" + discount2Days
-        + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn + ", notes=" + notes
-        + ", rank=" + rank + ", variantNotes=" + variantNotes + ", isEmptyOffer=" + isEmptyOffer
-        + ", applicationDate=" + applicationDate + ", isVatPercentage=" + isVatPercentage
-        + ", buildingCosts=" + buildingCosts + ", isBuildingCostsPercentage="
-        + isBuildingCostsPercentage + ", ancilliaryAmountGross=" + ancilliaryAmountGross
-        + ", isAncilliaryAmountPercentage=" + isAncilliaryAmountPercentage
-        + ", ancilliaryAmountVat=" + ancilliaryAmountVat + ", operatingCostGross="
-        + operatingCostGross + ", operatingCostNotes=" + operatingCostNotes
-        + ", operatingCostGrossCorrected=" + operatingCostGrossCorrected
-        + ", isOperatingCostCorrected=" + isOperatingCostCorrected + ", operatingCostDiscount="
-        + operatingCostDiscount + ", isOperatingCostDiscountPercentage="
-        + isOperatingCostDiscountPercentage + ", operatingCostDiscount2=" + operatingCostDiscount2
-        + ", isOperatingCostDiscount2Percentage=" + isOperatingCostDiscount2Percentage
-        + ", operatingCostVat=" + operatingCostVat + ", operatingCostIsVatPercentage="
-        + operatingCostIsVatPercentage + ", migreatedPM=" + migreatedPM + ", migratedProcedure="
-        + migratedProcedure + ", migratedDepartment=" + migratedDepartment + ", migratedSubmission="
-        + migratedSubmission + ", migratedProject=" + migratedProject + ", fromMigration="
-        + fromMigration + ", amount=" + amount + ", discountInPercentage=" + discountInPercentage
-        + ", discount2InPercentage=" + discount2InPercentage + ", operatingCostsInPercentage="
-        + operatingCostsInPercentage + ", buildingCostsInPercentage=" + buildingCostsInPercentage
-        + ", isDefaultOffer=" + isDefaultOffer + ", qExTotalGrade=" + qExTotalGrade + ", qExStatus="
-        + qExStatus + ", qExExaminationIsFulfilled=" + qExExaminationIsFulfilled
-        + ", qExSuitabilityNotes=" + qExSuitabilityNotes + ", awardRank=" + awardRank
-        + ", awardTotalScore=" + awardTotalScore + ", operatingCostsAmount=" + operatingCostsAmount
-        + ", qExRank=" + qExRank + ", awardRecipientFreeTextField=" + awardRecipientFreeTextField
-        + ", isExcludedFromAwardProcess=" + isExcludedFromAwardProcess + ", createdOn=" + createdOn
-        + ", createdBy=" + createdBy + ", applicationInformation=" + applicationInformation
-        + ", exclusionReason=" + exclusionReason + ", grossAmountOrCorrected="
-        + grossAmountOrCorrected + ", discountPercentage=" + discountPercentage
-        + ", discount2Percentage=" + discount2Percentage + ", vatPercentage=" + vatPercentage
-        + ", discountAmountWithPercentage=" + discountAmountWithPercentage
-        + ", discount2AmountWithPercentage=" + discount2AmountWithPercentage + ", amountInclusive="
-        + amountInclusive + ", discountBetweenTotal=" + discountBetweenTotal
-        + ", discount2BetweenTotal=" + discount2BetweenTotal + ", vatAmountWithPercentage="
-        + vatAmountWithPercentage + ", ancilliaryVatAmountWithPercentage="
-        + ancilliaryVatAmountWithPercentage + ", ancilliaryAmountIncl=" + ancilliaryAmountIncl
-        + ", ancilliaryGrossAmountOrCorrected=" + ancilliaryGrossAmountOrCorrected
-        + ", ancilliaryVatPercentage=" + ancilliaryVatPercentage + ", exclusionReasonFirstLevel="
-        + exclusionReasonFirstLevel + "]";
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
   }
 
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "OfferDTO [id=" + super.getId() + ", version=" + super.getVersion() + ", isAwarded="
+      + isAwarded + ", offerDate=" + offerDate
+      + ", isPartOffer=" + isPartOffer + ", isExcludedFromProcess=" + isExcludedFromProcess
+      + ", excludedFirstLevel=" + excludedFirstLevel + ", isVariant=" + isVariant
+      + ", grossAmount=" + grossAmount + ", grossAmountCorrected=" + grossAmountCorrected
+      + ", isCorrected=" + isCorrected + ", discount=" + discount + ", isDiscountPercentage="
+      + isDiscountPercentage + ", vat=" + vat + ", discount2=" + discount2
+      + ", isDiscount2Percentage=" + isDiscount2Percentage + ", discount2Days=" + discount2Days
+      + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn + ", notes=" + notes
+      + ", rank=" + rank + ", variantNotes=" + variantNotes + ", isEmptyOffer=" + isEmptyOffer
+      + ", applicationDate=" + applicationDate + ", isVatPercentage=" + isVatPercentage
+      + ", buildingCosts=" + buildingCosts + ", isBuildingCostsPercentage="
+      + isBuildingCostsPercentage + ", ancilliaryAmountGross=" + ancilliaryAmountGross
+      + ", isAncilliaryAmountPercentage=" + isAncilliaryAmountPercentage
+      + ", ancilliaryAmountVat=" + ancilliaryAmountVat + ", operatingCostGross="
+      + operatingCostGross + ", operatingCostNotes=" + operatingCostNotes
+      + ", operatingCostGrossCorrected=" + operatingCostGrossCorrected
+      + ", isOperatingCostCorrected=" + isOperatingCostCorrected + ", operatingCostDiscount="
+      + operatingCostDiscount + ", isOperatingCostDiscountPercentage="
+      + isOperatingCostDiscountPercentage + ", operatingCostDiscount2=" + operatingCostDiscount2
+      + ", isOperatingCostDiscount2Percentage=" + isOperatingCostDiscount2Percentage
+      + ", operatingCostVat=" + operatingCostVat + ", operatingCostIsVatPercentage="
+      + operatingCostIsVatPercentage + ", migreatedPM=" + migreatedPM + ", migratedProcedure="
+      + migratedProcedure + ", migratedDepartment=" + migratedDepartment + ", migratedSubmission="
+      + migratedSubmission + ", migratedProject=" + migratedProject + ", fromMigration="
+      + fromMigration + ", amount=" + amount + ", discountInPercentage=" + discountInPercentage
+      + ", discount2InPercentage=" + discount2InPercentage + ", operatingCostsInPercentage="
+      + operatingCostsInPercentage + ", buildingCostsInPercentage=" + buildingCostsInPercentage
+      + ", isDefaultOffer=" + isDefaultOffer + ", qExTotalGrade=" + qExTotalGrade + ", qExStatus="
+      + qExStatus + ", qExExaminationIsFulfilled=" + qExExaminationIsFulfilled
+      + ", qExSuitabilityNotes=" + qExSuitabilityNotes + ", awardRank=" + awardRank
+      + ", awardTotalScore=" + awardTotalScore + ", operatingCostsAmount=" + operatingCostsAmount
+      + ", qExRank=" + qExRank + ", awardRecipientFreeTextField=" + awardRecipientFreeTextField
+      + ", isExcludedFromAwardProcess=" + isExcludedFromAwardProcess + ", createdOn=" + createdOn
+      + ", createdBy=" + createdBy + ", applicationInformation=" + applicationInformation
+      + ", exclusionReason=" + exclusionReason + ", grossAmountOrCorrected="
+      + grossAmountOrCorrected + ", discountPercentage=" + discountPercentage
+      + ", discount2Percentage=" + discount2Percentage + ", vatPercentage=" + vatPercentage
+      + ", discountAmountWithPercentage=" + discountAmountWithPercentage
+      + ", discount2AmountWithPercentage=" + discount2AmountWithPercentage + ", amountInclusive="
+      + amountInclusive + ", discountBetweenTotal=" + discountBetweenTotal
+      + ", discount2BetweenTotal=" + discount2BetweenTotal + ", vatAmountWithPercentage="
+      + vatAmountWithPercentage + ", ancilliaryVatAmountWithPercentage="
+      + ancilliaryVatAmountWithPercentage + ", ancilliaryAmountIncl=" + ancilliaryAmountIncl
+      + ", ancilliaryGrossAmountOrCorrected=" + ancilliaryGrossAmountOrCorrected
+      + ", ancilliaryVatPercentage=" + ancilliaryVatPercentage + ", exclusionReasonFirstLevel="
+      + exclusionReasonFirstLevel + ", updatedOn=" + updatedOn + "]";
+  }
 }

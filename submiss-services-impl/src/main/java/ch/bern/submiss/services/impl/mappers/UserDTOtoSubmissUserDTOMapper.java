@@ -13,28 +13,28 @@
 
 package ch.bern.submiss.services.impl.mappers;
 
+import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
+import ch.bern.submiss.services.api.dto.SubmissUserDTO;
+import ch.bern.submiss.services.api.dto.TenantDTO;
+import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
-import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
-import ch.bern.submiss.services.api.dto.SubmissUserDTO;
-import ch.bern.submiss.services.api.dto.TenantDTO;
-import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
 
 @Mapper
 public abstract class UserDTOtoSubmissUserDTOMapper {
 
   public static final UserDTOtoSubmissUserDTOMapper INSTANCE =
-      Mappers.getMapper(UserDTOtoSubmissUserDTOMapper.class);
+    Mappers.getMapper(UserDTOtoSubmissUserDTOMapper.class);
 
   public SubmissUserDTO toSubmissUserDTO(UserDTO userDto, List<GroupDTO> groupDTOs,
-      TenantDTO tenant, DepartmentHistoryDTO mainDepartment,
-      List<DepartmentHistoryDTO> secondaryDepartments, Set<String> permittedOperations,
-      Boolean editable, Boolean userAdminRight) {
+    TenantDTO tenant, DepartmentHistoryDTO mainDepartment,
+    List<DepartmentHistoryDTO> secondaryDepartments, Set<String> permittedOperations,
+    Boolean editable, Boolean userAdminRight) {
 
     if (userDto == null) {
       return null;
@@ -42,46 +42,52 @@ public abstract class UserDTOtoSubmissUserDTOMapper {
 
     SubmissUserDTO submissUserDto = new SubmissUserDTO();
     submissUserDto.setId(userDto.getId());
+    submissUserDto.setVersion(userDto.getDbversion());
     String[] splitedUsernameParts = userDto.getUsername().split("@");
     submissUserDto.setUsername(splitedUsernameParts[0]);
     submissUserDto.setStatus(userDto.getStatus());
     submissUserDto.setUserAdminRight(userAdminRight);
 
     if (userDto.getAttribute(USER_ATTRIBUTES.EMAIL.getValue()) != null
-        && userDto.getAttribute(USER_ATTRIBUTES.EMAIL.getValue()).getData() != null) {
+      && userDto.getAttribute(USER_ATTRIBUTES.EMAIL.getValue()).getData() != null) {
       submissUserDto
         .setEmail(userDto.getAttribute(USER_ATTRIBUTES.EMAIL.getValue()).getData());
     }
 
     if (userDto.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()) != null
-        && userDto.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData() != null) {
+      && userDto.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData() != null) {
       submissUserDto
         .setLastName(userDto.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData());
     }
 
     if (userDto.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()) != null
-        && userDto.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() != null) {
+      && userDto.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() != null) {
       submissUserDto
         .setFirstName(userDto.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData());
     }
 
     if (userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()) != null
-        && userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData() != null) {
+      && userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData() != null) {
       submissUserDto
-        .setRegisteredDate(userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData());
+        .setRegisteredDate(
+          userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData());
     }
 
     if (userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()) != null
-        && userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()).getData() != null) {
+      && userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()).getData() != null) {
       submissUserDto
-          .setFunction(userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()).getData());
+        .setFunction(userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()).getData());
+      submissUserDto
+        .setFunctionVersion(
+          userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()).getDbversion());
     }
     if (userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()) != null
-        && userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData() != null) {
+      && userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData() != null) {
       submissUserDto
-          .setDeactivationDate(userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData());
+        .setDeactivationDate(
+          userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData());
     }
- 
+
     if (groupDTOs != null) {
       for (GroupDTO groupDTO : groupDTOs) {
         submissUserDto.setUserGroup(groupDTO);
@@ -98,11 +104,12 @@ public abstract class UserDTOtoSubmissUserDTOMapper {
 
     if (!secondaryDepartments.isEmpty()) {
       submissUserDto.setSecondaryDepartments(secondaryDepartments);
+      submissUserDto.setSecondaryDepartmentsVersion(
+        userDto.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getDbversion());
     }
 
     if (permittedOperations != null && !permittedOperations.isEmpty()) {
-      List<String> permittedOperationsList = new ArrayList<>();
-      permittedOperationsList.addAll(permittedOperations);
+      List<String> permittedOperationsList = new ArrayList<>(permittedOperations);
       submissUserDto.setPermittedOperations(permittedOperationsList);
     }
 

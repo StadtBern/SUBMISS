@@ -22,7 +22,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "SUB_TENANT")
-public class TenantEntity extends AbstractEntity {
+public class TenantEntity extends AbstractStammdatenEntity {
 
   @Column(name = "IS_MAIN")
   private Boolean isMain;

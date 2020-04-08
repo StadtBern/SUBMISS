@@ -25,8 +25,8 @@
 
   /** @ngInject */
   function ProjectSearchController($scope, $location, $anchorScroll, $state,
-    ProjectService, StammdatenService, NgTableParams, $filter, $locale,
-    AppService, AppConstants) {
+    ProjectService, StammdatenService, SubmissionService, NgTableParams, $filter, $locale,
+    AppService, AppConstants, QFormJSRValidation) {
     const vm = this;
     /***********************************************************************
      * Local variables.
@@ -110,13 +110,20 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadObjects();
-      vm.loadProcedures();
-      vm.loadDepartments();
-      vm.loadDirectorates();
-      vm.loadWorkTypes();
-      vm.secTenderView = AppService.isOperationPermitted(
-        AppConstants.OPERATION.TENDER_VIEW, null);
+      ProjectService.loadProjectSearch()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.loadObjects();
+            vm.loadProcedures();
+            vm.loadDepartments();
+            vm.loadDirectorates();
+            vm.loadWorkTypes();
+            vm.secTenderView = AppService.isOperationPermitted(
+              AppConstants.OPERATION.TENDER_VIEW, null);
+          }
+        });
     }
 
     /***********************************************************************
@@ -323,15 +330,29 @@
     }
 
     function navigateToProject(projectId, projectName) {
-      $state.go('project.view', {
-        id: projectId,
-        name: projectName
+      ProjectService.projectExists(projectId).success(function (data) {
+        $state.go('project.view', {
+          id: projectId,
+          name: projectName
+        });
+      }).error(function (response, status) {
+        if (status === 400) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.projectSearchCtr.searchResultsForm, response);
+        }
       });
     }
 
     function navigateToSubmission(submissionId) {
-      $state.go('submissionView', {
-        id: submissionId
+      SubmissionService.submissionExists(submissionId).success(function (data) {
+        $state.go('submissionView', {
+          id: submissionId
+        });
+      }).error(function (response, status) {
+        if (status === 400) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.projectSearchCtr.searchResultsForm, response);
+        }
       });
     }
 

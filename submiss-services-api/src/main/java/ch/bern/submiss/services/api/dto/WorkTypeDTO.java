@@ -13,7 +13,7 @@
 
 package ch.bern.submiss.services.api.dto;
 
-public class WorkTypeDTO extends AbstractDTO {
+public class WorkTypeDTO extends AbstractStammdatenDTO {
 
   private String workTypeNumber;
 

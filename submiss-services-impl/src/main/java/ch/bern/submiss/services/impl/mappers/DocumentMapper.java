@@ -112,8 +112,7 @@ public abstract class DocumentMapper {
     }
    
     documentDTO.setCreatedOn(toDate(dto.getCreatedOn()));
-    documentDTO.setLastModifiedOn(
-        (dto.getCreatedOn() == dto.getLastModifiedOn()) ? null : toDate(dto.getLastModifiedOn()));
+    documentDTO.setLastModifiedOn(toDate(dto.getLastModifiedOn()));
     documentDTO.setMimetype(dto.getMimetype());
     documentDTO.setFilename(dto.getFilename());
     documentDTO.setNodeId(dto.getNodeId());

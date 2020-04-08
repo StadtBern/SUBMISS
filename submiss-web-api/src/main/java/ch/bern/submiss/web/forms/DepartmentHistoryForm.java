@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * The Class DepartmentHistoryForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DepartmentHistoryForm extends AbstractForm {
+public class DepartmentHistoryForm extends AbstractStammdatenForm {
 
   /** The tenant. */
   private TenantForm tenant;

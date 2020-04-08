@@ -30,6 +30,7 @@
     // Exported variables.
     vm.title = $state.current.data.title;
     vm.body = $state.current.data.body;
+    $scope.icon = $state.current.data.icon;
 
     // Activating the controller.
     activate();

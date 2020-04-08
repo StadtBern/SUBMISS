@@ -246,6 +246,11 @@
       ReportService.downloadOperationReport(vm.report, selectedColumns,
           caseFormat, vm.amount)
         .success(function (response, status, headers) {
+          if (status === 403) { // Security checks.
+            AppService.setPaneShown(false);
+            $uibModalInstance.close();
+            return;
+          }
           checkForEmptyResults(response);
           AppService.setPaneShown(false);
           if (response.byteLength > 0) {

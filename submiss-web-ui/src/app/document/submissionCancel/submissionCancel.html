@@ -12,137 +12,123 @@
   -->
 
 <div role="tabpanel" class="tab-pane card-box">
-	<form name="submissionCancelCtrl.submissionCancelHtmlForm"
-		data-ng-submit="submissionCancelCtrl.save()"
-		id="submissionCancelHtmlForm" shows-validation-errors>
-		<fieldset ng-disabled="submissionCancelCtrl.isSubmissionCompleted()">
-			<div class="col-sm-12">
-				<div class="alert alert-danger"
-					ng-if="submissionCancelCtrl.submissionCancelHtmlForm.$invalid"
-					role="alert">
-					<field-error form-element-name="errorField" translate name="error"></field-error>
-				</div>
-			</div>
-			<input name="errorField" ng-hide="true" data-ng-model="fd"></input>
-			<div class="row">
-				<div class="col-sm-2">
-					<div class="form-group">
-						<label for="creationDate">Verfügungsdatum</label>
-						<div class="input-group">
-							<input class="form-control datepicker" id="availableDate"
-								type="text" name="availableDate"
-								uib-datepicker-popup="dd.MM.yyyy"
-								is-open="submissionCancelCtrl.availableDateOpened"
-								data-ng-model="submissionCancelCtrl.submissionCancel.availableDate"
-								ng-click="submissionCancelCtrl.openAvailableDate()"
-								ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"> <span
-								class="input-group-btn">
-								<button class="btn btn-default" type="button"
-									data-ng-click="submissionCancelCtrl.openAvailableDate()"
-									ng-disabled="submissionCancelCtrl.isSubmissionCancelled()">
-									<span class="fa fa-calendar"></span>
-								</button>
-							</span>
-						</div>
-					</div>
-				</div>
-				<div class="col-sm-2">
-					<div class="form-group zuschlag">
-						<label class="checkbox-inline"> <input type="checkbox"
-							id="freezeCloseSubmission"
-							ng-disabled="submissionCancelCtrl.isFreezeCheckboxDisabled()"
-							data-ng-model="submissionCancelCtrl.submissionCancel.freezeCloseSubmission"
-							name="freezeCloseSubmission">Beschwerdeeingang
-						</label>
-					</div>
-				</div>
-			</div>
-			<br>
-			<div class="row">
-				<div class="col-sm-2">
-					<div class="form-group">
-						<label class="checkbox-inline"> <input type="checkbox"
-							id="objectNameRead"
-							data-ng-model="submissionCancelCtrl.submissionCancel.objectNameRead"
-							ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
-							name="objectNameRead"> Objekt
-						</label>
-					</div>
-					<div class="form-group">
-						<label class="checkbox-inline"> <input type="checkbox"
-							id="projectNameRead"
-							data-ng-model="submissionCancelCtrl.submissionCancel.projectNameRead"
-							ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
-							name="projectNameRead"> Projektname
-						</label>
-					</div>
+  <form name="submissionCancelCtrl.submissionCancelHtmlForm" data-ng-submit="submissionCancelCtrl.save()"
+    id="submissionCancelHtmlForm" shows-validation-errors>
+    <fieldset ng-disabled="submissionCancelCtrl.isSubmissionCompleted()">
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="submissionCancelCtrl.submissionCancelHtmlForm.$invalid" role="alert">
+          <field-error form-element-name="errorField" translate name="error"></field-error>
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        </div>
+      </div>
+      <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <div class="row">
+        <div class="col-sm-2">
+          <div class="form-group">
+            <label for="creationDate">Verfügungsdatum</label>
+            <div class="input-group">
+              <input class="form-control datepicker" id="availableDate" type="text" name="availableDate"
+                uib-datepicker-popup="dd.MM.yyyy" is-open="submissionCancelCtrl.availableDateOpened"
+                data-ng-model="submissionCancelCtrl.submissionCancel.availableDate"
+                ng-click="submissionCancelCtrl.openAvailableDate()"
+                ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button" data-ng-click="submissionCancelCtrl.openAvailableDate()"
+                  ng-disabled="submissionCancelCtrl.isSubmissionCancelled()">
+                  <span class="fa fa-calendar"></span>
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-2">
+          <div class="form-group zuschlag">
+            <label class="checkbox-inline"> <input type="checkbox" id="freezeCloseSubmission"
+                ng-disabled="submissionCancelCtrl.isFreezeCheckboxDisabled()"
+                data-ng-model="submissionCancelCtrl.submissionCancel.freezeCloseSubmission"
+                name="freezeCloseSubmission">Beschwerdeeingang
+            </label>
+          </div>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-sm-2">
+          <div class="form-group">
+            <label class="checkbox-inline"> <input type="checkbox" id="objectNameRead"
+                data-ng-model="submissionCancelCtrl.submissionCancel.objectNameRead"
+                ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
+                name="objectNameRead"> Objekt
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-inline"> <input type="checkbox" id="projectNameRead"
+                data-ng-model="submissionCancelCtrl.submissionCancel.projectNameRead"
+                ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
+                name="projectNameRead"> Projektname
+            </label>
+          </div>
 
-				</div>
-				<div class="col-sm-2">
-					<div class="form-group">
-						<label class="checkbox-inline"> <input type="checkbox"
-							id="workingClassRead"
-							data-ng-model="submissionCancelCtrl.submissionCancel.workingClassRead"
-							ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
-							name="workingClassRead"> Arbeitsgattung
-						</label>
-					</div>
-					<div class="form-group">
-						<label class="checkbox-inline"> <input type="checkbox"
-							id="descriptionRead"
-							data-ng-model="submissionCancelCtrl.submissionCancel.descriptionRead"
-							ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
-							name="descriptionRead"> Beschreibung
-						</label>
-					</div>
-				</div>
-			</div>
-			<br>
+        </div>
+        <div class="col-sm-2">
+          <div class="form-group">
+            <label class="checkbox-inline"> <input type="checkbox" id="workingClassRead"
+                data-ng-model="submissionCancelCtrl.submissionCancel.workingClassRead"
+                ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
+                name="workingClassRead"> Arbeitsgattung
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-inline"> <input type="checkbox" id="descriptionRead"
+                data-ng-model="submissionCancelCtrl.submissionCancel.descriptionRead"
+                ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
+                name="descriptionRead"> Beschreibung
+            </label>
+          </div>
+        </div>
+      </div>
+      <br>
 
-			<div class="row"></div>
-			<div class="form-group abstand3">
-				<label for="OBV">Art. 29 ÖBV Abs.<span class="mandatory">*</span></label>
+      <div class="row"></div>
+      <div class="form-group abstand3">
+        <label for="OBV">Art. 29 ÖBV Abs.<span class="mandatory">*</span></label>
 
-				<div class="form-group"
-					ng-repeat="exclusionReason in submissionCancelCtrl.exclusionReasons track by exclusionReason.id">
-					<label class="checkbox-inline"> <input type="checkbox"
-						id="exclusionReason" data-ng-model="exclusionReason.selected"
-						ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
-						name="exclusionReason">{{exclusionReason.value1}}
-						{{exclusionReason.value2}}
-					</label>
-				</div>
-			</div>
-			<div class="form-group">
-				<label for="Begrundung">Begründung<span class="mandatory">*</span></label>
-				<textarea class="form-control"
-					data-ng-model="submissionCancelCtrl.submissionCancel.reason"
-					ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
-					id="reason" name="reason" rows="4">
+        <div class="form-group"
+          ng-repeat="exclusionReason in submissionCancelCtrl.exclusionReasons track by exclusionReason.id">
+          <label class="checkbox-inline"> <input type="checkbox" id="exclusionReason"
+              data-ng-model="exclusionReason.selected"
+              ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
+              name="exclusionReason">{{exclusionReason.value1}}
+            {{exclusionReason.value2}}
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="Begrundung">Begründung<span class="mandatory">*</span></label>
+        <textarea class="form-control" data-ng-model="submissionCancelCtrl.submissionCancel.reason"
+          ng-disabled="submissionCancelCtrl.isFormDisabled() || submissionCancelCtrl.isSubmissionCancelled()"
+          id="reason" name="reason" rows="4">
 				</textarea>
-			</div>
-		</fieldset>
-		<button type="submit" class="btn btn-primary"
-			ng-disabled="!submissionCancelCtrl.secTenderCancelEdit || submissionCancelCtrl.isSubmissionCompleted() || submissionCancelCtrl.isFreezeCheckboxDisabled()">Speichern</button>
-		<button type="button" class="btn btn-default"
-			ng-disabled="submissionCancelCtrl.isSubmissionCompleted() || submissionCancelCtrl.isFreezeCheckboxDisabled()"
-			ng-click="submissionCancelCtrl.resetPage(submissionCancelCtrl.submissionCancelHtmlForm.$dirty)">Abbrechen</button>
-		<button type="button" class="btn btn-default"
-			ng-click="submissionCancelCtrl.cancelSubmission()"
-			title="CancelSubmission"
-			ng-disabled="!submissionCancelCtrl.secTenderCancel
+      </div>
+    </fieldset>
+    <button type="submit" class="btn btn-primary"
+      ng-disabled="!submissionCancelCtrl.secTenderCancelEdit || submissionCancelCtrl.isSubmissionCompleted() || submissionCancelCtrl.isFreezeCheckboxDisabled()">Speichern</button>
+    <button type="button" class="btn btn-default"
+      ng-disabled="submissionCancelCtrl.isSubmissionCompleted() || submissionCancelCtrl.isFreezeCheckboxDisabled()"
+      ng-click="submissionCancelCtrl.resetPage(submissionCancelCtrl.submissionCancelHtmlForm.$dirty)">Abbrechen</button>
+    <button type="button" class="btn btn-default" ng-click="submissionCancelCtrl.cancelSubmission()"
+      title="CancelSubmission" ng-disabled="!submissionCancelCtrl.secTenderCancel
 			             || submissionCancelCtrl.caseCreate || submissionCancelCtrl.isFormDisabled()"
-			ng-if="!(submissionCancelCtrl.isSubmissionCancelled() || submissionCancelCtrl.isSubmissionCompleted())">Verfahrensabbruch
-			durchführen</button>
-		<button type="button" class="btn btn-default"
-			ng-disabled="submissionCancelCtrl.isSubmissionCompleted()"
-			ng-click="submissionCancelCtrl.reopenSubmission()"
-			ng-if="submissionCancelCtrl.isSubmissionCancelled() || submissionCancelCtrl.isSubmissionCompleted()">Verfahren 
-			wiederaufnehmen</button>
-		<div ng-if="submissionCancelCtrl.submissionCancelHtmlForm.$dirty">
-			<input ng-hide="true" type="checkbox"
-				data-ng-model="submissionCancelCtrl.dirtyFlag"
-				ng-init="submissionCancelCtrl.dirtyFlag=true">
-		</div>
-	</form>
+      ng-if="!(submissionCancelCtrl.isSubmissionCancelled() || submissionCancelCtrl.isSubmissionCompleted())">Verfahrensabbruch
+      durchführen</button>
+    <button type="button" class="btn btn-default" ng-disabled="submissionCancelCtrl.isSubmissionCompleted()"
+      ng-click="submissionCancelCtrl.reopenSubmission()"
+      ng-if="submissionCancelCtrl.isSubmissionCancelled() || submissionCancelCtrl.isSubmissionCompleted()">Verfahren
+      wiederaufnehmen</button>
+    <div ng-if="submissionCancelCtrl.submissionCancelHtmlForm.$dirty">
+      <input ng-hide="true" type="checkbox" data-ng-model="submissionCancelCtrl.dirtyFlag"
+        ng-init="submissionCancelCtrl.dirtyFlag=true">
+    </div>
+  </form>
 </div>

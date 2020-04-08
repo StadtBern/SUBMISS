@@ -13,11 +13,10 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -26,34 +25,54 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CommissionProcurementProposalForm {
 
-  /** The date. */
+  /**
+   * The date.
+   */
   private Date date;
 
-  /** The business. */
+  /**
+   * The business.
+   */
   private BigDecimal business;
 
-  /** The object. */
+  /**
+   * The object.
+   */
   private String object;
 
-  /** The suitability audit dropdown. */
+  /**
+   * The suitability audit dropdown.
+   */
   private String suitabilityAuditDropdown;
 
-  /** The suitability audit text. */
+  /**
+   * The suitability audit text.
+   */
   private String suitabilityAuditText;
 
-  /** The pre remarks. */
+  /**
+   * The pre remarks.
+   */
   private String preRemarks;
 
-  /** The reservation. */
+  /**
+   * The reservation.
+   */
   private String reservation;
 
-  /** The reason given. */
+  /**
+   * The reason given.
+   */
   private String reasonGiven;
 
-  /** The award recipients. */
+  /**
+   * The award recipients.
+   */
   private List<OfferForm> awardRecipients;
 
-  /** The invalid business. */
+  /**
+   * The invalid business.
+   */
   private boolean invalidBusiness;
 
   /**

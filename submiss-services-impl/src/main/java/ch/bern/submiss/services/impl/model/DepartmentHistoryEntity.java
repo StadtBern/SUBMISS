@@ -27,7 +27,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "SUB_DEPARTMENT_HISTORY")
-public class DepartmentHistoryEntity extends AbstractEntity {
+public class DepartmentHistoryEntity extends AbstractStammdatenEntity {
 
   /** The tenant. */
   @ManyToOne

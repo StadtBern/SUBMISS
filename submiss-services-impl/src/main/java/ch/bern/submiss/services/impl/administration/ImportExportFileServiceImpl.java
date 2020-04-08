@@ -24,6 +24,7 @@ import ch.bern.submiss.services.api.constants.AuditLevel;
 import ch.bern.submiss.services.api.constants.AuditMessages;
 import ch.bern.submiss.services.api.constants.CategorySD;
 import ch.bern.submiss.services.api.constants.DocumentProperties;
+import ch.bern.submiss.services.api.constants.ShortCode;
 import ch.bern.submiss.services.api.constants.TemplateConstants;
 import ch.bern.submiss.services.api.dto.AwardAssessDTO;
 import ch.bern.submiss.services.api.dto.AwardEvaluationDocumentDTO;
@@ -639,7 +640,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
       sheet.setDisplayGridlines(false);
       // Hides UUID column..
       sheet.setColumnHidden(0, true);
-      sheet.protectSheet("password");
+      sheet.protectSheet(sDService.getMasterListHistoryByCode(ShortCode.S14.toString()).getValue2());
 
       workbook.lockRevision();
       workbook.lockStructure();
@@ -2561,7 +2562,8 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
       // wb.isStructureLocked();
       // wb.isWindowsLocked();
 
-      if (!importedSheet.validateSheetPassword("password")) {
+      if (!importedSheet.validateSheetPassword(
+        sDService.getMasterListHistoryByCode(ShortCode.S14.toString()).getValue2())) {
         wb.close();
         byteArrayInputStream.close();
         LOGGER.log(Level.WARNING, "Das zu importierende Dokument wurde manipuliert.");
@@ -3062,7 +3064,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
         getZuschlagCritirienTitle(col, importedSheet);
 
-        /** loop again to be sure that will be parsed in the proper order. */
+        /* loop again to be sure that will be parsed in the proper order. */
         cl.setOfferCriterionId(offerCriterionDTO.getId());
 
         // Check for inconsistencies regarding the criterion title/text.
@@ -3093,11 +3095,9 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
           cell = importRow.getCell(col++);
           // punkte
           cl.setScore(getBigDecimalFromCell(cell, wb));
-          // loop subb
-          for (int i = 0; i < offerCriterionDTO.getCriterion().getSubcriterion().size(); i++) {
-            col = parseSubOfferCriteria(wb, importedSheet, importRow, offerSubcriteria, col,
-              offerSublist, offerCriterionDTO);
-          }
+          // parse sub criteria
+          col = parseSubOfferCriteria(wb, importedSheet, importRow, offerSubcriteria, col,
+            offerSublist, offerCriterionDTO);
         }
         awardCriterion.add(cl);
         offerExists = true;
@@ -3202,21 +3202,18 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
         int col = DATA_STARTING_COLLNUM;
 
-        // there are no evalueated criteria thus there are no runk.
+        // there are no evaluated criteria thus there are no rank.
         if (ratedCnt == 0) {
           col--;
         }
-        // gather muss first
+        // gather muss criteria first
         for (OfferCriterionDTO of : offer.getOfferCriteria()) {
           col = parseMussCrieteria(importedSheet, offer, importRow, mustCriterion, col, of);
         }
 
-        // loop BK
-        for (OfferCriterionDTO of : offer.getOfferCriteria()) {
-
-          col = parseEvalueatedCriteria(wb, importedSheet, importRow, evaluatedCriterion,
-            offerSubcriteria, col, of);
-        }
+        // parse bewertete criteria
+        parseEvaluatedCriteria(wb, importedSheet, importRow, evaluatedCriterion,
+            offerSubcriteria, col, offer);
 
         Integer rank = null;
         BigDecimal totalscore = null;
@@ -3294,7 +3291,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
   }
 
   /**
-   * Parses the evalueated criteria.
+   * Parses the evaluated criteria.
    *
    * @param wb the wb
    * @param importedSheet the imported sheet
@@ -3302,73 +3299,65 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
    * @param evaluatedCriterion the evaluated criterion
    * @param offerSubcriteria the offer subcriteria
    * @param col the col
-   * @param of the of
-   * @return the int
+   * @param offer the offer
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private int parseEvalueatedCriteria(XSSFWorkbook wb, XSSFSheet importedSheet, Row importRow,
+  private void parseEvaluatedCriteria(XSSFWorkbook wb, XSSFSheet importedSheet, Row importRow,
     ArrayList<CriterionLiteDTO> evaluatedCriterion,
-    ArrayList<OfferSubcriterionLiteDTO> offerSubcriteria, int col, OfferCriterionDTO of)
+    ArrayList<OfferSubcriterionLiteDTO> offerSubcriteria, int col, OfferDTO offer)
     throws IOException {
 
     LOGGER.log(Level.CONFIG,
       "Executing method parseEvalueatedCriteria, Parameters: wb: {0}, "
-        + "importedSheet: {1}, importRow: {2}, col: {3}, of: {4}, "
-        + "evaluatedCriterion: {5}, offerSubcriteria: {6}",
-      new Object[]{wb, importedSheet, importRow, col, of, evaluatedCriterion, offerSubcriteria});
+        + "importedSheet: {1}, importRow: {2}, evaluatedCriterion: {3}, offerSubcriteria: {4}, "
+        + "col: {5}, offer: {6}",
+      new Object[]{wb, importedSheet, importRow, evaluatedCriterion, offerSubcriteria, col, offer});
 
-    Cell cell;
+    List<OfferSubcriterionDTO> offerSublist = offer.getOfferSubcriteria();
 
-    if (of.getCriterion().getCriterionType().equals(LookupValues.EVALUATED_CRITERION_TYPE)) {
+    for (OfferCriterionDTO offerCriterionDTO : offer.getOfferCriteria()) {
+      Cell cell;
 
-      // conisder parsing text here.
-      CriterionLiteDTO cl = new CriterionLiteDTO();
-      cl.setCriterionId(of.getId());
+      if (offerCriterionDTO.getCriterion().getCriterionType().equals(LookupValues.EVALUATED_CRITERION_TYPE)) {
 
-      if (!of.getCriterion().getCriterionText()
-        .equals(getCellTitle(importedSheet, importRow.getCell(col + 1), TITLE_ROWNUM))) {
-        LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + RATED_CRITERIA + PARSING_PHRASE);
-        throw new IOException(MALFORMED_CRITERIA);
-        // Checktpoint
-      }
+        // conisder parsing text here.
+        CriterionLiteDTO cl = new CriterionLiteDTO();
+        cl.setCriterionId(offerCriterionDTO.getId());
 
-      // G
-      validateGewicht(importedSheet, col, of.getCriterion().getWeighting().toString(), SUITABILITY);
-
-      col++;
-
-      // Note
-      cell = importRow.getCell(col++);
-
-      // if (!of.getCriterion().getCriterionText()
-      // .equals(getCellTitle(importedSheet, cell, TITLE_ROWNUM))) {
-      // LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + RATED_CRITERIA + PARSING_PHRASE );
-      // throw new IOException(MALFORMED_CRITERIA);
-      // // Checktpoint
-      // }
-
-      if (of.getCriterion().getSubcriterion().isEmpty()) {
-        // Note is calculated in any case of BK with no UK.
-        cl.setGrade(getCalculatedValueFromCell(cell, wb));
-        cell = importRow.getCell(col++);
-        // punkte
-        cl.setScore(getCalculatedValueFromCell(cell, wb));
-      } else {
-        // note
-        cl.setGrade(getBigDecimalFromCell(cell, wb));
-        cell = importRow.getCell(col++);
-        // punkte
-        cl.setScore(getBigDecimalFromCell(cell, wb));
-
-        // loop subb
-        for (int i = 0; i < of.getCriterion().getSubcriterion().size(); i++) {
-
-          col = parseSubCriteria(wb, importedSheet, importRow, offerSubcriteria, col, of);
+        if (!offerCriterionDTO.getCriterion().getCriterionText()
+          .equals(getCellTitle(importedSheet, importRow.getCell(col + 1), TITLE_ROWNUM))) {
+          LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + RATED_CRITERIA + PARSING_PHRASE);
+          throw new IOException(MALFORMED_CRITERIA);
+          // Checkpoint
         }
+
+        // G
+        validateGewicht(importedSheet, col, offerCriterionDTO.getCriterion().getWeighting().toString(), SUITABILITY);
+
+        col++;
+
+        // Note
+        cell = importRow.getCell(col++);
+
+        if (offerCriterionDTO.getCriterion().getSubcriterion().isEmpty()) {
+          // Note is calculated in any case of BK with no UK.
+          cl.setGrade(getCalculatedValueFromCell(cell, wb));
+          cell = importRow.getCell(col++);
+          // punkte
+          cl.setScore(getCalculatedValueFromCell(cell, wb));
+        } else {
+          // note
+          cl.setGrade(getBigDecimalFromCell(cell, wb));
+          cell = importRow.getCell(col++);
+          // punkte
+          cl.setScore(getBigDecimalFromCell(cell, wb));
+          // parse sub criteria
+          col = parseSubCriteria(wb, importedSheet, importRow, offerSubcriteria, col, offerSublist,
+            offerCriterionDTO);
+        }
+        evaluatedCriterion.add(cl);
       }
-      evaluatedCriterion.add(cl);
     }
-    return col;
   }
 
   /**
@@ -3403,53 +3392,59 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
    * @param importRow the import row
    * @param offerSubcriteria the offer subcriteria
    * @param col the col
+   * @param offerSublist the offer sublist
    * @param of the of
-   * @return the int
+   * @return the col
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  // check with
   private int parseSubCriteria(XSSFWorkbook wb, XSSFSheet importedSheet, Row importRow,
-    ArrayList<OfferSubcriterionLiteDTO> offerSubcriteria, int col, OfferCriterionDTO of)
+    ArrayList<OfferSubcriterionLiteDTO> offerSubcriteria, int col,
+    List<OfferSubcriterionDTO> offerSublist, OfferCriterionDTO of)
     throws IOException {
 
     LOGGER.log(Level.CONFIG,
       "Executing method parseSubCriteria, Parameters: wb: {0}, "
-        + "importedSheet: {1}, importRow: {2}, col: {3}, of: {4}, "
-        + "offerSubcriteria: {5}",
-      new Object[]{wb, importedSheet, importRow, col, of, offerSubcriteria});
+        + "importedSheet: {1}, importRow: {2}, offerSubcriteria: {3}, col: {4}, "
+        + "offerSublist: {5}, of: {6}",
+      new Object[]{wb, importedSheet, importRow, offerSubcriteria, col, offerSublist, of});
+
+    // OfferSubcriteria are not in prefexed place. so we have to find them. if they dont exist
+    // at all, import fails.
+    boolean subExists = false;
 
     Cell cell;
-    OfferSubcriterionLiteDTO subLite = new OfferSubcriterionLiteDTO();
-    // G coll
-    int gCol = col;
 
-    col++;
-
-    // note cell
-    cell = importRow.getCell(col++);
-
-    int macthingSubCriteria = 0;
     for (SubcriterionDTO subcriterionDTO : of.getCriterion().getSubcriterion()) {
+      // G col
+      int gCol = col;
+      col++;
+      // note cell
+      cell = importRow.getCell(col++);
 
-      if (subcriterionDTO.getSubcriterionText()
-        .equals(getCellTitle(importedSheet, cell, TITLE_ROWNUM))) {
+      for (OfferSubcriterionDTO ofc : offerSublist) {
 
-        validateGewicht(importedSheet, gCol, subcriterionDTO.getWeighting().toString(),
-          SUITABILITY);
+        if ((ofc.getSubcriterion().getId().equals(subcriterionDTO.getId())) && (subcriterionDTO.getSubcriterionText()
+          .equals(getCellTitle(importedSheet, cell, TITLE_ROWNUM)))) {
 
-        subLite.setOfferSubcriterionId(subcriterionDTO.getId());
-        // Note value set
-        subLite.setGrade(getBigDecimalFromCell(cell, wb));
-        // punkte
-        cell = importRow.getCell(col++);
-        subLite.setScore(getCalculatedValueFromCell(cell, wb));
+          OfferSubcriterionLiteDTO subLite = new OfferSubcriterionLiteDTO();
 
-        offerSubcriteria.add(subLite);
-        macthingSubCriteria++;
+          // validate G, after locating the proper sub.
+          validateGewicht(importedSheet, gCol, subcriterionDTO.getWeighting().toString(),
+            SUITABILITY);
+
+          subLite.setOfferSubcriterionId(subcriterionDTO.getId());
+          // Note value set
+          subLite.setGrade(getBigDecimalFromCell(cell, wb));
+          // punkte
+          cell = importRow.getCell(col++);
+          subLite.setScore(getCalculatedValueFromCell(cell, wb));
+          offerSubcriteria.add(subLite);
+          subExists = true;
+        }
       }
     }
 
-    if (macthingSubCriteria != 1) {
+    if (!subExists) {
       LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ SubCritirien parsing.");
       throw new IOException(MALFORMED_CRITERIA);
     }
@@ -3549,7 +3544,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
    * @param col the col
    * @param offerSublist the offer sublist
    * @param of the of
-   * @return the int
+   * @return the col
    * @throws IOException Signals that an I/O exception has occurred.
    */
   private int parseSubOfferCriteria(XSSFWorkbook wb, XSSFSheet importedSheet, Row importRow,
@@ -3567,26 +3562,25 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
     boolean subExists = false;
 
     Cell cell;
-    OfferSubcriterionLiteDTO subLite = new OfferSubcriterionLiteDTO();
-    int headingRow = AWARD_TITLE_ROWNUM;
 
-    // G coll
-    col++;
-
-    // Note cell
-    cell = importRow.getCell(col++);
     for (SubcriterionDTO subcriterionDTO : of.getCriterion().getSubcriterion()) {
+      // G col
+      col++;
+      // Note cell
+      cell = importRow.getCell(col++);
 
       for (OfferSubcriterionDTO ofc : offerSublist) {
 
         if ((ofc.getSubcriterion().getId().equals(subcriterionDTO.getId())) && (subcriterionDTO
-          .getSubcriterionText().equals(getCellTitle(importedSheet, cell, headingRow)))) {
-          subLite.setOfferSubcriterionId(ofc.getId());
+          .getSubcriterionText().equals(getCellTitle(importedSheet, cell, AWARD_TITLE_ROWNUM)))) {
+
+          OfferSubcriterionLiteDTO subLite = new OfferSubcriterionLiteDTO();
 
           // validate G, after locating the proper sub.
           validateGewicht(importedSheet, (col - 2), subcriterionDTO.getWeighting().toString(),
             AWARD);
 
+          subLite.setOfferSubcriterionId(ofc.getId());
           // Note value set
           subLite.setGrade(getBigDecimalFromCell(cell, wb));
           // punkte

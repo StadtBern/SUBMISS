@@ -21,7 +21,9 @@ import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.util.View;
 import ch.bern.submiss.web.forms.TaskCreateForm;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.fasterxml.jackson.annotation.JsonView;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.Valid;
@@ -61,18 +63,31 @@ public class TasksResource {
   public Response getAllTasks(@PathParam("showUserTasks") boolean showUserTasks) {
     return Response.ok(taskService.getAllTasks(showUserTasks)).build();
   }
+
+  @GET
+  @Path("/companyTask/{companyId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @JsonView(View.Public.class)
+  public Response getCompanyTask(@PathParam("companyId") String companyId) {
+    return Response.ok(taskService.getCompanyTask(companyId)).build();
+  }
   
   @DELETE
   @Path("/settleTask/{id}")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response settleTask(@PathParam("id") String taskId) {
 
+    Set<ValidationError> optimisticLockErrors = taskService.settleTaskOptimisticLock(taskId);
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+
     if (!taskService.settleControllingTask(taskId)) {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
     
     return Response.ok().build();
-    
   }
   
   @POST

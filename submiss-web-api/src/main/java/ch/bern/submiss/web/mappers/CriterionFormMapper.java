@@ -13,15 +13,15 @@
 
 package ch.bern.submiss.web.mappers;
 
+import ch.bern.submiss.services.api.dto.CriterionDTO;
+import ch.bern.submiss.services.api.dto.SubcriterionDTO;
+import ch.bern.submiss.web.forms.CriterionForm;
+import ch.bern.submiss.web.forms.SubcriterionForm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import ch.bern.submiss.services.api.dto.CriterionDTO;
-import ch.bern.submiss.services.api.dto.SubcriterionDTO;
-import ch.bern.submiss.web.forms.CriterionForm;
-import ch.bern.submiss.web.forms.SubcriterionForm;
 
 @Mapper(uses = {SubmissionMapper.class, SubcriterionFormMapper.class})
 public abstract class CriterionFormMapper {
@@ -34,13 +34,16 @@ public abstract class CriterionFormMapper {
     }
 
     CriterionDTO criterionDTO = new CriterionDTO();
-
     criterionDTO.setId(criterionForm.getId());
+    criterionDTO.setVersion(criterionForm.getVersion());
     criterionDTO.setSubmission(criterionForm.getSubmission());
     criterionDTO.setCriterionText(criterionForm.getCriterionText());
     criterionDTO.setWeighting(criterionForm.getWeighting());
     criterionDTO.setCriterionType(criterionForm.getCriterionType());
     criterionDTO.setSubcriterion(formToSubcriterionDTO(criterionForm));
+    if (criterionForm.getPageRequestedOn() != null) {
+      criterionDTO.setPageRequestedOn(criterionForm.getPageRequestedOn());
+    }
     return criterionDTO;
   }
 
@@ -62,7 +65,11 @@ public abstract class CriterionFormMapper {
         if (subcriterionForm.getWeighting() != null) {
           subcriterionDTO.setWeighting(subcriterionForm.getWeighting());
         }
+        subcriterionDTO.setVersion(subcriterionForm.getVersion());
         subcriterionDTOList.add(subcriterionDTO);
+        if (criterionForm.getPageRequestedOn() != null) {
+          subcriterionDTO.setPageRequestedOn(criterionForm.getPageRequestedOn());
+        }
       }
     }
     return subcriterionDTOList;
@@ -86,7 +93,11 @@ public abstract class CriterionFormMapper {
         if (subcriterionDTO.getWeighting() != null) {
           subcriterionForm.setWeighting(subcriterionDTO.getWeighting());
         }
+        subcriterionForm.setVersion(subcriterionDTO.getVersion());
         subcriterionFormList.add(subcriterionForm);
+        if (subcriterionDTO.getPageRequestedOn() != null) {
+          subcriterionForm.setPageRequestedOn(subcriterionForm.getPageRequestedOn());
+        }
       }
     }
     return subcriterionFormList;
@@ -112,13 +123,16 @@ public abstract class CriterionFormMapper {
     }
 
     CriterionForm criterionForm = new CriterionForm();
-
     criterionForm.setId(criterionDTO.getId());
+    criterionForm.setVersion(criterionDTO.getVersion());
     criterionForm.setSubmission(criterionDTO.getSubmission());
     criterionForm.setCriterionText(criterionDTO.getCriterionText());
     criterionForm.setWeighting(criterionDTO.getWeighting());
     criterionForm.setCriterionType(criterionDTO.getCriterionType());
     criterionForm.setSubcriterion(dtoToSubcriterionForm(criterionDTO));
+    if (criterionDTO.getPageRequestedOn() != null) {
+      criterionForm.setPageRequestedOn(criterionDTO.getPageRequestedOn());
+    }
     return criterionForm;
   }
 
@@ -134,5 +148,4 @@ public abstract class CriterionFormMapper {
 
     return list;
   }
-
 }

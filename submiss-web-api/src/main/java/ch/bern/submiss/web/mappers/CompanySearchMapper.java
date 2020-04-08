@@ -13,15 +13,17 @@
 
 package ch.bern.submiss.web.mappers;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 import ch.bern.submiss.services.api.dto.CompanySearchDTO;
 import ch.bern.submiss.web.forms.CompanySearchForm;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(uses = {CompanyMapper.class, CompanyFilterMapper.class, MasterListValueHistoryMapper.class})
 public abstract class CompanySearchMapper {
 
   public static final CompanySearchMapper INSTANCE = Mappers.getMapper(CompanySearchMapper.class);
 
+  @Mapping(target = "archived", defaultValue = "0")
   public abstract CompanySearchDTO toCompanySearchDTO(CompanySearchForm companyForm);
 }

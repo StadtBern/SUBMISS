@@ -31,7 +31,10 @@
 			          || offerDetailsCtrl.offerDetailsForm.discount2Days.$invalid
 			          || offerDetailsCtrl.offerDetailsForm.offerVariantNotesErrorField.$invalid
 			          || offerDetailsCtrl.offerDetailsForm.tempVat.$invalid
-			          || offerDetailsCtrl.error" role="alert">
+                || offerDetailsCtrl.error || offerDetailsCtrl.offerDetailsForm.optimisticLockErrorField.$invalid
+                || offerDetailsCtrl.offerDetailsForm.deletedByAnotherUserErrorField.$invalid
+                || offerDetailsCtrl.offerDetailsForm.statusChangedErrorField.$invalid"
+                role="alert">
                 <field-error form-element-name="errorField" translate name="error"></field-error>
                 <field-error form-element-name="offerNotesErrorField" translate name="error"></field-error>
                 <field-error form-element-name="offerPriceIncreaseErrorField" translate name="error"></field-error>
@@ -39,6 +42,9 @@
                 <field-error form-element-name="discount2Days" translate name="error"></field-error>
                 <field-error form-element-name="offerVariantNotesErrorField" translate name="error"></field-error>
                 <field-error form-element-name="offerAmountErrorField" translate name="error"></field-error>
+                <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+                <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
+                <field-error form-element-name="statusChangedErrorField" translate name="error"></field-error>
                 <ul ng-if="offerDetailsCtrl.offerDetailsForm.grossAmount.$invalid
        					 || offerDetailsCtrl.offerDetailsForm.discount.$invalid || offerDetailsCtrl.offerDetailsForm.grossAmountCorrected.$invalid
        					 || offerDetailsCtrl.offerDetailsForm.buildingCosts.$invalid || offerDetailsCtrl.offerDetailsForm.discount2.$invalid
@@ -58,6 +64,9 @@
               <input name="discount2" ng-hide="true" data-ng-model="fd">
               <input name="discount2Days" ng-hide="true" data-ng-model="fd">
               <input name="offerVariantNotesErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd">
+              <input name="statusChangedErrorField" ng-hide="true" data-ng-model="fd">
             </div>
             <div class="col-sm-6">
               <h4>Offertinformationen</h4>
@@ -337,7 +346,8 @@
               </div>
             </div>
             <div class="col-sm-12 col-md-12 btn-bar">
-              <button type="button" ng-click="offerDetailsCtrl.save()" class="btn btn-primary">Speichern</button>
+              <button type="button" ng-click="offerDetailsCtrl.save()" class="btn btn-primary"
+                ng-disabled="!offerDetailsCtrl.offerDetailsForm.$dirty">Speichern</button>
               <button type="button" class="btn btn-default"
                 ng-click="offerDetailsCtrl.resetPage(offerDetailsCtrl.offerDetailsForm.$dirty)">Abbrechen</button>
               <div ng-if="offerDetailsCtrl.offerDetailsForm.$dirty">

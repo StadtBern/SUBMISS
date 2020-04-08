@@ -24,8 +24,9 @@
       CriterionAddController);
 
   /** @ngInject */
-  function CriterionAddController($rootScope, $scope, $state, $stateParams, $uibModalInstance,
-    submission, isEvaluated, $uibModal, QFormJSRValidation, ExaminationService, AppConstants) {
+  function CriterionAddController($rootScope, $scope, $state, $stateParams,
+    $uibModalInstance, submission, submissionVersion, isEvaluated, pageRequestedOn, $uibModal,
+    QFormJSRValidation, ExaminationService, AppConstants, AppService) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -40,6 +41,7 @@
      * Exported functions.
      **********************************************************************/
     vm.criterionSave = criterionSave;
+    vm.closeModal = closeModal;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -54,12 +56,27 @@
      * Functions.
      **********************************************************************/
     function criterionSave() {
+      ExaminationService.examinationLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithSaving();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            vm.errorFieldsVisible = true;
+            QFormJSRValidation.markErrors($scope,
+              $scope.criterionAddCtrl.criterionForm, response);
+          }
+        });
+    }
+
+    function proceedWithSaving() {
       if (isEvaluated) {
         vm.criterion.criterionType = AppConstants.CRITERION_TYPE.EVALUATED_CRITERION_TYPE;
       } else {
         vm.criterion.criterionType = AppConstants.CRITERION_TYPE.MUST_CRITERION_TYPE;
       }
       vm.criterion.submission = submission;
+      vm.criterion.pageRequestedOn = pageRequestedOn;
+      vm.criterion.submissionVersion = submissionVersion;
       ExaminationService.addCriterionToSubmission(vm.criterion)
         .success(function (data) {
           $uibModalInstance.close();
@@ -78,10 +95,27 @@
           }
         }).error(function (response, status) {
           if (status === 400) { // Validation errors.
+            vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.criterionAddCtrl.criterionForm, response);
           }
         });
+    }
+
+    function closeModal() {
+      if (vm.dirtyFlag || vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('examination.view', {}, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
+      }
     }
   }
 })();

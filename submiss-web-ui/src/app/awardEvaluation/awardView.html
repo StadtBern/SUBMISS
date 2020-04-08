@@ -13,7 +13,7 @@
 
 <div class="row">
   <div class="col-sm-12">
-    <h2 class="page-title">
+    <h2 class="page-title" id="page-title">
       {{awardViewCtrl.data.submission.workType.value1}}
       {{awardViewCtrl.data.submission.workType.value2}}, <small>
         {{awardViewCtrl.data.submission.project.projectName}},
@@ -25,11 +25,26 @@
   <div class="card-box">
     <div class="col-sm-12">
       <div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
-      <div ng-if="awardViewCtrl.data.submission.process == awardViewCtrl.process.SELECTIVE" ng-include src="'app/selective/secondStage/secondStageTabs.html'"></div>
+      <div ng-if="awardViewCtrl.data.submission.process == awardViewCtrl.process.SELECTIVE" ng-include
+        src="'app/selective/secondStage/secondStageTabs.html'"></div>
       <form name="awardViewCtrl.awardForm" data-ng-submit="awardViewCtrl.save(awardViewCtrl.awardForm)" id="awardForm"
         shows-validation-errors>
         <fieldset>
-          <div class="alert alert-danger" ng-if="awardViewCtrl.awardForm.$invalid" role="alert" id="ErrorAnchor">
+          <div class="alert alert-danger" ng-if="awardViewCtrl.awardForm.generalErrorField.$invalid
+            || awardViewCtrl.awardForm.criterionErrorField.$invalid
+            || awardViewCtrl.awardForm.subcriterionErrorField.$invalid
+            || awardViewCtrl.awardForm.awardMaxGradeErrorField.$invalid
+            || awardViewCtrl.awardForm.awardMinGradeErrorField.$invalid
+            || awardViewCtrl.awardForm.evaluationThroughErrorField.$invalid
+            || awardViewCtrl.awardForm.addedAwardRecipientsErrorField.$invalid
+            || awardViewCtrl.awardForm.priceMaxGradeErrorField.$invalid
+            || awardViewCtrl.awardForm.opCostMaxGradeErrorField.$invalid
+            || awardViewCtrl.awardForm.priceMinGradeErrorField.$invalid
+            || awardViewCtrl.awardForm.opCostMinGradeErrorField.$invalid
+            || awardViewCtrl.awardForm.noAwardDocumentField.$invalid
+            || awardViewCtrl.awardForm.optimisticLockErrorField.$invalid
+            || awardViewCtrl.awardForm.deletedByAnotherUserErrorField.$invalid
+                " role="alert" id="ErrorAnchor">
             <field-error form-element-name="generalErrorField" translate name="error"></field-error>
             <field-error form-element-name="criterionErrorField" translate name="error"></field-error>
             <field-error form-element-name="subcriterionErrorField" translate name="error"></field-error>
@@ -43,9 +58,12 @@
             <field-error form-element-name="priceMinGradeErrorField" translate name="error"></field-error>
             <field-error form-element-name="opCostMinGradeErrorField" translate name="error"></field-error>
             <field-error form-element-name="noAwardDocumentField" translate name="error"></field-error>
+            <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+            <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
           </div>
           <div id='mandatoryFieldsEmpty' class="col-sm-12">
-            <div class="alert alert-danger" role="alert" ng-if="(awardViewCtrl.notPermittedToEnterCriteriaAssess || awardViewCtrl.mandatoryFieldsEmpty) && awardViewCtrl.awardForm.$valid">
+            <div class="alert alert-danger" role="alert"
+              ng-if="(awardViewCtrl.notPermittedToEnterCriteriaAssess || awardViewCtrl.mandatoryFieldsEmpty) && awardViewCtrl.awardForm.$valid">
               <ul>
                 <li>
                   <field-error translate>mandatory_error_message</field-error>
@@ -66,6 +84,8 @@
           <input name="priceMinGradeErrorField" ng-hide="true" data-ng-model="fd"></input>
           <input name="opCostMinGradeErrorField" ng-hide="true" data-ng-model="fd"></input>
           <input name="noAwardDocumentField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd"></input>
 
           <div role="tabpanel" class="tab-pane" id="zuschlag">
             <div class="col-sm-12 ToolbarContainer">
@@ -76,13 +96,20 @@
               <br ng-if="awardViewCtrl.data.submission.awardLockedBy" />
 
               <div class="btn-toolbar pull-right" role="toolbar">
-                <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.criteriaAssess()">
+                <button ng-if="awardViewCtrl.data.submission.status < 200" type="button" class="btn btn-primary"
+                  ng-click="awardViewCtrl.criteriaAssess()">
                   <span class="fa fa-plus" aria-hidden="true"></span> Zuschlagskriterien bewerten
                 </button>
+                <button ng-if="awardViewCtrl.data.submission.status >= 200" type="button" class="btn btn-primary"
+                  ng-click="awardViewCtrl.criteriaAssess()">
+                  <span class="fa fa-plus" aria-hidden="true"></span> Zuschlagskriterien anzeigen
+                </button>
                 <div class="btn-toolbar pull-left" style="padding-left:4px" role="toolbar" uib-dropdown>
-                  <button id="" type="button" class="btn btn-primary" ng-disabled="awardViewCtrl.data.submission.awardIsLocked || appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
+                  <button id="" type="button" class="btn btn-primary"
+                    ng-disabled="awardViewCtrl.data.submission.awardIsLocked || (appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN && appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.PL) || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
                     uib-dropdown-toggle>
-                    <em class="fa fa-download" aria-hidden="true"></em> Export <em class="fa fa-caret-down" aria-hidden="true"></em>
+                    <em class="fa fa-download" aria-hidden="true"></em> Export <em class="fa fa-caret-down"
+                      aria-hidden="true"></em>
                   </button>
                   <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="Export">
                     <li role="menuitem"><a ng-click="awardViewCtrl.exportEMLCriteria()"> <em class="fa fa-file-text-o"
@@ -95,21 +122,26 @@
                 </div>
 
                 <div flow-init flow-name="awardViewCtrl.files" class="btn btn-primary" style="display: inline;"
-                  flow-name="obj.flow" flow-files-submitted="awardViewCtrl.uploadFile($flow)" flow-file-error="awardViewCtrl.uploadError($file, $message, $flow )"
-                  ng-disabled="(!awardViewCtrl.data.submission.awardLockedTime )|| appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)">
-                  <span flow-btn flow-attrs="{accept:'*'}" flow-complete="awardViewCtrl.uploaded($flow);" class="action  multipleUpload fa-upload">
+                  flow-name="obj.flow" flow-files-submitted="awardViewCtrl.uploadFile($flow)"
+                  flow-file-error="awardViewCtrl.uploadError($file, $message, $flow )"
+                  ng-disabled="(!awardViewCtrl.data.submission.awardLockedTime ) || (appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN && appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.PL) || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)">
+                  <span flow-btn flow-attrs="{accept:'*'}" flow-complete="awardViewCtrl.uploaded($flow);"
+                    class="action  multipleUpload fa-upload">
                     <div class="multipleUpload" /> Import
                   </span>
                 </div>
-                <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.lockAward()" ng-if="!awardViewCtrl.data.submission.awardIsLocked"
-                  ng-disabled="appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)">
+                <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.lockAward()"
+                  ng-if="!awardViewCtrl.data.submission.awardIsLocked"
+                  ng-disabled="(appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN && appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.PL) || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)">
                   <span class="fa fa-lock" aria-hidden="true"></span> Sperren
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.unlockAward()" ng-if="awardViewCtrl.data.submission.awardIsLocked"
-                  ng-disabled="appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)">
+                <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.unlockAward()"
+                  ng-if="awardViewCtrl.data.submission.awardIsLocked"
+                  ng-disabled="(appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.ADMIN && appCtrl.getLoggedUser().userGroup.name != awardViewCtrl.group.PL) || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)">
                   <span class="fa fa-unlock" aria-hidden="true"></span> Entsperren
                 </button>
-                <button type="button" class="btn btn-primary" ng-if="awardViewCtrl.currentStatus < awardViewCtrl.status.AWARD_EVALUATION_CLOSED"
+                <button type="button" class="btn btn-primary"
+                  ng-if="awardViewCtrl.currentStatus < awardViewCtrl.status.AWARD_EVALUATION_CLOSED"
                   ng-disabled="!awardViewCtrl.secAwardEvaluationClose || awardViewCtrl.awardEvaluationCloseButtonDisabled(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)"
                   ng-click="awardViewCtrl.checkForChanges(awardViewCtrl.awardForm.$dirty)">
                   Zuschlagsbewertung abschliessen</button>
@@ -124,27 +156,35 @@
             <div class="col-sm-12 col-md-12">
               <div class="col-sm-12 col-md-6">
                 <div class="form-group">
-                  <label for="bewert">Bewertung durch<span class="mandatory">*</span></label> <input ng-model="awardViewCtrl.award.evaluationThrough"
+                  <label for="bewert">Bewertung durch<span class="mandatory">*</span></label> <input
+                    ng-model="awardViewCtrl.award.evaluationThrough"
                     ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
                     class="form-control" id="evaluationThrough" name="evaluationThrough" type="text">
                 </div>
 
                 <div class="form-group">
-                  <label for="zahl">Mindestnote<span class="mandatory">*</span></label> <input ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
-                    class="form-control" id="awardMinGrade" name="awardMinGrade" data-ng-model="awardViewCtrl.award.awardMinGrade"
-                    type="number" step=".01" ng-change="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
-                    ng-blur="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)" ng-keyup="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                  <label for="zahl">Mindestnote<span class="mandatory">*</span></label> <input
+                    ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
+                    class="form-control" id="awardMinGrade" name="awardMinGrade"
+                    data-ng-model="awardViewCtrl.award.awardMinGrade" type="number" step=".01"
+                    ng-change="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                    ng-blur="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                    ng-keyup="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
                     ng-keydown="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)">
                 </div>
                 <div class="form-group">
                   <label for="priceFormula">Formel Preis</label>
                   <span class="mandatory">*</span>
-                  <ui-select name="priceFormula" id="priceFormula" ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
+                  <ui-select name="priceFormula" id="priceFormula"
+                    ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
                     ng-model="awardViewCtrl.award.priceFormula" theme="select2">
-                    <ui-select-match allow-clear="true"> <span ng-bind="awardViewCtrl.customMatchCalculationFormulas($select.selected.value1, $select.selected.value2, true)"></span>
+                    <ui-select-match allow-clear="true"> <span
+                        ng-bind="awardViewCtrl.customMatchCalculationFormulas($select.selected.value1, $select.selected.value2, true)"></span>
                     </ui-select-match>
                     <ui-select-choices repeat="formula in awardViewCtrl.calculationFormulas">
-                      <span ng-bind="awardViewCtrl.customDisplayCalculationFormulas(formula.value1, formula.value2, true)"></span></ui-select-choices>
+                      <span
+                        ng-bind="awardViewCtrl.customDisplayCalculationFormulas(formula.value1, formula.value2, true)"></span>
+                    </ui-select-choices>
                   </ui-select>
                 </div>
                 <div class="form-group">
@@ -157,28 +197,38 @@
               <div class="col-sm-12 col-md-6">
                 <div class="form-group">
                   <label for="empfanger">Mehrere Zuschläge<span class="mandatory">*</span></label>
-                  <input ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
-                    class="form-control" id="addedAwardRecipients" name="addedAwardRecipients" data-ng-model="awardViewCtrl.award.addedAwardRecipients"
-                    type="number" step="1" ng-change="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
-                    ng-blur="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)" ng-keyup="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                  <input
+                    ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
+                    class="form-control" id="addedAwardRecipients" name="addedAwardRecipients"
+                    data-ng-model="awardViewCtrl.award.addedAwardRecipients" type="number" step="1"
+                    ng-change="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                    ng-blur="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                    ng-keyup="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
                     ng-keydown="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)">
                 </div>
 
                 <div class="form-group">
-                  <label for="zahl2">Maximalnote<span class="mandatory">*</span></label> <input ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
-                    class="form-control" id="awardMaxGrade" name="awardMaxGrade" data-ng-model="awardViewCtrl.award.awardMaxGrade"
-                    type="number" step=".01" ng-change="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
-                    ng-blur="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)" ng-keyup="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                  <label for="zahl2">Maximalnote<span class="mandatory">*</span></label> <input
+                    ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
+                    class="form-control" id="awardMaxGrade" name="awardMaxGrade"
+                    data-ng-model="awardViewCtrl.award.awardMaxGrade" type="number" step=".01"
+                    ng-change="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                    ng-blur="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
+                    ng-keyup="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)"
                     ng-keydown="awardViewCtrl.validateNumberInputForMinus(awardViewCtrl.awardForm)">
                 </div>
                 <div class="form-group">
                   <label for="preis2">Formel Betriebskosten<span class="mandatory">*</span></label>
-                  <ui-select name="operatingCostFormula" id="operatingCostFormula" ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.canAddOperatingCostAwardCriterion || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
+                  <ui-select name="operatingCostFormula" id="operatingCostFormula"
+                    ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.canAddOperatingCostAwardCriterion || !awardViewCtrl.secAwardEvaluationEdit || awardViewCtrl.buttonOrFieldDisabledForAwardEvaluationEdit(awardViewCtrl.currentStatus)"
                     ng-model="awardViewCtrl.award.operatingCostFormula" theme="select2">
-                    <ui-select-match allow-clear="true"> <span ng-bind="awardViewCtrl.customMatchCalculationFormulas($select.selected.value1, $select.selected.value2, false)"></span>
+                    <ui-select-match allow-clear="true"> <span
+                        ng-bind="awardViewCtrl.customMatchCalculationFormulas($select.selected.value1, $select.selected.value2, false)"></span>
                     </ui-select-match>
                     <ui-select-choices repeat="formula in awardViewCtrl.calculationFormulas">
-                      <span ng-bind="awardViewCtrl.customDisplayCalculationFormulas(formula.value1, formula.value2, false)"></span></ui-select-choices>
+                      <span
+                        ng-bind="awardViewCtrl.customDisplayCalculationFormulas(formula.value1, formula.value2, false)"></span>
+                    </ui-select-choices>
                   </ui-select>
                 </div>
                 <div class="form-group">
@@ -203,8 +253,8 @@
                       </h4>
                     </span>
                   </div>
-                  <div id="collapseTwelve" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwelve"
-                    ng-if="awardViewCtrl.tableAccordionShow">
+                  <div id="collapseTwelve" class="panel-collapse collapse in" role="tabpanel"
+                    aria-labelledby="headingTwelve" ng-if="awardViewCtrl.tableAccordionShow">
                     <div class="panel-body">
 
                       <div class="col-sm-12 rankSummary">
@@ -214,16 +264,20 @@
                             <thead>
                               <tr>
                                 <th colspan="6"></th>
-                                <th class="leftborder w10 min-max-width-cols" ng-repeat-start="criterion in awardViewCtrl.criteria track by criterion.id">G</th>
+                                <th class="leftborder w10 min-max-width-cols"
+                                  ng-repeat-start="criterion in awardViewCtrl.criteria track by criterion.id">G</th>
                                 <th class="leftborder min-max-width-cols" colspan="2">
-                                  <div data-toggle="tooltip" title="{{criterion.criterionText}}" class="cut-big-entries">
+                                  <div data-toggle="tooltip" title="{{criterion.criterionText}}"
+                                    class="cut-big-entries">
                                     {{criterion.criterionText}}
                                   </div>
                                 </th>
-                                <th class="leftborder w10 min-max-width-cols" ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id"><span
-                                    class="italic">G</span></th>
+                                <th class="leftborder w10 min-max-width-cols"
+                                  ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id">
+                                  <span class="italic">G</span></th>
                                 <th class="leftborder min-max-width-cols" colspan="2" ng-repeat-end>
-                                  <div data-toggle="tooltip" title="{{subcriterion.subcriterionText}}" class="cut-big-entries">
+                                  <div data-toggle="tooltip" title="{{subcriterion.subcriterionText}}"
+                                    class="cut-big-entries">
                                     <span class="italic">UK
                                       {{subcriterion.subcriterionText}}</span>
                                   </div>
@@ -236,12 +290,17 @@
                                 <th class="leftborder w10 min-max-width-cols">Rang</th>
                                 <th class="leftborder min-max-width-cols" colspan="3">Totale Punkte</th>
                                 <th class="leftborder min-max-width-cols">Netto-Preis exkl. MWST</th>
-                                <th class="leftborder w10 min-max-width-cols" ng-repeat-start="criterion in awardViewCtrl.criteria track by criterion.id">{{awardViewCtrl.formatAmount(criterion.weighting)}}</th>
+                                <th class="leftborder w10 min-max-width-cols"
+                                  ng-repeat-start="criterion in awardViewCtrl.criteria track by criterion.id">
+                                  {{awardViewCtrl.formatAmount(criterion.weighting)}}</th>
                                 <th class="leftborder min-max-width-cols">Note</th>
                                 <th class="leftborder min-max-width-cols">Punkte</th>
-                                <th class="leftborder w10 min-max-width-cols" ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id">{{awardViewCtrl.formatAmount(subcriterion.weighting)}}</th>
+                                <th class="leftborder w10 min-max-width-cols"
+                                  ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id">
+                                  {{awardViewCtrl.formatAmount(subcriterion.weighting)}}</th>
                                 <th class="leftborder min-max-width-cols"><span class="italic">Note</span></th>
-                                <th class="leftborder min-max-width-cols" ng-repeat-end><span class="italic">Punkte</span></th>
+                                <th class="leftborder min-max-width-cols" ng-repeat-end><span
+                                    class="italic">Punkte</span></th>
                                 <!-- dummy input just to close the ng-repeat -->
                                 <th ng-hide="true" ng-repeat-end></th>
                               </tr>
@@ -250,10 +309,10 @@
                               <tr ng-repeat="offer in awardViewCtrl.offers
 									| filter : awardViewCtrl.filterLessThan('awardRank', awardViewCtrl.displayedOffers, offerIndex)
 									| orderBy: 'awardRank'
-									track by offer.id"
-                                ng-init="offerIndex=$index" ng-style="awardViewCtrl.greyedOut(offer)">
+									track by offer.id" ng-init="offerIndex=$index" ng-style="awardViewCtrl.greyedOut(offer)">
                                 <td style="min-width: 240px;">
-                                  <div data-toggle="tooltip" title="{{ awardViewCtrl.showSubmittentJointVenturesSubcontractors(offer)}}"
+                                  <div data-toggle="tooltip"
+                                    title="{{ awardViewCtrl.showSubmittentJointVenturesSubcontractors(offer)}}"
                                     class="cut-big-entries">
                                     <strong>{{ awardViewCtrl.showSubmittentAndLocation(offer)}}</strong>
                                     <sup ng-if="offer.isVariant"><strong>V</strong></sup>
@@ -261,15 +320,19 @@
                                   </div>
                                 </td>
                                 <td class="leftborder w10 min-max-width-cols">{{offer.awardRank}}</td>
-                                <td class="leftborder min-max-width-cols" colspan="3">{{awardViewCtrl.roundScoreToString(offer.awardTotalScore)}}</td>
-                                <td class="leftborder min-max-width-cols">{{awardViewCtrl.customRoundNumber(offer.amount)}}</td>
-                                <td class="leftborder w10 min-max-width-cols" ng-repeat-start="criterion in awardViewCtrl.criteria track by criterion.id"
+                                <td class="leftborder min-max-width-cols" colspan="3">
+                                  {{awardViewCtrl.roundScoreToString(offer.awardTotalScore)}}</td>
+                                <td class="leftborder min-max-width-cols">
+                                  {{awardViewCtrl.customRoundNumber(offer.amount)}}</td>
+                                <td class="leftborder w10 min-max-width-cols"
+                                  ng-repeat-start="criterion in awardViewCtrl.criteria track by criterion.id"
                                   ng-init="criterionIndex=$index"></td>
                                 <td class="leftborder min-max-width-cols">{{awardViewCtrl.getOfferCriterionGrade(offer,
                                   criterionIndex)}}</td>
                                 <td class="leftborder min-max-width-cols">{{awardViewCtrl.getOfferCriterionScore(offer,
                                   criterionIndex)}}</td>
-                                <td class="leftborder w10 min-max-width-cols" ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id"
+                                <td class="leftborder w10 min-max-width-cols"
+                                  ng-repeat-start="subcriterion in criterion.subcriterion track by subcriterion.id"
                                   ng-init="subcriterionIndex=$index"></td>
                                 <td class="leftborder min-max-width-cols">{{awardViewCtrl.getOfferSubcriterionGrade(offer,
                                   criterionIndex, subcriterionIndex)}}</td>
@@ -290,12 +353,14 @@
                     <div class="btn-toolbar pull-right" role="toolbar">
 
                       <button type="button" class="btn btn-primary" title="Kriterium hinzufügen" data-toggle="modal"
-                        data-target="#HauptKriterium" ng-click="awardViewCtrl.addCriterion(false)" ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAddCriterion
+                        data-target="#HauptKriterium" ng-click="awardViewCtrl.addCriterion(false)"
+                        ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAddCriterion
 													|| awardViewCtrl.buttonOrFieldDisabledForAwardCriterion(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)">
                         <span class="fa fa-plus" aria-hidden="true"></span> Kriterium
                         hinzufügen
                       </button>
-                      <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.addCriterion(true)" ng-if="awardViewCtrl.canAddOperatingCostAwardCriterion"
+                      <button type="button" class="btn btn-primary" ng-click="awardViewCtrl.addCriterion(true)"
+                        ng-if="awardViewCtrl.canAddOperatingCostAwardCriterion"
                         ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAddOperatingCostAwardCriterion
 															|| awardViewCtrl.operatingCostAwardCriterionExists()
 															|| awardViewCtrl.buttonOrFieldDisabledForAwardCriterion(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)">
@@ -306,18 +371,22 @@
                   </div>
                 </div>
 
-                <div accordion-group class="panel panel-default" is-open="criterion.show" ng-repeat="criterion in awardViewCtrl.criteria">
+                <div accordion-group class="panel panel-default" is-open="criterion.show"
+                  ng-repeat="criterion in awardViewCtrl.criteria">
                   <div accordion-heading class="panel-heading" role="tab">
                     <span ng-click="awardViewCtrl.openCriteriaAccordion(criterion)" id="{{criterion.id}}">
                       <h4 class="panel-title">
-                        <a role="button" ng-if="criterion.show != false && criterion.show != true" aria-expanded="false">
+                        <a role="button" ng-if="criterion.show != false && criterion.show != true"
+                          aria-expanded="false">
                           {{criterion.criterionText}}: Gewichtung
                           ({{awardViewCtrl.formatAmount(criterion.weighting)}}%)</a>
-                        <a role="button" ng-if="criterion.show == false || criterion.show == true" aria-expanded="{{criterion.show}}">
+                        <a role="button" ng-if="criterion.show == false || criterion.show == true"
+                          aria-expanded="{{criterion.show}}">
                           {{criterion.criterionText}}: Gewichtung
                           ({{awardViewCtrl.formatAmount(criterion.weighting)}}%)</a>
-                        <a class="pull-right"><span class="fa fa-trash" ng-click="awardViewCtrl.deleteCriterion(criterion.id)"
-                            title="Kriterium löschen" aria-hidden="true" ng-if="criterion.criterionType != 'priceAwardCriterion'"
+                        <a class="pull-right"><span class="fa fa-trash"
+                            ng-click="awardViewCtrl.deleteCriterion(criterion.id)" title="Kriterium löschen"
+                            aria-hidden="true" ng-if="criterion.criterionType != 'priceAwardCriterion'"
                             ng-hide="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secDeleteCriterion ||
 														awardViewCtrl.buttonOrFieldDisabledForAwardCriterion(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)"></span></a>
                       </h4>
@@ -330,7 +399,8 @@
                           <div class="col-sm-12 ToolbarContainer">
                             <div class="btn-toolbar pull-right" role="toolbar">
                               <button type="button" class="btn action btn-primary" title="Unterkriterium hinzufügen"
-                                data-toggle="modal" ng-click="awardViewCtrl.addSubcriterion(criterion.id)" ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAddSubcriterion ||
+                                data-toggle="modal" ng-click="awardViewCtrl.addSubcriterion(criterion.id)"
+                                ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secAddSubcriterion ||
 																	awardViewCtrl.buttonOrFieldDisabledForSubcriterion(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)"
                                 ng-if="criterion.criterionType != 'priceAwardCriterion' && criterion.criterionType != 'operatingCostAwardCriterion'">
                                 <span class="fa fa-plus" aria-hidden="true"></span> Unterkriterium hinzufügen
@@ -341,8 +411,9 @@
                         <div role="tabpanel">
                           <div class="row">
                             <div class="col-sm-8">
-                              <label for="">Kriterium<span class="mandatory">*</span></label> <input class="form-control"
-                                data-ng-model="criterion.criterionText" id="" placeholder="" type="text"
+                              <label for="">Kriterium<span class="mandatory">*</span></label> <input
+                                class="form-control" data-ng-model="criterion.criterionText" id="" placeholder=""
+                                type="text"
                                 data-ng-disabled="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secUpdateCriterion || criterion.criterionType == 'priceAwardCriterion'
 																	|| awardViewCtrl.buttonOrFieldDisabledForAwardCriterion(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)">
                             </div>
@@ -375,7 +446,8 @@
                                 <span class="input-group-addon" id="basic-addon1">%</span>
                                 <div class="col-sm-1">
                                   <button type="button" ng-click="awardViewCtrl.deleteSubcriterion(subcriterion.id)"
-                                    title="Unterkriterium löschen" ng-hide="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secDeleteSubcriterion ||
+                                    title="Unterkriterium löschen"
+                                    ng-hide="awardViewCtrl.data.submission.awardIsLocked || !awardViewCtrl.secDeleteSubcriterion ||
 														                			awardViewCtrl.buttonOrFieldDisabledForSubcriterion(awardViewCtrl.data.submission.process, awardViewCtrl.currentStatus)">
                                     <span class="fa fa-trash" aria-hidden="true"></span>
                                   </button>
@@ -390,11 +462,14 @@
                 </div>
               </div>
               <div class="col-sm-12 col-md-12 btn-bar">
-                <button type="submit" class="btn btn-primary" ng-disabled="awardViewCtrl.data.submission.awardIsLocked || awardViewCtrl.saveAndCancelButtonsDisabled()">Speichern</button>
-                <button type="button" class="btn btn-default" ng-click="awardViewCtrl.cancelButton(awardViewCtrl.awardForm.$dirty)"
+                <button type="submit" class="btn btn-primary"
+                  ng-disabled="awardViewCtrl.data.submission.awardIsLocked || awardViewCtrl.saveAndCancelButtonsDisabled()">Speichern</button>
+                <button type="button" class="btn btn-default"
+                  ng-click="awardViewCtrl.cancelButton(awardViewCtrl.awardForm.$dirty)"
                   ng-disabled="awardViewCtrl.data.submission.awardIsLocked || awardViewCtrl.saveAndCancelButtonsDisabled()">Abbrechen</button>
                 <div ng-if="awardViewCtrl.awardForm.$dirty">
-                  <input ng-hide="true" type="checkbox" data-ng-model="awardViewCtrl.dirtyFlag" ng-init="awardViewCtrl.dirtyFlag=true">
+                  <input ng-hide="true" type="checkbox" data-ng-model="awardViewCtrl.dirtyFlag"
+                    ng-init="awardViewCtrl.dirtyFlag=true">
                 </div>
               </div>
         </fieldset>

@@ -13,31 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.sql.SQLExpressions;
-
 import ch.bern.submiss.services.api.administration.ProjectService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
@@ -61,7 +36,9 @@ import ch.bern.submiss.services.api.dto.ProjectDTO;
 import ch.bern.submiss.services.api.dto.SearchDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.TenderDTO;
+import ch.bern.submiss.services.api.exceptions.AuthorisationException;
 import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.DepartmentHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.DepartmentMapper;
 import ch.bern.submiss.services.impl.mappers.MasterListValueHistoryMapper;
@@ -86,6 +63,28 @@ import ch.bern.submiss.services.impl.model.QSubmittentEntity;
 import ch.bern.submiss.services.impl.model.QTenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.TenantEntity;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.sql.SQLExpressions;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class ProjectServiceImpl.
@@ -189,12 +188,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
   @Inject
   private AuditBean audit;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.ProjectService#getProjectById(java.lang.String)
-   */
   @Override
   public ProjectDTO getProjectById(String id) {
 
@@ -244,12 +237,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return projectDTO;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#createProject(ch.bern.submiss.
-   * services.api.dto.ProjectDTO)
-   */
   @Override
   public String createProject(ProjectDTO project) {
 
@@ -263,6 +250,11 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       projectEntity.setPmExternal(em.find(CompanyEntity.class, project.getPmExternal().getId()));
     }
     projectEntity.setPmDepartmentName(project.getPmDepartmentName());
+
+    if(projectEntity.getProjectNumber() != null
+      && projectEntity.getProjectNumber().trim().isEmpty()){
+      projectEntity.setProjectNumber(null);
+    }
 
     if (project.getDepartment() != null) {
       DepartmentHistoryDTO departmentDTO =
@@ -304,17 +296,15 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return projectEntity.getId();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#deleteProject(java.lang.String)
-   */
   @Override
   public void deleteProject(String id) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method deleteProject, Parameters: id: {0}",
       id);
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT_DELETE.getValue(), id);
 
     ProjectEntity projectEntity = em.find(ProjectEntity.class, id);
 
@@ -345,16 +335,9 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.ProjectService#search(ch.bern.submiss.services.api.
-   * dto.SearchDTO, int, int, java.lang.String, java.lang.String)
-   */
   @Override
   public List<TenderDTO> search(SearchDTO searchDTO, int page, int pageItems, String sortColumn,
-    String sortType) {
+    String sortType) throws AuthorisationException {
 
     LOGGER.log(Level.CONFIG,
       "Executing method search, Parameters: searchDTO {0}, page: {1}, pageItems: {2}, "
@@ -363,6 +346,8 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
 
     UserDTO user = getUser();
 
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT_SEARCH.getValue(), null);
     // check if this operation is allowed for this user
     security.requireOperation(user.getId(), SecurityOperation.PROJECT_SEARCH.getValue());
 
@@ -383,7 +368,9 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       TenderDTO tenderDTO = new TenderDTO();
       SubmissionDTO submissionDTO = SubmissionMapper.INSTANCE.toSubmissionDTO(s);
       tenderDTO.setId(submissionDTO.getId());
+      tenderDTO.setVersion(submissionDTO.getVersion());
       tenderDTO.setProjectId(submissionDTO.getProject().getId());
+      tenderDTO.setProjectVersion(submissionDTO.getProject().getVersion());
       tenderDTO.setProjectName(submissionDTO.getProject().getProjectName());
       // setting Object
       MasterListValueHistoryDTO objectNameDTO =
@@ -399,7 +386,7 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
             s.getWorkType().getId(), statusDate, creationDate, null);
         submissionDTO.setWorkType(workTypeDTO);
 
-        tenderDTO.setWorkType(submissionDTO.getWorkType().getValue1() + " "
+        tenderDTO.setWorkType(submissionDTO.getWorkType().getValue1() + LookupValues.SPACE
           + submissionDTO.getWorkType().getValue2());
       }
       tenderDTO.setDescription(submissionDTO.getDescription());
@@ -425,7 +412,7 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
         departmentDTO.getDirectorate().getDirectorateId().getId(), statusDate);
       submissionDTO.getProject().getDepartment().setDirectorate(directorate);
       tenderDTO.setManDep(submissionDTO.getProject().getDepartment().getDirectorate().getShortName()
-        + " / " + submissionDTO.getProject().getDepartment().getShortName());
+        + LookupValues.SLASH + submissionDTO.getProject().getDepartment().getShortName());
       tenderDTO.setSubmissionDeadline(
         (submissionDTO.getSecondDeadline() != null) ? submissionDTO.getSecondDeadline()
           : submissionDTO.getFirstDeadline());
@@ -443,13 +430,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return tenderDTOList;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.ProjectService#getProjectsByObjectId(java.lang.
-   * String)
-   */
   @Override
   public List<String> getProjectsByObjectId(String objectId) {
 
@@ -480,13 +460,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return query.select(entity.projectName).distinct().from(entity).where(whereClause).fetch();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.ProjectService#getProjectsByObjectsIDs(java.util.
-   * List)
-   */
   @Override
   public List<ProjectDTO> getProjectsByObjectsIDs(List<String> objectsIDs) {
 
@@ -515,12 +488,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return ProjectMapper.INSTANCE.toProjectDTO(projectEntityList);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#getAllProjectsNames(java.lang.
-   * String)
-   */
   @Override
   public List<String> getAllProjectsNames(String excludedProject) {
 
@@ -544,11 +511,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       .from(entity).where(whereClause).fetch();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#getAllProjects()
-   */
   @Override
   public List<ProjectDTO> getAllProjects() {
 
@@ -567,11 +529,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return ProjectMapper.INSTANCE.toProjectDTO(projectEntities);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#getAllProjectsCreditNos()
-   */
   @Override
   public List<String> getAllProjectsCreditNos() {
 
@@ -589,11 +546,6 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       .from(entity).where(whereClause.and(entity.projectNumber.isNotNull())).fetch();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#getAllProjectManagers()
-   */
   @Override
   public List<String> getAllProjectManagers() {
 
@@ -611,17 +563,18 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       .from(entity).where(whereClause.and(entity.pmDepartmentName.isNotNull())).fetch();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.ProjectService#updateProject(ch.bern.submiss.
-   * services.api.dto.ProjectDTO)
-   */
   @Override
-  public void updateProject(ProjectDTO project) {
+  public Set<ValidationError> updateProject(ProjectDTO project) {
 
     LOGGER.log(Level.CONFIG, "Executing method project, Parameters: project: {0}",
       project);
+
+    // Check for Optimistic Locking if project is deleted by another user
+    Set<ValidationError> optimisticLockErrors = optimisticLockDeleteCheck(project.getId());
+
+    if (!optimisticLockErrors.isEmpty()) {
+      return optimisticLockErrors;
+    }
 
     ProjectEntity projectEntity = ProjectMapper.INSTANCE.toProject(project);
     if (project.getPmExternal() != null) {
@@ -731,9 +684,29 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
         }
       }
     }
-
     em.merge(projectEntity);
+    return optimisticLockErrors;
+  }
 
+  /**
+   * Check if project is deleted by another user.
+   *
+   * @param id the project id
+   * @return the error
+   */
+  private Set<ValidationError> optimisticLockDeleteCheck(String id) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method optimisticLockDeleteCheck, Parameters: id: {0}", id);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    ProjectEntity projectEntity = em.find(ProjectEntity.class, id);
+    if (projectEntity == null) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField",
+          ValidationMessages.OPTIMISTIC_LOCK_DELETE));
+    }
+    return optimisticLockErrors;
   }
 
   /**
@@ -1229,7 +1202,7 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       searchDTO);
 
     JPAQuery<Tuple> query = new JPAQuery<>(em);
-    Long projectCount = null;
+    Long projectCount;
 
     // If ExcludedProject null then get submission count for project search, else get project count
     // for daten verschieben
@@ -1400,4 +1373,58 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     return true;
   }
 
+  @Override
+  public Set<ValidationError> optimisticLockProject(String projectId, Long currentVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method optimisticLockProject, "
+        + "Parameters: projectId: {0}, currentVersion: {1}",
+      new Object[]{projectId, currentVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    ProjectEntity projectEntity = em.find(ProjectEntity.class, projectId);
+    // Check if current version is different from the version stored in the database
+    if (!currentVersion.equals(projectEntity.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField",
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  @Override
+  public boolean projectExists(String projectId) {
+    ProjectEntity projectEntity = em.find(ProjectEntity.class, projectId);
+    return projectEntity != null;
+  }
+
+  @Override
+  public void projectCreateSecurityCheck() {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT_CREATE.getValue(), null);
+  }
+
+  @Override
+  public void projectEditSecurityCheck(String id) {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT_EDIT.getValue(), id);
+  }
+
+  @Override
+  public void projectDetailsSecurityCheck(String projectId) {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT.getValue(), projectId);
+  }
+
+  @Override
+  public void submissionListSecurityCheck(String projectId) {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_LIST_VIEW.getValue(), projectId);
+  }
+
+  @Override
+  public void projectSearchSecurityCheck() {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT_SEARCH.getValue(), null);
+  }
 }

@@ -62,7 +62,7 @@
   /** @ngInject */
   function TasksViewController($scope, $state, TasksService, NgTableParams,
     $filter,
-    AppService, $uibModal, $translate, StammdatenService) {
+    AppService, $uibModal, $translate, StammdatenService, QFormJSRValidation) {
     var vm = this;
     /***********************************************************************
      * Local variables.
@@ -281,11 +281,15 @@
       return modalResult.result
         .then(function (response) {
           if (response) {
-            TasksService.settleTask(task.id).success(
-                function (data) {
-                  $state.reload();
-                })
-              .error(function (response, status) {});
+            TasksService.settleTask(task.id)
+              .success(function (data) {
+                $state.reload();
+              }).error(function (response, status) {
+                if (status === 400) { // Validation errors.
+                  QFormJSRValidation
+                    .markErrors($scope, $scope.tasksViewCtrl.taskForm, response);
+                }
+              });
           }
           return true;
         });

@@ -20,16 +20,18 @@
 		<div class="alert alert-danger"
 			ng-if="awardAddCtr.addAwardForm.$invalid" role="alert">
 			<field-error form-element-name="submittentNotSelected" translate
-				name="error"></field-error>
+				name="error"/>
 			<field-error form-element-name="offerAboveThresholdPL" translate
-				name="error"></field-error>
+				name="error"/>
 			<field-error form-element-name="errorReasonFreeAwardAdmin" translate
-				name="error"></field-error>
+				name="error"/>
+      <field-error form-element-name="optimisticLockErrorField" translate name="error"/>
 		</div>
-		<input name="submittentNotSelected" ng-hide="true" data-ng-model="fd"></input>
-		<input name="offerAboveThresholdPL" ng-hide="true" data-ng-model="fd"></input>
-		<input name="errorReasonFreeAwardAdmin" ng-hide="true" data-ng-model="fd"></input> 
-		<div class="form-group" ng-if="awardAddCtr.activeSubmittents.length > 0">
+		<input name="submittentNotSelected" ng-hide="true" data-ng-model="fd"/>
+		<input name="offerAboveThresholdPL" ng-hide="true" data-ng-model="fd"/>
+		<input name="errorReasonFreeAwardAdmin" ng-hide="true" data-ng-model="fd"/>
+    <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"/>
+    <div class="form-group" ng-if="awardAddCtr.activeSubmittents.length > 0">
 			<div ng-if="awardAddCtr.activeSubmittents.length > 0"><p>Bitte wählen Sie den/die Zuschläge aus:</p></div>
 			<div class="table-responsive">
 			 	<div class="tab-content">

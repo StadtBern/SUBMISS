@@ -12,38 +12,44 @@
   -->
 
 <div class="row" ng-style="jointVentureDetailsCtrl.divRowStyle()">
-  <fieldset ng-disabled="jointVentureDetailsCtrl.disabledForm()"
-  			ng-style="jointVentureDetailsCtrl.fieldsetStyle()">
-	<div class="col-sm-12 ToolbarContainer">
-		<div class="btn-toolbar" role="toolbar"
-			ng-class="{'pull-right': jointVentureDetailsCtrl.submittent.jointVentures.length > 0}">
-			<button type="button"
-				data-ng-click="jointVentureDetailsCtrl.addCompany()"
-				class="btn btn-primary" data-toggle="modal"
-				data-target="#hinzufügen"
-				data-ng-disabled="jointVentureDetailsCtrl.addJointVentureDisabled()">
-				<span class="fa fa-plus" aria-hidden="true"></span> ARGE hinzufügen
-			</button>
-		</div>
-	</div>
-	<div class="col-sm-12" >
-		<ul class="list-group">
-			<li class="list-group-item"
-				ng-if="jointVentureDetailsCtrl.submittent.companyId.companyName"
-				ng-repeat="jointVenture in jointVentureDetailsCtrl.submittent.jointVentures | orderBy : 'companyName'">{{jointVenture.companyName}},
-				{{jointVenture.location}}
-				<a type="button" class="btn btn-primary pull-right"
-					ng-if="jointVentureDetailsCtrl.deleteJointVentureDisabled()"
-					data-ng-disabled="true"
-					title="ARGE entfernen"> <span class="fa fa-trash"
-					aria-hidden="true"></span></a>
-				<a type="button" class="btn btn-primary pull-right"
-					data-ng-click="jointVentureDetailsCtrl.deleteJointVentureModal(jointVentureDetailsCtrl.submittent.id, jointVenture.id)"
-					ng-if="!jointVentureDetailsCtrl.deleteJointVentureDisabled()"
-					title="ARGE entfernen"> <span class="fa fa-trash"
-					aria-hidden="true"></span></a>
-			</li>
-		</ul>
-	</div>
+
+  <form name="jointVentureDetailsCtrl.jointVentureForm">
+    <fieldset>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="jointVentureDetailsCtrl.jointVentureForm.$invalid" role="alert">
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        </div>
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+    </fieldset>
+  </form>
+
+  <fieldset ng-disabled="jointVentureDetailsCtrl.disabledForm()" ng-style="jointVentureDetailsCtrl.fieldsetStyle()">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="btn-toolbar" role="toolbar"
+        ng-class="{'pull-right': jointVentureDetailsCtrl.submittent.jointVentures.length > 0}">
+        <button type="button" data-ng-click="jointVentureDetailsCtrl.addCompany()" class="btn btn-primary"
+          data-toggle="modal" data-target="#hinzufügen"
+          data-ng-disabled="jointVentureDetailsCtrl.addJointVentureDisabled()">
+          <span class="fa fa-plus" aria-hidden="true"></span> ARGE hinzufügen
+        </button>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <ul class="list-group">
+        <li class="list-group-item" ng-if="jointVentureDetailsCtrl.submittent.companyId.companyName"
+          ng-repeat="jointVenture in jointVentureDetailsCtrl.submittent.jointVentures | orderBy : 'companyName'">
+          {{jointVenture.companyName}},
+          {{jointVenture.location}}
+          <a type="button" class="btn btn-primary pull-right"
+            ng-if="jointVentureDetailsCtrl.deleteJointVentureDisabled()" data-ng-disabled="true" title="ARGE entfernen">
+            <span class="fa fa-trash" aria-hidden="true"></span></a>
+          <a type="button" class="btn btn-primary pull-right"
+            data-ng-click="jointVentureDetailsCtrl.deleteJointVentureModal(jointVentureDetailsCtrl.submittent.id, jointVenture.id)"
+            ng-if="!jointVentureDetailsCtrl.deleteJointVentureDisabled()" title="ARGE entfernen"> <span
+              class="fa fa-trash" aria-hidden="true"></span></a>
+        </li>
+      </ul>
+    </div>
   </fieldset>
 </div>

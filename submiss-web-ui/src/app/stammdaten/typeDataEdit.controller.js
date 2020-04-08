@@ -37,6 +37,7 @@
     vm.entryId = entryId;
     vm.type = type;
     vm.entry = {};
+    vm.originalEntry = {};
     vm.dirtyFlag = false;
     vm.internalOrExternal = [true, false];
     vm.isLogib = false;
@@ -62,6 +63,8 @@
     vm.errorFieldsVisible = true;
     vm.isTenantKantonBern = false;
     vm.invalidImageMessageVisible = false;
+    vm.oldValue1 = null;
+    vm.oldValue2 = null;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
@@ -84,11 +87,19 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      defineModalTitle();
-      checkType();
-      initializeValues();
-      getTypeDataEntryById();
-      getDirectorates();
+      StammdatenService.loadSD()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            $uibModalInstance.close();
+            return;
+          } else {
+            defineModalTitle();
+            checkType();
+            initializeValues();
+            getTypeDataEntryById();
+            getDirectorates();
+          }
+        });
     }
 
     /***********************************************************************
@@ -166,7 +177,12 @@
       if (vm.entryId) {
         StammdatenService.getTypeDataEntryById(vm.entryId, vm.type).success(function (data) {
           vm.entry = data;
+          //Using angular.copy because that value should not be changed.
+          angular.copy(vm.entry, vm.originalEntry);
+
           if (vm.isProofs) {
+            vm.oldValue1 = vm.entry.name;
+            vm.oldValue2 = vm.entry.country.id;
             // Translate active value to true or false.
             if (vm.entry.active === 1) {
               vm.entry.active = true;
@@ -175,12 +191,24 @@
             }
             getCountries();
           } else if (vm.isVatRate) {
+            vm.oldValue1 = vm.entry.value1;
             // Convert "Wert in %" value to number.
             vm.vatRatePercentage = Number(vm.entry.value2);
           } else if (vm.isSettings) {
             if (vm.entry.shortCode === "S6" || vm.entry.shortCode === "S12") {
               vm.entry.value2 = Number(vm.entry.value2);
             }
+          } else if (vm.isDepartment) {
+            vm.oldValue1 = vm.entry.name;
+            vm.oldValue2 = vm.entry.shortName;
+          } else if (vm.isDirectorate) {
+            vm.oldValue1 = vm.entry.name;
+          } else if (vm.isCancelReason || vm.isWorkType || vm.isExclusionCriterion ||
+            vm.isNegotiationReason || vm.isCalculationFormula || vm.isILO ||
+            vm.isObject || vm.isProcessPM || vm.isSettlementType) {
+            vm.oldValue1 = vm.entry.value2;
+          } else if (vm.isCountry) {
+            vm.oldValue1 = vm.entry.countryName;
           }
         });
       }
@@ -197,10 +225,12 @@
           vm.entryCountry = vm.countries[0];
         } else {
           // Get the country information by the entry country id (case of updating an entry).
-          for (i in vm.countries) {
-            if (vm.entry.country.id === vm.countries[i].countryId.id) {
-              vm.entryCountry = vm.countries[i];
-              break;
+          if (!angular.isUndefined(vm.entry.country)) {
+            for (i in vm.countries) {
+              if (vm.entry.country.id === vm.countries[i].countryId.id) {
+                vm.entryCountry = vm.countries[i];
+                break;
+              }
             }
           }
         }
@@ -320,15 +350,31 @@
 
     /** Saving functionality */
     function save() {
+      // Convert "Wert in %" value back to String, if present.
+      if (vm.isVatRate && vm.vatRatePercentage != null && !angular.isUndefined(vm.vatRatePercentage)) {
+        vm.entry.value2 = vm.vatRatePercentage.toString();
+      }
+      //do not save if the updated Object is equal with the Original
+      if (angular.equals(JSON.stringify(vm.entry), JSON.stringify(vm.originalEntry))) {
+        $uibModalInstance.close();
+        return;
+      }
+
       if (vm.isDepartment) {
         if (angular.isUndefined(vm.entry.internal)) {
           vm.entry.booleanInternalValue = null;
         } else {
           vm.entry.booleanInternalValue = vm.entry.internal;
         }
-        StammdatenService.saveDepartmentEntry(vm.entry).success(function (data) {
+        // check if the combination (name, shortName) has changed
+        var isNameOrShortNameChanged = vm.oldValue1 !== vm.entry.name || vm.oldValue2 !== vm.entry.shortName;
+        StammdatenService.saveDepartmentEntry(vm.entry, isNameOrShortNameChanged).success(function (data, status) {
           $uibModalInstance.close();
-          $state.reload();
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            $state.reload();
+          }
         }).error(function (response, status) {
           if (status === 400) {
             vm.errorFieldsVisible = true;
@@ -337,9 +383,15 @@
           }
         });
       } else if (vm.isDirectorate) {
-        StammdatenService.saveDirectorateEntry(vm.entry).success(function (data) {
+        // check if name has changed
+        var isNameChanged = vm.oldValue1 !== vm.entry.name;
+        StammdatenService.saveDirectorateEntry(vm.entry, isNameChanged).success(function (data, status) {
           $uibModalInstance.close();
-          $state.reload();
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            $state.reload();
+          }
         }).error(function (response, status) {
           if (status === 400) {
             QFormJSRValidation.markErrors($scope,
@@ -347,9 +399,15 @@
           }
         });
       } else if (vm.isCountry) {
-        StammdatenService.saveCountryEntry(vm.entry).success(function (data) {
+        // check if name has changed
+        var isNameChanged = vm.oldValue1 !== vm.entry.countryName;
+        StammdatenService.saveCountryEntry(vm.entry, isNameChanged).success(function (data, status) {
           $uibModalInstance.close();
-          $state.reload();
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            $state.reload();
+          }
         }).error(function (response, status) {
           if (status === 400) {
             QFormJSRValidation.markErrors($scope,
@@ -357,9 +415,13 @@
           }
         });
       } else if (vm.isLogib) {
-        StammdatenService.saveLogibEntry(vm.entry).success(function (data) {
+        StammdatenService.saveLogibEntry(vm.entry).success(function (data, status) {
           $uibModalInstance.close();
-          $state.reload();
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            $state.reload();
+          }
         }).error(function (response, status) {
           if (status === 400) {
             vm.errorFieldsVisible = true;
@@ -370,9 +432,13 @@
       } else if (vm.isProofs) {
         saveProof();
       } else if (vm.isEmailTemplate) {
-        StammdatenService.saveEmailTemplateEntry(vm.entry).success(function (data) {
+        StammdatenService.saveEmailTemplateEntry(vm.entry).success(function (data, status) {
           $uibModalInstance.close();
-          $state.reload();
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            $state.reload();
+          }
         }).error(function (response, status) {
           if (status === 400) {
             QFormJSRValidation.markErrors($scope,
@@ -380,17 +446,24 @@
           }
         });
       } else {
+        var isValueChanged;
         if (vm.isVatRate) {
-          // Convert "Wert in %" value back to String, if present.
-          if (vm.vatRatePercentage != null && !angular.isUndefined(vm.vatRatePercentage)) {
-            vm.entry.value2 = vm.vatRatePercentage.toString();
-          } else {
+          // check if value1 has changed
+          isValueChanged = vm.oldValue1 !== vm.entry.value1;
+          if (!(vm.vatRatePercentage != null && !angular.isUndefined(vm.vatRatePercentage))) {
             vm.entry.value2 = null;
           }
+        } else {
+          // check if value2 has changed
+          isValueChanged = vm.oldValue1 !== vm.entry.value2;
         }
-        StammdatenService.saveSDEntry(vm.entry, vm.type).success(function (data) {
+        StammdatenService.saveSDEntry(vm.entry, vm.type, isValueChanged).success(function (data, status) {
           $uibModalInstance.close();
-          $state.reload();
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            $state.reload();
+          }
         }).error(function (response, status) {
           if (status === 400) {
             vm.errorFieldsVisible = true;
@@ -543,10 +616,16 @@
 
     function saveProofEntry() {
       AppService.setPaneShown(true);
-      StammdatenService.saveProofsEntry(vm.entry).success(function (data) {
+      // check if the combination (name, country) is changed
+      var isNameOrCountryChanged = vm.oldValue1 !== vm.entry.name || vm.oldValue2 !== vm.entry.country.id;
+      StammdatenService.saveProofsEntry(vm.entry, isNameOrCountryChanged).success(function (data, status) {
         AppService.setPaneShown(false);
         $uibModalInstance.close();
-        $state.reload();
+        if (status === 403) { // Security checks.
+          return;
+        } else {
+          $state.reload();
+        }
       }).error(function (response, status) {
         AppService.setPaneShown(false);
         // Translate active value back to true or false.

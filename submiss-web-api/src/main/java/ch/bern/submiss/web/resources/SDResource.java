@@ -232,41 +232,53 @@ public class SDResource {
    *
    * @param type the master list value history type
    * @param sdHistoryForm the master list value history form
+   * @param isValueChanged the isValueChanged
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/saveSDEntry/{type}")
+  @Path("/saveSDEntry/{type}/{isValueChanged}")
   public Response saveSDEntry(@PathParam("type") String type,
-      @Valid MasterListValueHistoryForm sdHistoryForm) {
+    @Valid MasterListValueHistoryForm sdHistoryForm,
+    @PathParam("isValueChanged") boolean isValueChanged) {
+    sDService.sdSecurityCheck();
+    Set<ValidationError> errors = validateSDEntry(type, sdHistoryForm, isValueChanged);
+    if (!errors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    }
+    // If there are no errors proceed with saving/updating the master list value history entry.
+    Set<ValidationError> optimisticLockErrors = sDService.saveSDEntry(
+      MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(sdHistoryForm), type);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
+
+  private Set<ValidationError> validateSDEntry(String type,
+    MasterListValueHistoryForm sdHistoryForm, boolean isValueChanged) {
     Set<ValidationError> errors = new HashSet<>();
     if (type.equals(CategorySD.CANCEL_REASON.getValue())
-        || type.equals(CategorySD.EXCLUSION_CRITERION.getValue())
-        || type.equals(CategorySD.NEGOTIATION_REASON.getValue())) {
-      errors = validateCancelReasonExclusionCriterionNegotiationReason(sdHistoryForm, type);
+      || type.equals(CategorySD.EXCLUSION_CRITERION.getValue())
+      || type.equals(CategorySD.NEGOTIATION_REASON.getValue())) {
+      errors = validateCancelReasonExclusionCriterionNegotiationReason(sdHistoryForm, type, isValueChanged);
     } else if (type.equals(CategorySD.WORKTYPE.getValue())) {
-      errors = validateWorkType(sdHistoryForm);
+      errors = validateWorkType(sdHistoryForm, isValueChanged);
     } else if (type.equals(CategorySD.CALCULATION_FORMULA.getValue())) {
-      errors = validateCalculationFormula(sdHistoryForm);
-    } else if (type.equals(CategorySD.ILO.getValue()) || type.equals(CategorySD.OBJECT.getValue())
-        || type.equals(CategorySD.PROCESS_PM.getValue())
-        || type.equals(CategorySD.SETTLEMENT_TYPE.getValue())) {
-      errors = validateILOObjectProcessPMSettlementType(sdHistoryForm, type);
+      errors = validateCalculationFormula(sdHistoryForm, isValueChanged);
+    } else if (type.equals(CategorySD.ILO.getValue())
+      || type.equals(CategorySD.OBJECT.getValue())
+      || type.equals(CategorySD.PROCESS_PM.getValue())
+      || type.equals(CategorySD.SETTLEMENT_TYPE.getValue())) {
+      errors = validateILOObjectProcessPMSettlementType(sdHistoryForm, type, isValueChanged);
     } else if (type.equals(CategorySD.VAT_RATE.getValue())) {
-      errors = validateVatRate(sdHistoryForm);
+      errors = validateVatRate(sdHistoryForm, isValueChanged);
     } else if (type.equals(CategorySD.PROCESS_TYPE.getValue())) {
       errors = validateProcessType(sdHistoryForm);
     } else if (type.equals(CategorySD.SETTINGS.getValue())) {
       errors = validateSettings(sdHistoryForm);
     }
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
-    }
-    // If there are no errors proceed with saving/updating the master list value history entry.
-    sDService.saveSDEntry(
-        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(sdHistoryForm), type);
-    return Response.ok().build();
+    return errors;
   }
 
   /**
@@ -274,7 +286,7 @@ public class SDResource {
    * negotiation reason
    */
   private Set<ValidationError> validateCancelReasonExclusionCriterionNegotiationReason(
-      MasterListValueHistoryForm sdHistoryForm, String type) {
+      MasterListValueHistoryForm sdHistoryForm, String type, boolean isValueChanged) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if mandatory fields are empty.
     if (StringUtils.isBlank(sdHistoryForm.getValue2())
@@ -297,7 +309,13 @@ public class SDResource {
             ValidationMessages.DESCRIPTION_500_MESSAGE));
       }
       // Check if the description is unique.
-      if (!sDService.isDescriptionUnique(sdHistoryForm.getValue2(), type, sdHistoryForm.getId())) {
+      boolean validationCheck = (StringUtils.isBlank(sdHistoryForm.getId()))
+        // validation check for creating a sd entry
+        ? !sDService.isDescriptionUnique(sdHistoryForm.getValue2(), type, sdHistoryForm.getId())
+        // validation check for editing a sd entry
+        : isValueChanged && !sDService.isDescriptionUnique(sdHistoryForm.getValue2(), type, sdHistoryForm.getId())
+          && sdHistoryForm.getVersion() == 0;
+      if (validationCheck) {
         errors.add(new ValidationError(TEXT_VALUE_2, ValidationMessages.SAME_DESCRIPTION));
         errors
             .add(new ValidationError(DESCRIPTION_ERROR_FIELD, ValidationMessages.SAME_DESCRIPTION));
@@ -320,7 +338,8 @@ public class SDResource {
   }
 
   /** Function to validate the type work type */
-  private Set<ValidationError> validateWorkType(MasterListValueHistoryForm sdHistoryForm) {
+  private Set<ValidationError> validateWorkType(MasterListValueHistoryForm sdHistoryForm,
+    boolean isValueChanged) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if mandatory fields are empty.
     if (StringUtils.isBlank(sdHistoryForm.getValue1())
@@ -345,8 +364,15 @@ public class SDResource {
             ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
       }
       // Check if the description is unique.
-      if (!sDService.isDescriptionUnique(sdHistoryForm.getValue2(), CategorySD.WORKTYPE.getValue(),
-          sdHistoryForm.getId())) {
+      boolean validationCheck = (StringUtils.isBlank(sdHistoryForm.getId()))
+        // validation check for creating a sd entry
+        ? !sDService.isDescriptionUnique(sdHistoryForm.getValue2(), CategorySD.WORKTYPE.getValue(),
+        sdHistoryForm.getId())
+        // validation check for editing a sd entry
+        : isValueChanged && !sDService
+          .isDescriptionUnique(sdHistoryForm.getValue2(), CategorySD.WORKTYPE.getValue(),
+            sdHistoryForm.getId()) && sdHistoryForm.getVersion() == 0;
+      if (validationCheck) {
         errors.add(new ValidationError(INPUT_VALUE_2, ValidationMessages.SAME_DESCRIPTION));
         errors
             .add(new ValidationError(DESCRIPTION_ERROR_FIELD, ValidationMessages.SAME_DESCRIPTION));
@@ -365,7 +391,7 @@ public class SDResource {
 
   /** Function to validate the calculation formula */
   private Set<ValidationError> validateCalculationFormula(
-      MasterListValueHistoryForm sdHistoryForm) {
+      MasterListValueHistoryForm sdHistoryForm, boolean isValueChanged) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if mandatory fields are empty.
     if (StringUtils.isBlank(sdHistoryForm.getValue1())
@@ -389,8 +415,15 @@ public class SDResource {
             ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
       }
       // Check if the description is unique.
-      if (!sDService.isDescriptionUnique(sdHistoryForm.getValue1(),
-          CategorySD.CALCULATION_FORMULA.getValue(), sdHistoryForm.getId())) {
+      boolean validationCheck = (StringUtils.isBlank(sdHistoryForm.getId()))
+        // validation check for creating a sd entry
+        ? !sDService.isDescriptionUnique(sdHistoryForm.getValue1(),
+        CategorySD.CALCULATION_FORMULA.getValue(), sdHistoryForm.getId())
+        // validation check for editing a sd entry
+        : isValueChanged && !sDService.isDescriptionUnique(sdHistoryForm.getValue1(),
+          CategorySD.CALCULATION_FORMULA.getValue(), sdHistoryForm.getId())
+          && sdHistoryForm.getVersion() == 0;
+      if (validationCheck) {
         errors.add(new ValidationError(INPUT_VALUE_1, ValidationMessages.SAME_DESCRIPTION));
         errors
             .add(new ValidationError(DESCRIPTION_ERROR_FIELD, ValidationMessages.SAME_DESCRIPTION));
@@ -419,7 +452,7 @@ public class SDResource {
    * SettlementType
    */
   private Set<ValidationError> validateILOObjectProcessPMSettlementType(
-      MasterListValueHistoryForm sdHistoryForm, String type) {
+      MasterListValueHistoryForm sdHistoryForm, String type, boolean isValueChanged) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if mandatory field is empty.
     if (StringUtils.isBlank(sdHistoryForm.getValue1())) {
@@ -435,7 +468,14 @@ public class SDResource {
             ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
       }
       // Check if the description is unique.
-      if (!sDService.isDescriptionUnique(sdHistoryForm.getValue1(), type, sdHistoryForm.getId())) {
+      boolean validationCheck = (StringUtils.isBlank(sdHistoryForm.getId()))
+        // validation check for creating a sd entry
+        ? !sDService.isDescriptionUnique(sdHistoryForm.getValue1(), type, sdHistoryForm.getId())
+        // validation check for editing a sd entry
+        : isValueChanged && !sDService
+          .isDescriptionUnique(sdHistoryForm.getValue1(), type, sdHistoryForm.getId())
+          && sdHistoryForm.getVersion() == 0;
+      if (validationCheck) {
         errors.add(new ValidationError(INPUT_VALUE_1, ValidationMessages.SAME_DESCRIPTION));
         errors
             .add(new ValidationError(DESCRIPTION_ERROR_FIELD, ValidationMessages.SAME_DESCRIPTION));
@@ -445,7 +485,8 @@ public class SDResource {
   }
 
   /** Function to validate the type vat rate */
-  private Set<ValidationError> validateVatRate(MasterListValueHistoryForm sdHistoryForm) {
+  private Set<ValidationError> validateVatRate(MasterListValueHistoryForm sdHistoryForm,
+    boolean isValueChanged) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if mandatory fields are empty.
     if (StringUtils.isBlank(sdHistoryForm.getValue1())
@@ -470,8 +511,15 @@ public class SDResource {
             ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
       }
       // Check if the description is unique.
-      if (!sDService.isDescriptionUnique(sdHistoryForm.getValue1(), CategorySD.VAT_RATE.getValue(),
-          sdHistoryForm.getId())) {
+      boolean validationCheck = (StringUtils.isBlank(sdHistoryForm.getId()))
+        // validation check for creating a sd entry
+        ? !sDService.isDescriptionUnique(sdHistoryForm.getValue1(), CategorySD.VAT_RATE.getValue(),
+        sdHistoryForm.getId())
+        // validation check for editing a sd entry
+        : isValueChanged && !sDService
+          .isDescriptionUnique(sdHistoryForm.getValue1(), CategorySD.VAT_RATE.getValue(),
+            sdHistoryForm.getId()) && sdHistoryForm.getVersion() == 0;
+      if (validationCheck) {
         errors.add(new ValidationError(INPUT_VALUE_1, ValidationMessages.SAME_DESCRIPTION));
         errors
             .add(new ValidationError(DESCRIPTION_ERROR_FIELD, ValidationMessages.SAME_DESCRIPTION));
@@ -510,19 +558,25 @@ public class SDResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/updateProcedureValue/")
+	@Path("/updateProcedureValue")
 	public Response updateProcedureValue(ProcedureHistoryForm form) {
-		Set<ValidationError> errors = validation(form);
-		if (!errors.isEmpty()) {
-			return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
-		} else {
-			ProcedureHistoryDTO dto = ProcedureHistoryMapper.INSTANCE.toProcedureHistoryDTO(form);
-			procedureService.insertNewProcedure(dto);
-		}
+    Set<ValidationError> validationErrors = validation(form);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
+    }
+    Set<ValidationError> optimisticLockErrors = procedureService
+      .insertNewProcedure(ProcedureHistoryMapper.INSTANCE.toProcedureHistoryDTO(form));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
 
-		return Response.ok().build();
-	}
-
+  /**
+   * Procedure validation.
+   *
+   * @param form the form
+   * @return the errors
+   */
 	private Set<ValidationError> validation(ProcedureHistoryForm form) {
 		Set<ValidationError> errors = new HashSet<>();
 		if (form != null) {
@@ -556,25 +610,30 @@ public class SDResource {
 	  public SignatureProcessTypeDTO getSignatureId(@PathParam("id") String signatureId) {
 	    return sDService.retrieveSignatureById(signatureId);
 	  }
-	  
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/updateSignature/")
-	public Response updateSignature(SignatureProcessTypeDTO signatureProcessTypeDTO) {
 
-		sDService.updateSignatureProcessEntitled(signatureProcessTypeDTO);
-		return Response.ok().build();
-	}
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/updateSignature/")
+  public Response updateSignature(SignatureProcessTypeDTO signatureProcessTypeDTO) {
+    Set<ValidationError> optimisticLockErrors =
+      sDService.updateSignatureProcessEntitled(signatureProcessTypeDTO);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
 
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/updateSignatureCopies/")
-	public Response updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
-		sDService.updateSignatureCopies(signatureProcessTypeDTO);
-		return Response.ok().build();
-	}
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/updateSignatureCopies/")
+  public Response updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
+    Set<ValidationError> optimisticLockErrors =
+      sDService.updateSignatureCopies(signatureProcessTypeDTO);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
 
   /** Function to validate the type settings */
   private Set<ValidationError> validateSettings(MasterListValueHistoryForm sdHistoryForm) {
@@ -713,5 +772,19 @@ public class SDResource {
   public Response getCurrentMLVHEntriesForSubmission(@PathParam("submissionId") String submissionId,
       @PathParam("typeName") String typeName) {
     return Response.ok(sDService.getCurrentMLVHEntriesForSubmission(submissionId, typeName)).build();
+  }
+
+  /**
+   * Run security check before loading Stammdaten.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadSD")
+  public Response loadSD() {
+    sDService.sdSecurityCheck();
+    return Response.ok().build();
   }
 }

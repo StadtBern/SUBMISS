@@ -13,10 +13,11 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.util.List;
-
 import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.dto.ProcedureHistoryDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -53,7 +54,8 @@ public interface ProcedureService {
    * Insert new procedure.
    *
    * @param dto the dto
+   * @return the error
    */
-  void insertNewProcedure(ProcedureHistoryDTO dto);
+  Set<ValidationError> insertNewProcedure(ProcedureHistoryDTO dto);
   
 }

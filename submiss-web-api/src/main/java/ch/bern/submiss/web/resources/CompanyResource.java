@@ -139,6 +139,7 @@ public class CompanyResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public Response deleteCompany(@PathParam("id") String id) {
+    companyService.companyDeleteSecurityCheck();
     Set<ValidationError> errors = validationCompanyParticipate(id);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -159,14 +160,15 @@ public class CompanyResource {
    *
    * @param column the column to search in
    * @param query the query to search for
+   * @param archived the archived value
    * @return a distinct list of the column values
    */
   @POST
-  @Path("/fullTextSearch/{column}/{query}")
+  @Path("/fullTextSearch/{column}/{query}/{archived}")
   @Produces(MediaType.APPLICATION_JSON)
   public List<String> fullTextSearch(@PathParam("column") String column,
-    @PathParam("query") String query) {
-    return companyService.fullTextSearch(column, query);
+    @PathParam("query") String query, @PathParam("archived") boolean archived) {
+    return companyService.fullTextSearch(column, query, archived);
   }
 
   /**
@@ -177,6 +179,9 @@ public class CompanyResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response create(@Valid CompanyForm company) {
+
+    companyService.companyCreateSecurityCheck();
+
     Set<ValidationError> errors = validation(company);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -194,6 +199,7 @@ public class CompanyResource {
   @Path("/update/{archivedPrevious}")
   public Response update(@Valid CompanyForm company,
     @PathParam("archivedPrevious") Boolean archivedPrevious) {
+    companyService.companyUpdateSecurityCheck();
     Set<ValidationError> errors = validation(company);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -260,6 +266,7 @@ public class CompanyResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/proofs/update")
   public Response update(@Valid List<CompanyProofForm> proofs) {
+    companyService.companyProofsSecurityCheck();
     Set<ValidationError> errors = validationProof(proofs);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -685,5 +692,89 @@ public class CompanyResource {
           ValidationMessages.EMAIL_MAX_SIZE_ERROR_MESSAGE));
       }
     }
+  }
+
+  /**
+   * Run security check before loading Company Create form.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadCompanyCreate")
+  public Response loadCompanyCreate() {
+    companyService.companyCreateSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Company Offers.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadCompanyOffers")
+  public Response loadCompanyOffers() {
+    companyService.companyOffersSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Company Proofs.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadCompanyProofs")
+  public Response loadCompanyProofs() {
+    companyService.companyProofsSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Company Update.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadCompanyUpdate")
+  public Response loadCompanyUpdate() {
+    companyService.companyUpdateSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Company Update.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadCompany")
+  public Response loadCompany() {
+    companyService.companyViewSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Company Search.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadCompanySearch")
+  public Response loadCompanySearch() {
+    companyService.companySearchSecurityCheck();
+    return Response.ok().build();
   }
 }

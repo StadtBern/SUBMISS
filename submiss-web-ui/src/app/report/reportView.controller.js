@@ -117,22 +117,29 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      if ($state.current.name === 'report.generateReport') {
-        vm.reportForm.companies = []; // initialize in order to be updated by the add button
-        vm.reportForm.totalizationBy = 'totalByProcedure'; // set default totalization by procedure
-        vm.loadProjectsCreditNos();
-        vm.loadProjectManagers();
-      } else {
-        vm.loadReasonFreeAwards();
-        vm.loadCancelationreasons();
-        vm.loadAwardCompanies();
-      }
-      vm.loadObjects();
-      vm.loadProjects();
-      vm.loadProcedures();
-      vm.loadDepartments();
-      vm.loadDirectorates();
-      vm.loadWorkTypes();
+      ReportService.loadReport($state.current.name)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            if ($state.current.name === 'report.generateReport') {
+              vm.reportForm.companies = []; // initialize in order to be updated by the add button
+              vm.reportForm.totalizationBy = 'totalByProcedure'; // set default totalization by procedure
+              vm.loadProjectsCreditNos();
+              vm.loadProjectManagers();
+            } else {
+              vm.loadReasonFreeAwards();
+              vm.loadCancelationreasons();
+              vm.loadAwardCompanies();
+            }
+            vm.loadObjects();
+            vm.loadProjects();
+            vm.loadProcedures();
+            vm.loadDepartments();
+            vm.loadDirectorates();
+            vm.loadWorkTypes();
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -159,10 +166,16 @@
       } else {
         vm.invalidDate = false;
         ReportService.validateForm(vm.reportForm).success(
-          function (data) {
+          function (data, status) {
+            if (status === 403) { // Security checks.
+              return;
+            }
             vm.clearFormErrors('Auswertungen');
             ReportService.proceedOrNotToResults(vm.reportForm)
               .success(function (response, status) {
+                if (status === 403) { // Security checks.
+                  return;
+                }
                 vm.data = response;
                 if (angular.isNumber(response)) {
                   confirmModal(response, 1);
@@ -505,6 +518,10 @@
       AppService.setPaneShown(true);
       ReportService.generateReport(vm.reportForm)
         .success(function (response, status, headers) {
+          if (status === 403) { // Security checks.
+            AppService.setPaneShown(false);
+            return;
+          }
           checkForEmptyResults(response);
           AppService.setPaneShown(false);
           if (response.byteLength > 0) {
@@ -610,10 +627,16 @@
       vm.clearFormErrors('GeKo');
       vm.noResultsReturned = false;
       ReportService.validateOperationForm(vm.reportForm).success(
-        function (data) {
+        function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          }
           vm.clearFormErrors('GeKo');
           ReportService.proceedOrNotToOperationResults(vm.reportForm)
             .success(function (response, status) {
+              if (status === 403) { // Security checks.
+                return;
+              }
               vm.data = response;
               if (angular.isNumber(response) && response !== 0) {
                 confirmModal(response, 2);

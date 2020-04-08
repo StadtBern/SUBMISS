@@ -13,18 +13,15 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import ch.bern.submiss.services.api.constants.Process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import ch.bern.submiss.services.api.constants.Process;
 
 
 /**
  * The Class ProcedureHistoryDTO.
  */
-public class ProcedureHistoryDTO {
-
-  /** The id. */
-  private String id;
+public class ProcedureHistoryDTO extends AbstractDTO {
 
   /** The tenant. */
   private TenantDTO tenant;
@@ -70,24 +67,6 @@ public class ProcedureHistoryDTO {
    */
   public void setProcessTypeHistory(MasterListValueHistoryDTO processTypeHistory) {
     this.processTypeHistory = processTypeHistory;
-  }
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
   }
 
   /**
@@ -234,15 +213,10 @@ public class ProcedureHistoryDTO {
     this.processType = processType;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "ProcedureHistoryDTO [id=" + id + ", value=" + value + ", isActive=" + isActive
-        + ", fromDate=" + fromDate + ", toDate=" + toDate + ", process=" + process + "]";
+    return "ProcedureHistoryDTO [id=" + super.getId() + ", version=" + super.getVersion()
+      + ", value=" + value + ", isActive=" + isActive
+      + ", fromDate=" + fromDate + ", toDate=" + toDate + ", process=" + process + "]";
   }
-
 }

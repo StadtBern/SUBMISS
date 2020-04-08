@@ -21,7 +21,6 @@ import ch.bern.submiss.services.api.dto.OperationReportResultsDTO;
 import ch.bern.submiss.services.api.dto.PaginationDTO;
 import ch.bern.submiss.services.api.dto.ReportDTO;
 import ch.bern.submiss.services.api.dto.ReportResultsDTO;
-import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.web.forms.OperationReportForm;
 import ch.bern.submiss.web.forms.ReportForm;
@@ -34,6 +33,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -129,9 +129,6 @@ public class ReportResource {
         selectedColumns, caseFormat, sumAmount);
       ResponseBuilder response = Response.ok(content);
       if (content != null && content.length != 0) {
-        if (caseFormat.equals(".xlsx2")) {
-          caseFormat = LookupValues.EXCEL_FORMAT;
-        }
         String fileName = operationReportService.getReportFileName(caseFormat);
         response.header("Content-Disposition", "attachment; filename=" + fileName);
       }
@@ -192,6 +189,7 @@ public class ReportResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/validateForm")
   public Response validateForm(ReportForm reportForm) {
+    reportService.reportSecurityCheck();
     Set<ValidationError> errors = validation(reportForm);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -293,4 +291,21 @@ public class ReportResource {
     }
   }
 
+  /**
+   * Run security check before loading Operation Report values from Stammdaten.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadReport/{type}")
+  public Response loadReport(@PathParam("type") String type) {
+    if (type.equals("report.generateOperationReport")) {
+      operationReportService.operationReportSecurityCheck();
+    } else if (type.equals("report.generateReport")) {
+      reportService.reportSecurityCheck();
+    }
+    return Response.ok().build();
+  }
 }

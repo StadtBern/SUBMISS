@@ -109,11 +109,18 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      readStatusOfSubmission($stateParams.id);
-      readSubmission($stateParams.id);
-      readCriteriaOfSubmission($stateParams.id);
-      findUserOperations();
-      readOfferCriteria($stateParams.id);
+      SubmissionService.loadSuitabilityAudit($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            readStatusOfSubmission($stateParams.id);
+            readSubmission($stateParams.id);
+            readCriteriaOfSubmission($stateParams.id);
+            findUserOperations();
+            readOfferCriteria($stateParams.id);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -216,7 +223,19 @@
       }
     }
 
-    function save(form) {
+    function save() {
+      ExaminationService.examinationLockedByAnotherUser(vm.data.submission.id)
+        .success(function (data) {
+          proceedWithSaving();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            QFormJSRValidation.markErrors($scope,
+              $scope.suitabilityAuditCtrl.evidenceForm, response);
+          }
+        });
+    }
+
+    function proceedWithSaving() {
       var suitabilities = [];
       // create suitability in order to send it to ExaminationService.
       for (var i = 0; i < vm.offers.length; i++) {
@@ -224,6 +243,7 @@
           qExStatus: calculateStatus(vm.offers[i].submittent.existsExclusionReasons,
             vm.offers[i].submittent.formalExaminationFulfilled, vm.offers[i].mustCriterion),
           offerId: vm.offers[i].id,
+          offerVersion: vm.offers[i].version,
           qExRank: vm.offers[i].qExRank,
           qExSuitabilityNotes: vm.offers[i].qExSuitabilityNotes,
           qExExaminationIsFulfilled: vm.offers[i].qExExaminationIsFulfilled,
@@ -274,7 +294,7 @@
         suitability.qExTotalGrade = calculateTotalPoint(vm.offers[i].evaluatedCriterion);
         suitabilities.push(suitability);
       }
-      ExaminationService.updateOfferCriteria(suitabilities)
+      ExaminationService.updateOfferCriteria(suitabilities, $stateParams.id, vm.data.submission.pageRequestedOn)
         .success(function (data) {
           ExaminationService.updateSubmissionFormalAuditExaminationStatus($stateParams.id).success(function (data) {
             $state.reload();
@@ -413,7 +433,7 @@
           // Modal Success Handler
         }, function (response) { // Modal Dismiss Handler
           if (response === 'ja') {
-            ExaminationService.closeFormalAudit(vm.data.submission.id)
+            ExaminationService.closeFormalAudit(vm.data.submission.id, vm.data.submission.version)
               .success(function (data) {
                 $state.go($state.current, {}, {
                   reload: true
@@ -677,7 +697,12 @@
 
     /* function that rounds the given numbers according to the requirement for score */
     function roundScore(input) {
-      return parseFloat(input.toFixed(AppConstants.ROUND_DECIMALS.SCORE));
+      //Javascript rounding is not working by default for the decimal 5. It is rounded down instead of up
+      //This rounding problem can be avoided by using numbers represented in exponential notation and to round twice.
+      //First we round with the decimal places required + 1 and then with the required
+      let scoreConstant = AppConstants.ROUND_DECIMALS.SCORE + 1;
+      let n = Number(Math.round(input + 'e' + scoreConstant) + 'e-' + scoreConstant);
+      return parseFloat(Math.round(n + 'e' + AppConstants.ROUND_DECIMALS.SCORE) + 'e-' + AppConstants.ROUND_DECIMALS.SCORE);
     }
 
     /* function that rounds the given numbers according to the requirement for score

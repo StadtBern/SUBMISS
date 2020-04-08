@@ -136,6 +136,7 @@
         vm.documentEditForm.privateDocumentSetChanged =
           (vm.privateDocumentFirstValue !== privateDocument &&
             privateDocument === true);
+        vm.documentEditForm.lastModifiedOn = vm.document.lastModifiedOn;
 
         DocumentService.updateDocumentProperties(vm.documentEditForm)
           .success(function (data) {
@@ -151,7 +152,7 @@
 
     /** this function handles the validation errors */
     function handleValidationErrors(response, status) {
-      if (status === 400) { // Validation errors.
+      if (status === 400 || status === 409) { // Validation errors.
         QFormJSRValidation.markErrors($scope,
           $scope.documentEditCtrl.documentEdit, response);
       }

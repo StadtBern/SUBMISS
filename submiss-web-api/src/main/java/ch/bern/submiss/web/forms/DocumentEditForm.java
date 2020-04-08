@@ -14,6 +14,7 @@
 package ch.bern.submiss.web.forms;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Date;
 
 /**
  * The Class DocumentEditForm.
@@ -32,6 +33,11 @@ public class DocumentEditForm {
 
 	/** The private document. */
 	private Boolean privateDocumentSetChanged;
+
+  /**
+   * The last modified on.
+   */
+  private Date lastModifiedOn;
 	
 	/**
 	 * Gets the id.
@@ -108,4 +114,21 @@ public class DocumentEditForm {
 		this.privateDocumentSetChanged = privateDocumentSetChanged;
 	}
 
+  /**
+   * Gets the last modified on.
+   *
+   * @return the last modified on
+   */
+  public Date getLastModifiedOn() {
+    return lastModifiedOn;
+  }
+
+  /**
+   * Sets the last modified on.
+   *
+   * @param lastModifiedOn the new last modified on
+   */
+  public void setLastModifiedOn(Date lastModifiedOn) {
+    this.lastModifiedOn = lastModifiedOn;
+  }
 }

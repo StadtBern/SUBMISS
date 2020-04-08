@@ -63,12 +63,15 @@
         StammdatenService.getProccessDataEntryById(vm.entryId)
           .success(function (data) {
             vm.typeDataEntry = data;
-            vm.editValue = (AppService.formatAmount(vm.typeDataEntry.value));
+            console.log(vm.typeDataEntry);
+            vm.editValue = vm.typeDataEntry.value;
           });
       }
     }
 
     function save() {
+      vm.newEntry.id = vm.typeDataEntry.id;
+      vm.newEntry.version = vm.typeDataEntry.version;
       vm.newEntry.procedure = vm.typeDataEntry.procedure;
       if (angular.isNumber(vm.editValue)) {
         vm.newEntry.value = AppService.formatAmount(vm.editValue);

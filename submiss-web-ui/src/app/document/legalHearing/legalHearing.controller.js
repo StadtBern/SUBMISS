@@ -84,16 +84,30 @@
         }
       }
       vm.submissionTerminate.deadlineViewValue = $scope.legalHearingCtrl.legalTerminationForm.hearingDeadline.$viewValue;
-      LegalHearingService.updateLegalHearingTerminate(vm.submissionTerminate, $stateParams.submissionId).success(function (data) {
-        reloadState();
-      }).error(function (response, status) {
-        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) { // Validation errors.
-          vm.errorFieldsVisible = true;
-          $anchorScroll();
-          QFormJSRValidation.markErrors($scope,
-            $scope.legalHearingCtrl.legalTerminationForm, response);
-        }
-      });
+      if (angular.isUndefined(vm.submissionTerminate.id)) {
+        LegalHearingService.createLegalHearingTerminate(vm.submissionTerminate, $stateParams.submissionId).success(function (data) {
+          reloadState();
+        }).error(function (response, status) {
+          if (status === 400 || status === 409) { // Validation errors.
+            vm.errorFieldsVisible = true;
+            $anchorScroll();
+            QFormJSRValidation.markErrors($scope,
+              $scope.legalHearingCtrl.legalTerminationForm, response);
+          }
+        });
+      } else {
+        LegalHearingService.updateLegalHearingTerminate(vm.submissionTerminate, $stateParams.submissionId).success(function (data) {
+          reloadState();
+        }).error(function (response, status) {
+          if (status === 400 || status === 409) { // Validation errors.
+            vm.errorFieldsVisible = true;
+            $anchorScroll();
+            QFormJSRValidation.markErrors($scope,
+              $scope.legalHearingCtrl.legalTerminationForm, response);
+          }
+        });
+      }
+
     }
 
     /** Load the master list value data for the termination reason */

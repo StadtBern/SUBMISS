@@ -14,22 +14,15 @@
 package ch.bern.submiss.web.forms;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.sql.Timestamp;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubcriterionForm {
+public class SubcriterionForm extends AbstractForm {
 
-  private String id;
   private String criterion;
   private String subcriterionText;
   private Double weighting;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
+  private Timestamp pageRequestedOn;
 
   public String getCriterion() {
     return criterion;
@@ -55,4 +48,11 @@ public class SubcriterionForm {
     this.weighting = weighting;
   }
 
+  public Timestamp getPageRequestedOn() {
+    return pageRequestedOn;
+  }
+
+  public void setPageRequestedOn(Timestamp pageRequestedOn) {
+    this.pageRequestedOn = pageRequestedOn;
+  }
 }

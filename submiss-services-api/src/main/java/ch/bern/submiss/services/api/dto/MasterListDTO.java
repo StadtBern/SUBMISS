@@ -13,7 +13,7 @@
 
 package ch.bern.submiss.services.api.dto;
 
-public class MasterListDTO extends AbstractDTO {
+public class MasterListDTO extends AbstractStammdatenDTO {
 
   /** The editable. */
   private boolean editable;

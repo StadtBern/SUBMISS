@@ -570,9 +570,10 @@ public class DocumentResource {
     documentDTO.setId(documentEditForm.getId());
     documentDTO.setTitle(documentEditForm.getTitle());
     documentDTO.setPrivateDocument(documentEditForm.getPrivateDocument());
+    documentDTO.setLastModifiedOn(documentEditForm.getLastModifiedOn());
     documentService.updateDocumentProperties(documentDTO,
       documentEditForm.getPrivateDocumentSetChanged());
-    return Response.ok(null).build();
+    return Response.ok().build();
   }
 
   /**

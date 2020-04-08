@@ -29,6 +29,7 @@ import ch.bern.submiss.services.api.constants.AuditLevel;
 import ch.bern.submiss.services.api.constants.CategorySD;
 import ch.bern.submiss.services.api.constants.Group;
 import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.ShortCode;
 import ch.bern.submiss.services.api.dto.DepartmentDTO;
 import ch.bern.submiss.services.api.dto.DirectorateDTO;
@@ -43,6 +44,7 @@ import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.dto.TenantDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.CycleAvoidingMappingContext;
 import ch.bern.submiss.services.impl.mappers.DepartmentMapper;
 import ch.bern.submiss.services.impl.mappers.MasterListMapper;
@@ -66,6 +68,7 @@ import ch.bern.submiss.services.impl.model.SignatureProcessTypeEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import com.eurodyn.qlack2.fuse.fileupload.api.FileUpload;
 import com.eurodyn.qlack2.fuse.fileupload.api.response.FileGetResponse;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -76,11 +79,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -537,85 +543,118 @@ public class SDServiceImpl extends BaseService implements SDService {
    * @param type the master list type
    */
   @Override
-  public void saveSDEntry(MasterListValueHistoryDTO sdHistoryDTO, String type) {
+  public Set<ValidationError> saveSDEntry(MasterListValueHistoryDTO sdHistoryDTO, String type) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveSDEntry, Parameters: sdHistoryDTO: {0}, "
         + "type: {1}",
       new Object[]{sdHistoryDTO, type});
 
-    MasterListValueHistoryEntity sdHistoryEntity;
-    // If the type isn't SETTINGS, the history functionality needs to be implemented.
-    if (!type.equals(CategorySD.SETTINGS.getValue())) {
-      // Check if an old entry is updated or a new entry is created.
-      if (StringUtils.isBlank(sdHistoryDTO.getId())) {
-        // Creating a new entry.
-        sdHistoryEntity =
-          MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistory(sdHistoryDTO);
-        // Set current date to fromDate property.
-        sdHistoryEntity.setFromDate(new Timestamp(new Date().getTime()));
-        // Set tenant.
-        sdHistoryEntity.setTenant(TenantMapper.INSTANCE
-          .toTenant(usersService.getUserById(getUser().getId()).getTenant()));
-        // Set by default as internal.
-        sdHistoryEntity.setInternalVersion(1);
-        // In case of creating a new settlement type value, assign short code automatically.
-        if (type.equals(CategorySD.SETTLEMENT_TYPE.getValue())) {
-          // Get number of current settlement types.
-          long currentSettlementTypes = new JPAQueryFactory(em)
-            .selectFrom(qMasterListValueHistoryEntity)
-            .where(qMasterListValueHistoryEntity.toDate.isNull(),
-              qMasterListValueHistoryEntity.tenant.id.eq(sdHistoryEntity.getTenant().getId()),
-              qMasterListValueHistoryEntity.masterListValueId.masterList.categoryType
-                .eq(CategorySD.SETTLEMENT_TYPE.getValue()))
-            .fetchCount();
-          sdHistoryEntity.setShortCode("ST" + (currentSettlementTypes + 1));
-        }
-        // Get the master list entity by type.
-        MasterListEntity masterListEntity = new JPAQueryFactory(em).selectFrom(qMasterListEntity)
-          .where(qMasterListEntity.categoryType.eq(type)).fetchOne();
-        MasterListValueEntity masterListValueEntity = new MasterListValueEntity();
-        // Assign the master list entity to the master list value entity.
-        masterListValueEntity.setMasterList(masterListEntity);
-        em.persist(masterListValueEntity);
-        // Assign the master list value entity to the entry.
-        sdHistoryEntity.setMasterListValueId(masterListValueEntity);
+    return (type.equals(CategorySD.SETTINGS.getValue()))
+      // If the type is SETTINGS no history is required for saving.
+      ? saveSDEntryWithoutHistory(sdHistoryDTO)
+      // For every other type the history functionality needs to be implemented.
+      : saveSDEntryWithHistory(sdHistoryDTO, type);
+  }
 
-        auditLog(masterListValueEntity.getId(), AuditEvent.CREATE.name(), null);
-      } else {
-        // In case of updating an old entry, find the entry and set the current date to the toDate
-        // property.
-        sdHistoryEntity = em.find(MasterListValueHistoryEntity.class, sdHistoryDTO.getId());
-        sdHistoryEntity.setToDate(new Timestamp(new Date().getTime()));
-        em.merge(sdHistoryEntity);
-        // Now that the old entry is added to the history, create its new instance.
-        sdHistoryEntity =
-          MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistory(sdHistoryDTO);
-        // The entry is going to have a new id.
-        sdHistoryEntity.setId(null);
-        // Set current date to fromDate property.
-        sdHistoryEntity.setFromDate(new Timestamp(new Date().getTime()));
-        // Set null to toDate property.
-        sdHistoryEntity.setToDate(null);
+  private Set<ValidationError> saveSDEntryWithoutHistory(MasterListValueHistoryDTO sdHistoryDTO) {
 
-        auditLog(sdHistoryEntity.getMasterListValueId().getId(), AuditEvent.UPDATE.name(), null);
-      }
-      // Save the new entry.
-      em.persist(sdHistoryEntity);
-      // updating cacheBean
-      cacheBean.updateSpecificSDEntry(
-        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(sdHistoryEntity));
-      cacheBean.updateHistorySDEntry(
-        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(sdHistoryEntity));
-    } else {
-      // In case of type SETTINGS, no history is required.
-      sdHistoryEntity =
+    LOGGER.log(Level.CONFIG,
+      "Executing method saveSDEntryWithoutHistory, Parameters: sdHistoryDTO: {0}",
+      sdHistoryDTO);
+
+    Set<ValidationError> error = new HashSet<>();
+    try {
+      MasterListValueHistoryEntity sdHistoryEntity =
         MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistory(sdHistoryDTO);
       // Set current date to fromDate property.
       sdHistoryEntity.setFromDate(new Timestamp(new Date().getTime()));
       // Save the entry.
       em.merge(sdHistoryEntity);
+    } catch (OptimisticLockException e) {
+      error
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
     }
+    return error;
+  }
+
+  private Set<ValidationError> saveSDEntryWithHistory(MasterListValueHistoryDTO sdHistoryDTO,
+    String type) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method saveSDEntry, Parameters: sdHistoryDTO: {0}, "
+        + "type: {1}",
+      new Object[]{sdHistoryDTO, type});
+
+    Set<ValidationError> error = new HashSet<>();
+    MasterListValueHistoryEntity sdHistoryEntity;
+    // Check if an old entry is updated or a new entry is created.
+    if (StringUtils.isBlank(sdHistoryDTO.getId())) {
+      // Creating a new entry.
+      sdHistoryEntity =
+        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistory(sdHistoryDTO);
+      // Set current date to fromDate property.
+      sdHistoryEntity.setFromDate(new Timestamp(new Date().getTime()));
+      // Set tenant.
+      sdHistoryEntity.setTenant(TenantMapper.INSTANCE
+        .toTenant(usersService.getUserById(getUser().getId()).getTenant()));
+      // Set by default as internal.
+      sdHistoryEntity.setInternalVersion(1);
+      // In case of creating a new settlement type value, assign short code automatically.
+      if (type.equals(CategorySD.SETTLEMENT_TYPE.getValue())) {
+        // Get number of current settlement types.
+        long currentSettlementTypes = new JPAQueryFactory(em)
+          .selectFrom(qMasterListValueHistoryEntity)
+          .where(qMasterListValueHistoryEntity.toDate.isNull(),
+            qMasterListValueHistoryEntity.tenant.id.eq(sdHistoryEntity.getTenant().getId()),
+            qMasterListValueHistoryEntity.masterListValueId.masterList.categoryType
+              .eq(CategorySD.SETTLEMENT_TYPE.getValue()))
+          .fetchCount();
+        sdHistoryEntity.setShortCode("ST" + (currentSettlementTypes + 1));
+      }
+      // Get the master list entity by type.
+      MasterListEntity masterListEntity = new JPAQueryFactory(em).selectFrom(qMasterListEntity)
+        .where(qMasterListEntity.categoryType.eq(type)).fetchOne();
+      MasterListValueEntity masterListValueEntity = new MasterListValueEntity();
+      // Assign the master list entity to the master list value entity.
+      masterListValueEntity.setMasterList(masterListEntity);
+      em.persist(masterListValueEntity);
+      // Assign the master list value entity to the entry.
+      sdHistoryEntity.setMasterListValueId(masterListValueEntity);
+
+      auditLog(masterListValueEntity.getId(), AuditEvent.CREATE.name(), null);
+    } else {
+      // In case of updating an old entry, find the entry and set the current date to the toDate
+      // property.
+      sdHistoryEntity = em.find(MasterListValueHistoryEntity.class, sdHistoryDTO.getId());
+      // If the current version is 1, then return an optimisticLockErrorField
+      if (sdHistoryEntity.getVersion() == 1) {
+        error
+          .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+        return error;
+      }
+      sdHistoryEntity.setToDate(new Timestamp(new Date().getTime()));
+      em.merge(sdHistoryEntity);
+      // Now that the old entry is added to the history, create its new instance.
+      sdHistoryEntity =
+        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistory(sdHistoryDTO);
+      // The entry is going to have a new id.
+      sdHistoryEntity.setId(null);
+      // Set current date to fromDate property.
+      sdHistoryEntity.setFromDate(new Timestamp(new Date().getTime()));
+      // Set null to toDate property.
+      sdHistoryEntity.setToDate(null);
+
+      auditLog(sdHistoryEntity.getMasterListValueId().getId(), AuditEvent.UPDATE.name(), null);
+    }
+    // Save the new entry.
+    em.persist(sdHistoryEntity);
+    // updating cacheBean
+    cacheBean.updateSpecificSDEntry(
+      MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(sdHistoryEntity));
+    cacheBean.updateHistorySDEntry(
+      MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(sdHistoryEntity));
+    return error;
   }
 
   /**
@@ -696,6 +735,8 @@ public class SDServiceImpl extends BaseService implements SDService {
 
     manageDepartmentsAndDirectoratesUsingCacheBean(signatureProcessTypeDTO);
     sortSignaturesBySortNumber(signatureProcessTypeDTO);
+    // Set the timestamp of the request
+    signatureProcessTypeDTO.setRequestedOn(new Timestamp(new Date().getTime()));
     return signatureProcessTypeDTO;
   }
 
@@ -751,12 +792,14 @@ public class SDServiceImpl extends BaseService implements SDService {
    * @param signatureProcessTypeDTO the signature process type DTO
    */
   @Override
-  public void updateSignatureProcessEntitled(SignatureProcessTypeDTO signatureProcessTypeDTO) {
+  public Set<ValidationError> updateSignatureProcessEntitled(SignatureProcessTypeDTO signatureProcessTypeDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSignatureProcessEntitled, Parameters: "
         + "signatureProcessTypeDTO: {0}",
       signatureProcessTypeDTO);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
 
     QSignatureProcessTypeEntity qSignatureProcessTypeEntity =
       QSignatureProcessTypeEntity.signatureProcessTypeEntity;
@@ -772,6 +815,25 @@ public class SDServiceImpl extends BaseService implements SDService {
       .where(
         qsignatureProcessTypeEntitledEntity.processType.id.eq(signatureProcessTypeDTO.getId()))
       .fetch();
+
+    /*
+     * Check for optimistic locking.
+     *
+     * In the case of signatures, there is no point to use VERSION in the database
+     * because in every update the old entry is deleted and a new one is created.
+     * We compare 2 timestamps instead. The first one is the timestamp of the last created entry
+     * in the database (createdOn) and the other is the timestamp of the GET request (to open the edit modal)
+     * being send by the user (requestedOn).
+     *
+     * If createdOn is after requestedOn, another user has created a signature
+     * and an optimistic lock error should be shown.
+     */
+    if (!sPTEentities.isEmpty() && signatureProcessTypeDTO.getRequestedOn() != null
+      && sPTEentities.get(0).getCreatedOn().after(signatureProcessTypeDTO.getRequestedOn())) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
 
     deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtE, sPTEentities, signatureProcessTypeDTO);
 
@@ -808,6 +870,7 @@ public class SDServiceImpl extends BaseService implements SDService {
       deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtENpro, sPTEentitiesNpro,
         signatureProcessTypeDTO);
     }
+    return optimisticLockErrors;
   }
 
   /**
@@ -852,12 +915,14 @@ public class SDServiceImpl extends BaseService implements SDService {
    * @param signatureProcessTypeDTO the signature process type DTO
    */
   @Override
-  public void updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
+  public Set<ValidationError> updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSignatureCopies, Parameters: "
         + "signatureProcessTypeDTO: {0}",
       signatureProcessTypeDTO);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
 
     QSignatureCopyEntity qSignatureCopyEntity = QSignatureCopyEntity.signatureCopyEntity;
 
@@ -871,6 +936,25 @@ public class SDServiceImpl extends BaseService implements SDService {
     List<SignatureCopyEntity> copyEntities =
       new JPAQueryFactory(em).select(qSignatureCopyEntity).from(qSignatureCopyEntity)
         .where(qSignatureCopyEntity.processType.id.eq(signatureProcessTypeDTO.getId())).fetch();
+
+    /*
+     * Check for optimistic locking.
+     *
+     * In the case of signatures, there is no point to use VERSION in the database
+     * because in every update the old entry is deleted and a new one is created.
+     * We compare 2 timestamps instead. The first one is the timestamp of the last created entry
+     * in the database (createdOn) and the other is the timestamp of the GET request (to open the edit modal)
+     * being send by the user (requestedOn).
+     *
+     * If createdOn is after requestedOn, another user has created a signature copy
+     * and an optimistic lock error should be shown.
+     */
+    if (!copyEntities.isEmpty() && signatureProcessTypeDTO.getRequestedOn() != null
+      && copyEntities.get(0).getCreatedOn().after(signatureProcessTypeDTO.getRequestedOn())) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
 
     deleteOldAndInsertNewSignatureCopies(sPtE, copyEntities, signatureProcessTypeDTO);
 
@@ -907,6 +991,7 @@ public class SDServiceImpl extends BaseService implements SDService {
           .where(qSignatureCopyEntity.processType.eq(sptNP)).fetch();
       deleteOldAndInsertNewSignatureCopies(sptNP, copyEntitiesNP, signatureProcessTypeDTO);
     }
+    return optimisticLockErrors;
   }
 
   /**
@@ -1324,5 +1409,14 @@ public class SDServiceImpl extends BaseService implements SDService {
     }
     Collections.sort(entries, ComparatorUtil.sortMLVHistoryDTOsByValue1);
     return entries;
+  }
+
+  @Override
+  public void sdSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method sdSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PENDING.getValue(), null);
   }
 }

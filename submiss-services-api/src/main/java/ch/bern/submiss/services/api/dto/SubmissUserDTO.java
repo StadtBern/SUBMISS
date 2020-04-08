@@ -19,24 +19,31 @@ import java.util.List;
 /**
  * The Class SubmissUserDTO.
  */
-public class SubmissUserDTO {
+public class SubmissUserDTO extends AbstractDTO {
 
-  /** The id. */
-  private String id;
-
-  /** The username. */
+  /**
+   * The username.
+   */
   private String username;
 
-  /** The first name. */
+  /**
+   * The first name.
+   */
   private String firstName;
 
-  /** The last name. */
+  /**
+   * The last name.
+   */
   private String lastName;
 
-  /** The email. */
+  /**
+   * The email.
+   */
   private String email;
 
-  /** The status. */
+  /**
+   * The status.
+   */
   private byte status;
 
   /**
@@ -44,74 +51,100 @@ public class SubmissUserDTO {
    */
   private String active;
 
-  /** The user admin right. */
+  /**
+   * The user admin right.
+   */
   private boolean userAdminRight;
 
-  /** If the user is registered to the system {0,1}. */
+  /**
+   * If the user is registered to the system {0,1}.
+   */
   private String registered;
 
-  /** The registered date. */
+  /**
+   * The registered date.
+   */
   private String registeredDate;
 
-  /** The department. */
+  /**
+   * The department.
+   */
   private DepartmentHistoryDTO mainDepartment;
 
-  /** List of secondary departments. */
+  /**
+   * List of secondary departments.
+   */
   private List<DepartmentHistoryDTO> secondaryDepartments;
 
-  /** The tenant. */
+  /**
+   * The secondary departments version.
+   */
+  private Long secondaryDepartmentsVersion;
+
+  /**
+   * The tenant.
+   */
   private TenantDTO tenant;
 
-  /** The user group. */
+  /**
+   * The user group.
+   */
   private GroupDTO userGroup;
 
-  /** List of permitted operations. */
+  /**
+   * List of permitted operations.
+   */
   private List<String> permittedOperations;
 
-  /** A flag indicating whether the user can be edited. */
+  /**
+   * A flag indicating whether the user can be edited.
+   */
   private Boolean editable;
 
-  /** The directorates. */
+  /**
+   * The directorates.
+   */
   private List<DirectorateHistoryDTO> directorates;
 
-  /** The role. */
+  /**
+   * The role.
+   */
   private String role;
 
-  /** The tenant name. */
+  /**
+   * The tenant name.
+   */
   private String tenantName;
 
-  /** The directorates str. */
+  /**
+   * The directorates str.
+   */
   private String directoratesStr;
 
-  /** The registered days. */
+  /**
+   * The registered days.
+   */
   private int registeredDays;
 
-  /** The deactivation date. */
+  /**
+   * The deactivation date.
+   */
   private String deactivationDate;
 
-  /** The function. */
+  /**
+   * The function.
+   */
   private String function;
-  
-  /** The directorate short names. */
+
+  /**
+   * The function version from user attributes.
+   */
+  private Long functionVersion;
+
+  /**
+   * The directorate short names.
+   */
   private String directorateShortNames;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the username.
@@ -482,7 +515,7 @@ public class SubmissUserDTO {
     StringBuilder tempDirectoratesStr = new StringBuilder();
 
     if (mainDepartment != null && mainDepartment.getDirectorate() != null
-        && mainDepartment.getDirectorate().getName() != null) {
+      && mainDepartment.getDirectorate().getName() != null) {
       tempDirectoratesStr.append(mainDepartment.getDirectorate().getName());
 
       if (secondaryDepartments != null && !secondaryDepartments.isEmpty()) {
@@ -492,7 +525,9 @@ public class SubmissUserDTO {
 
     if (secondaryDepartments != null) {
       for (DepartmentHistoryDTO departmentHistoryDTO : secondaryDepartments) {
-        tempDirectoratesStr.append(departmentHistoryDTO.getDirectorate().getName()).append(" / ");
+        if(tempDirectoratesStr.indexOf(departmentHistoryDTO.getDirectorate().getName()) == -1){
+          tempDirectoratesStr.append(departmentHistoryDTO.getDirectorate().getName()).append(" / ");
+        }
       }
     }
 
@@ -515,7 +550,6 @@ public class SubmissUserDTO {
    */
   public String getMainDepartmentStr() {
 
-
     StringBuilder mainDepartmentStr = new StringBuilder();
 
     if (mainDepartment != null && mainDepartment.getName() != null) {
@@ -536,7 +570,6 @@ public class SubmissUserDTO {
   }
 
 
-
   /**
    * Gets the function.
    *
@@ -554,14 +587,12 @@ public class SubmissUserDTO {
   public void setFunction(String function) {
     this.function = function;
   }
-  
-  
 
   public String getDirectorateShortNames() {
     StringBuilder tempDirectorateShortNames = new StringBuilder();
 
     if (mainDepartment != null && mainDepartment.getDirectorate() != null
-        && mainDepartment.getDirectorate().getShortName() != null) {
+      && mainDepartment.getDirectorate().getShortName() != null) {
       tempDirectorateShortNames.append(mainDepartment.getDirectorate().getShortName());
 
       if (secondaryDepartments != null && !secondaryDepartments.isEmpty()) {
@@ -571,7 +602,8 @@ public class SubmissUserDTO {
 
     if (secondaryDepartments != null) {
       for (DepartmentHistoryDTO departmentHistoryDTO : secondaryDepartments) {
-        tempDirectorateShortNames.append(departmentHistoryDTO.getDirectorate().getShortName()).append(" / ");
+        tempDirectorateShortNames.append(departmentHistoryDTO.getDirectorate().getShortName())
+          .append(" / ");
       }
     }
 
@@ -582,18 +614,34 @@ public class SubmissUserDTO {
     this.directorateShortNames = directorateShortNames;
   }
 
-  @Override
-  public String toString() {
-    return "SubmissUserDTO [id=" + id + ", username=" + username + ", firstName=" + firstName
-        + ", lastName=" + lastName + ", email=" + email + ", status=" + status + ", active="
-        + active + ", userAdminRight=" + userAdminRight + ", registered=" + registered
-        + ", registeredDate=" + registeredDate + ", mainDepartment=" + mainDepartment
-        + ", secondaryDepartments=" + secondaryDepartments + ", tenant=" + tenant + ", userGroup="
-        + userGroup + ", permittedOperations=" + permittedOperations + ", editable=" + editable
-        + ", directorates=" + directorates + ", role=" + role + ", tenantName=" + tenantName
-        + ", directoratesStr=" + directoratesStr + ", registeredDays=" + registeredDays
-        + ", deactivationDate=" + deactivationDate + ", function=" + function
-        + ", directorateShortNames=" + directorateShortNames + "]";
+  public Long getFunctionVersion() {
+    return functionVersion;
   }
 
+  public void setFunctionVersion(Long functionVersion) {
+    this.functionVersion = functionVersion;
+  }
+
+  public Long getSecondaryDepartmentsVersion() {
+    return secondaryDepartmentsVersion;
+  }
+
+  public void setSecondaryDepartmentsVersion(Long secondaryDepartmentsVersion) {
+    this.secondaryDepartmentsVersion = secondaryDepartmentsVersion;
+  }
+
+  @Override
+  public String toString() {
+    return "SubmissUserDTO [id=" + super.getId() + ", username=" + username + ", firstName="
+      + firstName
+      + ", lastName=" + lastName + ", email=" + email + ", status=" + status + ", active="
+      + active + ", userAdminRight=" + userAdminRight + ", registered=" + registered
+      + ", registeredDate=" + registeredDate + ", mainDepartment=" + mainDepartment
+      + ", secondaryDepartments=" + secondaryDepartments + ", tenant=" + tenant + ", userGroup="
+      + userGroup + ", permittedOperations=" + permittedOperations + ", editable=" + editable
+      + ", directorates=" + directorates + ", role=" + role + ", tenantName=" + tenantName
+      + ", directoratesStr=" + directoratesStr + ", registeredDays=" + registeredDays
+      + ", deactivationDate=" + deactivationDate + ", function=" + function
+      + ", directorateShortNames=" + directorateShortNames + "]";
+  }
 }

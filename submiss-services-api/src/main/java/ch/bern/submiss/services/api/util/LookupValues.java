@@ -113,12 +113,14 @@ public class LookupValues {
   public static final String F_AMOUNT = "F_AMOUNT";
   public static final String TOTAL_AMOUNT = "TOTAL_AMOUNT";
   public static final String ZEITRAUM = "Zeitraum";
+  public static final String GESAMTTOTAL = "Gesamttotal";
   public static final String FUTURE_ERROR = "any_date_in_the_future_error_message";
   public static final String END_DATE_BEFORE_START_DATE_ERROR = "date_from_after_date_to_error_message";
   public static final String NPE_EXCEPTION = "Invalid result";
   public static final String GEKO = "GeKo";
   public static final String UNDER_SCORE = "_";
   public static final String DOT = ".";
+  public static final String COMMA = ", ";
   public static final String GEKO_TEMPLATE = "GeKo_Report";
   public static final String SO_LABEL = "S/O-Aufträge exkl.MWST";
   public static final String E_LABEL = "E-Aufträge exkl.MWST";
@@ -127,6 +129,9 @@ public class LookupValues {
   public static final String SO_LABEL2 = "SO-Aufträge exkl.MWST";
   public static final String SLASH = " / ";
   public static final String SEMICOLON = "; ";
+  public static final String COLON = ": ";
+  public static final String LEFT_PARENTHESIS = "(";
+  public static final String RIGHT_PARENTHESIS = ")";
   public static final String LAUFENDES_BESCHWERDENVERFAHREN = "Laufendes Beschwerdeverfahren";
   public static final String PRINT_COMMAND = "IN1";
 

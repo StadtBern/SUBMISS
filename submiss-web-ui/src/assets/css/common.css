@@ -1231,3 +1231,7 @@ body {
 ul {
   list-style: none;
 }
+
+.status {
+  font-weight: bold;
+}

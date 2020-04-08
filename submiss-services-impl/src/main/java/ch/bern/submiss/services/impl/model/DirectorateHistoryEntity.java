@@ -27,7 +27,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "SUB_DIRECTORATE_HISTORY")
-public class DirectorateHistoryEntity extends AbstractEntity {
+public class DirectorateHistoryEntity extends AbstractStammdatenEntity {
 
 	/** The active. */
 	@Column(name = "IS_ACTIVE")

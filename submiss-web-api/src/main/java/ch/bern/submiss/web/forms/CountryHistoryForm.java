@@ -13,18 +13,14 @@
 
 package ch.bern.submiss.web.forms;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import ch.bern.submiss.services.api.dto.CountryDTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class CountryHistoryForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CountryHistoryForm {
-
-  /** The id. */
-  private String id;
+public class CountryHistoryForm extends AbstractForm {
 
   /** The country name. */
   private String countryName;
@@ -40,24 +36,6 @@ public class CountryHistoryForm {
 
   /** The active. */
   private Boolean active;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the country name.
@@ -148,5 +126,4 @@ public class CountryHistoryForm {
   public void setActive(Boolean active) {
     this.active = active;
   }
-
 }

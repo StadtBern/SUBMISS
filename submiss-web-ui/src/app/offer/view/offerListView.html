@@ -12,300 +12,287 @@
   -->
 
 <div class="row">
-	<div class="col-sm-12">
-		<h2 class="page-title">
-			{{offerListViewCtrl.data.submission.workType.value1}}
-			{{offerListViewCtrl.data.submission.workType.value2}}, 
-			<small> {{offerListViewCtrl.data.submission.project.projectName}},
-				{{offerListViewCtrl.getObjectInfo(offerListViewCtrl.data.submission.project.objectName)}}</small>
-		</h2>
-	</div>
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{offerListViewCtrl.data.submission.workType.value1}}
+      {{offerListViewCtrl.data.submission.workType.value2}},
+      <small> {{offerListViewCtrl.data.submission.project.projectName}},
+        {{offerListViewCtrl.getObjectInfo(offerListViewCtrl.data.submission.project.objectName)}}</small>
+    </h2>
+  </div>
 </div>
-<div class="row">	
-	<div class="card-box">
-		<form name="offerListViewCtrl.offerForm" id="offerForm" shows-validation-errors>
-		<div class="col-sm-12">
-          <!--  TODO rerurn error if the submittent has subcontractors, joined ventures -->
+<div class="row">
+  <div class="card-box">
+    <div class="col-sm-12">
+      <form name="offerListViewCtrl.offerForm" id="offerForm" shows-validation-errors>
+        <div class="col-sm-12">
           <div class="alert alert-danger" ng-if="offerListViewCtrl.offerForm.$invalid" role="alert">
-       		 <field-error form-element-name="submittentHasOfferField" translate name="error"></field-error>
-       		 <field-error form-element-name="submittentHasSubcontractorsField" translate name="error"></field-error>
-       		 <field-error form-element-name="manualAwardReopenPLErrorField" translate name="error"></field-error>
-       		 <field-error form-element-name="offerProtocolErrorField" translate name="error"></field-error>
-       		 <field-error form-element-name="submittentlisteErrorField" translate name="error"></field-error>
-       		 <field-error form-element-name="offersNoDateErrorField" translate name="error"></field-error>
-          </div> 
+            <field-error form-element-name="submittentHasOfferField" translate name="error"></field-error>
+            <field-error form-element-name="submittentHasSubcontractorsField" translate name="error"></field-error>
+            <field-error form-element-name="manualAwardReopenPLErrorField" translate name="error"></field-error>
+            <field-error form-element-name="offerProtocolErrorField" translate name="error"></field-error>
+            <field-error form-element-name="submittentlisteErrorField" translate name="error"></field-error>
+            <field-error form-element-name="offersNoDateErrorField" translate name="error"></field-error>
+            <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
+            <field-error form-element-name="statusChangedErrorField" translate name="error"></field-error>
+            <field-error form-element-name="optimisticLockErrorField" translate name="error"/>
+          </div>
           <input name="submittentHasOfferField" ng-hide="true" data-ng-model="fd">
           <input name="submittentHasSubcontractorsField" ng-hide="true" data-ng-model="fd">
           <input name="manualAwardReopenPLErrorField" ng-hide="true" data-ng-model="fd">
           <input name="offerProtocolErrorField" ng-hide="true" data-ng-model="fd">
           <input name="submittentlisteErrorField" ng-hide="true" data-ng-model="fd">
           <input name="offersNoDateErrorField" ng-hide="true" data-ng-model="fd">
+          <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd">
+          <input name="statusChangedErrorField" ng-hide="true" data-ng-model="fd">
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd">
+        </div>
+      </form>
     </div>
-    </form>
 
-		<div class="col-sm-12">
-			<!-- Nav tabs -->
-		<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
-		<div ng-include ng-if="offerListViewCtrl.data.submission.process == 'SELECTIVE'"
-			src="'app/selective/secondStage/secondStageTabs.html'"></div>
-			<div class="col-sm-12">
-				<div class="alert alert-info"
-					ng-if="(offerListViewCtrl.data.submission.process != 'SELECTIVE' 
-		        		&& offerListViewCtrl.data.submission.process != null)  && (!offerListViewCtrl.data.submission.secondDeadline 
-		        		|| !offerListViewCtrl.data.submission.offerOpeningDate || !offerListViewCtrl.data.submission.secondLoggedBy)"
-					role="alert" translate>
-					submission_mandatory_for_other_processes</div>
-				<div class="alert alert-danger" role="alert"
-					ng-if="offerListViewCtrl.moreThanOneError || offerListViewCtrl.plAboveThresholdError 
+    <div class="col-sm-12">
+      <!-- Nav tabs -->
+      <div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+      <div ng-include ng-if="offerListViewCtrl.data.submission.process == 'SELECTIVE'"
+        src="'app/selective/secondStage/secondStageTabs.html'"></div>
+      <div class="col-sm-12">
+
+        <div class="alert alert-danger" role="alert" ng-if="offerListViewCtrl.moreThanOneError || offerListViewCtrl.plAboveThresholdError
 		        		|| offerListViewCtrl.adminAboveThresholdError || offerListViewCtrl.errorOffersValidation">
-					<ul ng-if="offerListViewCtrl.moreThanOneError">
-						<li translate>company_add_only_one_submittent</li>
-					</ul>
-					<ul ng-if="offerListViewCtrl.plAboveThresholdError">
-						<li translate>error_above_threshold_pl</li>
-					</ul>
-					<ul ng-if="offerListViewCtrl.adminAboveThresholdError">
-						<li translate>error_above_threshold_admin</li>
-					</ul>
-				</div>
-			</div>
-			<div role="tabpanel" class="tab-pane" id="subList">
-				<div class="row">
-					<div class="col-sm-12 ToolbarContainer">
-						<div class="btn-toolbar pull-right" role="toolbar">
-							<button type="button"
-								data-ng-click="offerListViewCtrl.addCompany()"
-								data-ng-disabled="offerListViewCtrl.addSubmittentDisabled()"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Submittent
-								hinzufügen
-							</button>
-							
-							<!-- According to UC16 the following button must be displayed
-								 if verfahren = Einladungsverfahren, Freihändig or Freihändig mit Konkurrenz 
-								 and status has never been set to 'Submittentenliste in Prüfung' or 'Submittentenliste geprüft' 
+          <ul ng-if="offerListViewCtrl.moreThanOneError">
+            <li translate>company_add_only_one_submittent</li>
+          </ul>
+          <ul ng-if="offerListViewCtrl.plAboveThresholdError">
+            <li translate>error_above_threshold_pl</li>
+          </ul>
+          <ul ng-if="offerListViewCtrl.adminAboveThresholdError">
+            <li translate>error_above_threshold_admin</li>
+          </ul>
+        </div>
+      </div>
+
+      <div role="tabpanel" class="tab-pane" id="subList">
+        <div class="row">
+          <div class="col-sm-12 ToolbarContainer">
+            <div class="btn-toolbar pull-right" role="toolbar">
+              <button type="button" data-ng-click="offerListViewCtrl.addCompany()"
+                data-ng-disabled="offerListViewCtrl.addSubmittentDisabled()" class="btn btn-primary" data-toggle="modal"
+                data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Submittent
+                hinzufügen
+              </button>
+
+              <!-- According to UC16 the following button must be displayed
+								 if verfahren = Einladungsverfahren, Freihändig or Freihändig mit Konkurrenz
+								 and status has never been set to 'Submittentenliste in Prüfung' or 'Submittentenliste geprüft'
 								 and must be active
 								 if current_status is after the status 'Offertöffnung gestartet' and Benutzer = Projektleiter (this is checked through the allowed operations) -->
-							<button type="button"
-								data-ng-click="offerListViewCtrl.checkTendererModal(offerListViewCtrl.data.submission.id)"
-								ng-if="(offerListViewCtrl.data.submission.process == 'INVITATION' || 
+              <button type="button"
+                data-ng-click="offerListViewCtrl.checkTendererModal(offerListViewCtrl.data.submission.id)" ng-if="(offerListViewCtrl.data.submission.process == 'INVITATION' ||
 										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
 										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION') &&
-										!offerListViewCtrl.hasStatusCheck && !offerListViewCtrl.hasStatusChecked"
-								data-ng-disabled="!offerListViewCtrl.secTenderAudit || offerListViewCtrl.currentStatus >= offerListViewCtrl.status.OFFER_OPENING_STARTED || 
-													offerListViewCtrl.noSubmittent"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Submittentenliste prüfen
-							</button>
-							
-							<!-- According to UC16 the following button must be displayed
-								 if verfahren = Einladungsverfahren, Freihändig or Freihändig mit Konkurrenz 
-								 and status has been set to 'Submittentenliste in Prüfung'  
+										!offerListViewCtrl.hasStatusCheck && !offerListViewCtrl.hasStatusChecked" data-ng-disabled="!offerListViewCtrl.secTenderAudit || offerListViewCtrl.currentStatus >= offerListViewCtrl.status.OFFER_OPENING_STARTED ||
+													offerListViewCtrl.noSubmittent" class="btn btn-primary" data-toggle="modal" data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Submittentenliste prüfen
+              </button>
+
+              <!-- According to UC16 the following button must be displayed
+								 if verfahren = Einladungsverfahren, Freihändig or Freihändig mit Konkurrenz
+								 and status has been set to 'Submittentenliste in Prüfung'
 								 and must be active
 								 if current_status is 'Submittentenliste in Prüfung' and Benutzer = Administrator (this is checked through the allowed operations) -->
-							<button type="button"
-								data-ng-click="offerListViewCtrl.checkedTendererModal(offerListViewCtrl.data.submission.id)"
-								ng-if="(offerListViewCtrl.data.submission.process == 'INVITATION' || 
+              <button type="button"
+                data-ng-click="offerListViewCtrl.checkedTendererModal(offerListViewCtrl.data.submission.id)" ng-if="(offerListViewCtrl.data.submission.process == 'INVITATION' ||
 										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
 										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION') &&
-										offerListViewCtrl.hasStatusCheck"
-								data-ng-disabled="offerListViewCtrl.checkedSubmittentButtonDisabled()"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Submittentenliste geprüft
-							</button>
-							
-							<!-- According to UC16 the following button must be displayed
-								 if current_status is before the status 'Offertöffnung abgeschlossen' 
+										offerListViewCtrl.hasStatusCheck" data-ng-disabled="offerListViewCtrl.checkedSubmittentButtonDisabled()"
+                class="btn btn-primary" data-toggle="modal" data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Submittentenliste geprüft
+              </button>
+
+              <!-- According to UC16 the following button must be displayed
+								 if current_status is before the status 'Offertöffnung abgeschlossen'
 								 (otherwise the button will be replaced by the button 'Offertöffnung wiederaufnehmen')
 								 and must be active
 								 if current_status is after the status 'Offertöffnung gestartet' -->
-							<button type="button"
-								data-ng-click="offerListViewCtrl.closeOfferModal(offerListViewCtrl.data.submission.id)"
-								ng-if="offerListViewCtrl.currentStatus < offerListViewCtrl.status.OFFER_OPENING_CLOSED"
-								data-ng-disabled="offerListViewCtrl.offerOpeningCloseButtonDisabled()"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Offertöffnung abschliessen
-							</button>
+              <button type="button"
+                data-ng-click="offerListViewCtrl.closeOfferModal(offerListViewCtrl.data.submission.id, offerListViewCtrl.data.submission.version)"
+                ng-if="offerListViewCtrl.currentStatus < offerListViewCtrl.status.OFFER_OPENING_CLOSED"
+                data-ng-disabled="offerListViewCtrl.offerOpeningCloseButtonDisabled()" class="btn btn-primary"
+                data-toggle="modal" data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Offertöffnung abschliessen
+              </button>
 
-							<!-- According to UC16 the following button must be displayed
+              <!-- According to UC16 the following button must be displayed
 								 if current_status is after the status 'Offertöffnung abgeschlossen'  -->
-							<button type="button"
-								data-ng-click="offerListViewCtrl.reopenOffer()"
-								ng-if="offerListViewCtrl.currentStatus >= offerListViewCtrl.status.OFFER_OPENING_CLOSED"
-								data-ng-disabled="!offerListViewCtrl.secOfferOpeningRestart || offerListViewCtrl.reopenOfferOpeningButtonDisabled()"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Offertöffnung wiederaufnehmen
-							</button>
-							
-							<!-- According to UC16 the following button must be displayed
+              <button type="button" data-ng-click="offerListViewCtrl.reopenOffer()"
+                ng-if="offerListViewCtrl.currentStatus >= offerListViewCtrl.status.OFFER_OPENING_CLOSED"
+                data-ng-disabled="!offerListViewCtrl.secOfferOpeningRestart || offerListViewCtrl.reopenOfferOpeningButtonDisabled()"
+                class="btn btn-primary" data-toggle="modal" data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Offertöffnung wiederaufnehmen
+              </button>
+
+              <!-- According to UC16 the following button must be displayed
 								 if Verfahren = Freihändig, Freihändig mit Konkurrenz, or
 								 Offen or Selektiv with DL-Wettbewerb (field isServiceTender)
-								 and current_status is before the status 'Manuelle Zuschlagserteilung abgeschlossen' 
+								 and current_status is before the status 'Manuelle Zuschlagserteilung abgeschlossen'
 								 (otherwise the button will be replaced by the button 'Zuschlagserteilung wiederaufnehmen') -->
-							<button type="button"
-								data-ng-click="offerListViewCtrl.awardContract(appCtrl.getLoggedUser().userGroup.name)"
-								ng-if="(offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
-										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION' || 
+              <button type="button"
+                data-ng-click="offerListViewCtrl.awardContract(appCtrl.getLoggedUser().userGroup.name)" ng-if="(offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
+										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION' ||
 										((offerListViewCtrl.data.submission.process == 'OPEN' ||
 										offerListViewCtrl.data.submission.process == 'SELECTIVE') &&
 										offerListViewCtrl.data.submission.isServiceTender)) && offerListViewCtrl.currentStatus >= offerListViewCtrl.status.FORMAL_AUDIT_COMPLETED &&
-										offerListViewCtrl.currentStatus < offerListViewCtrl.status.MANUAL_AWARD_COMPLETED"
-								ng-disabled="!offerListViewCtrl.secAwarded
-								          || offerListViewCtrl.genericButtonDisabled()"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Zuschlag erteilen
-							</button>
+										offerListViewCtrl.currentStatus < offerListViewCtrl.status.MANUAL_AWARD_COMPLETED" ng-disabled="!offerListViewCtrl.secAwarded
+								          || offerListViewCtrl.genericButtonDisabled()" class="btn btn-primary" data-toggle="modal"
+                data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Zuschlag erteilen
+              </button>
 
-							<!-- According to UC16 the following button must be displayed
+              <!-- According to UC16 the following button must be displayed
 								 if Verfahren = Freihändig, Freihändig mit Konkurrenz, or
 								 Offen or Selektiv with DL-Wettbewerb (field isServiceTender)
 								 if current_status is after the status 'Manuelle Zuschlagserteilung abgeschlossenn'  -->
-							<button type="button"
-								data-ng-click="offerListViewCtrl.undoAward(appCtrl.getLoggedUser().userGroup.name)"
-							ng-if="(offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
-										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION' || 
+              <button type="button" data-ng-click="offerListViewCtrl.undoAward(appCtrl.getLoggedUser().userGroup.name)"
+                ng-if="(offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
+										offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION' ||
 										((offerListViewCtrl.data.submission.process == 'OPEN' ||
 										offerListViewCtrl.data.submission.process == 'SELECTIVE') &&
 										offerListViewCtrl.data.submission.isServiceTender)) &&
-										offerListViewCtrl.currentStatus >= offerListViewCtrl.status.MANUAL_AWARD_COMPLETED"
+										offerListViewCtrl.currentStatus >= offerListViewCtrl.status.MANUAL_AWARD_COMPLETED" ng-disabled="!offerListViewCtrl.secAwardRemoved
+								          || offerListViewCtrl.manualAwardReopenButtonDisabled()" class="btn btn-primary" data-toggle="modal"
+                data-target="#hinzufügen">
+                <span class="fa fa-plus" aria-hidden="true"></span> Zuschlagserteilung wiederaufnehmen
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="tab-content">
+          <div class="row" id="results">
+            <div class="card-box">
+              <div class="col-sm-12 ToolbarContainer"></div>
 
-								ng-disabled="!offerListViewCtrl.secAwardRemoved
-								          || offerListViewCtrl.manualAwardReopenButtonDisabled()"
-								class="btn btn-primary" data-toggle="modal"
-								data-target="#hinzufügen">
-								<span class="fa fa-plus" aria-hidden="true"></span> Zuschlagserteilung wiederaufnehmen
-							</button>
-						</div>
-					</div>
-				</div>
-				<div class="tab-content">
-					<div class="row" id="results">
-						<div class="card-box">
-							<div class="col-sm-12 ToolbarContainer"></div>
+              <div class="col-sm-12">
+                <div>
+                  <div ng-table-pagination="offerListViewCtrl.tableParams" template-url="'app/layout/pager.html'"></div>
+                  <div id="accordionTable" class="table-responsive tableBtnAction subunternehmerTable">
+                    <table class="table table-condensed" ng-table="offerListViewCtrl.tableParams"
+                      style="border-collapse: collapse;" template-pagination="custom/pager" show-filter="true">
 
-							<div class="col-sm-12">
-								<div>
-									<div ng-table-pagination="offerListViewCtrl.tableParams"
-										template-url="'app/layout/pager.html'"></div>
-									<div id="accordionTable"
-										class="table-responsive tableBtnAction subunternehmerTable">
-										<table class="table table-condensed"
-											ng-table="offerListViewCtrl.tableParams"
-											style="border-collapse: collapse;"
-											template-pagination="custom/pager"
-											 show-filter="true">
-											
-												<tr>
-													<th colspan="2">Submittent </th>
-													<th>Brutto </span></th>
-													<th>Rabatt </span></th>
-													<th>BNK </th>
-													<th>Skonto </th>
-													<th>Netto </th>
-													<th>Z </th>
-													<th>A </th>
-													<th class="w80">Aktion </th>
-												</tr>
-										
-											<!--  TODO here -->
-										
+                      <tr>
+                        <th colspan="2">Submittent </th>
+                        <th>Brutto </span></th>
+                        <th>Rabatt </span></th>
+                        <th>BNK </th>
+                        <th>Skonto </th>
+                        <th>Netto </th>
+                        <th>Z </th>
+                        <th>A </th>
+                        <th class="w80">Aktion </th>
+                      </tr>
 
-												<tbody id="offer" ng-repeat="offer in $data"  
-												accordion-group is-open="offerListViewCtrl.openOfferAccordion">
-													<tr  accordion-heading id="{{offer.offer.id}}" ng-click="offerListViewCtrl.openOfferDetails(offer)">
-													<td>
-														<span class="fa fa-caret-right" aria-hidden="true" ng-if="!offer.show"></span>
-														<span class="fa fa-caret-down" aria-hidden="true" ng-if="offer.show"></span></td>
-													<td>{{offer.submittent.submittentNameArgeSub}} </td>
-													<td>{{offerListViewCtrl.formatAmount(offerListViewCtrl.grossAmountOrGrossAmountCorrected(offer.offer.isCorrected, offer.offer.grossAmount, offer.offer.grossAmountCorrected))}} </td>
-													<td ng-if="offer.offer.isDiscountPercentage">{{offerListViewCtrl.formatAmount(offer.offer.discount)}}%</td>
-													<td ng-if="!offer.offer.isDiscountPercentage">{{offerListViewCtrl.formatAmount(offer.offer.discount)}}</td>
-													<td ng-if="offer.offer.isBuildingCostsPercentage">{{offerListViewCtrl.formatAmount(offer.offer.buildingCosts)}}%</td>
-													<td ng-if="!offer.offer.isBuildingCostsPercentage">{{offerListViewCtrl.formatAmount(offer.offer.buildingCosts)}}</td>
-													<td ng-if="offer.offer.isDiscount2Percentage">{{offerListViewCtrl.formatAmount(offer.offer.discount2)}}%</td>
-													<td ng-if="!offer.offer.isDiscount2Percentage">{{offerListViewCtrl.formatAmount(offer.offer.discount2)}}</td>
-													<td>{{offerListViewCtrl.customRoundNumber(offer.offer.amount)}}</td>
-													<td>
-														<span class="fa fa-circle green" aria-hidden="true" ng-if="offer.offer.isAwarded"></span>
-														<span class="fa fa-circle-thin" aria-hidden="true" ng-if="!offer.offer.isAwarded"></span>
-													</td>
-													<td>
-														<span class="fa fa-circle red" aria-hidden="true" ng-if="((offer.submittent.existsExclusionReasons 
-														&& (offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' 
+                      <!--  TODO here -->
+
+
+                      <tbody id="offer" ng-repeat="offer in $data" accordion-group
+                        is-open="offerListViewCtrl.openOfferAccordion">
+                        <tr accordion-heading id="{{offer.offer.id}}"
+                          ng-click="offerListViewCtrl.openOfferDetails(offer)">
+                          <td>
+                            <span class="fa fa-caret-right" aria-hidden="true" ng-if="!offer.show"></span>
+                            <span class="fa fa-caret-down" aria-hidden="true" ng-if="offer.show"></span></td>
+                          <td>{{offer.submittent.submittentNameArgeSub}} </td>
+                          <td>
+                            {{offerListViewCtrl.formatAmount(offerListViewCtrl.grossAmountOrGrossAmountCorrected(offer.offer.isCorrected, offer.offer.grossAmount, offer.offer.grossAmountCorrected))}}
+                          </td>
+                          <td ng-if="offer.offer.isDiscountPercentage">
+                            {{offerListViewCtrl.formatAmount(offer.offer.discount)}}%</td>
+                          <td ng-if="!offer.offer.isDiscountPercentage">
+                            {{offerListViewCtrl.formatAmount(offer.offer.discount)}}</td>
+                          <td ng-if="offer.offer.isBuildingCostsPercentage">
+                            {{offerListViewCtrl.formatAmount(offer.offer.buildingCosts)}}%</td>
+                          <td ng-if="!offer.offer.isBuildingCostsPercentage">
+                            {{offerListViewCtrl.formatAmount(offer.offer.buildingCosts)}}</td>
+                          <td ng-if="offer.offer.isDiscount2Percentage">
+                            {{offerListViewCtrl.formatAmount(offer.offer.discount2)}}%</td>
+                          <td ng-if="!offer.offer.isDiscount2Percentage">
+                            {{offerListViewCtrl.formatAmount(offer.offer.discount2)}}</td>
+                          <td>{{offerListViewCtrl.customRoundNumber(offer.offer.amount)}}</td>
+                          <td>
+                            <span class="fa fa-circle green" aria-hidden="true" ng-if="offer.offer.isAwarded"></span>
+                            <span class="fa fa-circle-thin" aria-hidden="true" ng-if="!offer.offer.isAwarded"></span>
+                          </td>
+                          <td>
+                            <span class="fa fa-circle red" aria-hidden="true" ng-if="((offer.submittent.existsExclusionReasons
+														&& (offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE'
 														|| offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION'
 														|| offerListViewCtrl.data.submission.process == 'SELECTIVE'))
-														|| (offer.offer.qExExaminationIsFulfilled == false && (offerListViewCtrl.data.submission.process == 'INVITATION' 
+														|| (offer.offer.qExExaminationIsFulfilled == false && (offerListViewCtrl.data.submission.process == 'INVITATION'
 														|| offerListViewCtrl.data.submission.process == 'OPEN')))
 														&& offerListViewCtrl.currentStatus >= offerListViewCtrl.status.FORMAL_AUDIT_COMPLETED
 														&& offerListViewCtrl.currentStatus != offerListViewCtrl.status.AWARD_EVALUATION_STARTED"></span>
-														<span class="fa fa-circle-thin" aria-hidden="true" ng-if="((offer.submittent.existsExclusionReasons != true
-														&& (offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE' 
+                            <span class="fa fa-circle-thin" aria-hidden="true" ng-if="((offer.submittent.existsExclusionReasons != true
+														&& (offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE'
 														|| offerListViewCtrl.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION'
 														|| offerListViewCtrl.data.submission.process == 'SELECTIVE'))
-														|| ((offer.offer.qExExaminationIsFulfilled || offer.offer.qExExaminationIsFulfilled == null)&& (offerListViewCtrl.data.submission.process == 'INVITATION' 
+														|| ((offer.offer.qExExaminationIsFulfilled || offer.offer.qExExaminationIsFulfilled == null)&& (offerListViewCtrl.data.submission.process == 'INVITATION'
 														|| offerListViewCtrl.data.submission.process == 'OPEN')))
 														&& offerListViewCtrl.currentStatus >= offerListViewCtrl.status.FORMAL_AUDIT_COMPLETED
 														&& offerListViewCtrl.currentStatus != offerListViewCtrl.status.AWARD_EVALUATION_STARTED"></span>
-														<span class="fa fa-circle-thin" aria-hidden="true" ng-if="
+                            <span class="fa fa-circle-thin" aria-hidden="true" ng-if="
 														offerListViewCtrl.currentStatus < offerListViewCtrl.status.FORMAL_AUDIT_COMPLETED
 														|| offerListViewCtrl.currentStatus == offerListViewCtrl.status.AWARD_EVALUATION_STARTED"></span>
-													</td>
-													<td>
+                          </td>
+                          <td>
 
-														<button type="button" class="btn action btn-primary"
-															title="Offerte löschen" data-ng-click="offerListViewCtrl.deleteOfferModal(offer.offer.id)"
-															data-ng-disabled="offerListViewCtrl.deleteOfferDisabled()">
-															<span class="fa fa-eraser" aria-hidden="true"></span>
-														</button>
+                            <button type="button" class="btn action btn-primary" title="Offerte löschen"
+                              data-ng-click="offerListViewCtrl.deleteOfferModal(offer.offer.id)"
+                              data-ng-disabled="offerListViewCtrl.deleteOfferDisabled()">
+                              <span class="fa fa-eraser" aria-hidden="true"></span>
+                            </button>
 
-														<!-- according to UC15
+                            <!-- according to UC15
 														     if (Benutzer = Administrator) then
                                                                if (current_status >= Offertöffnung abgeschlossen) then
 		                                                         button greyed out
 	                                                           end if
                                                              else if (Benutzer = Projektleiter) then
-	                                                           if ((Verfahren = Offen or Selektiv) or 
+	                                                           if ((Verfahren = Offen or Selektiv) or
 	                                                               (Verfahren = Freihändig (ohne oder mit Konkurrenz) and current_status >= Offertöffnung abgeschlossen) or
 	                                                               (Verfahren = rest of Verfahren and current_status >= Submittentenliste in Prüfung) ) then
 		                                                         button greyed out
-	                                                           end if                                                          
+	                                                           end if
 	                                                         end if
-                                                        -->									
-														<button type="button" class="btn action btn-primary"
-														data-ng-disabled="offerListViewCtrl.deleteSubmittentDisabled(offer.offer.submittent.isApplicant)"
-															data-ng-click="offerListViewCtrl.deleteSubmittentModal(offer.offer.submittent.id, offer.id)"
-															title=" Aktuellen Submittenten entfernen ">
-															<span class="fa fa-trash-o" aria-hidden="true"></span>
-														</button>
-														<button type="button" class="btn action btn-primary" title="Firma ansehen"
-														data-ng-disabled="!offerListViewCtrl.secCompanyView"
-														data-ng-click="offerListViewCtrl.navigateToCompany(offer.submittent.companyId.id)">
-															<span class="fa fa-eye" aria-hidden="true"></span>
-														</button>
-													</td>
-													</tr>
-													<tr>
-														<td colspan="9" ng-if="offer.show">
-															<div ng-include src="'app/offer/view/offerTabs.html'"></div>
-															<div ng-include src="'app/offer/view/offerDetails.html'"></div>
-														</td>
-													</tr>
-												</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                                                        -->
+                            <button type="button" class="btn action btn-primary"
+                              data-ng-disabled="offerListViewCtrl.deleteSubmittentDisabled(offer.offer.submittent.isApplicant)"
+                              data-ng-click="offerListViewCtrl.deleteSubmittentModal(offer.offer.submittent.id, offer.id)"
+                              title=" Aktuellen Submittenten entfernen ">
+                              <span class="fa fa-trash-o" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn action btn-primary" title="Firma ansehen"
+                              data-ng-disabled="!offerListViewCtrl.secCompanyView"
+                              data-ng-click="offerListViewCtrl.navigateToCompany(offer.submittent.companyId.id)">
+                              <span class="fa fa-eye" aria-hidden="true"></span>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="9" ng-if="offer.show">
+                            <div ng-include src="'app/offer/view/offerTabs.html'"></div>
+                            <div ng-include src="'app/offer/view/offerDetails.html'"></div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-			</div>
-		</div>
-	</div>
+      </div>
+    </div>
+  </div>
 </div>

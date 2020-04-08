@@ -25,7 +25,8 @@
 
   /** @ngInject */
   function AwardSubcriterionAddController($rootScope, $scope, $state, $stateParams,
-    criterion, $uibModal, QFormJSRValidation, $uibModalInstance, ExaminationService) {
+    criterion, pageRequestedOn, submissionId, submissionVersion, $uibModal, QFormJSRValidation,
+    $uibModalInstance, ExaminationService, AppService) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -38,6 +39,7 @@
      * Exported functions.
      **********************************************************************/
     vm.subcriterionSave = subcriterionSave;
+    vm.closeModal = closeModal;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -52,8 +54,22 @@
      * Functions.
      **********************************************************************/
     function subcriterionSave() {
+      ExaminationService.awardLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithSaving();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            vm.errorFieldsVisible = true;
+            QFormJSRValidation.markErrors($scope,
+              $scope.awardSubcriterionAddCtrl.subcriterionForm, response);
+          }
+        });
+    }
+
+    function proceedWithSaving() {
       vm.subcriterion.criterion = criterion;
-      ExaminationService.addSubcriterionToCriterion(vm.subcriterion).success(function (data) {
+      vm.subcriterion.pageRequestedOn = pageRequestedOn;
+      ExaminationService.addSubcriterionToCriterion(submissionId, submissionVersion, vm.subcriterion).success(function (data) {
         $uibModalInstance.close();
         $state.go('award.view', {
           displayedCriterionId: criterion
@@ -62,10 +78,27 @@
         });
       }).error(function (response, status) {
         if (status === 400) { // Validation errors.
+          vm.errorFieldsVisible = true;
           QFormJSRValidation.markErrors($scope,
             $scope.awardSubcriterionAddCtrl.subcriterionForm, response);
         }
       });
+    }
+
+    function closeModal() {
+      if (vm.dirtyFlag || vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('award.view', {}, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
+      }
     }
   }
 })();

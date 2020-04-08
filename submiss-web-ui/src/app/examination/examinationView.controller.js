@@ -137,16 +137,23 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      readSubmission($stateParams.id);
-      readStatusOfSubmission($stateParams.id);
-      readCriteriaOfSubmission($stateParams.id);
-      readOfferCriteria($stateParams.id);
-      hasApplicationOpeningBeenClosedBefore($stateParams.id);
-      // If a command was given to close the examination before the page
-      // reloaded, proceed with the command.
-      if ($stateParams.proceedToClose) {
-        closeExamination();
-      }
+      SubmissionService.loadFormalAudit($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            readSubmission($stateParams.id);
+            readStatusOfSubmission($stateParams.id);
+            readCriteriaOfSubmission($stateParams.id);
+            readOfferCriteria($stateParams.id);
+            hasApplicationOpeningBeenClosedBefore($stateParams.id);
+            // If a command was given to close the examination before the page
+            // reloaded, proceed with the command.
+            if ($stateParams.proceedToClose) {
+              closeExamination();
+            }
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -202,12 +209,29 @@
       }
     }
 
-    function save(form) {
+    function save() {
+      ExaminationService.examinationLockedByAnotherUser(vm.data.submission.id)
+        .success(function (data) {
+          proceedWithSaving();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.examinationViewCtrl.examinationForm, response);
+          }
+        });
+    }
+
+    function proceedWithSaving() {
       createEmptyCriteria();
       vm.examination.criterion = vm.criteria;
       vm.examination.submissionId = $stateParams.id;
+      vm.examination.pageRequestedOn = vm.data.submission.pageRequestedOn;
+      vm.examination.submissionVersion = vm.data.submission.version;
+      AppService.setPaneShown(true);
       ExaminationService.updateExamination(vm.examination)
         .success(function (data) {
+          AppService.setPaneShown(false);
           ExaminationService.updateSubmissionFormalAuditExaminationStatus(
               $stateParams.id)
             .success(function (data) {
@@ -215,7 +239,8 @@
             });
         }).error(function (response, status) {
           if (status === 400) { // Validation errors.
-            $anchorScroll('ErrorAnchor');
+            AppService.setPaneShown(false);
+            $anchorScroll('page-title');
             QFormJSRValidation.markErrors($scope,
               $scope.examinationViewCtrl.examinationForm, response);
           }
@@ -387,6 +412,12 @@
             },
             isEvaluated: function () {
               return isEvaluated;
+            },
+            pageRequestedOn: function () {
+              return vm.data.submission.pageRequestedOn;
+            },
+            submissionVersion: function () {
+              return vm.data.submission.version;
             }
           }
         });
@@ -397,6 +428,19 @@
 
     /**Create a function to delete a criterion */
     function deleteCriterion(id, isEvaluated) {
+      ExaminationService.examinationLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithDeletingCriterion(id, isEvaluated);
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.examinationViewCtrl.examinationForm, response);
+          }
+        });
+    }
+
+    function proceedWithDeletingCriterion(id, isEvaluated) {
       if (!vm.dirtyFlag) {
         if ((vm.examination.minGrade === null || angular.isUndefined(
               vm.examination.minGrade) ||
@@ -431,12 +475,21 @@
               controllerAs: 'examinationViewCtrl',
               backdrop: 'static',
               keyboard: false,
-              controller: function () {
+              resolve: {
+                pageRequestedOn: function () {
+                  return vm.data.submission.pageRequestedOn;
+                }
+              },
+              controller: function (pageRequestedOn) {
                 var vm = this;
                 vm.criterionDelete = function () {
-                  ExaminationService.deleteCriterion(id)
+                  ExaminationService.deleteCriterion(id, pageRequestedOn)
                     .success(function (data) {
-                      save()
+                      proceedWithSaving();
+                    }).error(function (response, status) {
+                      $anchorScroll('page-title');
+                      QFormJSRValidation.markErrors($scope,
+                        $scope.examinationViewCtrl.examinationForm, response);
                     });
                 };
               }
@@ -504,6 +557,19 @@
 
     /**Create a function to delete a subcriterion */
     function deleteSubcriterion(id) {
+      ExaminationService.examinationLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithDeletingSubCriterion(id);
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.examinationViewCtrl.examinationForm, response);
+          }
+        });
+    }
+
+    function proceedWithDeletingSubCriterion(id) {
       if (!vm.dirtyFlag) {
         if (vm.examination.minGrade === null || angular.isUndefined(
             vm.examination.minGrade) ||
@@ -538,12 +604,21 @@
               controllerAs: 'examinationViewCtrl',
               backdrop: 'static',
               keyboard: false,
-              controller: function () {
+              resolve: {
+                pageRequestedOn: function () {
+                  return vm.data.submission.pageRequestedOn;
+                }
+              },
+              controller: function (pageRequestedOn) {
                 var vm = this;
                 vm.subcriterionDelete = function () {
-                  ExaminationService.deleteSubcriterion(id)
+                  ExaminationService.deleteSubcriterion(id, pageRequestedOn)
                     .success(function (data) {
-                      save()
+                      proceedWithSaving();
+                    }).error(function (response, status) {
+                      $anchorScroll('page-title');
+                      QFormJSRValidation.markErrors($scope,
+                        $scope.examinationViewCtrl.examinationForm, response);
                     });
                 };
               }
@@ -567,6 +642,15 @@
             resolve: {
               criterion: function () {
                 return criterion;
+              },
+              pageRequestedOn: function () {
+                return vm.data.submission.pageRequestedOn;
+              },
+              submissionId: function () {
+                return vm.data.submission.id;
+              },
+              submissionVersion: function () {
+                return vm.data.submission.version;
               }
             }
           });
@@ -610,6 +694,7 @@
         if (response) {
           AppService.setPaneShown(true);
           vm.examination.submissionId = vm.data.submission.id;
+          vm.examination.submissionVersion = vm.data.submission.version;
           ExaminationService.closeExamination(vm.examination)
             .success(function (data) {
               AppService.setPaneShown(false);
@@ -623,7 +708,7 @@
               });
             }).error(function (response, status) {
               AppService.setPaneShown(false);
-              if (status === 400) { // Validation errors.
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
                 $anchorScroll('ErrorAnchor');
                 QFormJSRValidation.markErrors($scope,
                   $scope.examinationViewCtrl.examinationForm, response);
@@ -742,10 +827,15 @@
           var reopenForm = {};
           if (!angular.isUndefined(response)) {
             reopenForm.reopenReason = response;
-            ExaminationService.reopenExamination(reopenForm, $stateParams.id)
+            ExaminationService.reopenExamination(reopenForm, vm.data.submission.id, vm.data.submission.version)
               .success(function (data) {
                 $state.reload(); // reload the list
-              }).error(function (response, status) {});
+              }).error(function (response, status) {
+                if (status === 400 || status === 409) {
+                  QFormJSRValidation.markErrors($scope,
+                    $scope.examinationViewCtrl.examinationForm, response);
+                }
+              });
           }
         });
     }
@@ -892,6 +982,19 @@
 
     /** Function to export criteria */
     function exportCriteria() {
+      ExaminationService.examinationLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithExportCriteria();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.examinationViewCtrl.examinationForm, response);
+          }
+        });
+    }
+
+    function proceedWithExportCriteria() {
       ExaminationService.exportOfferCriteria($stateParams.id,
           AppConstants.CRITERION_TYPE.SUITABILITY)
         .success(function (response, status, headers) {
@@ -921,11 +1024,33 @@
 
     /** Function to import criteria */
     function uploadFile(flow) {
-      flow.upload();
+      ExaminationService.checkExaminationOptimisticLock(vm.data.submission.id, vm.data.submission.pageRequestedOn, vm.data.submission.version)
+        .success(function (response, status, headers) {
+          flow.upload();
+        }).error(function (response, status) {
+          if (status === 409) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.examinationViewCtrl.examinationForm, response);
+          }
+        });
     }
 
     /** Function to export criteria */
     function exportEMLCriteria() {
+      ExaminationService.examinationLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithexportEMLCriteria();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.examinationViewCtrl.examinationForm, response);
+          }
+        });
+    }
+
+    function proceedWithexportEMLCriteria() {
       ExaminationService.exportEMLOfferCriteria($stateParams.id,
           AppConstants.CRITERION_TYPE.SUITABILITY)
         .success(function (response, status, headers) {

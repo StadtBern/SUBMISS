@@ -197,6 +197,15 @@ public interface SubDocumentService {
   boolean documentExists(String submissionId, String templateShortCode);
 
   /**
+   * Check if Rechtliches Gehör (Abbruch) document exists.
+   *
+   * @param submissionId the submission id
+   * @param templateShortCode the template short code
+   * @return true, if document exists
+   */
+  boolean legalHearingTerminateDocumentExists(String submissionId, String templateShortCode);
+
+  /**
    * Checks the permitted documents for upload.
    *
    * @param folderId the folder id

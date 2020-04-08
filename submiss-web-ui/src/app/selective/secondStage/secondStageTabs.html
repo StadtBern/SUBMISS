@@ -19,7 +19,8 @@
 				<li ng-if="secondStageTabsCtrl.currentStatus < secondStageTabsCtrl.status.OFFER_OPENING_STARTED || secondStageTabsCtrl.offerTabVisible()"
 					role="presentation" ui-sref-active="active">
 					<a aria-controls="subList" role="tab" data-toggle="tab"
-						ui-sref="offerListView({id : secondStageTabsCtrl.submission.id})">
+            ui-sref="offerListView({id : secondStageTabsCtrl.submission.id})"
+            ng-class="{'status': secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===0}">
 						<h ng-if="secondStageTabsCtrl.currentStatus < secondStageTabsCtrl.status.OFFER_OPENING_STARTED">Submittentenliste</h>
 						<h ng-if="secondStageTabsCtrl.offerTabVisible()">Offertübersicht</h>
 					</a>
@@ -29,13 +30,13 @@
 						aria-controls="subList" role="tab" data-toggle="tab"
 						ng-if="secondStageTabsCtrl.secFormalAuditView &&
 							(secondStageTabsCtrl.currentStatus >= secondStageTabsCtrl.status.OFFER_OPENING_CLOSED ||
-								secondStageTabsCtrl.offerOpeningClosedBefore)">Formelle Prüfung
+								secondStageTabsCtrl.offerOpeningClosedBefore)" ng-class="{'status': secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===1}">Formelle Prüfung
 					</a>
 				</li>
 				<li role="presentation" ui-sref-active="active" ><a
 					aria-controls="zuschlag" role="tab" data-toggle="tab"
 					ui-sref="award.view({id: secondStageTabsCtrl.submission.id})"
-					ng-if="secondStageTabsCtrl.isAwardEvaluationTabVisible()">Zuschlagsbewertung</a>
+					ng-if="secondStageTabsCtrl.isAwardEvaluationTabVisible()" ng-class="{'status': (secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===1 || secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===2)}">Zuschlagsbewertung</a>
 				</li>
 			</ul>
 		</div>

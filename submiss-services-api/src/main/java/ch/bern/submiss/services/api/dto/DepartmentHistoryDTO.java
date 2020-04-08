@@ -19,7 +19,7 @@ import java.sql.Timestamp;
  * The Class DepartmentHistoryDTO.
  */
 
-public class DepartmentHistoryDTO extends AbstractDTO {
+public class DepartmentHistoryDTO extends AbstractStammdatenDTO {
 
   /** The master list. */
   private MasterListDTO masterList;

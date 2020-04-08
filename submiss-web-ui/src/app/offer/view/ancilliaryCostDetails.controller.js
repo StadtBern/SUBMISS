@@ -224,6 +224,18 @@
     }
 
     function save() {
+      SubmissionService.isStatusChanged($stateParams.offer.submittent.submissionId.id, vm.currentStatus)
+        .success(function (data) {
+          proceedWithSave();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            QFormJSRValidation.markErrors($scope,
+              $scope.ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm, response);
+          }
+        });
+    }
+
+    function proceedWithSave() {
       // If the ancilliary amount gross contains an invalid numerical value, prevent the form from being saved and updated.
       if ($scope.ancilliaryCostDetailsCtrl.offerAncilliaryCostDetailsForm.ancilliaryAmountGross.$invalid) {
         return null;

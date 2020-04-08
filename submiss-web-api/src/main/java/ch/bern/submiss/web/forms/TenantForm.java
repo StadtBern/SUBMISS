@@ -13,7 +13,7 @@
 
 package ch.bern.submiss.web.forms;
 
-public class TenantForm extends AbstractForm {
+public class TenantForm extends AbstractStammdatenForm {
 
   private Boolean isMain;
   private String description;

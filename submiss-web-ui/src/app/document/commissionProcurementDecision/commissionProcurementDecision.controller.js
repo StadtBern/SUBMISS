@@ -166,11 +166,11 @@
     /** Save the commission procurement decision form */
     function save() {
       CommissionProcurementProposalService.
-      updateCommissionProcurementDecision(vm.cPDecision, vm.submission.id).success(function (data) {
+      updateCommissionProcurementDecision(vm.cPDecision, vm.submission.id, vm.submission.version).success(function (data) {
         vm.saved = true;
         defaultReload();
       }).error(function (response, status) {
-        if (status === 400) { // Validation errors.
+        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
           $anchorScroll();
           QFormJSRValidation.markErrors($scope,
             $scope.cPDecisionCtrl.commissionDecisionForm, response);
@@ -276,11 +276,11 @@
               // Close the commission procurement proposal.
               vm2.closeCommissionProcurementDecision = function (response) {
                 if (response) {
-                  CommissionProcurementProposalService.closeCommissionProcurementDecision(vm.submission.id)
+                  CommissionProcurementProposalService.closeCommissionProcurementDecision(vm.submission.id, vm.submission.version)
                     .success(function (data) {
                       defaultReload();
                     }).error(function (response, status) {
-                      if (status === 400) { // Validation errors.
+                      if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
                         $anchorScroll('ErrorAnchor');
                         QFormJSRValidation.markErrors($scope,
                           $scope.cPDecisionCtrl.commissionDecisionForm, response);
@@ -295,7 +295,7 @@
             }
           });
         }).error(function (response, status) {
-          if (status === 400) { // Validation errors.
+          if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
             QFormJSRValidation.markErrors($scope,
               $scope.cPDecisionCtrl.commissionDecisionForm, response);
           }
@@ -311,10 +311,16 @@
           var reopenForm = {
             reopenReason: response
           };
-          CommissionProcurementProposalService.reopenCommissionProcurementDecision(reopenForm, $stateParams.id)
+          CommissionProcurementProposalService.reopenCommissionProcurementDecision(reopenForm, vm.submission.id, vm.submission.version)
             .success(function (data) {
               defaultReload();
-            }).error(function (response, status) {});
+            }).error(function (response, status) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+                $anchorScroll('ErrorAnchor');
+                QFormJSRValidation.markErrors($scope,
+                  $scope.cPDecisionCtrl.commissionDecisionForm, response);
+              }
+            });
         }
       });
     }

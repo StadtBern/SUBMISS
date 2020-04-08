@@ -26,19 +26,28 @@
   /** @ngInject */
   function SubmissionDefaultController($rootScope, $scope, $state, $stateParams,
     SubmissionService, $uibModal, NgTableParams,
-    $filter, QFormJSRValidation, AppService, AppConstants, StammdatenService) {
-    const
-      vm = this;
+    $filter, QFormJSRValidation, AppService, AppConstants, StammdatenService, SubmissionCancelService) {
+    var vm = this;
     /***********************************************************************
      * Local variables.
      **********************************************************************/
     var isOfferAboveThreshold = null;
     var statusAwardNoticesCreatedDate = null;
+    // The arrays with status codes
+    var submittentenlisteStatus = [10, 80, 90, 100];
+    var stufe1Status = [10, 20, 30, 40, 50];
+    var offertubersichtStatus = [110, 150, 170];
+    var formelle_eignungsprufungStatus = [120, 130, 160];
+    var stufe2Status = [70, 110, 150, 120, 140, 190, 160];
+    var zuschlagsbewertungStatus = [160, 180];
+    var formellePrufungStatus = [120, 140];
+    var dokumentStatus = [60, 200, 210, 220, 230, 240, 250, 260, 270, 290];
     /***********************************************************************
      * Exported variables.
      **********************************************************************/
     vm.data = {};
     vm.secFormalAuditView = false;
+    vm.secAwardEvaluationView = false;
     vm.secTenderDelete = false;
     vm.secTenderEdit = false;
     vm.secTenderMove = false;
@@ -54,16 +63,22 @@
     // needed for displayed message for reopen submission
     vm.reopenDate = null;
     vm.reopenMessageStart = AppConstants.REOPEN_MESSAGE_START;
+    vm.cancelledMessageInfo = AppConstants.CANCELLED_MESSAGE_INFO;
     vm.reopenMessageEnd = null;
     vm.statusHistory = null;
     vm.isCompletedOrCancelled = false;
     vm.isCompleted = false;
     vm.moveButtonDisabled = true;
     vm.unsavedChangesModalOpen = false;
+    vm.availableDateOfCancelledSubmission = null;
+    vm.cancelDateOfSubmission = null;
+    vm.isReopenedAfterVerfugungen = null;
+    vm.currentStatus = null;
+    vm.tabStatus = null;
+    vm.isCancelledBeforeClose = false;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
-
     vm.readSubmission = readSubmission;
     vm.getStatusAwardNoticesCreatedDate = getStatusAwardNoticesCreatedDate;
     vm.checkIsOfferAboveThreshold = checkIsOfferAboveThreshold;
@@ -92,21 +107,33 @@
     vm.sendMailModal = sendMailModal;
     vm.projectSearchModal = projectSearchModal;
     vm.readSubmittentsCount = readSubmittentsCount;
+    vm.getAvailableDateOfCancelledSubmission = getAvailableDateOfCancelledSubmission;
+    vm.getCancelDateOfSubmission = getCancelDateOfSubmission;
+    vm.getStatusTab = getStatusTab;
     // Activating the controller.
     activate();
     /***********************************************************************
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.readSubmission($stateParams.id);
-      vm.getStatusAwardNoticesCreatedDate($stateParams.id);
-      vm.getDateAndPreviousReopenStatus($stateParams.id);
-      vm.secTenderMove = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_MOVE, null);
-      vm.secSentEmail = AppService.isOperationPermitted(AppConstants.OPERATION.SENT_EMAIL, null);
-      vm.secDocumentView = AppService.isOperationPermitted(AppConstants.OPERATION.PROJECT_DOCUMENTVIEW, null);
-      vm.secTenderClose = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_CLOSE, null);
-      vm.secTenderReopen = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_REOPEN, null);
-      vm.readSubmittentsCount($stateParams.id);
+      SubmissionService.loadSubmission($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.readSubmission($stateParams.id);
+            vm.getStatusAwardNoticesCreatedDate($stateParams.id);
+            vm.getDateAndPreviousReopenStatus($stateParams.id);
+            vm.getAvailableDateOfCancelledSubmission($stateParams.id);
+            vm.getCancelDateOfSubmission($stateParams.id);
+            vm.secTenderMove = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_MOVE, null);
+            vm.secSentEmail = AppService.isOperationPermitted(AppConstants.OPERATION.SENT_EMAIL, null);
+            vm.secDocumentView = AppService.isOperationPermitted(AppConstants.OPERATION.PROJECT_DOCUMENTVIEW, null);
+            vm.secTenderClose = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_CLOSE, null);
+            vm.secTenderReopen = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_REOPEN, null);
+            vm.readSubmittentsCount($stateParams.id);
+          }
+        });
     }
 
     /***********************************************************************
@@ -138,6 +165,7 @@
         getSubmissionStatuses(vm.data.submission.id);
         readStatusOfSubmission(vm.data.submission.id);
         vm.secFormalAuditView = AppService.isOperationPermitted(AppConstants.OPERATION.FORMAL_AUDIT_VIEW, vm.data.submission.process);
+        vm.secAwardEvaluationView = AppService.isOperationPermitted(AppConstants.OPERATION.AWARD_EVALUATION_VIEW, vm.data.submission.process);
         // in case of PL and Negotiated process
         // make an extra call to determine
         // if at least one offer is above threshold
@@ -146,7 +174,55 @@
             vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
           vm.checkIsOfferAboveThreshold(id);
         }
+      }).error(function (response, status) {
+        if (status === 409) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.submissionDefaultCtr.submissionDefaultForm, response);
+        }
+      });
+    }
+
+    /* Function to return the status tab to highlight */
+    function getStatusTab(status) {
+      var statusTab = -1;
+      if (vm.data.submission && (vm.data.submission.process !== vm.process.SELECTIVE) &&
+        submittentenlisteStatus.includes(status)) {
+        statusTab = 1;
+      } else if (vm.data.submission && (vm.data.submission.process !== vm.process.SELECTIVE) &&
+        offertubersichtStatus.includes(status)) {
+        statusTab = 2;
+      } else if (vm.data.submission && (vm.data.submission.process === vm.process.OPEN || vm.data.submission.process === vm.process.INVITATION) &&
+        formelle_eignungsprufungStatus.includes(status)) {
+        statusTab = 3;
+      } else if (vm.data.submission && (vm.data.submission.process === vm.process.NEGOTIATED_PROCEDURE || vm.data.submission.process === vm.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION) &&
+        formellePrufungStatus.includes(status)) {
+        statusTab = 4;
+      } else if (zuschlagsbewertungStatus.includes(status)) {
+        statusTab = 5;
+      } else if (vm.data.submission && (vm.data.submission.process === vm.process.SELECTIVE) &&
+        stufe1Status.includes(status)) {
+        statusTab = 6;
+      } else if (vm.data.submission && (vm.data.submission.process === vm.process.SELECTIVE) &&
+        stufe2Status.includes(status)) {
+        statusTab = 7;
+      } else if (dokumentStatus.includes(status)) {
+        statusTab = 8;
+      }
+      return statusTab;
+    }
+
+    /* Finds the available date of the submission cancel entity given a submissionId */
+    function getAvailableDateOfCancelledSubmission(id) {
+      SubmissionCancelService.getAvailableDateBySubmissionId(id).success(function (data) {
+        vm.availableDateOfCancelledSubmission = data;
       }).error(function (response, status) {});
+    }
+
+    function getCancelDateOfSubmission(id) {
+      SubmissionCancelService.getSubmissionCancelBySubmissionId(id)
+        .success(function (data) {
+          vm.cancelDateOfSubmission = data.cancelledOn;
+        }).error(function (response, status) {});
     }
 
     function readSubmittentsCount(id) {
@@ -170,6 +246,7 @@
         } else {
           vm.currentStatus = data;
         }
+        vm.tabStatus = data;
         if (AppService.getLoggedUser().userGroup.name === vm.group.ADMIN) {
           isMoveButtonDisabled();
         }
@@ -344,10 +421,14 @@
         // Modal Success Handler
       }, function (response) { // Modal Dismiss Handler
         if (response === 'ja') {
-          SubmissionService.closeSubmission($stateParams.id).success(function (data) {
+          SubmissionService.closeSubmission($stateParams.id, vm.data.submission.version).success(function (data) {
             $state.reload();
           }).error(function (response, status) {
-
+            if (status === 400) { // Validation errors.
+              QFormJSRValidation.markErrors($scope,
+                $scope.submissionDefaultCtr.submissionDefaultForm, response);
+              vm.response = response;
+            }
           });
           return true;
         } else {
@@ -399,7 +480,8 @@
     /** Function to determine if the award evaluation tab is visible */
     function awardEvaluationVisible() {
       if (vm.data.submission && vm.currentStatus) {
-        return vm.data.submission.process !== vm.process.SELECTIVE &&
+        return vm.secAwardEvaluationView &&
+          vm.data.submission.process !== vm.process.SELECTIVE &&
           !vm.isAwardEvaluationTabHidden();
       }
       return false;
@@ -408,8 +490,9 @@
     /** Function to determine if the formal audit tab is visible */
     function formalAuditVisible() {
       if (vm.currentStatus) {
-        return !vm.secFormalAuditView && (vm.currentStatus >= vm.status.OFFER_OPENING_CLOSED ||
-          vm.offerOpeningClosedBefore);
+        return vm.secFormalAuditView &&
+          (vm.data.submission.process === vm.process.NEGOTIATED_PROCEDURE || vm.data.submission.process === vm.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION) &&
+          (vm.currentStatus >= vm.status.OFFER_OPENING_CLOSED || vm.offerOpeningClosedBefore);
       }
       return false;
     }
@@ -419,16 +502,41 @@
       AppService.getSubmissionStatuses(submissionId).success(function (data) {
         vm.statusHistory = data;
         // Check if status offer opening closed has been set before.
-        vm.offerOpeningClosedBefore = statusSetBefore(vm.status.OFFER_OPENING_CLOSED);
+        vm.offerOpeningClosedBefore = statusSetBefore(vm.status.OFFER_OPENING_CLOSED, vm.statusHistory);
         // Check if status suitability audit completed (selective process) has been set before.
-        vm.suitabilityAuditCompletedSSetBefore = statusSetBefore(vm.status.SUITABILITY_AUDIT_COMPLETED_S);
+        vm.suitabilityAuditCompletedSSetBefore = statusSetBefore(vm.status.SUITABILITY_AUDIT_COMPLETED_S, vm.statusHistory);
+        // Check if status reopened after Verfugungen erstellt
+        vm.isReopenedAfterVerfugungen = reopenAfterVerfugungen(vm.statusHistory);
+        // Check if status cancelled is set before status closed
+        vm.isCancelledBeforeClose = cancelledBeforeClose(vm.statusHistory);
       });
     }
 
+    function cancelledBeforeClose(statusHistory) {
+      return (statusHistory[0] === vm.status.PROCEDURE_COMPLETED &&
+        statusHistory[1] === vm.status.PROCEDURE_CANCELED);
+    }
+
+    /** Function to check if status reopened after Verfugungen erstellt */
+    function reopenAfterVerfugungen(statusHistory) {
+      var verfugungenIndex = -1;
+      var lastVerfugungenHistory = [];
+      // Check if Verfugungen erstellt status has been set.
+      if (statusSetBefore(vm.status.AWARD_NOTICES_CREATED, statusHistory)) {
+        verfugungenIndex = statusHistory.findIndex(function (element) {
+          return element === vm.status.AWARD_NOTICES_CREATED;
+        });
+        // Take the last Verfugungen erstellt status that has been set.
+        lastVerfugungenHistory = statusHistory.slice(0, verfugungenIndex + 1);
+      }
+      return lastVerfugungenHistory.length > 1 &&
+        (statusSetBefore(vm.status.COMMISSION_PROCUREMENT_DECISION_STARTED, lastVerfugungenHistory) || statusSetBefore(vm.status.FORMAL_EXAMINATION_STARTED, lastVerfugungenHistory));
+    }
+
     /** Function to check if given status has been set before */
-    function statusSetBefore(status) {
-      for (var i in vm.statusHistory) {
-        if (vm.statusHistory[i] === status) {
+    function statusSetBefore(status, array) {
+      for (var i in array) {
+        if (array[i] === status) {
           return true;
         }
       }
@@ -439,6 +547,7 @@
     function examinationTabVisible() {
       if (vm.data.submission && vm.currentStatus) {
         return vm.secFormalAuditView && vm.data.submission.process !== vm.process.SELECTIVE &&
+          vm.data.submission.process !== vm.process.NEGOTIATED_PROCEDURE && vm.data.submission.process !== vm.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION &&
           (vm.currentStatus >= vm.status.OFFER_OPENING_CLOSED || vm.offerOpeningClosedBefore);
       }
       return false;

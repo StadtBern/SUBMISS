@@ -23,11 +23,7 @@ import ch.bern.submiss.services.api.dto.TenantDTO;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProofHistoryForm {
-
-  private String id;
-
-  private String proofName;
+public class ProofHistoryForm extends AbstractStammdatenForm {
 
   private String description;
 
@@ -50,22 +46,6 @@ public class ProofHistoryForm {
   private Timestamp toDate;
 
   private ProofDTO proofId;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getProofName() {
-    return proofName;
-  }
-
-  public void setProofName(String proofName) {
-    this.proofName = proofName;
-  }
 
   public String getDescription() {
     return description;
@@ -154,5 +134,4 @@ public class ProofHistoryForm {
   public void setProofId(ProofDTO proofId) {
     this.proofId = proofId;
   }
-
 }

@@ -18,6 +18,7 @@ import ch.bern.submiss.services.api.administration.OperationReportService;
 import ch.bern.submiss.services.api.administration.SubmissionCancelService;
 import ch.bern.submiss.services.api.administration.TenderStatusHistoryService;
 import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
 import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
@@ -78,12 +79,10 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
-import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -92,7 +91,9 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -112,11 +113,16 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    */
   private static final Logger LOGGER = Logger.getLogger(OperationReportServiceImpl.class.getName());
 
+  /**
+   * The Constant GEKO_HEADER_COLUMNS.
+   */
   private static final String[] GEKO_HEADER_COLUMNS = {
     "Direktion", "Abteilung", "Objekt", "Projektname", "Arbeitsgattung",
     "Beschreibung zur Arbeitsgattung", "Verfahren", "GATT/WTO", "Publikation Zuschlag",
-    "Publikation Absicht freihändige Vergabe", "Publikation", "Eingabetermin 1", "Bewerbungsöffnung",
-    "Eingabetermin 2", "Offertöffnung", "Verfügungsdatum 1.Stufe", "BeKo-Sitzung", "Verfügungsdatum",
+    "Publikation Absicht freihändige Vergabe", "Publikation", "Eingabetermin 1",
+    "Bewerbungsöffnung",
+    "Eingabetermin 2", "Offertöffnung", "Verfügungsdatum 1.Stufe", "BeKo-Sitzung",
+    "Verfügungsdatum",
     "Zuschlagsempfänger", "S/O-Aufträge exkl.MWST", "E-Aufträge exkl.MWST", "F-Aufträge exkl.MWST",
     "Intern/Extern", "Bemerkungsfeld"
   };
@@ -134,7 +140,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   /**
    * The Constant FONT_SIZE_SMALL.
    */
-  private static final int FONT_SIZE_SMALL = 10;
+  private static final int FONT_SIZE_SMALL = 11;
 
   /**
    * The Constant FONT_SIZE_BIG.
@@ -169,7 +175,17 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   /**
    * The Constant GEKO_TITLE.
    */
-  private static final String GEKO_TITLE = "Geschäftskontrolle ";
+  private static final String GEKO_TITLE = "Geschäftskontrolle";
+
+  /**
+   * The Constant MAXCOLS.
+   */
+  private static final String MAXCOLS = "maxCols";
+
+  /**
+   * The Constant SELECTED_COLS.
+   */
+  private static final String SELECTED_COLS = "selectedCols";
 
   /**
    * The template bean.
@@ -199,13 +215,6 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   @Inject
   private SubmissionCancelService submissionCancelService;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.impl.administration.ReportBaseServiceImpl#getWhereClause(ch.bern.
-   * submiss.services.impl.model.QSubmissionEntity, ch.bern.submiss.services.api.dto.ReportBaseDTO,
-   * java.util.List)
-   */
   @Override
   public BooleanBuilder getWhereClause(QSubmissionEntity qSubmissionEntity,
     ReportBaseDTO reportBaseDTO, List<String> completedSubmissionsIDs) {
@@ -703,7 +712,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       List<String> list = new ArrayList<>();
       for (MasterListValueHistoryEntity object : searchedObjectsList) {
         String name = "";
-        name = object.getValue1() + getValue(object.getValue2());
+        name = object.getValue1() + LookupValues.SPACE + getValue(object.getValue2());
         list.add(name);
       }
       String searchedObjects = StringUtils.join(list, " / ");
@@ -1748,6 +1757,8 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       "Executing method getNumberOfOperationReportResults, Parameters: operationReportDTO: {0}",
       operationReportDTO);
 
+    operationReportSecurityCheck();
+
     return filterCount(operationReportDTO);
   }
 
@@ -1787,6 +1798,8 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
         + "selectedColumns: {1}, caseFormat: {2}, sumAmount: {3}",
       new Object[]{operationReportResultsDTO, selectedColumns, caseFormat, sumAmount});
 
+    operationReportSecurityCheck();
+
     byte[] report = null;
     try {
       report = report(operationReportResultsDTO, selectedColumns, caseFormat, sumAmount);
@@ -1816,9 +1829,15 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     /* Setting the parameters of report */
     Map<String, Object> parameters =
       getSearchCriteriaAsParameters(operationReportResultsDTO, selectedColumns, sumAmount);
-    /* Get Report Template */
-    InputStream inputStream = getReportTemplate(LookupValues.GEKO_TEMPLATE);
-    return export(inputStream, operationReportResultsDTO, parameters, caseFormat, selectedColumns, sumAmount);
+
+    if (caseFormat.equals(LookupValues.EXCEL_FORMAT)) {
+      /* Generate Excel report */
+      return createGeKoExcel(operationReportResultsDTO, selectedColumns, parameters);
+    } else if (caseFormat.equals(LookupValues.PDF_FORMAT)) {
+      /* Generate PDF report */
+      return createGeKoPdf(operationReportResultsDTO, parameters);
+    }
+    return new byte[0];
   }
 
   /**
@@ -1844,94 +1863,37 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   }
 
   /**
-   * Export.
+   * Create the GeKo Pdf with Jasper.
    *
-   * @param inputStream the input stream
    * @param operationReportResultsDTO the operation report results DTO
    * @param parameters the parameters
-   * @param caseFormat the case format
-   * @param selectedColumns the selectedColumns
    * @return the byte[]
    */
-  private byte[] export(InputStream inputStream,
-    OperationReportResultsDTO operationReportResultsDTO, Map<String, Object> parameters,
-    String caseFormat, String selectedColumns, String sumAmount) {
+  private byte[] createGeKoPdf(OperationReportResultsDTO operationReportResultsDTO, Map<String, Object> parameters) {
 
     LOGGER.log(Level.CONFIG, "Executing method export, Parameters: "
-        + "inputStream: {0}, operationReportResultsDTO: {1}, parameters: {2}, caseFormat: {3}, "
-        + "selectedColumns: {4}",
-      new Object[]{inputStream, operationReportResultsDTO, parameters, caseFormat, selectedColumns});
+        + "operationReportResultsDTO: {0}, parameters: {1}",
+      new Object[]{operationReportResultsDTO, parameters});
 
-    if (caseFormat.equals(".xlsx2")) {
-      // creating excel with POI
-      return createGeKoExcel(operationReportResultsDTO, selectedColumns, parameters, sumAmount);
-    } else if (caseFormat.equals(LookupValues.EXCEL_FORMAT)) {
-      if (inputStream != null) {
-        try {
-          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-          JasperCompileManager.compileReportToStream(inputStream, byteArrayOutputStream);
-          InputStream reportStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-          JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reportStream);
-          JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
-            new JRBeanCollectionDataSource(operationReportResultsDTO.getGeKoResultDTOs()));
-          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          xslxExporter(jasperPrint, outputStream);
-          outputStream = templateBean.setXlsxPrintSetup(outputStream, PrintSetup.A3_PAPERSIZE);
-          return outputStream.toByteArray();
-        } catch (Exception e) {
-          LOGGER.log(Level.SEVERE, e.getMessage());
-        }
-      }
-    } else {
-      if (inputStream != null) {
-        try {
-          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-          JasperCompileManager.compileReportToStream(inputStream, byteArrayOutputStream);
-          InputStream reportStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-          JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reportStream);
-          JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
-            new JRBeanCollectionDataSource(operationReportResultsDTO.getGeKoResultDTOs()));
-          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          pdfExporter(jasperPrint, outputStream);
-          return outputStream.toByteArray();
-        } catch (Exception e) {
-          LOGGER.log(Level.SEVERE, e.getMessage());
-        }
+    /* Get Report Template */
+    InputStream inputStream = getReportTemplate(LookupValues.GEKO_TEMPLATE);
+
+    if (inputStream != null) {
+      try {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        JasperCompileManager.compileReportToStream(inputStream, byteArrayOutputStream);
+        InputStream reportStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reportStream);
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
+          new JRBeanCollectionDataSource(operationReportResultsDTO.getGeKoResultDTOs()));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        pdfExporter(jasperPrint, outputStream);
+        return outputStream.toByteArray();
+      } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, e.getMessage());
       }
     }
     return new byte[0];
-  }
-
-  /**
-   * Xslx exporter.
-   *
-   * @param jasperPrint the jasper print
-   * @param outputStream the output stream
-   */
-  private void xslxExporter(JasperPrint jasperPrint, ByteArrayOutputStream outputStream) {
-
-    LOGGER.log(Level.CONFIG,
-      "Executing method xslxExporter, Parameters: jasperPrint: {0}, "
-        + "outputStream: {1}",
-      new Object[]{jasperPrint, outputStream});
-
-    JRXlsxExporter exporter = new JRXlsxExporter();
-    SimpleXlsxReportConfiguration configuration = new SimpleXlsxReportConfiguration();
-    configuration.setDetectCellType(true);
-    configuration.setPrintPageTopMargin(35);
-    configuration.setPrintPageLeftMargin(36);
-    configuration.setPrintPageBottomMargin(18);
-    configuration.setFitWidth(1);
-    configuration.setFitHeight(0);
-    configuration.setPageScale(48);
-    exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-    exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-    exporter.setConfiguration(configuration);
-    try {
-      exporter.exportReport();
-    } catch (JRException e) {
-      e.getMessage();
-    }
   }
 
   /**
@@ -1987,6 +1949,8 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     LOGGER.log(Level.CONFIG,
       "Executing method validate, Parameters: operationReportDTO: {0}",
       operationReportDTO);
+
+    operationReportSecurityCheck();
 
     Set<ValidationError> errors = new HashSet<>();
     if (operationReportDTO != null) {
@@ -2160,10 +2124,13 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       date);
 
     // get AWARD_NOTICES_CREATED or PROCEDURE_CANCELED latest status before the given date
+    // get max date of Status History, exclude the PROCEDURE_COMPLETED Status
     return qTenderStatusHistoryEntity.onDate.before(new java.sql.Timestamp(date))
       .and(qTenderStatusHistoryEntity.onDate
         .in(JPAExpressions.select(qTenderStatusHistoryEntity.onDate.max())
-          .from(qTenderStatusHistoryEntity).groupBy(qTenderStatusHistoryEntity.tenderId)))
+          .from(qTenderStatusHistoryEntity).where(
+            qTenderStatusHistoryEntity.statusId.notIn(TenderStatus.PROCEDURE_COMPLETED.getValue()))
+          .groupBy(qTenderStatusHistoryEntity.tenderId)))
       .and(qTenderStatusHistoryEntity.statusId.in(TenderStatus.AWARD_NOTICES_CREATED.getValue(),
         TenderStatus.PROCEDURE_CANCELED.getValue()));
   }
@@ -2412,15 +2379,16 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    *
    * @param operationReportResultsDTO the operationReportResultsDTO
    * @param selectedColumns the selectedColumns
+   * @param parameters the parameters
    * @return the byte[]
    */
-  private byte[] createGeKoExcel(OperationReportResultsDTO operationReportResultsDTO, String selectedColumns,
-    Map<String, Object> parameters, String sumAmount) {
+  private byte[] createGeKoExcel(OperationReportResultsDTO operationReportResultsDTO,
+    String selectedColumns, Map<String, Object> parameters) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method createGeKoExcel, Parameters: operationReportResultsDTO: {0}, "
-        + "selectedColumns: {1}",
-      new Object[]{operationReportResultsDTO, selectedColumns});
+        + "selectedColumns: {1}, parameters: {2}",
+      new Object[]{operationReportResultsDTO, selectedColumns, parameters});
 
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
@@ -2431,15 +2399,21 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
 
       int currentRowNum = 0;
 
-      int maxCols = getGeKoMaxCols(selectedColumns);
+      // Get the maxCols details
+      Map<String, Object> geKoMaxColsDetails = getGeKoMaxCols(selectedColumns);
+
+      // The number of maxCols in the document
+      int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
 
       setColumnWidth(sheet, maxCols);
 
-      currentRowNum = setDocumentTitle(sheet, workbook, currentRowNum, operationReportResultsDTO, sumAmount);
+      currentRowNum = setDocumentTitle(sheet, workbook, currentRowNum, operationReportResultsDTO,
+        geKoMaxColsDetails);
 
-      setDocumentColumnHeaders(sheet, workbook, maxCols, currentRowNum);
+      setDocumentColumnHeaders(sheet, workbook, geKoMaxColsDetails, currentRowNum);
 
-      insertDocumentData(sheet, workbook, maxCols, currentRowNum + 1, operationReportResultsDTO.getGeKoResultDTOs());
+      insertDocumentData(sheet, workbook, geKoMaxColsDetails, currentRowNum + 1,
+        operationReportResultsDTO.getGeKoResultDTOs());
 
       setGeKoPrintSettings(sheet);
 
@@ -2454,7 +2428,15 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   private void fillWithCalculationValues(OperationReportResultsDTO operationReportResultsDTO,
     Map<String, Object> parameters) {
 
-    operationReportResultsDTO.setTotal((String)parameters.get(LookupValues.TOTAL_AMOUNT));
+    LOGGER.log(Level.CONFIG,
+      "Executing method fillWithCalculationValues, Parameters: operationReportResultsDTO: {0}, "
+        + "parameters: {1}",
+      new Object[]{operationReportResultsDTO, parameters});
+
+    operationReportResultsDTO.setTotal((String) parameters.get(LookupValues.TOTAL_AMOUNT));
+    operationReportResultsDTO.setSoSum(amountForamtter(parameters.get(LookupValues.SO_AMOUNT).toString()));
+    operationReportResultsDTO.seteSum(amountForamtter(parameters.get(LookupValues.E_AMOUNT).toString()));
+    operationReportResultsDTO.setfSum(amountForamtter(parameters.get(LookupValues.F_AMOUNT).toString()));
   }
 
   /**
@@ -2463,26 +2445,40 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    * @param selectedColumns the selectedColumns
    * @return the maxCols
    */
-  private int getGeKoMaxCols(String selectedColumns) {
+  private Map<String, Object> getGeKoMaxCols(String selectedColumns) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getGeKoMaxCols, Parameters: selectedColumns: {0}",
       selectedColumns);
 
+    Map<String, Object> geKoMaxColsDetails = new HashMap<>();
+
+    // default case with 7 columns
     if (selectedColumns.equals("0")) {
-      return 7;
+      geKoMaxColsDetails.put(MAXCOLS, 7);
+      // adding the selected columns
     } else {
       // remove 0 from String
       selectedColumns = selectedColumns.substring(3);
+      // if all columns are selected remove the unnecessary option 10
+      if (selectedColumns.contains("10")) {
+        // remove 10 from String
+        selectedColumns = selectedColumns.substring(4);
+      }
+
       String[] selectedColumnsSplt = selectedColumns.split(", ");
       int[] selectedColumnsInt = Arrays.stream(selectedColumnsSplt).mapToInt(Integer::parseInt)
         .toArray();
-      // the real index for the column number is the current column number - 3
+
+      // the real index for the column number starting counting from 0 is the current column number - 4
       for (int i = 0; i < selectedColumnsInt.length; i++) {
-        selectedColumnsInt[i] -= 3;
+        selectedColumnsInt[i] -= 4;
       }
-      return selectedColumnsInt[selectedColumnsInt.length - 1];
+
+      geKoMaxColsDetails.put(MAXCOLS, 7 + selectedColumnsInt.length);
+      geKoMaxColsDetails.put(SELECTED_COLS, selectedColumnsInt);
     }
+    return geKoMaxColsDetails;
   }
 
   /**
@@ -2510,7 +2506,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    * @param workbook the workbook
    */
   private int setDocumentTitle(XSSFSheet sheet, XSSFWorkbook workbook, int startingIndex,
-    OperationReportResultsDTO operationReportResultsDTO, String sumAmount) {
+    OperationReportResultsDTO operationReportResultsDTO, Map<String, Object> geKoMaxColsDetails) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method setDocumentTitle, Parameters: sheet: {0}, "
@@ -2521,30 +2517,17 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
 
     // Document title font
     XSSFFont titleFont = setFontStyle(workbook, SANS_SERIF, FONT_SIZE_BIG, true);
-
     // Document subTitle font
     XSSFFont subTitleFont = setFontStyle(workbook, SANS_SERIF, FONT_SIZE_SMALL, true);
-
     // Document subTitleValue font
     XSSFFont subTitleValueFont = setFontStyle(workbook, SANS_SERIF, FONT_SIZE_SMALL, false);
 
     // Document title style
-    CellStyle titleStyle = workbook.createCellStyle();
-    titleStyle.setLocked(true);
-    titleStyle.setAlignment(HorizontalAlignment.LEFT);
-    titleStyle.setFont(titleFont);
-
+    CellStyle titleStyle = setTitleStyle(workbook, titleFont);
     // Document subTitle style
-    CellStyle subTitleStyle = workbook.createCellStyle();
-    subTitleStyle.setLocked(true);
-    subTitleStyle.setAlignment(HorizontalAlignment.LEFT);
-    subTitleStyle.setFont(subTitleFont);
-
+    CellStyle subTitleStyle = setSubTitleStyle(workbook, subTitleFont);
     // Document subTitleValue style
-    CellStyle subTitleValueStyle = workbook.createCellStyle();
-    subTitleValueStyle.setLocked(true);
-    subTitleValueStyle.setAlignment(HorizontalAlignment.LEFT);
-    subTitleValueStyle.setFont(subTitleValueFont);
+    CellStyle subTitleValueStyle = setSubTitleValueStyle(workbook, subTitleValueFont);
 
     //---- DOCUMENT TITLE VALUES ----
 
@@ -2555,8 +2538,10 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     cell.setCellStyle(titleStyle);
 
     // The field Zeitraum
-    if(getDateSearchCriteria(operationReportResultsDTO.getStartDate(), operationReportResultsDTO.getEndDate()) != null) {
-      String zeitraumValue = getDateSearchCriteria(operationReportResultsDTO.getStartDate(), operationReportResultsDTO.getEndDate());
+    if (getDateSearchCriteria(operationReportResultsDTO.getStartDate(),
+      operationReportResultsDTO.getEndDate()) != null) {
+      String zeitraumValue = getDateSearchCriteria(operationReportResultsDTO.getStartDate(),
+        operationReportResultsDTO.getEndDate());
       startingIndex++;
       row = sheet.createRow(startingIndex);
 
@@ -2576,12 +2561,83 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       row = sheet.createRow(startingIndex);
 
       cell = row.createCell(0);
-      cell.setCellValue("Gesamttotal: ");
+      cell.setCellValue(LookupValues.GESAMTTOTAL + LookupValues.COLON);
       cell.setCellStyle(subTitleStyle);
 
       cell = row.createCell(1);
       cell.setCellValue(total);
       cell.setCellStyle(subTitleValueStyle);
+    }
+
+    if (isSOAmountSelected(geKoMaxColsDetails) || isEAmountSelected(geKoMaxColsDetails)
+      || isFAmountSelected(geKoMaxColsDetails)) {
+      startingIndex++;
+      row = sheet.createRow(startingIndex);
+      int cellNum = 0;
+
+      if (isSOAmountSelected(geKoMaxColsDetails)) {
+        cell = row.createCell(cellNum);
+        cell.setCellValue(LookupValues.SO_LABEL + LookupValues.COLON);
+        cell.setCellStyle(subTitleStyle);
+        cellNum++;
+
+        cell = row.createCell(cellNum);
+        cell.setCellValue(operationReportResultsDTO.getSoSum());
+        cell.setCellStyle(subTitleValueStyle);
+        cellNum++;
+      }
+
+      if (isEAmountSelected(geKoMaxColsDetails)) {
+        cell = row.createCell(cellNum);
+        cell.setCellValue(LookupValues.E_LABEL + LookupValues.COLON);
+        cell.setCellStyle(subTitleStyle);
+        cellNum++;
+
+        cell = row.createCell(cellNum);
+        cell.setCellValue(operationReportResultsDTO.geteSum());
+        cell.setCellStyle(subTitleValueStyle);
+        cellNum++;
+      }
+
+      if (isFAmountSelected(geKoMaxColsDetails)) {
+        cell = row.createCell(cellNum);
+        cell.setCellValue(LookupValues.F_LABEL + LookupValues.COLON);
+        cell.setCellStyle(subTitleStyle);
+        cellNum++;
+
+        cell = row.createCell(cellNum);
+        cell.setCellValue(operationReportResultsDTO.getfSum());
+        cell.setCellStyle(subTitleValueStyle);
+      }
+    }
+
+    // The Searched Criteria field(s)
+    if (operationReportResultsDTO.getSearchedCriteria() != null) {
+      Map<String, String> searchedCriteria = operationReportResultsDTO.getSearchedCriteria();
+      // Every criterion takes 2 cells, one for the key and one for the value of the searchedCriteria map
+      int totalCellNum = searchedCriteria.size() * 2;
+      // The current cell num
+      int currentCellNum = 0;
+      // Get the keys of searchedCriteria map
+      List<String> searchedKeys = new ArrayList<>(searchedCriteria.keySet());
+
+      startingIndex++;
+      row = sheet.createRow(startingIndex);
+
+      for (int i = 0; i < totalCellNum; i++) {
+        if (i % 2 == 0) {
+          // the keys must be bold
+          cell = row.createCell(i);
+          cell.setCellValue(searchedKeys.get(currentCellNum) + LookupValues.COLON);
+          cell.setCellStyle(subTitleStyle);
+          currentCellNum++;
+        } else {
+          // the values must be normal text
+          cell = row.createCell(i);
+          cell.setCellValue(searchedCriteria.get(searchedKeys.get(currentCellNum - 1)));
+          cell.setCellStyle(subTitleValueStyle);
+        }
+      }
     }
 
     return startingIndex + 2;
@@ -2592,35 +2648,140 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    *
    * @param sheet the sheet
    * @param workbook the workbook
-   * @param maxCols the maxCols
+   * @param geKoMaxColsDetails the geKoMaxColsDetails
+   * @param startingIndex the startingIndex
    */
   private void setDocumentColumnHeaders(XSSFSheet sheet,
-    XSSFWorkbook workbook, int maxCols, int startingIndex) {
+    XSSFWorkbook workbook, Map<String, Object> geKoMaxColsDetails, int startingIndex) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method setDocumentColumnHeaders, Parameters: sheet: {0}, "
         + "workbook: {1}, maxCols: {2}, startingIndex: {3}",
-      new Object[]{sheet, workbook, maxCols, startingIndex});
+      new Object[]{sheet, workbook, geKoMaxColsDetails, startingIndex});
 
     // Document header font
     XSSFFont headerFont = setFontStyle(workbook, SANS_SERIF, FONT_SIZE_SMALL, true);
 
     // Document header style
-    CellStyle headerStyle = workbook.createCellStyle();
-    headerStyle.setLocked(true);
-    headerStyle.setAlignment(HorizontalAlignment.LEFT);
-    headerStyle.setWrapText(true);
-    headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-    headerStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.index);
-    headerStyle.setFont(headerFont);
+    XSSFCellStyle headerStyle = setHeaderStyle(workbook, headerFont);
 
     Row row = sheet.createRow(startingIndex);
-    for (int i = 0; i < maxCols; i++) {
+    row.setHeightInPoints((float) 40); // approximately 40px
+    // create the default columns
+    setDefaultColumnHeaders(row, headerStyle);
+    // add extra columns if selected
+    setSelectedColumnHeaders(geKoMaxColsDetails, row, headerStyle);
+  }
+
+  /**
+   * Set the default header column section.
+   *
+   * @param row the row
+   * @param headerStyle the headerStyle
+   */
+  private void setDefaultColumnHeaders(Row row, CellStyle headerStyle) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setDefaultColumnHeaders, Parameters: row: {0}, "
+        + "headerStyle: {1}",
+      new Object[]{row, headerStyle});
+
+    for (int i = 0; i < 7; i++) {
       Cell cell = row.createCell(i);
       cell.setCellValue(GEKO_HEADER_COLUMNS[i]);
       cell.setCellStyle(headerStyle);
     }
-    row.setHeightInPoints((float) 40); // approximately 33px
+  }
+
+  /**
+   * Set the selected header column section if any.
+   *
+   * @param geKoMaxColsDetails the geKoMaxColsDetails
+   * @param row the row
+   * @param headerStyle the headerStyle
+   */
+  private void setSelectedColumnHeaders(Map<String, Object> geKoMaxColsDetails,
+    Row row, CellStyle headerStyle) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setSelectedColumnHeaders, Parameters: geKoMaxColsDetails: {0}, "
+        + "row: {1}, headerStyle: {2}",
+      new Object[]{geKoMaxColsDetails, row, headerStyle});
+
+    // The number of maxCols in the document
+    int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
+
+    if (maxCols > 7) {
+      int[] selectedCols = (int[]) geKoMaxColsDetails.get(SELECTED_COLS);
+      for (int i = 0; i < selectedCols.length; i++) {
+        Cell cell = row.createCell(7 + i);
+        cell.setCellValue(GEKO_HEADER_COLUMNS[selectedCols[i]]);
+        cell.setCellStyle(headerStyle);
+      }
+    }
+  }
+
+  private boolean isSOAmountSelected(Map<String, Object> geKoMaxColsDetails) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method isSOAmountSelected, Parameters: geKoMaxColsDetails: {0}",
+      geKoMaxColsDetails);
+
+    // The number of maxCols in the document
+    int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
+    boolean isSelected = false;
+
+    if (maxCols > 7) {
+      int[] selectedCols = (int[]) geKoMaxColsDetails.get(SELECTED_COLS);
+      for (int selectedCol: selectedCols) {
+        if (GEKO_HEADER_COLUMNS[selectedCol].equals(LookupValues.SO_LABEL)) {
+          isSelected = true;
+        }
+      }
+    }
+    return isSelected;
+  }
+
+  private boolean isEAmountSelected(Map<String, Object> geKoMaxColsDetails) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method isEAmountSelected, Parameters: geKoMaxColsDetails: {0}",
+      geKoMaxColsDetails);
+
+    // The number of maxCols in the document
+    int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
+    boolean isSelected = false;
+
+    if (maxCols > 7) {
+      int[] selectedCols = (int[]) geKoMaxColsDetails.get(SELECTED_COLS);
+      for (int selectedCol: selectedCols) {
+        if (GEKO_HEADER_COLUMNS[selectedCol].equals(LookupValues.E_LABEL)) {
+          isSelected = true;
+        }
+      }
+    }
+    return isSelected;
+  }
+
+  private boolean isFAmountSelected(Map<String, Object> geKoMaxColsDetails) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method isFAmountSelected, Parameters: geKoMaxColsDetails: {0}",
+      geKoMaxColsDetails);
+
+    // The number of maxCols in the document
+    int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
+    boolean isSelected = false;
+
+    if (maxCols > 7) {
+      int[] selectedCols = (int[]) geKoMaxColsDetails.get(SELECTED_COLS);
+      for (int selectedCol: selectedCols) {
+        if (GEKO_HEADER_COLUMNS[selectedCol].equals(LookupValues.F_LABEL)) {
+          isSelected = true;
+        }
+      }
+    }
+    return isSelected;
   }
 
   /**
@@ -2628,91 +2789,145 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    *
    * @param sheet the sheet
    * @param workbook the workbook
-   * @param maxCols the maxCols
+   * @param geKoMaxColsDetails the geKoMaxColsDetails
    * @param startingIndex the startingIndex
    * @param geKoResults the geKoResults
    */
   private void insertDocumentData(XSSFSheet sheet,
-    XSSFWorkbook workbook, int maxCols, int startingIndex, List<GeKoResultDTO> geKoResults) {
+    XSSFWorkbook workbook, Map<String, Object> geKoMaxColsDetails, int startingIndex,
+    List<GeKoResultDTO> geKoResults) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method insertDocumentData, Parameters: sheet: {0}, "
-        + "workbook: {1}, maxCols: {2}, startingIndex: {3}, geKoResults: {4}",
-      new Object[]{sheet, workbook, maxCols, startingIndex, geKoResults});
+        + "workbook: {1}, geKoMaxColsDetails: {2}, startingIndex: {3}, geKoResults: {4}",
+      new Object[]{sheet, workbook, geKoMaxColsDetails, startingIndex, geKoResults});
 
-    // Document header font
+    // Document data font
     XSSFFont dataFont = setFontStyle(workbook, SANS_SERIF, FONT_SIZE_SMALL, false);
 
-    // Document header style
-    CellStyle dataStyle = workbook.createCellStyle();
-    dataStyle.setLocked(false);
-    dataStyle.setAlignment(HorizontalAlignment.LEFT);
-    dataStyle.setWrapText(true);
-    dataStyle.setFont(dataFont);
+    // Document data style
+    CellStyle dataStyle = setDataStyle(workbook, dataFont);
 
     // i is counting the rows
     for (int i = 0; i < geKoResults.size(); i++) {
       Row row = sheet.createRow(startingIndex + i);
+      // add data for default columns
+      insertDefaultColumnData(i, geKoResults, row, dataStyle);
+      // add data for selected columns
+      insertSelectedColumnData(i, geKoMaxColsDetails, geKoResults, row, dataStyle);
+    }
+  }
 
-      // j is counting the columns
-      for (int j = 0; j < maxCols; j++) {
-        Cell cell = row.createCell(j);
+  /**
+   * Inserting the data to default columns.
+   *
+   * @param i the index i
+   * @param geKoResults the geKoResults
+   * @param row the row
+   * @param dataStyle the dataStyle
+   */
+  private void insertDefaultColumnData(int i, List<GeKoResultDTO> geKoResults,
+    Row row, CellStyle dataStyle) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method insertDefaultColumnData, Parameters: i: {0}, "
+        + "geKoResults: {1}, row: {2}, dataStyle: {3}",
+      new Object[]{i, geKoResults, row, dataStyle});
+
+    // j is counting the default columns
+    for (int j = 0; j < 7; j++) {
+      Cell cell = row.createCell(j);
+      cell.setCellStyle(dataStyle);
+
+      switch (j) {
+        case 0:
+          if (geKoResults.get(i).getProject() != null) {
+            cell.setCellValue(
+              geKoResults.get(i).getProject().getDepartment().getDirectorate().getShortName());
+          }
+          break;
+        case 1:
+          if (geKoResults.get(i).getProject() != null) {
+            cell.setCellValue(geKoResults.get(i).getProject().getDepartment().getName());
+          }
+          break;
+        case 2:
+          if (geKoResults.get(i).getProject() != null
+            && geKoResults.get(i).getProject().getObjectName() != null) {
+            String value = geKoResults.get(i).getProject().getObjectName().getValue1()
+              + (geKoResults.get(i).getProject().getObjectName().getValue2() != null
+              ? " " + geKoResults.get(i).getProject().getObjectName().getValue2()
+              : StringUtils.EMPTY);
+            cell.setCellValue(value);
+          }
+          break;
+        case 3:
+          if (geKoResults.get(i).getProject() != null) {
+            cell.setCellValue(geKoResults.get(i).getProject().getProjectName());
+          }
+          break;
+        case 4:
+          if (geKoResults.get(i).getWorkType() != null) {
+            String value = geKoResults.get(i).getWorkType().getValue1()
+              + " " + geKoResults.get(i).getWorkType().getValue2();
+            cell.setCellValue(value);
+          }
+          break;
+        case 5:
+          if (geKoResults.get(i).getDescription() != null) {
+            cell.setCellValue(geKoResults.get(i).getDescription());
+          }
+          break;
+        case 6:
+          if (geKoResults.get(i).getProcess() != null) {
+            String value;
+            if (geKoResults.get(i).getProcess().toString().equals(OPEN)) {
+              value = "O";
+            } else if (geKoResults.get(i).getProcess().toString().equals(SELECTIVE)) {
+              value = "S";
+            } else if (geKoResults.get(i).getProcess().toString().equals(INVITATION)) {
+              value = "E";
+            } else {
+              value = "F";
+            }
+            cell.setCellValue(value);
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  /**
+   * Inserting the data to selected columns.
+   *
+   * @param i the index i
+   * @param geKoMaxColsDetails the geKoMaxColsDetails
+   * @param geKoResults the geKoResults
+   * @param row the row
+   * @param dataStyle the dataStyle
+   */
+  private void insertSelectedColumnData(int i, Map<String, Object> geKoMaxColsDetails,
+    List<GeKoResultDTO> geKoResults, Row row, CellStyle dataStyle) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method insertSelectedColumnData, Parameters: i: {0}, "
+        + "geKoMaxColsDetails: {1}, geKoResults: {2}, row: {3}, dataStyle: {4}",
+      new Object[]{i, geKoMaxColsDetails, geKoResults, row, dataStyle});
+
+    // The number of maxCols in the document
+    int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
+
+    if (maxCols > 7) {
+      int[] selectedCols = (int[]) geKoMaxColsDetails.get(SELECTED_COLS);
+
+      // k is counting the selected columns
+      for (int k = 0; k < selectedCols.length; k++) {
+        Cell cell = row.createCell(7 + k);
         cell.setCellStyle(dataStyle);
 
-        switch (j) {
-          case 0:
-            if (geKoResults.get(i).getProject() != null) {
-              cell.setCellValue(
-                geKoResults.get(i).getProject().getDepartment().getDirectorate().getShortName());
-            }
-            break;
-          case 1:
-            if (geKoResults.get(i).getProject() != null) {
-              cell.setCellValue(geKoResults.get(i).getProject().getDepartment().getName());
-            }
-            break;
-          case 2:
-            if (geKoResults.get(i).getProject() != null
-              && geKoResults.get(i).getProject().getObjectName() != null) {
-              String value = geKoResults.get(i).getProject().getObjectName().getValue1()
-                + (geKoResults.get(i).getProject().getObjectName().getValue2() != null
-                ? " " + geKoResults.get(i).getProject().getObjectName().getValue2()
-                : StringUtils.EMPTY);
-              cell.setCellValue(value);
-            }
-            break;
-          case 3:
-            if (geKoResults.get(i).getProject() != null) {
-              cell.setCellValue(geKoResults.get(i).getProject().getProjectName());
-            }
-            break;
-          case 4:
-            if (geKoResults.get(i).getWorkType() != null) {
-              String value = geKoResults.get(i).getWorkType().getValue1()
-                + " " + geKoResults.get(i).getWorkType().getValue2();
-              cell.setCellValue(value);
-            }
-            break;
-          case 5:
-            if (geKoResults.get(i).getDescription() != null) {
-              cell.setCellValue(geKoResults.get(i).getDescription());
-            }
-            break;
-          case 6:
-            if (geKoResults.get(i).getProcess() != null) {
-              String value;
-              if (geKoResults.get(i).getProcess().toString().equals(OPEN)) {
-                value = "O";
-              } else if (geKoResults.get(i).getProcess().toString().equals(SELECTIVE)) {
-                value = "S";
-              } else if (geKoResults.get(i).getProcess().toString().equals(INVITATION)) {
-                value = "E";
-              } else {
-                value = "F";
-              }
-              cell.setCellValue(value);
-            }
-            break;
+        switch (selectedCols[k]) {
           case 7:
             if (geKoResults.get(i).getGattTwo() != null) {
               String value = geKoResults.get(i).getGattTwo() ? "ja" : "nein";
@@ -2845,6 +3060,125 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   }
 
   /**
+   * Set the title style.
+   *
+   * @param workbook the workbook
+   * @param titleFont the titleFont
+   * @return the titleStyle
+   */
+  private CellStyle setTitleStyle(XSSFWorkbook workbook, XSSFFont titleFont) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setTitleStyle, Parameters: workbook: {0}, "
+        + "titleFont: {1}",
+      new Object[]{workbook, titleFont});
+
+    CellStyle titleStyle = workbook.createCellStyle();
+    titleStyle.setLocked(true);
+    titleStyle.setAlignment(HorizontalAlignment.LEFT);
+    titleStyle.setFont(titleFont);
+
+    return titleStyle;
+  }
+
+  /**
+   * Set the subTitle style.
+   *
+   * @param workbook the workbook
+   * @param subTitleFont the subTitleFont
+   * @return the subTitleStyle
+   */
+  private CellStyle setSubTitleStyle(XSSFWorkbook workbook, XSSFFont subTitleFont) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setSubTitleStyle, Parameters: workbook: {0}, "
+        + "subTitleFont: {1}",
+      new Object[]{workbook, subTitleFont});
+
+    CellStyle subTitleStyle = workbook.createCellStyle();
+    subTitleStyle.setLocked(true);
+    subTitleStyle.setAlignment(HorizontalAlignment.LEFT);
+    subTitleStyle.setVerticalAlignment(VerticalAlignment.TOP);
+    subTitleStyle.setWrapText(true);
+    subTitleStyle.setFont(subTitleFont);
+
+    return subTitleStyle;
+  }
+
+  /**
+   * Set the subTitleValue style.
+   *
+   * @param workbook the workbook
+   * @param subTitleValueFont the subTitleValueFont
+   * @return the subTitleValueStyle
+   */
+  private CellStyle setSubTitleValueStyle(XSSFWorkbook workbook, XSSFFont subTitleValueFont) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setSubTitleValueStyle, Parameters: workbook: {0}, "
+        + "subTitleValueFont: {1}",
+      new Object[]{workbook, subTitleValueFont});
+
+    CellStyle subTitleValueStyle = workbook.createCellStyle();
+    subTitleValueStyle.setLocked(true);
+    subTitleValueStyle.setAlignment(HorizontalAlignment.LEFT);
+    subTitleValueStyle.setVerticalAlignment(VerticalAlignment.TOP);
+    subTitleValueStyle.setWrapText(true);
+    subTitleValueStyle.setFont(subTitleValueFont);
+
+    return subTitleValueStyle;
+  }
+
+  /**
+   * Set the header style.
+   *
+   * @param workbook the workbook
+   * @param headerFont the headerFont
+   * @return the headerStyle
+   */
+  private XSSFCellStyle setHeaderStyle(XSSFWorkbook workbook, XSSFFont headerFont) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setHeaderStyle, Parameters: workbook: {0}, "
+        + "headerFont: {1}",
+      new Object[]{workbook, headerFont});
+
+    XSSFCellStyle headerStyle = workbook.createCellStyle();
+    headerStyle.setLocked(true);
+    headerStyle.setAlignment(HorizontalAlignment.LEFT);
+    headerStyle.setWrapText(true);
+    headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+    headerStyle.setFillForegroundColor(new XSSFColor(new java.awt.Color(235,241,222)));
+    headerStyle.setFont(headerFont);
+
+    return headerStyle;
+  }
+
+  /**
+   * Set the data style.
+   *
+   * @param workbook the workbook
+   * @param dataFont the dataFont
+   * @return the dataStyle
+   */
+  private CellStyle setDataStyle(XSSFWorkbook workbook, XSSFFont dataFont) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setDataStyle, Parameters: workbook: {0}, "
+        + "dataFont: {1}",
+      new Object[]{workbook, dataFont});
+
+    CellStyle dataStyle = workbook.createCellStyle();
+    dataStyle.setLocked(false);
+    dataStyle.setAlignment(HorizontalAlignment.LEFT);
+    dataStyle.setVerticalAlignment(VerticalAlignment.TOP);
+    dataStyle.setWrapText(true);
+    dataStyle.setFont(dataFont);
+
+    return dataStyle;
+  }
+
+  /**
    * Set the print settings for GeKo.
    *
    * @param sheet the sheet
@@ -2861,6 +3195,15 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     ps.setPaperSize(PrintSetup.A3_PAPERSIZE);
     ps.setFitWidth((short) 1);
     ps.setFitHeight((short) 0);
+  }
+
+  @Override
+  public void operationReportSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method operationReportSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.GENERATE_OPERATIONS_REPORT.getValue(), null);
   }
 }
 

@@ -13,20 +13,16 @@
 
 package ch.bern.submiss.web.forms;
 
+import ch.bern.submiss.services.api.constants.ConstructionPermit;
+import ch.bern.submiss.services.api.constants.LoanApproval;
+import ch.bern.submiss.services.api.constants.Process;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import ch.bern.submiss.services.api.constants.ConstructionPermit;
-import ch.bern.submiss.services.api.constants.LoanApproval;
-import ch.bern.submiss.services.api.constants.Process;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubmissionForm {
-
-  private String id;
+public class SubmissionForm extends AbstractForm {
 
   private ProjectForm project;
 
@@ -130,6 +126,8 @@ public class SubmissionForm {
 
   private Timestamp createdOn;
 
+  private Timestamp updatedOn;
+
   private MasterListValueHistoryForm operatingCostFormula;
 
   private MasterListValueHistoryForm priceFormula;
@@ -141,15 +139,6 @@ public class SubmissionForm {
   private String customOperatingCostFormula;
 
   private Boolean isGekoEntryByManualAward;
-
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
   public ProjectForm getProject() {
     return project;
@@ -618,9 +607,18 @@ public class SubmissionForm {
     this.isGekoEntryByManualAward = isGekoEntryByManualAward;
   }
 
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
   @Override
   public String toString() {
-    return "SubmissionForm [id=" + id + ", project=" + project + ", workType=" + workType
+    return "SubmissionForm [id=" + super.getId() + ", version=" + super.getVersion() + ", project="
+      + project + ", workType=" + workType
       + ", description=" + description + ", process=" + process + ", costEstimate=" + costEstimate
       + ", processType=" + processType + ", gattTwo=" + gattTwo + ", publicationDate="
       + publicationDate + ", publicationDateDirectAward=" + publicationDateDirectAward
@@ -635,6 +633,4 @@ public class SubmissionForm {
       + ", changeForSec=" + changeForSec + ", isLockedChanged=" + isLockedChanged
       + ", aboveTheshold=" + aboveThreshold + "]";
   }
-
-
 }

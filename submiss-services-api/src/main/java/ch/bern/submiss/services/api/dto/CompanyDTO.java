@@ -249,6 +249,9 @@ public class CompanyDTO {
   @JsonView(View.Public.class)
   private Double fiftyPlusFactor;
 
+  /** The is isKaioFabeActive */
+  private Boolean kaioFabeActive;
+
   /**
    * Gets the id.
    *
@@ -1260,11 +1263,24 @@ public class CompanyDTO {
     this.fiftyPlusFactor = fiftyPlusFactor;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the isKaioFabeActive active.
+   *
+   * @return the isKaioFabeActive
    */
+  public Boolean getKaioFabeActive() {
+    return kaioFabeActive;
+  }
+
+  /**
+   * Sets the isKaioFabeActive
+   *
+   * @param kaioFabeActive
+   */
+  public void setKaioFabeActive(Boolean kaioFabeActive) {
+    this.kaioFabeActive = kaioFabeActive;
+  }
+
   @Override
   public String toString() {
     return "CompanyDTO [id=" + id + ", companyName=" + companyName + ", tenant=" + tenant

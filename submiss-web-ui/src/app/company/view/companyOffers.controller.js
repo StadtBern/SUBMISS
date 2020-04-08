@@ -39,6 +39,11 @@
     vm.id = $stateParams.id;
     vm.totalPages = 0;
     vm.offer = {};
+    vm.secCompanyProofsView = false;
+    vm.secProofVerificationRequest = false;
+    vm.secTenderView = false;
+    vm.secCompanyOffersView = false;
+    vm.taskCreateForm = {};
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
@@ -47,27 +52,31 @@
     vm.navigateToProject = navigateToProject;
     vm.customRoundNumber = customRoundNumber;
     vm.requestProofs = requestProofs;
-    vm.secCompanyProofsView = false;
-    vm.secProofVerificationRequest = false;
-    vm.secTenderView = false;
-    vm.secCompanyOffersView = false;
-    vm.taskCreateForm = {};
+    vm.getCompanyTask = getCompanyTask;
     // Activating the controller.
     activate();
     /***********************************************************************
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.getOffers();
-      readCompany($stateParams.id);
-      vm.secProofVerificationRequest = AppService.isOperationPermitted(
-        AppConstants.OPERATION.PROOF_VERIFICATION_REQUEST, null);
-      vm.secCompanyProofsView = AppService.isOperationPermitted(
-        AppConstants.OPERATION.COMPANY_PROOFS_VIEW, null);
-      vm.secTenderView = AppService.isOperationPermitted(
-        AppConstants.OPERATION.TENDER_VIEW, null);
-      vm.secCompanyOffersView = AppService.isOperationPermitted(
-        AppConstants.OPERATION.COMPANY_OFFERS_VIEW, null);
+      CompanyService.loadCompanyOffers()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.getOffers();
+            readCompany($stateParams.id);
+            vm.secProofVerificationRequest = AppService.isOperationPermitted(
+              AppConstants.OPERATION.PROOF_VERIFICATION_REQUEST, null);
+            vm.secCompanyProofsView = AppService.isOperationPermitted(
+              AppConstants.OPERATION.COMPANY_PROOFS_VIEW, null);
+            vm.secTenderView = AppService.isOperationPermitted(
+              AppConstants.OPERATION.TENDER_VIEW, null);
+            vm.secCompanyOffersView = AppService.isOperationPermitted(
+              AppConstants.OPERATION.COMPANY_OFFERS_VIEW, null);
+            vm.getCompanyTask($stateParams.id);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.y
@@ -88,6 +97,16 @@
       }).error(function (response, status) {
 
       });
+    }
+
+    function getCompanyTask(companyId) {
+      TasksService.getCompanyTask(companyId).success(function (data) {
+        var name = (data.firstName != null && data.lastName != null) ? data.firstName + ' ' + data.lastName : null;
+        vm.data.companyTask = {
+          createdOn: data.createdOn,
+          createdBy: name
+        };
+      }).error(function (response, status) {});
     }
 
     function navigateToSubmission(submissionId) {
@@ -117,7 +136,7 @@
             page: 1,
             count: 10,
             sorting: {
-              objectName: "asc"
+              deadline2: "desc"
             }
           }, {
             total: vm.offers.length,

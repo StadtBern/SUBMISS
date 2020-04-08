@@ -28,15 +28,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 @Table(name = "SUB_LOGIB_HISTORY")
-public class LogibHistoryEntity {
-
-  @Id
-  @GeneratedValue(generator = "uuid3")
-  @GenericGenerator(name = "uuid3", strategy = "uuid2")
-  private String id;
-
-  @Column(name = "NAME")
-  private String name;
+public class LogibHistoryEntity extends AbstractStammdatenEntity {
 
   @Column(name = "WORKER_NUMBER")
   private Integer workerNumber;
@@ -66,22 +58,6 @@ public class LogibHistoryEntity {
   @ManyToOne
   @JoinColumn(name = "FK_LOGIB")
   private LogibEntity logibId;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
 
   public Integer getWorkerNumber() {
     return workerNumber;
@@ -149,11 +125,9 @@ public class LogibHistoryEntity {
 
   @Override
   public String toString() {
-    return "LogibEntity [id=" + id + ", name=" + name + ", workerNumber=" + workerNumber
-        + ", menNumber=" + menNumber + ", womenNumber=" + womenNumber + ", isActive=" + isActive
-        + "]";
+    return "LogibEntity [id=" + super.getId() + ", name=" + super.getName() + ", version=" + super
+      .getVersion() + ", workerNumber=" + workerNumber
+      + ", menNumber=" + menNumber + ", womenNumber=" + womenNumber + ", isActive=" + isActive
+      + "]";
   }
-
-
-
 }

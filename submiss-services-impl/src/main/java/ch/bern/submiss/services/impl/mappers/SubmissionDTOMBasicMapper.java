@@ -149,6 +149,10 @@ public abstract class SubmissionDTOMBasicMapper {
     submissionDTO.setCustomPriceFormula(entity.getCustomPriceFormula());
     submissionDTO.setCustomOperatingCostFormula(entity.getCustomOperatingCostFormula());
     submissionDTO.setIsGekoEntryByManualAward(entity.getIsGekoEntryByManualAward());
+    submissionDTO.setVersion(entity.getVersion());
+    submissionDTO.setCreatedBy(entity.getCreatedBy());
+    submissionDTO.setCreatedOn(entity.getCreatedOn());
+    submissionDTO.setUpdatedOn(entity.getUpdatedOn());
 
     return submissionDTO;
   

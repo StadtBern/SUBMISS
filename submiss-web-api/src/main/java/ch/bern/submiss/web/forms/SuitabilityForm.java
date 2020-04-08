@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class SuitabilityForm {
 
   private String offerId;
+  private Long offerVersion;
   private Integer qExRank;
   private List<CriterionLiteForm> mustCriterion;
   private List<CriterionLiteForm> evaluatedCriterion;
@@ -103,4 +104,11 @@ public class SuitabilityForm {
     this.offerSubcriteria = offerSubcriteria;
   }
 
+  public Long getOfferVersion() {
+    return offerVersion;
+  }
+
+  public void setOfferVersion(Long offerVersion) {
+    this.offerVersion = offerVersion;
+  }
 }

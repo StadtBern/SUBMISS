@@ -12,41 +12,44 @@
   -->
 
 <div class="row" ng-style="subcontractorDetailsCtrl.divRowStyle()">
-  <fieldset ng-disabled="subcontractorDetailsCtrl.disabledForm()"
-  			ng-style="subcontractorDetailsCtrl.fieldsetStyle()">
-	<div class="col-sm-12 ToolbarContainer">
-		<div class="btn-toolbar" role="toolbar"
-			ng-class="{'pull-right': subcontractorDetailsCtrl.submittent.subcontractors.length > 0}">
-			<button type="button"
-				ng-click="subcontractorDetailsCtrl.addCompany()"
-				ng-disabled="!subcontractorDetailsCtrl.secAddSubcontractor 
-					|| subcontractorDetailsCtrl.buttonDisabled()" 
-				class="btn btn-primary" data-toggle="modal"
-				data-target="#hinzufügen">
-				<span class="fa fa-plus" aria-hidden="true"></span> Subunternehmen hinzufügen
-			</button>
-		</div>
-	</div>
-	<div class="col-sm-12">
-		<ul class="list-group">
-			<li class="list-group-item"
-				ng-if="subcontractorDetailsCtrl.submittent.companyId.companyName"
-				ng-repeat="subcontractor in subcontractorDetailsCtrl.submittent.subcontractors | orderBy : 'companyName'">{{subcontractor.companyName}},
-				{{subcontractor.location}}
-				<a class="btn btn-primary pull-right"
-					ng-disabled="true"
-					ng-if="!subcontractorDetailsCtrl.secDeleteSubcontractor
-						|| subcontractorDetailsCtrl.buttonDisabled()"
-					title="Subunternehmen entfernen"> <span class="fa fa-trash"
-					aria-hidden="true"></span></a>
-				<a class="btn btn-primary pull-right"
-					ng-if="!(!subcontractorDetailsCtrl.secDeleteSubcontractor
+
+  <form name="subcontractorDetailsCtrl.subcontractorForm">
+    <fieldset>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="subcontractorDetailsCtrl.subcontractorForm.$invalid" role="alert">
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        </div>
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+    </fieldset>
+  </form>
+
+  <fieldset ng-disabled="subcontractorDetailsCtrl.disabledForm()" ng-style="subcontractorDetailsCtrl.fieldsetStyle()">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="btn-toolbar" role="toolbar"
+        ng-class="{'pull-right': subcontractorDetailsCtrl.submittent.subcontractors.length > 0}">
+        <button type="button" ng-click="subcontractorDetailsCtrl.addCompany()" ng-disabled="!subcontractorDetailsCtrl.secAddSubcontractor
+					|| subcontractorDetailsCtrl.buttonDisabled()" class="btn btn-primary" data-toggle="modal"
+          data-target="#hinzufügen">
+          <span class="fa fa-plus" aria-hidden="true"></span> Subunternehmen hinzufügen
+        </button>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <ul class="list-group">
+        <li class="list-group-item" ng-if="subcontractorDetailsCtrl.submittent.companyId.companyName"
+          ng-repeat="subcontractor in subcontractorDetailsCtrl.submittent.subcontractors | orderBy : 'companyName'">
+          {{subcontractor.companyName}},
+          {{subcontractor.location}}
+          <a class="btn btn-primary pull-right" ng-disabled="true" ng-if="!subcontractorDetailsCtrl.secDeleteSubcontractor
+						|| subcontractorDetailsCtrl.buttonDisabled()" title="Subunternehmen entfernen"> <span class="fa fa-trash"
+              aria-hidden="true"></span></a>
+          <a class="btn btn-primary pull-right" ng-if="!(!subcontractorDetailsCtrl.secDeleteSubcontractor
 						|| subcontractorDetailsCtrl.buttonDisabled())"
-					ng-click="subcontractorDetailsCtrl.deleteSubcontractorModal(subcontractorDetailsCtrl.submittent.id, subcontractor.id)"	
-					title="Subunternehmen entfernen"> <span class="fa fa-trash"
-					aria-hidden="true"></span></a>
-			</li>
-		</ul>
-	</div>
+            ng-click="subcontractorDetailsCtrl.deleteSubcontractorModal(subcontractorDetailsCtrl.submittent.id, subcontractor.id)"
+            title="Subunternehmen entfernen"> <span class="fa fa-trash" aria-hidden="true"></span></a>
+        </li>
+      </ul>
+    </div>
   </fieldset>
 </div>

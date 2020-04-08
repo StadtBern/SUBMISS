@@ -83,14 +83,22 @@
     vm.isTemplateType = isTemplateType;
     vm.editTypeData = editTypeData;
     vm.newEntryPossible = newEntryPossible;
+    vm.isEditAllowed = isEditAllowed;
     // Activating the controller.
     activate();
     /***********************************************************************
      * Controller activation.
      **********************************************************************/
     function activate() {
-      getMasterListTypeData($stateParams.type);
-      setTypeName();
+      StammdatenService.loadSD()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            getMasterListTypeData($stateParams.type);
+            setTypeName();
+          }
+        });
     }
 
     /***********************************************************************
@@ -149,6 +157,10 @@
           }
         });
       });
+    }
+
+    function isEditAllowed(shortCode) {
+      return shortCode === 'S14';
     }
 
     /** Function to check if additional information is required. */

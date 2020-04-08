@@ -74,16 +74,24 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadCountries();
-      vm.loadWorkTypes();
-      vm.loadILO();
-      vm.apprenticeFactor();
-      vm.numberOfColleagues();
-      vm.loadLogib();
-      vm.loadLogibArgib();
-      vm.secMainTenantBemerkungFabeEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BEMERKUNG_FABE_EDIT, null);
-      vm.secMainTenantBeschaffungswesenEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_EDIT, null);
-      isArchivedPrevious();
+      CompanyService.loadCompanyUpdate()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            $uibModalInstance.close();
+            return;
+          } else {
+            vm.loadCountries();
+            vm.loadWorkTypes();
+            vm.loadILO();
+            vm.apprenticeFactor();
+            vm.numberOfColleagues();
+            vm.loadLogib();
+            vm.loadLogibArgib();
+            vm.secMainTenantBemerkungFabeEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BEMERKUNG_FABE_EDIT, null);
+            vm.secMainTenantBeschaffungswesenEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_EDIT, null);
+            isArchivedPrevious();
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -182,8 +190,11 @@
       } else {
         vm.invalidDate = false;
         CompanyService.updateCompany(company, vm.archivedPrevious)
-          .success(function (data) {
+          .success(function (data, status) {
             $uibModalInstance.close();
+            if (status === 403) { // Security checks.
+              return;
+            }
             $state.go('company.view', {
               id: company.id
             }, {

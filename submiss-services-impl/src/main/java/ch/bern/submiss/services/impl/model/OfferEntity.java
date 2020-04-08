@@ -21,338 +21,462 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class OfferEntity.
  */
 @Entity
 @Table(name = "SUB_OFFER")
-public class OfferEntity {
+public class OfferEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The submittent. */
+  /**
+   * The submittent.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDERER")
   private SubmittentEntity submittent;
 
-  /** The is awarded. */
+  /**
+   * The is awarded.
+   */
   @Column(name = "IS_AWARDED")
   private Boolean isAwarded;
 
-  /** The offer date. */
+  /**
+   * The offer date.
+   */
   @Column(name = "OFFER_DATE")
   private Date offerDate;
 
-  /** The is part offer. */
+  /**
+   * The is part offer.
+   */
   @Column(name = "IS_PART_OFFER")
   private Boolean isPartOffer;
 
-  /** The is excluded from process. */
+  /**
+   * The is excluded from process.
+   */
   @Column(name = "IS_EXCLUDED_FROM_PROCESS")
   private Boolean isExcludedFromProcess;
 
-  /** The is variant. */
+  /**
+   * The is variant.
+   */
   @Column(name = "IS_VARIANT")
   private Boolean isVariant;
 
-  /** The settlement. */
+  /**
+   * The settlement.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_SETTLEMENT")
   private MasterListValueEntity settlement;
 
-  /** The gross amount. */
+  /**
+   * The gross amount.
+   */
   @Column(name = "GROSS_AMOUNT")
   private Double grossAmount;
 
-  /** The gross amount corrected. */
+  /**
+   * The gross amount corrected.
+   */
   @Column(name = "GROSS_AMOUNT_CORRECTED")
   private Double grossAmountCorrected;
 
-  /** The is corrected. */
+  /**
+   * The is corrected.
+   */
   @Column(name = "IS_CORRECTED")
   private Boolean isCorrected;
 
-  /** The discount. */
+  /**
+   * The discount.
+   */
   @Column(name = "DISCOUNT")
   private Double discount;
 
-  /** The is discount percentage. */
+  /**
+   * The is discount percentage.
+   */
   @Column(name = "IS_DISCOUNT_PERCENTAGE")
   private Boolean isDiscountPercentage;
 
-  /** The vat. */
+  /**
+   * The vat.
+   */
   @Column(name = "VAT")
   private Double vat;
 
-  /** The discount 2. */
+  /**
+   * The discount 2.
+   */
   @Column(name = "DISCOUNT2")
   private Double discount2;
 
-  /** The is discount 2 percentage. */
+  /**
+   * The is discount 2 percentage.
+   */
   @Column(name = "IS_DISCOUNT2_PERCENTAGE")
   private Boolean isDiscount2Percentage;
 
-  /** The discount 2 days. */
+  /**
+   * The discount 2 days.
+   */
   @Column(name = "DISCOUNT2_DAYS")
   private Integer discount2Days;
 
-  /** The price increase. */
+  /**
+   * The price increase.
+   */
   @Column(name = "PRICE_INCREASE")
   private String priceIncrease;
 
-  /** The modified on. */
+  /**
+   * The modified on.
+   */
   @Column(name = "MODIFIED_ON")
   private Date modifiedOn;
 
-  /** The notes. */
+  /**
+   * The notes.
+   */
   @Column(name = "NOTES")
   private String notes;
 
-  /** The rank. */
+  /**
+   * The rank.
+   */
   @Column(name = "RANK")
   private Integer rank;
 
-  /** The variant notes. */
+  /**
+   * The variant notes.
+   */
   @Column(name = "VARIANT_NOTES")
   private String variantNotes;
 
-  /** The is empty offer. */
+  /**
+   * The is empty offer.
+   */
   @Column(name = "IS_EMPTY_OFFER")
   private Boolean isEmptyOffer;
 
-  /** The application date. */
+  /**
+   * The application date.
+   */
   @Column(name = "APPLICATION_DATE")
   private Date applicationDate;
 
-  /** The is vat percentage. */
+  /**
+   * The is vat percentage.
+   */
   @Column(name = "IS_VAT_PERCENTAGE")
   private Boolean isVatPercentage;
 
-  /** The building costs. */
+  /**
+   * The building costs.
+   */
   @Column(name = "BUILDING_COSTS")
   private Double buildingCosts;
 
-  /** The is building costs percentage. */
+  /**
+   * The is building costs percentage.
+   */
   @Column(name = "IS_BUILDING_COSTS_PERCENTAGE")
   private Boolean isBuildingCostsPercentage;
 
-  /** The ancilliary amount gross. */
+  /**
+   * The ancilliary amount gross.
+   */
   @Column(name = "ANCILLIARY_AMOUNT_GROSS")
   private Double ancilliaryAmountGross;
 
-  /** The is ancilliary amount percentage. */
+  /**
+   * The is ancilliary amount percentage.
+   */
   @Column(name = "IS_ANCILLIARY_AMOUNT_PERCENTAGE")
   private Boolean isAncilliaryAmountPercentage;
 
-  /** The ancilliary amount vat. */
+  /**
+   * The ancilliary amount vat.
+   */
   @Column(name = "ANCILLIARY_AMOUNT_VAT")
   private String ancilliaryAmountVat;
 
-  /** The operating cost gross. */
+  /**
+   * The operating cost gross.
+   */
   @Column(name = "OPERATING_COST_GROSS")
   private Double operatingCostGross;
 
-  /** The operating cost notes. */
+  /**
+   * The operating cost notes.
+   */
   @Column(name = "OPERATING_COST_NOTES")
   private String operatingCostNotes;
 
-  /** The operating cost gross corrected. */
+  /**
+   * The operating cost gross corrected.
+   */
   @Column(name = "OPERATING_COST_GROSS_CORRECTED")
   private Double operatingCostGrossCorrected;
 
-  /** The is operating cost corrected. */
+  /**
+   * The is operating cost corrected.
+   */
   @Column(name = "OPERATING_COST_IS_CORRECTED")
   private Boolean isOperatingCostCorrected;
 
-  /** The operating cost discount. */
+  /**
+   * The operating cost discount.
+   */
   @Column(name = "OPERATING_COST_DISCOUNT")
   private Double operatingCostDiscount;
 
-  /** The is operating cost discount percentage. */
+  /**
+   * The is operating cost discount percentage.
+   */
   @Column(name = "OPERATING_COST_IS_DISCOUNT_PERCENTAGE")
   private Boolean isOperatingCostDiscountPercentage;
 
-  /** The operating cost discount 2. */
+  /**
+   * The operating cost discount 2.
+   */
   @Column(name = "OPERATING_COST_DISCOUNT2")
   private Double operatingCostDiscount2;
 
-  /** The is operating cost discount 2 percentage. */
+  /**
+   * The is operating cost discount 2 percentage.
+   */
   @Column(name = "OPERATING_COST_IS_DISCOUNT2_PERCENTAGE")
   private Boolean isOperatingCostDiscount2Percentage;
 
-  /** The operating cost vat. */
+  /**
+   * The operating cost vat.
+   */
   @Column(name = "OPERATING_COST_VAT")
   private Double operatingCostVat;
 
-  /** The operating cost is vat percentage. */
+  /**
+   * The operating cost is vat percentage.
+   */
   @Column(name = "OPERATING_COST_IS_VAT_PERCENTAGE")
   private Boolean operatingCostIsVatPercentage;
 
-  /** The is default offer. */
+  /**
+   * The is default offer.
+   */
   @Column(name = "IS_DEFAULT_OFFER")
   private Boolean isDefaultOffer;
 
-  /** The from migration. */
+  /**
+   * The from migration.
+   */
   @Column(name = "FROM_MIGRATION")
   private Boolean fromMigration;
 
-  /** The migrated project. */
+  /**
+   * The migrated project.
+   */
   @Column(name = "MIG_PROJECT_NAME")
   private String migratedProject;
 
-  /** The migrated submission. */
+  /**
+   * The migrated submission.
+   */
   @Column(name = "MIG_TENDER_NAME")
   private String migratedSubmission;
 
-  /** The migrated department. */
+  /**
+   * The migrated department.
+   */
   @Column(name = "MIG_DEPARTMENT")
   private String migratedDepartment;
 
-  /** The migreated PM. */
+  /**
+   * The migreated PM.
+   */
   @Column(name = "MIG_PROJECT_MANAGER")
   private String migreatedPM;
 
-  /** The migrated procedure. */
+  /**
+   * The migrated procedure.
+   */
   @Column(name = "MIG_PROCEDURE")
   private String migratedProcedure;
 
-  /** The amount. */
+  /**
+   * The amount.
+   */
   @Column(name = "AMOUNT")
   private BigDecimal amount;
 
-  /** The discount in percentage. */
+  /**
+   * The discount in percentage.
+   */
   @Column(name = "DISCOUNT_IN_PERCENTAGE")
   private BigDecimal discountInPercentage;
 
-  /** The discount 2 in percentage. */
+  /**
+   * The discount 2 in percentage.
+   */
   @Column(name = "DISCOUNT2_IN_PERCENTAGE")
   private BigDecimal discount2InPercentage;
 
-  /** The operating costs in percentage. */
+  /**
+   * The operating costs in percentage.
+   */
   @Column(name = "OPERATING_COST_VAT_IN_PERCENTAGE")
   private BigDecimal operatingCostsInPercentage;
 
-  /** The building costs in percentage. */
+  /**
+   * The building costs in percentage.
+   */
   @Column(name = "BUILDING_COSTS_IN_PERCENTAGE")
   private BigDecimal buildingCostsInPercentage;
 
-  /** The q ex total grade. */
+  /**
+   * The q ex total grade.
+   */
   @Column(name = "QEX_TOTAL_GRADE")
   private BigDecimal qExTotalGrade;
 
-  /** The q ex status. */
+  /**
+   * The q ex status.
+   */
   @Column(name = "QEX_STATUS")
   private Boolean qExStatus;
 
-  /** The q ex examination is fulfilled. */
+  /**
+   * The q ex examination is fulfilled.
+   */
   @Column(name = "QEX_EXAMINATION_IS_FULFILLED")
   private Boolean qExExaminationIsFulfilled;
 
-  /** The q ex suitability notes. */
+  /**
+   * The q ex suitability notes.
+   */
   @Column(name = "QEX_SUITABILITY_NOTES")
   private String qExSuitabilityNotes;
 
-  /** The offer criteria. */
+  /**
+   * The offer criteria.
+   */
   @OneToMany(mappedBy = "offer")
   private List<OfferCriterionEntity> offerCriteria;
 
-  /** The offer subcriteria. */
+  /**
+   * The offer subcriteria.
+   */
   @OneToMany(mappedBy = "offer")
-  private List<OfferSubriterionEntity> offerSubcriteria;
+  private List<OfferSubcriterionEntity> offerSubcriteria;
 
-  /** The award rank. */
+  /**
+   * The award rank.
+   */
   @Column(name = "AWARD_RANK")
   private Integer awardRank;
 
-  /** The award total score. */
+  /**
+   * The award total score.
+   */
   @Column(name = "AWARD_TOTAL_SCORE")
   private BigDecimal awardTotalScore;
 
-  /** The operating costs amount. */
+  /**
+   * The operating costs amount.
+   */
   @Column(name = "OPERATING_COST_AMOUNT")
   private BigDecimal operatingCostsAmount;
 
-  /** The q ex rank. */
+  /**
+   * The q ex rank.
+   */
   @Column(name = "QEX_RANK")
   private Integer qExRank;
 
-  /** The award recipient free text field. */
+  /**
+   * The award recipient free text field.
+   */
   @Column(name = "AWARD_RECIPIENT_FREE_TEXT_FIELD")
   private String awardRecipientFreeTextField;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
+  @CreationTimestamp
   @Column(name = "CREATED_ON")
   private Timestamp createdOn;
 
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
 
-  /** The application information. */
+  /**
+   * The application information.
+   */
   @Column(name = "APPLICATION_INFORMATION")
   private String applicationInformation;
 
-  /** The manual amount. */
+  /**
+   * The manual amount.
+   */
   @Column(name = "MANUAL_AMOUNT")
   private BigDecimal manualAmount;
 
-  /** The exclusion reason. */
+  /**
+   * The exclusion reason.
+   */
   @Column(name = "EXCLUSION_REASON")
   private String exclusionReason;
 
-  /** The excluded first level. */
+  /**
+   * The excluded first level.
+   */
   @Column(name = "EXCLUDED_FIRST_LEVEL")
   private Boolean excludedFirstLevel;
 
-  /** The exclusion reasons. */
+  /**
+   * The exclusion reasons.
+   */
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "SUB_OFFER_EXCLUSION_REASON", joinColumns = {@JoinColumn(name = "FK_OFFER")},
-      inverseJoinColumns = {@JoinColumn(name = "FK_EXCLUSION_REASON")})
+    inverseJoinColumns = {@JoinColumn(name = "FK_EXCLUSION_REASON")})
   private Set<MasterListValueEntity> exclusionReasons;
 
-  /** The exclusion reason first level. */
+  /**
+   * The exclusion reason first level.
+   */
   @Column(name = "EXCLUSION_REASON_FIRST_LEVEL")
   private String exclusionReasonFirstLevel;
 
-  /** The exclusion reasons first level. */
+  /**
+   * The exclusion reasons first level.
+   */
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "SUB_OFFER_EXCLUSION_REASON_FIRST_LEVEL",
-      joinColumns = {@JoinColumn(name = "FK_OFFER")},
-      inverseJoinColumns = {@JoinColumn(name = "FK_EXCLUSION_REASON")})
+    joinColumns = {@JoinColumn(name = "FK_OFFER")},
+    inverseJoinColumns = {@JoinColumn(name = "FK_EXCLUSION_REASON")})
   private Set<MasterListValueEntity> exclusionReasonsFirstLevel;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submittent.
@@ -979,7 +1103,7 @@ public class OfferEntity {
    * Sets the checks if is operating cost discount percentage.
    *
    * @param isOperatingCostDiscountPercentage the new checks if is operating cost discount
-   *        percentage
+   *                                          percentage
    */
   public void setIsOperatingCostDiscountPercentage(Boolean isOperatingCostDiscountPercentage) {
     this.isOperatingCostDiscountPercentage = isOperatingCostDiscountPercentage;
@@ -1016,7 +1140,7 @@ public class OfferEntity {
    * Sets the checks if is operating cost discount 2 percentage.
    *
    * @param isOperatingCostDiscount2Percentage the new checks if is operating cost discount 2
-   *        percentage
+   *                                           percentage
    */
   public void setIsOperatingCostDiscount2Percentage(Boolean isOperatingCostDiscount2Percentage) {
     this.isOperatingCostDiscount2Percentage = isOperatingCostDiscount2Percentage;
@@ -1369,7 +1493,7 @@ public class OfferEntity {
    *
    * @return the offer subcriteria
    */
-  public List<OfferSubriterionEntity> getOfferSubcriteria() {
+  public List<OfferSubcriterionEntity> getOfferSubcriteria() {
     return offerSubcriteria;
   }
 
@@ -1378,7 +1502,7 @@ public class OfferEntity {
    *
    * @param offerSubcriteria the new offer subcriteria
    */
-  public void setOfferSubcriteria(List<OfferSubriterionEntity> offerSubcriteria) {
+  public void setOfferSubcriteria(List<OfferSubcriterionEntity> offerSubcriteria) {
     this.offerSubcriteria = offerSubcriteria;
   }
 
@@ -1634,48 +1758,61 @@ public class OfferEntity {
     this.exclusionReasonsFirstLevel = exclusionReasonsFirstLevel;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the updatedOn.
+   *
+   * @return the updatedOn
    */
-  @Override
-  public String toString() {
-    return "OfferEntity [id=" + id + ",  isAwarded=" + isAwarded + ", offerDate=" + offerDate
-        + ", isPartOffer=" + isPartOffer + ", isExcludedFromProcess=" + isExcludedFromProcess
-        + ", isVariant=" + isVariant + ", grossAmount=" + grossAmount + ", grossAmountCorrected="
-        + grossAmountCorrected + ", isCorrected=" + isCorrected + ", discount=" + discount
-        + ", isDiscountPercentage=" + isDiscountPercentage + ", vat=" + vat + ", discount2="
-        + discount2 + ", isDiscount2Percentage=" + isDiscount2Percentage + ", discount2Days="
-        + discount2Days + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn
-        + ", notes=" + notes + ", rank=" + rank + ", variantNotes=" + variantNotes
-        + ", isEmptyOffer=" + isEmptyOffer + ", applicationDate=" + applicationDate
-        + ", isVatPercentage=" + isVatPercentage + ", buildingCosts=" + buildingCosts
-        + ", isBuildingCostsPercentage=" + isBuildingCostsPercentage + ", ancilliaryAmountGross="
-        + ancilliaryAmountGross + ", isAncilliaryAmountPercentage=" + isAncilliaryAmountPercentage
-        + ", ancilliaryAmountVat=" + ancilliaryAmountVat + ", operatingCostGross="
-        + operatingCostGross + ", operatingCostNotes=" + operatingCostNotes
-        + ", operatingCostGrossCorrected=" + operatingCostGrossCorrected
-        + ", isOperatingCostCorrected=" + isOperatingCostCorrected + ", operatingCostDiscount="
-        + operatingCostDiscount + ", isOperatingCostDiscountPercentage="
-        + isOperatingCostDiscountPercentage + ", operatingCostDiscount2=" + operatingCostDiscount2
-        + ", isOperatingCostDiscount2Percentage=" + isOperatingCostDiscount2Percentage
-        + ", operatingCostVat=" + operatingCostVat + ", operatingCostIsVatPercentage="
-        + operatingCostIsVatPercentage + ", isDefaultOffer=" + isDefaultOffer + ", fromMigration="
-        + fromMigration + ", migratedProject=" + migratedProject + ", migratedSubmission="
-        + migratedSubmission + ", migratedDepartment=" + migratedDepartment + ", migreatedPM="
-        + migreatedPM + ", migratedProcedure=" + migratedProcedure + ", amount=" + amount
-        + ", discountInPercentage=" + discountInPercentage + ", discount2InPercentage="
-        + discount2InPercentage + ", operatingCostsInPercentage=" + operatingCostsInPercentage
-        + ", buildingCostsInPercentage=" + buildingCostsInPercentage + ", qExTotalGrade="
-        + qExTotalGrade + ", qExStatus=" + qExStatus + ", qExExaminationIsFulfilled="
-        + qExExaminationIsFulfilled + ", qExSuitabilityNotes=" + qExSuitabilityNotes
-        + ",  awardRank=" + awardRank + ", awardTotalScore=" + awardTotalScore
-        + ", operatingCostsAmount=" + operatingCostsAmount + ", qExRank=" + qExRank
-        + ", awardRecipientFreeTextField=" + awardRecipientFreeTextField + ", createdOn="
-        + createdOn + ", createdBy=" + createdBy + ", applicationInformation="
-        + applicationInformation + ", manualAmount=" + manualAmount + "]";
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
   }
 
+  /**
+   * Sets the updatedOn.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
 
+  @Override
+  public String toString() {
+    return "OfferEntity [id=" + super.getId() + ", version=" + super.getVersion() + ",  isAwarded="
+      + isAwarded + ", offerDate=" + offerDate
+      + ", isPartOffer=" + isPartOffer + ", isExcludedFromProcess=" + isExcludedFromProcess
+      + ", isVariant=" + isVariant + ", grossAmount=" + grossAmount + ", grossAmountCorrected="
+      + grossAmountCorrected + ", isCorrected=" + isCorrected + ", discount=" + discount
+      + ", isDiscountPercentage=" + isDiscountPercentage + ", vat=" + vat + ", discount2="
+      + discount2 + ", isDiscount2Percentage=" + isDiscount2Percentage + ", discount2Days="
+      + discount2Days + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn
+      + ", notes=" + notes + ", rank=" + rank + ", variantNotes=" + variantNotes
+      + ", isEmptyOffer=" + isEmptyOffer + ", applicationDate=" + applicationDate
+      + ", isVatPercentage=" + isVatPercentage + ", buildingCosts=" + buildingCosts
+      + ", isBuildingCostsPercentage=" + isBuildingCostsPercentage + ", ancilliaryAmountGross="
+      + ancilliaryAmountGross + ", isAncilliaryAmountPercentage=" + isAncilliaryAmountPercentage
+      + ", ancilliaryAmountVat=" + ancilliaryAmountVat + ", operatingCostGross="
+      + operatingCostGross + ", operatingCostNotes=" + operatingCostNotes
+      + ", operatingCostGrossCorrected=" + operatingCostGrossCorrected
+      + ", isOperatingCostCorrected=" + isOperatingCostCorrected + ", operatingCostDiscount="
+      + operatingCostDiscount + ", isOperatingCostDiscountPercentage="
+      + isOperatingCostDiscountPercentage + ", operatingCostDiscount2=" + operatingCostDiscount2
+      + ", isOperatingCostDiscount2Percentage=" + isOperatingCostDiscount2Percentage
+      + ", operatingCostVat=" + operatingCostVat + ", operatingCostIsVatPercentage="
+      + operatingCostIsVatPercentage + ", isDefaultOffer=" + isDefaultOffer + ", fromMigration="
+      + fromMigration + ", migratedProject=" + migratedProject + ", migratedSubmission="
+      + migratedSubmission + ", migratedDepartment=" + migratedDepartment + ", migreatedPM="
+      + migreatedPM + ", migratedProcedure=" + migratedProcedure + ", amount=" + amount
+      + ", discountInPercentage=" + discountInPercentage + ", discount2InPercentage="
+      + discount2InPercentage + ", operatingCostsInPercentage=" + operatingCostsInPercentage
+      + ", buildingCostsInPercentage=" + buildingCostsInPercentage + ", qExTotalGrade="
+      + qExTotalGrade + ", qExStatus=" + qExStatus + ", qExExaminationIsFulfilled="
+      + qExExaminationIsFulfilled + ", qExSuitabilityNotes=" + qExSuitabilityNotes
+      + ",  awardRank=" + awardRank + ", awardTotalScore=" + awardTotalScore
+      + ", operatingCostsAmount=" + operatingCostsAmount + ", qExRank=" + qExRank
+      + ", awardRecipientFreeTextField=" + awardRecipientFreeTextField + ", createdOn="
+      + createdOn + ", createdBy=" + createdBy + ", applicationInformation="
+      + applicationInformation + ", manualAmount=" + manualAmount
+      + ", updatedOn=" + updatedOn + "]";
+  }
 }

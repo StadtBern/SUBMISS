@@ -13,7 +13,7 @@
 
 <div class="modal-header">
 	<button type="button" class="close" data-dismiss="modal"
-		aria-label="Close" ng-click="$close()">
+		aria-label="Close" ng-click="addExcludedSubmittentCtrl.closeModal()">
 		<span aria-hidden="true">&times;</span>
 	</button>
 	<h4 class="modal-title">Submittent hinzufügen</h4>
@@ -37,7 +37,11 @@
 	<div class="modal-footer">
 		<button type="submit" class="btn btn-primary">Hinzufügen</button>
 		<button type="button" class="btn btn-default" data-dismiss="modal"
-		ng-click="$close()">Abbrechen</button>
+    ng-click="addExcludedSubmittentCtrl.closeModal()">Abbrechen</button>
+    <div ng-if="addExcludedSubmittentCtrl.submittentForm.$dirty">
+      <input ng-hide="true" type="checkbox" data-ng-model="addExcludedSubmittentCtrl.dirtyFlag"
+        ng-init="addExcludedSubmittentCtrl.dirtyFlag = true">
+    </div>
 	</div>
 </form>
 

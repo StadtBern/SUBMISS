@@ -25,12 +25,7 @@ import java.util.List;
  * The Class OfferForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OfferForm {
-
-  /**
-   * The id.
-   */
-  private String id;
+public class OfferForm extends AbstractForm {
 
   /**
    * The submittent.
@@ -360,27 +355,14 @@ public class OfferForm {
   private Timestamp createdOn;
 
   /**
+   * The updated on.
+   */
+  private Timestamp updatedOn;
+
+  /**
    * The application information.
    */
   private String applicationInformation;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submittent.
@@ -1007,7 +989,7 @@ public class OfferForm {
    * Sets the checks if is operating cost discount percentage.
    *
    * @param isOperatingCostDiscountPercentage the new checks if is operating cost discount
-   * percentage
+   *                                          percentage
    */
   public void setIsOperatingCostDiscountPercentage(Boolean isOperatingCostDiscountPercentage) {
     this.isOperatingCostDiscountPercentage = isOperatingCostDiscountPercentage;
@@ -1044,7 +1026,7 @@ public class OfferForm {
    * Sets the checks if is operating cost discount 2 percentage.
    *
    * @param isOperatingCostDiscount2Percentage the new checks if is operating cost discount 2
-   * percentage
+   *                                           percentage
    */
   public void setIsOperatingCostDiscount2Percentage(Boolean isOperatingCostDiscount2Percentage) {
     this.isOperatingCostDiscount2Percentage = isOperatingCostDiscount2Percentage;
@@ -1571,5 +1553,22 @@ public class OfferForm {
    */
   public void setExcludedFirstLevel(Boolean excludedFirstLevel) {
     this.excludedFirstLevel = excludedFirstLevel;
+  }
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
   }
 }

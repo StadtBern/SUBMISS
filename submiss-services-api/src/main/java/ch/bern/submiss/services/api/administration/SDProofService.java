@@ -16,10 +16,12 @@ package ch.bern.submiss.services.api.administration;
 import ch.bern.submiss.services.api.dto.ProofProvidedMapDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SubmittentDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.List;
 
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.dto.ProofHistoryDTO;
+import java.util.Set;
 
 
 public interface SDProofService {
@@ -62,8 +64,9 @@ public interface SDProofService {
    * Save the proofs history entry.
    *
    * @param proofHistoryDTO the proof history DTO
+   * @return the error
    */
-  void saveProofsEntry(ProofHistoryDTO proofHistoryDTO);
+  Set<ValidationError> saveProofsEntry(ProofHistoryDTO proofHistoryDTO);
 
   /**
    * Gets the all proof entries.

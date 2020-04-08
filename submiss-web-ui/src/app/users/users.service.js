@@ -151,6 +151,12 @@
       getUserSettings: function (unregisteredUser) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/settings', unregisteredUser);
       },
+      loadUserExport: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/users/loadUserExport');
+      },
+      loadUserSearch: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/users/loadUserSearch');
+      }
     };
   }
 })();

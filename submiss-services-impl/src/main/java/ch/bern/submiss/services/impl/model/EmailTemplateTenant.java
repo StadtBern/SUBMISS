@@ -13,22 +13,18 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import ch.bern.submiss.services.api.constants.EmailTemplate;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import ch.bern.submiss.services.api.constants.EmailTemplate;
 
 /**
  * The Class EmailTemplateTenant.
@@ -36,13 +32,7 @@ import ch.bern.submiss.services.api.constants.EmailTemplate;
 @Entity
 @Table(name = "SUB_EMAIL_TEMPLATE_TENANT")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class EmailTemplateTenant {
-
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid")
-  @GenericGenerator(name = "uuid", strategy = "uuid2")
-  private String id;
+public class EmailTemplateTenant extends AbstractEntity {
 
   /** The tenant. */
   @ManyToOne
@@ -78,24 +68,6 @@ public class EmailTemplateTenant {
   @Column(name = "AVAILABLE_PART", length = 4, columnDefinition = "SMALLINT")
   @Enumerated
   private EmailTemplate.AVAILABLE_PART availablePart;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the tenant.
@@ -235,5 +207,4 @@ public class EmailTemplateTenant {
   public void setAvailablePart(EmailTemplate.AVAILABLE_PART availablePart) {
     this.availablePart = availablePart;
   }
-
 }

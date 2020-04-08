@@ -126,6 +126,7 @@ public abstract class CompanyWithProofStatusMapper {
     companyDTO.setCompanyName(entity.getCompanyName());
     companyDTO.setCompanyTel(entity.getCompanyTel());
     companyDTO.setPostCode(entity.getPostCode());
+    companyDTO.setLocation(entity.getLocation());
     companyDTO.setApprenticeFactor(entity.getApprenticeFactor());
     companyDTO.setFiftyPlusFactor(entity.getFiftyPlusFactor());
     companyDTO.setLogIb(entity.getLogIb());

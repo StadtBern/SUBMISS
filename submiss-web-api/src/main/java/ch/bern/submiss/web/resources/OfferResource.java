@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -52,6 +53,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.ops4j.pax.cdi.api.OsgiService;
 
 /**
@@ -122,7 +124,15 @@ public class OfferResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/submittent/{id}")
   public Response deleteSubmittent(@PathParam("id") String id) {
-
+    // Check if submittent is already deleted by another user
+    if (!offerService.submittentExists(id)) {
+      Set<ValidationError> submittentDeleted = new HashSet<>();
+      submittentDeleted
+        .add(new ValidationError(ValidationMessages.DELETED_BY_ANOTHER_USER_ERROR_FIELD,
+          ValidationMessages.SUBMITTENT_DELETED));
+      return Response.status(Response.Status.BAD_REQUEST).entity(submittentDeleted).build();
+    }
+    // Check if submittent has offers or sub contractors
     Boolean submittentHasOffer = false;
     Boolean submittentHasSubcontractors = false;
     if (id != null) {
@@ -146,8 +156,16 @@ public class OfferResource {
    */
   @DELETE
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/{id}")
+  @Path("/delete/{id}")
   public Response deleteOffer(@PathParam("id") String id) {
+    // Check if offer is already deleted by another user
+    if (!offerService.offerExists(id)) {
+      Set<ValidationError> offerDeleted = new HashSet<>();
+      offerDeleted
+        .add(new ValidationError("deletedByAnotherUserErrorField",
+          ValidationMessages.OFFER_DELETED));
+      return Response.status(Response.Status.BAD_REQUEST).entity(offerDeleted).build();
+    }
     List<String> newOfferId = new ArrayList<>();
     newOfferId.add(offerService.deleteOffer(id));
     return Response.ok(newOfferId).build();
@@ -160,16 +178,19 @@ public class OfferResource {
    * @return the response
    */
   @PUT
-  @Path("/close/{submissionId}")
+  @Path("/close/{submissionId}/{submissionVersion}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response closeOffer(@PathParam("submissionId") String submissionId) {
-    List<String> results = offerService.closeOffer(submissionId);
-    Set<ValidationError> errors = closeOfferValidation(results);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+  public Response closeOffer(@PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    Set<ValidationError> validationErrors = offerService.closeOfferValidation(submissionId);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity(validationErrors).build();
     }
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = offerService.closeOffer(submissionId, submissionVersion);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -189,7 +210,7 @@ public class OfferResource {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
     if (offer != null) {
-      offerId = offerService.resetOffer(offer.getId(), offer.getOfferDate());
+      offerId = offerService.resetOffer(offer.getId(), offer.getOfferDate(), offer.getNotes());
     }
     OfferDTO offerDTO = new OfferDTO();
     offerDTO.setId(offerId);
@@ -207,14 +228,31 @@ public class OfferResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateOffer(@Valid OfferForm offer) {
-    Set<ValidationError> errors = updateOfferValidation(offer);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    // Check if offer is already deleted by another user
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    if (!offerService.offerExists(offer.getId())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK_DELETE));
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
     }
-    OfferDTO offerDTO = OfferFormMapper.INSTANCE.toOfferDTO(offer);
-    offerDTO.setAmount(offerService.calculateOfferAmount(offerDTO));
-    offerService.updateOffer(offerDTO);
-    return Response.ok().build();
+    // Check for validation errors
+    Set<ValidationError> validationErrors = updateOfferValidation(offer);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
+    }
+    // Check for optimistic locking errors
+    try {
+      OfferDTO offerDTO = OfferFormMapper.INSTANCE.toOfferDTO(offer);
+      offerDTO.setAmount(offerService.calculateOfferAmount(offerDTO));
+      offerService.updateOffer(offerDTO);
+    } catch (OptimisticLockException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD, ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -228,14 +266,32 @@ public class OfferResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateOperatingCostOffer(@Valid OfferForm offer) {
-    Set<ValidationError> errors = operatingCostValidation(null, null, offer);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    // Check if offer is already deleted by another user
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    if (!offerService.offerExists(offer.getId())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK_DELETE));
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
     }
-    OfferDTO offerDTO = OfferFormMapper.INSTANCE.toOfferDTO(offer);
-    offerDTO.setOperatingCostsAmount(offerService.calculateOperatingCostsAmount(offerDTO));
-    offerService.updateOffer(offerDTO);
-    return Response.ok().build();
+    // Check for validation errors
+    Set<ValidationError> validationErrors = operatingCostValidation(null, null, offer);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
+    }
+    // Check for optimistic locking errors
+    try {
+      OfferDTO offerDTO = OfferFormMapper.INSTANCE.toOfferDTO(offer);
+      offerDTO.setOperatingCostsAmount(offerService.calculateOperatingCostsAmount(offerDTO));
+      offerService.updateOffer(offerDTO);
+    } catch (OptimisticLockException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -249,6 +305,14 @@ public class OfferResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public Response getOfferById(@PathParam("id") String id) {
+    // Check if offer is already deleted by another user
+    if (!offerService.offerExists(id)) {
+      Set<ValidationError> offerDeleted = new HashSet<>();
+      offerDeleted
+        .add(new ValidationError("deletedByAnotherUserErrorField",
+          ValidationMessages.OFFER_DELETED));
+      return Response.status(Response.Status.BAD_REQUEST).entity(offerDeleted).build();
+    }
     OfferDTO offerDTO = offerService.getOfferById(id);
     return Response.ok(offerDTO).build();
   }
@@ -314,8 +378,11 @@ public class OfferResource {
   @Path("/submittent/{submittentId}/subcontractor/{subcontractorId}")
   public Response deleteSubcontractor(@PathParam("submittentId") String submittentId,
     @PathParam("subcontractorId") String subcontractorId) {
-    offerService.deleteSubcontractor(submittentId, subcontractorId);
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors =
+      offerService.deleteSubcontractor(submittentId, subcontractorId);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -346,8 +413,11 @@ public class OfferResource {
   @Path("/submittent/{submittentId}/jointVenture/{jointVentureId}")
   public Response deleteJointVenture(@PathParam("submittentId") String submittentId,
     @PathParam("jointVentureId") String jointVentureId) {
-    offerService.deleteJointVenture(submittentId, jointVentureId);
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = offerService
+      .deleteJointVenture(submittentId, jointVentureId);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -356,7 +426,7 @@ public class OfferResource {
    * @param checkedOffersIds the checked offers ids
    * @return the response
    */
-  @POST
+  @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/update/award/{submissionId}")
   public Response updateOfferAwards(@Valid List<String> checkedOffersIds,
@@ -372,11 +442,12 @@ public class OfferResource {
    * @param awardedOfferIds the awarded offer ids
    * @return the response
    */
-  @POST
+  @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/closeAwardEvaluation/{submissionId}")
+  @Path("/closeAwardEvaluation/{submissionId}/{submissionVersion}")
   public Response closeAwardEvaluation(@PathParam("submissionId") String submissionId,
-    @Valid List<String> awardedOfferIds) {
+    @PathParam("submissionVersion") Long submissionVersion, @Valid List<String> awardedOfferIds) {
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
     offerService.closeAwardEvaluation(awardedOfferIds, submissionId);
     return Response.ok().build();
   }
@@ -411,9 +482,13 @@ public class OfferResource {
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
-    offerService.updateApplication(application.getApplicationId(), application.getApplicationDate(),
-      application.getApplicationInformation());
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = offerService
+      .updateApplication(application.getApplicationId(), application.getApplicationDate(),
+        application.getApplicationInformation(), application.getApplicationVersion(),
+        application.getSubmissionVersion());
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -426,7 +501,14 @@ public class OfferResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/deleteApplicant/{id}")
   public Response deleteApplicant(@PathParam("id") String id) {
-
+    // Check if applicant is already deleted by another user
+    if (!offerService.submittentExists(id)) {
+      Set<ValidationError> applicantDeleted = new HashSet<>();
+      applicantDeleted
+        .add(new ValidationError(ValidationMessages.DELETED_BY_ANOTHER_USER_ERROR_FIELD,
+          ValidationMessages.APPLICANT_DELETED));
+      return Response.status(Response.Status.BAD_REQUEST).entity(applicantDeleted).build();
+    }
     Boolean applicantHasApplication = false;
     Boolean applicantHasSubcontractorsOrJointVenture = false;
     if (id != null) {
@@ -450,8 +532,14 @@ public class OfferResource {
    */
   @DELETE
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/deleteApplication/{applicationId}")
-  public Response deleteApplication(@PathParam("applicationId") String applicationId) {
+  @Path("/deleteApplication/{applicationId}/{applicationVersion}")
+  public Response deleteApplication(@PathParam("applicationId") String applicationId,
+    @PathParam("applicationVersion") Long applicationVersion) {
+    Set<ValidationError> optimisticLockErrors = offerService
+      .deleteApplicationOptimisticLock(applicationId, applicationVersion);
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
     List<String> newApplicationId = new ArrayList<>();
     newApplicationId.add(offerService.deleteApplication(applicationId));
     return Response.ok(newApplicationId).build();
@@ -494,7 +582,7 @@ public class OfferResource {
    * @param manualAwardForm the manual award form
    * @return the response
    */
-  @PUT
+  @POST
   @Path("/validateManualAward")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -556,7 +644,7 @@ public class OfferResource {
       || submissionDTO.getProcess().equals(Process.OPEN))
       && (submissionDTO.getIsServiceTender() != null
       && submissionDTO.getIsServiceTender())))) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(null).build();
+      return Response.status(Response.Status.BAD_REQUEST).build();
     }
     return Response.ok().build();
   }
@@ -713,35 +801,6 @@ public class OfferResource {
   }
 
   /**
-   * Close offer validation
-   *
-   * @param results the results
-   * @return the validation errors
-   */
-  private Set<ValidationError> closeOfferValidation(List<String> results) {
-    Set<ValidationError> errors = new HashSet<>();
-    if (!results.isEmpty()) {
-      for (String result : results) {
-        if (result.equals(ValidationMessages.MANDATORY_OFFER_PROTOCOL_DOCUMENT_MESSAGE)) {
-          errors.add(new ValidationError("offerProtocolErrorField",
-            ValidationMessages.MANDATORY_OFFER_PROTOCOL_DOCUMENT_MESSAGE));
-        } else if (result.equals(ValidationMessages.MANDATORY_SUBMITTENTLISTE_DOCUMENT_MESSAGE)) {
-          errors.add(new ValidationError("submittentlisteErrorField",
-            ValidationMessages.MANDATORY_SUBMITTENTLISTE_DOCUMENT_MESSAGE));
-        } else if (result.equals(ValidationMessages.MANDATORY_OFFER_PROTOCOL_DL_DOCUMENT_MESSAGE)) {
-          errors.add(new ValidationError("offerProtocolErrorField",
-            ValidationMessages.MANDATORY_OFFER_PROTOCOL_DL_DOCUMENT_MESSAGE));
-        }
-        if (result.equals(ValidationMessages.OFFERS_NO_DATE_ERROR)) {
-          errors.add(new ValidationError("offersNoDateErrorField",
-            ValidationMessages.OFFERS_NO_DATE_ERROR));
-        }
-      }
-    }
-    return errors;
-  }
-
-  /**
    * submittentHasOffer validation.
    *
    * @param submittentHasOffer the boolean submittentHasOffer
@@ -885,5 +944,19 @@ public class OfferResource {
       errors.add(new ValidationError("offerAmountErrorField",
         ValidationMessages.ZERO_AMOUNT_ERROR_MESSAGE));
     }
+  }
+
+  /**
+   * Run security check before loading Offer List.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadOfferList/{submissionId}")
+  public Response loadOfferList(@PathParam("submissionId") String submissionId) {
+    offerService.offerListSecurityCheck(submissionId);
+    return Response.ok().build();
   }
 }

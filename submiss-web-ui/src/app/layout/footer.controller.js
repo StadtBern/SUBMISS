@@ -39,6 +39,7 @@
     vm.getAppVersion = getAppVersion;
     vm.getCommitId = getCommitId;
     vm.showContactModal = showContactModal;
+    vm.showImpressumModal = showImpressumModal;
     /** Activating the controller. */
     activate();
     /***********************************************************************
@@ -70,6 +71,14 @@
         templateUrl: 'app/layout/footer.contact.html',
         controller: 'FooterContactController',
         controllerAs: 'footerContactCtrl'
+      });
+    }
+
+    function showImpressumModal() {
+      $uibModal.open({
+        templateUrl: 'app/layout/footer.impressum.html',
+        controller: 'FooterImpressumController',
+        controllerAs: 'footerImpressumCtrl'
       });
     }
   }

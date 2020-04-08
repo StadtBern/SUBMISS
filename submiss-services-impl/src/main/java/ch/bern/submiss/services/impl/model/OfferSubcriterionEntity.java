@@ -14,24 +14,18 @@
 package ch.bern.submiss.services.impl.model;
 
 import java.math.BigDecimal;
-
+import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "SUB_OFFER_SUBCRITERION")
-public class OfferSubriterionEntity {
-
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
+public class OfferSubcriterionEntity extends AbstractEntity {
 
   @ManyToOne
   @JoinColumn(name = "FK_OFFER")
@@ -47,13 +41,13 @@ public class OfferSubriterionEntity {
   @Column(name = "SCORE")
   private BigDecimal score;
 
-  public String getId() {
-    return id;
-  }
+  @CreationTimestamp
+  @Column(name = "CREATED_ON")
+  private Timestamp createdOn;
 
-  public void setId(String id) {
-    this.id = id;
-  }
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
   public OfferEntity getOffer() {
     return offer;
@@ -85,5 +79,21 @@ public class OfferSubriterionEntity {
 
   public void setScore(BigDecimal score) {
     this.score = score;
+  }
+
+  public Timestamp getCreatedOn() {
+    return createdOn;
+  }
+
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
   }
 }

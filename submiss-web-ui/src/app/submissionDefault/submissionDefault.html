@@ -12,94 +12,156 @@
   -->
 
 <div ng-controller="SubmissionDefaultController as submissionDefaultCtr">
-<div class="col-sm-12 ToolbarContainer">
-			<div class="alert alert-info"
-					ng-if="submissionDefaultCtr.data.submission.process == 'SELECTIVE' 
-		       			 && (!submissionDefaultCtr.data.submission.firstDeadline 
-		        		 || !submissionDefaultCtr.data.submission.applicationOpeningDate || !submissionDefaultCtr.data.submission.firstLoggedBy)"
-					role="alert" translate> submission_mandatory_for_selective_process
-			</div>
-			<div class="alert alert-info"
-					ng-if="submissionDefaultCtr.data.submission.process == 'SELECTIVE' && (!submissionDefaultCtr.data.submission.secondDeadline 
-		        		|| !submissionDefaultCtr.data.submission.offerOpeningDate || !submissionDefaultCtr.data.submission.secondLoggedBy
-		        		|| submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.AWARD_NOTICES_1_LEVEL_CREATED)
-		        		&& submissionDefaultCtr.currentStatus >= submissionDefaultCtr.status.SUITABILITY_AUDIT_COMPLETED_S"
-					role="alert" translate>
-					mandatory_for_selective_process_second_level</div>
-			<div class="alert alert-danger"
-					ng-if="submissionDefaultCtr.reopenDate != null && (submissionDefaultCtr.currentStatus && !submissionDefaultCtr.isCompletedOrCancelled)"
-					role="alert"> {{submissionDefaultCtr.reopenMessageStart }}
-					{{submissionDefaultCtr.reopenDate | date:'dd.MM.yyyy'}}
-					{{submissionDefaultCtr.reopenDate | date:'hh:mm'}}
-					{{submissionDefaultCtr.reopenMessageEnd }}
-			</div>
-			<div class="btn-toolbar pull-right" role="toolbar">
-				<button type="button" class="btn btn-primary"
-					ng-click="submissionDefaultCtr.closeSubmission()"
-					ng-disabled="submissionDefaultCtr.disableSubmissionCloseButton()"
--					ng-if="submissionDefaultCtr.showSubmissionCloseButton()">Verfahrensabschluss</button>
-				<button type="button" class="btn btn-primary"
-					ng-click="submissionDefaultCtr.reopenSubmission()"
-					ng-disabled="submissionDefaultCtr.disableSubmissionReopenButton()"
-					ng-if="submissionDefaultCtr.showSubmissionReopenButton()">Verfahren wiederaufnehmen</button>
-				<button type="submit" class="btn btn-primary" 
-					ng-disabled="submissionDefaultCtr.moveButtonDisabled"
-					ng-if="appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.ADMIN"
-					ng-click="submissionDefaultCtr.projectSearchModal()">Verschieben</button>
-				<button type="submit" class="btn btn-primary" data-toggle="modal"
-					data-target=".email"
-					ng-click="submissionDefaultCtr.sendMailModal()"
-					data-ng-disabled="!submissionDefaultCtr.secSentEmail">
-					<span class="fa fa-envelope" aria-hidden="true"></span> E-Mail versenden
-				</button>
+  <div class="col-sm-12 ToolbarContainer">
+    <form name="submissionDefaultCtr.submissionDefaultForm" shows-validation-errors>
+      <div class="modal-body">
+        <div class="alert alert-danger" ng-if="submissionDefaultCtr.submissionDefaultForm.$invalid" role="alert">
+          <field-error form-element-name="optimisticLockErrorField" translate name="error" />
+        </div>
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd" />
+      </div>
+    </form>
+    <!-- Info messages -->
+    <div class="alert alert-info" ng-if="submissionDefaultCtr.data.submission.process != null &&
+    (appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.ADMIN
+    && ((submissionDefaultCtr.data.submission.process != 'SELECTIVE'))
+    || (appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.PL
+        && (submissionDefaultCtr.data.submission.process == 'NEGOTIATED_PROCEDURE' || submissionDefaultCtr.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION')))
+    && (!submissionDefaultCtr.data.submission.secondDeadline
+        || !submissionDefaultCtr.data.submission.offerOpeningDate
+        || !submissionDefaultCtr.data.submission.secondLoggedBy)" role="alert" translate>
+      submission_mandatory_for_other_processes
+    </div>
+    <div class="alert alert-info"
+      ng-if="appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.ADMIN
+      && submissionDefaultCtr.data.submission.process == 'SELECTIVE'
+		       			 && (!submissionDefaultCtr.data.submission.firstDeadline
+		        		 || !submissionDefaultCtr.data.submission.applicationOpeningDate || !submissionDefaultCtr.data.submission.firstLoggedBy)" role="alert"
+      translate> submission_mandatory_for_selective_process
+    </div>
+    <div class="alert alert-info" ng-if="appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.ADMIN
+          && (submissionDefaultCtr.data.submission.process == 'SELECTIVE'
+          && (!submissionDefaultCtr.data.submission.secondDeadline
+          || !submissionDefaultCtr.data.submission.offerOpeningDate || !submissionDefaultCtr.data.submission.secondLoggedBy
+          || submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.AWARD_NOTICES_1_LEVEL_CREATED)
+          && submissionDefaultCtr.currentStatus >= submissionDefaultCtr.status.SUITABILITY_AUDIT_COMPLETED_S)"
+      role="alert" translate>
+      mandatory_for_selective_process_second_level
+    </div>
+    <div class="alert alert-info" ng-if="(appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.PL
+	  	  && submissionDefaultCtr.data.submission.process != null
+	  	  && (submissionDefaultCtr.data.submission.process === 'NEGOTIATED_PROCEDURE'
+        || submissionDefaultCtr.data.submission.process === 'NEGOTIATED_PROCEDURE_WITH_COMPETITION'))
+        && submissionDefaultCtr.data.submission.aboveThreshold" role="alert" translate>
+      over_threshold_PL_message
+    </div>
+    <div class="alert alert-info" ng-if="(appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.PL
+	  	&& submissionDefaultCtr.data.submission.process != null
+	  	&& (submissionDefaultCtr.data.submission.process == 'INVITATION' ||
+      submissionDefaultCtr.data.submission.process == 'NEGOTIATED_PROCEDURE' ||
+      submissionDefaultCtr.data.submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION')
+      && submissionDefaultCtr.data.submission.status === '90')" role="alert" translate
+      translate-values="{ DATE: '{{submissionDefaultCtr.data.submission.submittentListCheckedOn | date:'dd.MM.yyyy'}}', USER: '{{submissionDefaultCtr.data.submission.submittentListCheckedBy}}'}">
+      checked_submittentenliste_PL_message
+    </div>
+    <div class="alert alert-info"
+      ng-if="submissionDefaultCtr.data.submission.status === '290' || submissionDefaultCtr.isCancelledBeforeClose"
+      role="alert">
+      {{submissionDefaultCtr.cancelledMessageInfo}}
+      {{submissionDefaultCtr.cancelDateOfSubmission | date:'dd.MM.yyyy'}}.
+    </div>
+    <!-- Alert messages -->
+    <div class="alert alert-danger"
+      ng-if="submissionDefaultCtr.reopenDate != null && (submissionDefaultCtr.currentStatus && !submissionDefaultCtr.isCompletedOrCancelled)"
+      role="alert"> {{submissionDefaultCtr.reopenMessageStart}}
+      {{submissionDefaultCtr.reopenDate | date:'dd.MM.yyyy'}}
+      {{submissionDefaultCtr.reopenDate | date:'hh:mm'}}
+      {{submissionDefaultCtr.reopenMessageEnd}}.
+    </div>
+    <div class="alert alert-danger" ng-if="submissionDefaultCtr.isReopenedAfterVerfugungen && (appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.PL || appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.ADMIN)
+      && !(submissionDefaultCtr.tabStatus === 280 || submissionDefaultCtr.tabStatus === 290)" role="alert" translate>
+      reopen_after_verfugungen_message
+    </div>
+    <div class="btn-toolbar pull-right" role="toolbar">
+      <button type="button" class="btn btn-primary" ng-click="submissionDefaultCtr.closeSubmission()"
+        ng-disabled="submissionDefaultCtr.disableSubmissionCloseButton()" -
+        ng-if="submissionDefaultCtr.showSubmissionCloseButton()">Verfahrensabschluss</button>
+      <button type="button" class="btn btn-primary" ng-click="submissionDefaultCtr.reopenSubmission()"
+        ng-disabled="submissionDefaultCtr.disableSubmissionReopenButton()"
+        ng-if="submissionDefaultCtr.showSubmissionReopenButton()">Verfahren wiederaufnehmen</button>
+      <button type="submit" class="btn btn-primary" ng-disabled="submissionDefaultCtr.moveButtonDisabled"
+        ng-if="appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.ADMIN"
+        ng-click="submissionDefaultCtr.projectSearchModal()">Verschieben</button>
+      <button type="submit" class="btn btn-primary" data-toggle="modal" data-target=".email"
+        ng-click="submissionDefaultCtr.sendMailModal()" data-ng-disabled="!submissionDefaultCtr.secSentEmail">
+        <span class="fa fa-envelope" aria-hidden="true"></span> E-Mail versenden
+      </button>
 
-			</div>
-		</div>
-		<div>
-			<div style="margin:10px">
-				<ul class="nav nav-tabs" role="tablist">
-					<li role="presentation" ui-sref-active="active"><a
-					ui-sref="submissionView({id : submissionDefaultCtr.data.submission.id})"
-						aria-controls="subDetails" role="tab" data-toggle="tab">Submissionsdetails</a></li>
-					<li ng-if="submissionDefaultCtr.submittentsOrOffersVisible()"
-					role="presentation" ui-sref-active="active"><a aria-controls="subList" role="tab"
-						data-toggle="tab"
-						ui-sref="offerListView({id : submissionDefaultCtr.data.submission.id})">
-							<h
-								ng-if="submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.OFFER_OPENING_STARTED">Submittentenliste</h>
-						<!-- the roles PL(in tender types Offen, Selektiv, Einladung) and DIR(in all tender types) are not allowed to view Offerten till the Status "Offertöffnung abgeschlossen" -->
-						<h ng-if="submissionDefaultCtr.data.submission.process != 'SELECTIVE' &&
+    </div>
+  </div>
+  <div>
+    <div style="margin:10px">
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" ui-sref-active="active"><a
+            ui-sref="submissionView({id : submissionDefaultCtr.data.submission.id})" aria-controls="subDetails"
+            role="tab" data-toggle="tab">Submissionsdetails</a>
+        </li>
+        <li ng-if="submissionDefaultCtr.submittentsOrOffersVisible()" role="presentation" ui-sref-active="active"><a
+            aria-controls="subList" role="tab" data-toggle="tab"
+            ui-sref="offerListView({id : submissionDefaultCtr.data.submission.id})">
+            <h ng-if="submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.OFFER_OPENING_STARTED"
+              ng-class="{'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===1}">
+              Submittentenliste</h>
+            <!-- the roles PL(in tender types Offen, Selektiv, Einladung) and DIR(in all tender types) are not allowed to view Offerten till the Status "Offertöffnung abgeschlossen" -->
+            <h ng-if="submissionDefaultCtr.data.submission.process != 'SELECTIVE' &&
 								  (submissionDefaultCtr.currentStatus >= submissionDefaultCtr.status.OFFER_OPENING_STARTED &&
 								  !((appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.DIR ||
-								   (appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.PL && 
+								   (appCtrl.getLoggedUser().userGroup.name == submissionDefaultCtr.group.PL &&
 								   (submissionDefaultCtr.data.submission.process == 'OPEN' ||
-									submissionDefaultCtr.data.submission.process == 'INVITATION'))) && 
-								    submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.OFFER_OPENING_CLOSED))">Offertübersicht</h>
-					</a></li>
-					<li role="presentation" ui-sref-active="active"><a ui-sref="examination.view({id : submissionDefaultCtr.data.submission.id})"
-						aria-controls="prufung" role="tab" data-toggle="tab"
-						ng-if="submissionDefaultCtr.examinationTabVisible()">Formelle/Eignungsprüfung</a></li>
-					<li role="presentation" ui-sref-active="active"><a ui-sref="examination.formal({id : submissionDefaultCtr.data.submission.id})"
-						aria-controls="prufung" role="tab" data-toggle="tab"
-						ng-if="submissionDefaultCtr.formalAuditVisible()">Formelle Prüfung</a></li>
-					<li role="presentation" ui-sref-active="active" ><a name="zuschlag" href="#zuschlag"
-						aria-controls="zuschlag" role="tab" data-toggle="tab"
-						ui-sref="award.view({id:submissionDefaultCtr.data.submission.id})"
-						ng-if="submissionDefaultCtr.awardEvaluationVisible()">Zuschlagsbewertung</a></li>
-					<li role="presentation" ng-class="{'active': submissionDefaultCtr.firstStageTabActive()}"><a 
-						ng-click="submissionDefaultCtr.navigateToFirstStage()"
-						aria-controls="documents" role="tab" data-toggle="tab"
-						ng-if="submissionDefaultCtr.data.submission.process == 'SELECTIVE'">1. Stufe</a></li>
-					<li role="presentation" ng-class="{'active': submissionDefaultCtr.secondStageTabActive()}"><a 
-						aria-controls="documents" role="tab" data-toggle="tab"
-						ng-click="submissionDefaultCtr.navigateToSecondStage()"
-						ng-if="submissionDefaultCtr.selectiveSecondStageTabVisible()">2. Stufe</a></li>
-					<li role="presentation" ng-class="{'active': submissionDefaultCtr.documentTabActive()}"><a 
-						ng-click="submissionDefaultCtr.navigateToDocumentView()"
-						aria-controls="documents" role="tab" data-toggle="tab"
-						ng-if="submissionDefaultCtr.secDocumentView && submissionDefaultCtr.submittentsLength > 0">Dokumentenbereich</a></li>
-				</ul>
-				</div>
-		</div>
+									submissionDefaultCtr.data.submission.process == 'INVITATION'))) &&
+								    submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.OFFER_OPENING_CLOSED))"
+              ng-class="{'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===2}">
+              Offertübersicht
+            </h>
+          </a></li>
+
+        <li role="presentation" ui-sref-active="active"><a
+            ui-sref="examination.view({id : submissionDefaultCtr.data.submission.id})" aria-controls="prufung"
+            role="tab" data-toggle="tab" ng-if="submissionDefaultCtr.examinationTabVisible()"
+            ng-class="{'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===3}">Formelle/Eignungsprüfung</a>
+        </li>
+
+        <li role="presentation" ui-sref-active="active"><a
+            ui-sref="examination.formal({id : submissionDefaultCtr.data.submission.id})" aria-controls="prufung"
+            role="tab" data-toggle="tab" ng-if="submissionDefaultCtr.formalAuditVisible()"
+            ng-class="{'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===4}">Formelle
+            Prüfung</a></li>
+
+        <li role="presentation" ui-sref-active="active"><a name="zuschlag" href="#zuschlag" aria-controls="zuschlag"
+            role="tab" data-toggle="tab" ui-sref="award.view({id:submissionDefaultCtr.data.submission.id})"
+            ng-if="submissionDefaultCtr.awardEvaluationVisible()"
+            ng-class="{'status': (submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===3 || submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===5)}">Zuschlagsbewertung</a>
+        </li>
+
+        <li role="presentation"
+          ng-class="{'active': submissionDefaultCtr.firstStageTabActive(), 'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===6}">
+          <a ng-click="submissionDefaultCtr.navigateToFirstStage()" aria-controls="documents" role="tab"
+            data-toggle="tab" ng-if="submissionDefaultCtr.data.submission.process == 'SELECTIVE'">1. Stufe</a></li>
+
+        <li role="presentation"
+          ng-class="{'active': submissionDefaultCtr.secondStageTabActive(), 'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===7}">
+          <a aria-controls="documents" role="tab" data-toggle="tab"
+            ng-click="submissionDefaultCtr.navigateToSecondStage()"
+            ng-if="submissionDefaultCtr.selectiveSecondStageTabVisible()">2. Stufe</a></li>
+
+        <li role="presentation"
+          ng-class="{'active': submissionDefaultCtr.documentTabActive(), 'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===8}">
+          <a ng-click="submissionDefaultCtr.navigateToDocumentView()" aria-controls="documents" role="tab"
+            data-toggle="tab"
+            ng-if="submissionDefaultCtr.secDocumentView && submissionDefaultCtr.submittentsLength > 0">Dokumentenbereich</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
 <div class="row"></div>

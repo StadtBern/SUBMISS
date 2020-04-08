@@ -13,75 +13,84 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
 /**
  * The Class LegalHearingExclusionDTO.
  */
-public class LegalHearingExclusionDTO {
-  /** The id. */
-  private String id;
+public class LegalHearingExclusionDTO extends AbstractDTO {
 
-  /** The submittent. */
+  /**
+   * The submittent.
+   */
   private SubmittentDTO submittent;
 
-  /** The exclusion deadline. */
+  /**
+   * The exclusion deadline.
+   */
   private Date exclusionDeadline;
 
-  /** The proofs provided. */
+  /**
+   * The proofs provided.
+   */
   private Boolean proofsProvided;
 
-  /** The exists exl reasons. */
+  /**
+   * The exists exl reasons.
+   */
   private Boolean existsExlReasons;
 
-  /** The must crit fulfilled. */
+  /**
+   * The must crit fulfilled.
+   */
   private Boolean mustCritFulfilled;
 
-  /** The exclusion reason. */
+  /**
+   * The exclusion reason.
+   */
   private String exclusionReason;
 
-  /** The exclusion reasons. */
+  /**
+   * The exclusion reasons.
+   */
   private Set<ExclusionReasonDTO> exclusionReasons;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   private String createdBy;
 
-  /** The created on. */
-  private Date createdOn;
+  /**
+   * The created on.
+   */
+  private Timestamp createdOn;
 
-  /** The updated by. */
+  /**
+   * The updated by.
+   */
   private String updatedBy;
 
-  /** The updated on. */
-  private Date updatedOn;
+  /**
+   * The updated on.
+   */
+  private Timestamp updatedOn;
 
-  /** The disable. */
+  /**
+   * The disable.
+   */
   private Boolean disable;
 
-  /** The level. */
+  /**
+   * The level.
+   */
   private Integer level;
 
-  /** The first level exclusion date. */
+  /**
+   * The first level exclusion date.
+   */
   private Date firstLevelExclusionDate;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submittent.
@@ -232,7 +241,7 @@ public class LegalHearingExclusionDTO {
    *
    * @return the created on
    */
-  public Date getCreatedOn() {
+  public Timestamp getCreatedOn() {
     return createdOn;
   }
 
@@ -241,7 +250,7 @@ public class LegalHearingExclusionDTO {
    *
    * @param createdOn the new created on
    */
-  public void setCreatedOn(Date createdOn) {
+  public void setCreatedOn(Timestamp createdOn) {
     this.createdOn = createdOn;
   }
 
@@ -268,7 +277,7 @@ public class LegalHearingExclusionDTO {
    *
    * @return the updated on
    */
-  public Date getUpdatedOn() {
+  public Timestamp getUpdatedOn() {
     return updatedOn;
   }
 
@@ -277,7 +286,7 @@ public class LegalHearingExclusionDTO {
    *
    * @param updatedOn the new updated on
    */
-  public void setUpdatedOn(Date updatedOn) {
+  public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
   }
 
@@ -335,19 +344,14 @@ public class LegalHearingExclusionDTO {
     this.firstLevelExclusionDate = firstLevelExclusionDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "LegalHearingExclusionDTO [id=" + id + ", exclusionDeadline=" + exclusionDeadline
-        + ", proofsProvided=" + proofsProvided + ", existsExlReasons=" + existsExlReasons
-        + ", mustCritFulfilled=" + mustCritFulfilled + ", exclusionReason=" + exclusionReason
-        + ", createdBy=" + createdBy + ", createdOn=" + createdOn + ", updatedBy=" + updatedBy
-        + ", updatedOn=" + updatedOn + ", disable=" + disable + ", level=" + level
-        + ", firstLevelExclusionDate=" + firstLevelExclusionDate + "]";
+    return "LegalHearingExclusionDTO [id=" + super.getId() + ", exclusionDeadline="
+      + exclusionDeadline
+      + ", proofsProvided=" + proofsProvided + ", existsExlReasons=" + existsExlReasons
+      + ", mustCritFulfilled=" + mustCritFulfilled + ", exclusionReason=" + exclusionReason
+      + ", createdBy=" + createdBy + ", createdOn=" + createdOn + ", updatedBy=" + updatedBy
+      + ", updatedOn=" + updatedOn + ", disable=" + disable + ", level=" + level
+      + ", firstLevelExclusionDate=" + firstLevelExclusionDate + "]";
   }
-
 }

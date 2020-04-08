@@ -50,6 +50,7 @@ public enum DocumentProperties {
   NUMBER_9("9"),
   NUMBER_10("10"),
   NUMBER_16("16"),
+  NUMBER_18("18"),
   NUMBER_20("20"),
   NUMBER_24("24"),
   NUMBER_60("60"),

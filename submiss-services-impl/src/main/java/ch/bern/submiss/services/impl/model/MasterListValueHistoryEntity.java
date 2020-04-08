@@ -17,25 +17,16 @@ import java.sql.Timestamp;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * The Class MasterListValueHistoryEntity.
  */
 @Entity
 @Table(name = "SUB_MASTER_LIST_VALUE_HISTORY")
-public class MasterListValueHistoryEntity {
-
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
+public class MasterListValueHistoryEntity extends AbstractEntity {
 
   /** The value 1. */
   @Column(name = "VALUE1")
@@ -86,24 +77,6 @@ public class MasterListValueHistoryEntity {
   /** The tenant logo. */
   @Column(name = "TENANT_LOGO")
   private byte[] tenantLogo;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the value 1.
@@ -321,14 +294,9 @@ public class MasterListValueHistoryEntity {
     this.tenantLogo = tenantLogo;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "MasterListValueHistoryEntity [id=" + id + ", value1=" + value1 + ", active=" + active
+    return "MasterListValueHistoryEntity [value1=" + value1 + ", active=" + active
         + ", tenant=" + tenant + ", modifiedOn=" + modifiedOn + ", internalVersion="
         + internalVersion + ", value2=" + value2 + ", fromDate=" + fromDate + ", toDate=" + toDate
         + ", shortCode=" + shortCode + ", value3=" + value3 + "]";

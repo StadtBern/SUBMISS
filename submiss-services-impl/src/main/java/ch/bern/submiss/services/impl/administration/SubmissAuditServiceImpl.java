@@ -320,4 +320,13 @@ public class SubmissAuditServiceImpl extends BaseService implements SubmissAudit
     }
     return orderBy;
   }
+
+  @Override
+  public void auditLogSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method auditLogSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.AUDIT.getValue(), null);
+  }
 }

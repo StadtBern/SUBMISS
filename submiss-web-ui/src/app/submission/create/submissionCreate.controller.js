@@ -112,41 +112,49 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      loadProcedures();
-      loadWorkTypes();
-      loadDepartments();
-      loadNegotiatedProcedures();
-      loadProcessTypes(vm.project.id);
-      if (!editSubmission) {
-        vm.submission.isGekoEntry = true;
-        vm.submission.publicationDate = null;
-        vm.submission.publicationDateAward = null;
-        vm.submission.publicationDateDirectAward = null;
-        vm.submission.firstDeadline = null;
-        vm.submission.applicationOpeningDate = null;
-        vm.submission.secondDeadline = null;
-        vm.submission.offerOpeningDate = new Date();
-        vm.submission.constructionPermit = vm.project.constructionPermit;
-        vm.submission.gattTwo = vm.project.gattWto;
-        vm.submission.loanApproval = vm.project.loanApproval;
-        vm.submission.pmDepartmentName = vm.project.pmDepartmentName;
-        vm.submission.pmExternal = vm.project.pmExternal;
-        vm.submission.procedure = vm.project.procedure;
-      }
-      if (editSubmission) {
-        /** store the values of process, isServiceTender, isLocked
-         * so if they are changed the back end must be informed,
-         * in order to update the security resources
-         * The old process is stored in the form, so that we can
-         * check in the back end if an update of the resources is necessary.
-         */
-        vm.submission.oldProcess = vm.submission.process;
-        isServiceTenderToCheck = vm.submission.isServiceTender;
-        isLockedToCheck = vm.submission.isLocked;
-        readStatusOfSubmission(vm.submission.id);
-        setPublicationDateDirectAwardEnabled(); // initiate
-      }
-      findUserOperations();
+      SubmissionService.loadSubmissionCreate()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            $uibModalInstance.close();
+            return;
+          } else {
+            loadProcedures();
+            loadWorkTypes();
+            loadDepartments();
+            loadNegotiatedProcedures();
+            loadProcessTypes(vm.project.id);
+            if (!editSubmission) {
+              vm.submission.isGekoEntry = true;
+              vm.submission.publicationDate = null;
+              vm.submission.publicationDateAward = null;
+              vm.submission.publicationDateDirectAward = null;
+              vm.submission.firstDeadline = null;
+              vm.submission.applicationOpeningDate = null;
+              vm.submission.secondDeadline = null;
+              vm.submission.offerOpeningDate = new Date();
+              vm.submission.constructionPermit = vm.project.constructionPermit;
+              vm.submission.gattTwo = vm.project.gattWto;
+              vm.submission.loanApproval = vm.project.loanApproval;
+              vm.submission.pmDepartmentName = vm.project.pmDepartmentName;
+              vm.submission.pmExternal = vm.project.pmExternal;
+              vm.submission.procedure = vm.project.procedure;
+            }
+            if (editSubmission) {
+              /** store the values of process, isServiceTender, isLocked
+               * so if they are changed the back end must be informed,
+               * in order to update the security resources
+               * The old process is stored in the form, so that we can
+               * check in the back end if an update of the resources is necessary.
+               */
+              vm.submission.oldProcess = vm.submission.process;
+              isServiceTenderToCheck = vm.submission.isServiceTender;
+              isLockedToCheck = vm.submission.isLocked;
+              readStatusOfSubmission(vm.submission.id);
+              setPublicationDateDirectAwardEnabled(); // initiate
+            }
+            findUserOperations();
+          }
+        });
     }
 
     /***********************************************************************
@@ -238,8 +246,11 @@
           vm.submission.project = vm.project;
           SubmissionService
             .createSubmission(vm.submission)
-            .success(function (data) {
+            .success(function (data, status) {
               $uibModalInstance.close();
+              if (status === 403) { // Security checks.
+                return;
+              }
               $state.go('submissionView', {
                 id: data.id
               });

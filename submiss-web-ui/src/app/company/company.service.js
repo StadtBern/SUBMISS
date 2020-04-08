@@ -51,9 +51,9 @@
         return $http.delete(
           AppConstants.URLS.RESOURCE_PROVIDER + '/company/' + id);
       },
-      getCompanyNames: function (query) {
+      getCompanyNames: function (query, archived) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
-          '/company/fullTextSearch/company_name/' + query);
+          '/company/fullTextSearch/company_name/' + query + '/' + archived);
       },
       createCompany: function (company) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/company',
@@ -80,22 +80,22 @@
           AppConstants.URLS.RESOURCE_PROVIDER + '/company/proofs/update',
           proofs);
       },
-      getCompanyPostcodes: function (query) {
+      getCompanyPostcodes: function (query, archived) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
-          '/company/fullTextSearch/post_code/' + query);
+          '/company/fullTextSearch/post_code/' + query + '/' + archived);
       },
-      getCompanyLocations: function (query) {
+      getCompanyLocations: function (query, archived) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
-          '/company/fullTextSearch/location/' + query);
+          '/company/fullTextSearch/location/' + query + '/' + archived);
       },
-      getCompanyTelephones: function (query) {
+      getCompanyTelephones: function (query, archived) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
-          '/company/fullTextSearch/company_tel/' + query);
+          '/company/fullTextSearch/company_tel/' + query + '/' + archived);
       },
-      getCompanyNotes: function (query) {
+      getCompanyNotes: function (query, archived) {
         return $http.post(
           AppConstants.URLS.RESOURCE_PROVIDER + '/company/fullTextSearch/notes/' +
-          query);
+          query + '/' + archived);
       },
       getCompanyTemplates: function (id) {
         return $http.get(
@@ -117,6 +117,24 @@
       findIfTelephoneUnique: function (company) {
         return $http.post(
           AppConstants.URLS.RESOURCE_PROVIDER + '/company/telephone', company);
+      },
+      loadCompanyCreate: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/company/loadCompanyCreate');
+      },
+      loadCompanyOffers: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/company/loadCompanyOffers');
+      },
+      loadCompanyProofs: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/company/loadCompanyProofs');
+      },
+      loadCompanyUpdate: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/company/loadCompanyUpdate');
+      },
+      loadCompany: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/company/loadCompany');
+      },
+      loadCompanySearch: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/company/loadCompanySearch');
       }
     };
   }

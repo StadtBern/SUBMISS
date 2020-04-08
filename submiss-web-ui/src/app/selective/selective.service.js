@@ -33,17 +33,17 @@
       deleteApplicant: function (id) {
         return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/deleteApplicant/' + id);
       },
-      deleteApplication: function (applicationId) {
-        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/deleteApplication/' + applicationId);
+      deleteApplication: function (applicationId, applicationVersion) {
+        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/deleteApplication/' + applicationId + '/' + applicationVersion);
       },
-      closeApplicationOpening: function (submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/closeApplicationOpening/' + submissionId);
+      closeApplicationOpening: function (submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/closeApplicationOpening/' + submissionId + '/' + submissionVersion);
       },
       hasApplicationOpeningBeenClosedBefore: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/hasApplicationOpeningBeenClosedBefore/' + submissionId);
       },
-      reopenApplicationOpening: function (reopenForm, submissionId) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopenApplicationOpening/' + submissionId, reopenForm);
+      reopenApplicationOpening: function (reopenForm, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopenApplicationOpening/' + submissionId + '/' + submissionVersion, reopenForm);
       },
       getApplicantsForFormalAudit: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/getApplicantsForFormalAudit/' + submissionId);

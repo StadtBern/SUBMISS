@@ -162,12 +162,18 @@
                     reload: true
                   });
                   return true;
+                }).error(function (response, status) {
+                  if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+                    QFormJSRValidation.markErrors($scope,
+                      $scope.awardAddCtr.addAwardForm, response);
+                    vm.response = response;
+                  }
                 });
               }
             }
           });
         }).error(function (response, status) {
-          if (status === 400) { // Validation errors.
+          if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
             QFormJSRValidation.markErrors($scope,
               $scope.awardAddCtr.addAwardForm, response);
             vm.response = response;

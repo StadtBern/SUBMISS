@@ -12,162 +12,162 @@
   -->
 
 <div class="row">
-	<div class="col-sm-12">
-		<h2 class="page-title">
-			{{formalAuditCtrl.data.submission.workType.value1}}
-			{{formalAuditCtrl.data.submission.workType.value2}}, <small>
-				{{formalAuditCtrl.data.submission.project.projectName}},
-				{{formalAuditCtrl.data.submission.project.objectName.value1}}
-			</small>
-		</h2>
-	</div>
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{formalAuditCtrl.data.submission.workType.value1}}
+      {{formalAuditCtrl.data.submission.workType.value2}}, <small>
+        {{formalAuditCtrl.data.submission.project.projectName}},
+        {{formalAuditCtrl.data.submission.project.objectName.value1}}
+      </small>
+    </h2>
+  </div>
 </div>
 <div class="row">
-	<div class="card-box">
-		<div class="col-sm-12">
-			<div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
-			<div ng-include src="'app/selective/firstStage/firstStageTabs.html'"></div>
-				<form name="formalAuditCtrl.evidenceForm"
-					data-ng-submit="formalAuditCtrl.save(formalAuditCtrl.submittents)"
-					shows-validation-errors>
-					<fieldset>
-					<div class="col-sm-12">
-						<div class="alert alert-danger"
-							ng-if="formalAuditCtrl.evidenceForm.$invalid" role="alert">
-							<field-error form-element-name="errorField" translate
-								name="error"></field-error>
-								<field-error form-element-name="mandatoryDocument" translate
-								name="error"></field-error>
-						</div>
+  <div class="card-box">
+    <div class="col-sm-12">
+      <div ng-include src="'app/submissionDefault/submissionDefault.html'"></div>
+      <div ng-include src="'app/selective/firstStage/firstStageTabs.html'"></div>
+      <form name="formalAuditCtrl.evidenceForm" data-ng-submit="formalAuditCtrl.save(formalAuditCtrl.submittents)"
+        shows-validation-errors>
+        <fieldset>
+          <div class="col-sm-12">
+            <div class="alert alert-danger" ng-if="formalAuditCtrl.evidenceForm.$invalid" role="alert">
+              <field-error form-element-name="errorField" translate name="error"></field-error>
+              <field-error form-element-name="mandatoryDocument" translate name="error"></field-error>
+              <field-error form-element-name="mandatoryProofDocument" translate name="error"></field-error>
+              <field-error form-element-name="mandatoryLegalHearingDocument" translate name="error"></field-error>
+              <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+            </div>
 
-						<input name="errorField" ng-hide="true" data-ng-model="fd"></input>
-						<input name="mandatoryDocument" ng-hide="true" data-ng-model="fd"></input>
-					</div>
-					<div role="tabpanel" class="tab-pane" id="prufung">
-						<div class="col-sm-12 ToolbarContainer">
-							
-							<div class="btn-toolbar pull-right" role="toolbar">
-								<button type="button" class="btn btn-primary"
-									data-ng-click="formalAuditCtrl.checkBeforeSendingProofs()"
-									data-ng-disabled="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.PL
+            <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+            <input name="mandatoryDocument" ng-hide="true" data-ng-model="fd"></input>
+            <input name="mandatoryProofDocument" ng-hide="true" data-ng-model="fd"></input>
+            <input name="mandatoryLegalHearingDocument" ng-hide="true" data-ng-model="fd"></input>
+            <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="prufung">
+            <div class="col-sm-12 ToolbarContainer">
+
+              <div class="btn-toolbar pull-right" role="toolbar">
+                <button type="button" class="btn btn-primary" data-ng-click="formalAuditCtrl.checkBeforeSendingProofs()"
+                  data-ng-disabled="appCtrl.getLoggedUser().userGroup.name == formalAuditCtrl.group.PL
 										|| formalAuditCtrl.disableButtons() || formalAuditCtrl.allFormalExaminationsFulfilled()">Nachweise
-									anfordern</button>
-								<button type="submit" class="btn btn-primary"
-									data-ng-disabled="formalAuditCtrl.disableButtons()">Speichern</button>
-								<button type="button"
-									data-ng-disabled="formalAuditCtrl.disableButtons()"
-									ng-click="formalAuditCtrl.cancelButton(formalAuditCtrl.tableForm.$dirty,false)"
-									class="btn btn-default" ng-show="!tableform.$visible">Abbrechen</button>
-							</div>
-							<div ng-if="formalAuditCtrl.evidenceForm.$dirty">
-									<input ng-hide="true"
-										data-ng-model="formalAuditCtrl.dirtyFlag"
-										ng-init="formalAuditCtrl.dirtyFlag=true">
-							</div>
-						</div>
-					</div>
-					<div class="card-box">
-						<div class="col-sm-12">
-							<div class="table-responsive" id="table" ng-style="formalAuditCtrl.divTableHeight">
-								<table class="table table-striped"
-									ng-table="formalAuditCtrl.tableParams"
-									ng-form="formalAuditCtrl.tableForm"
-									style="border-collapse: collapse;">
-									<thead>
-										<tr>
-											<th></th>
-											<th colspan="2">Formelle Prüfung</th>
-										</tr>
-										<tr>
-											<th></th>
-											<th class="leftborder">Nachweise erbracht</th>
-											<th class="leftborder">Ausschlussgründe Art. 24 ÖBV</th>
-										</tr>
-									</thead>
-									<tbody ng-repeat="submittent in formalAuditCtrl.submittents"
-										ng-form="formalAuditCtrl.rowForm">
-										<tr>
-											<td style="width:200">
-												<table>
-													<tbody>
-														<tr>
-															<td><strong>{{submittent.companyId.companyName}}</strong>
-															<sup ng-if="submittent.isVariant"><strong>V</strong></sup>
-															<sup ng-if="submittent.companyId.proofStatusFabe == 4"><strong>KAIO/FABE</strong></sup>
-															<sup ng-if="submittent.companyId.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain"><strong>FABE</strong></sup></td>
-														</tr>
-														<tr ng-if="submittent.jointVentures.length>0"
-															ng-repeat="jointVenture in submittent.jointVentures | orderBy : 'companyName'">
-															<td><span>ARGE {{jointVenture.companyName}}
-															<sup ng-if="jointVenture.proofStatusFabe == 4">KAIO/FABE</sup>
-															<sup ng-if="jointVenture.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain">FABE</sup></span></td>
-														</tr>
-														<tr ng-if="submittent.subcontractors.length>0"
-															ng-repeat="subcontractor in submittent.subcontractors | orderBy : 'companyName'">
-															<td>
-                                <span>Sub U.
-																	{{subcontractor.companyName}} <sup
-																	ng-if="subcontractor.proofStatusFabe == 4">KAIO/FABE</sup>
-																	<sup
-																	ng-if="subcontractor.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain">FABE</sup>
-															  </span>
+                  anfordern</button>
+                <button type="submit" class="btn btn-primary"
+                  data-ng-disabled="formalAuditCtrl.disableButtons()">Speichern</button>
+                <button type="button" data-ng-disabled="formalAuditCtrl.disableButtons()"
+                  ng-click="formalAuditCtrl.cancelButton(formalAuditCtrl.tableForm.$dirty,false)"
+                  class="btn btn-default" ng-show="!tableform.$visible">Abbrechen</button>
+              </div>
+              <div ng-if="formalAuditCtrl.evidenceForm.$dirty">
+                <input ng-hide="true" data-ng-model="formalAuditCtrl.dirtyFlag"
+                  ng-init="formalAuditCtrl.dirtyFlag=true">
+              </div>
+            </div>
+          </div>
+          <div class="card-box">
+            <div class="col-sm-12">
+              <div class="table-responsive" id="table" ng-style="formalAuditCtrl.divTableHeight">
+                <table class="table table-striped" ng-table="formalAuditCtrl.tableParams"
+                  ng-form="formalAuditCtrl.tableForm" style="border-collapse: collapse;">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th colspan="2">Formelle Prüfung</th>
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th class="leftborder">Nachweise erbracht</th>
+                      <th class="leftborder">Ausschlussgründe Art. 24 ÖBV</th>
+                    </tr>
+                  </thead>
+                  <tbody ng-repeat="submittent in formalAuditCtrl.submittents" ng-form="formalAuditCtrl.rowForm">
+                    <tr>
+                      <td style="width:200">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td><strong>{{submittent.companyId.companyName}}</strong>
+                                <sup ng-if="submittent.isVariant"><strong>V</strong></sup>
+                                <sup ng-if="submittent.companyId.proofStatusFabe == 4"><strong>KAIO/FABE</strong></sup>
+                                <sup
+                                  ng-if="submittent.companyId.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain"><strong>FABE</strong></sup>
                               </td>
-														</tr>
-														<tr>
-															<td><strong>Formelle Prüfung erfüllt</strong></td>
-														</tr>
-													</tbody>
-												</table>
-											</td>
-											<td class="leftborder" style="width:60">
-												<table>
-													<tbody>
-														<tr>
-															<td translate
-																ng-if="submittent.companyId.isProofProvided == null">&nbsp;</td>
-															<td translate
-																ng-if="submittent.companyId.isProofProvided != null"><strong>{{submittent.companyId.isProofProvided}}</strong></td>
-														</tr>
-														<tr ng-if="submittent.jointVentures.length>0"
-															ng-repeat="jointVenture in submittent.jointVentures | orderBy : 'companyName'">
-															<td translate
-																ng-if="jointVenture.isProofProvided == null">&nbsp;</td>
-															<td translate
-																ng-if="jointVenture.isProofProvided != null">{{jointVenture.isProofProvided}}</td>
-														</tr>
-														<tr ng-if="submittent.subcontractors.length>0"
-															ng-repeat="subcontractor in submittent.subcontractors | orderBy : 'companyName'">
-															<td translate
-																ng-if="subcontractor.isProofProvided == null">&nbsp;</td>
-															<td translate
-																ng-if="subcontractor.isProofProvided != null">{{subcontractor.isProofProvided}}</td>
-														</tr>
-														<tr>
-															<td ng-if="submittent.formalExaminationFulfilled"><strong>Ja</strong></td>
-															<td
-																ng-if="!submittent.formalExaminationFulfilled && submittent.formalExaminationFulfilled != null"><strong>Nein</strong></td>
-														</tr>
-													</tbody>
-												</table>
+                            </tr>
+                            <tr ng-if="submittent.jointVentures.length>0"
+                              ng-repeat="jointVenture in submittent.jointVentures | orderBy : 'companyName'">
+                              <td><span>ARGE {{jointVenture.companyName}}
+                                  <sup ng-if="jointVenture.proofStatusFabe == 4">KAIO/FABE</sup>
+                                  <sup
+                                    ng-if="jointVenture.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain">FABE</sup></span>
+                              </td>
+                            </tr>
+                            <tr ng-if="submittent.subcontractors.length>0"
+                              ng-repeat="subcontractor in submittent.subcontractors | orderBy : 'companyName'">
+                              <td>
+                                <span>Sub U.
+                                  {{subcontractor.companyName}} <sup
+                                    ng-if="subcontractor.proofStatusFabe == 4">KAIO/FABE</sup>
+                                  <sup
+                                    ng-if="subcontractor.proofStatusFabe == 3 && appCtrl.getLoggedUser().tenant.isMain">FABE</sup>
+                                </span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td><strong>Formelle Prüfung erfüllt</strong></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                      <td class="leftborder" style="width:60">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td translate ng-if="submittent.companyId.isProofProvided == null">&nbsp;</td>
+                              <td translate ng-if="submittent.companyId.isProofProvided != null">
+                                <strong>{{submittent.companyId.isProofProvided}}</strong></td>
+                            </tr>
+                            <tr ng-if="submittent.jointVentures.length>0"
+                              ng-repeat="jointVenture in submittent.jointVentures | orderBy : 'companyName'">
+                              <td translate ng-if="jointVenture.isProofProvided == null">&nbsp;</td>
+                              <td translate ng-if="jointVenture.isProofProvided != null">
+                                {{jointVenture.isProofProvided}}</td>
+                            </tr>
+                            <tr ng-if="submittent.subcontractors.length>0"
+                              ng-repeat="subcontractor in submittent.subcontractors | orderBy : 'companyName'">
+                              <td translate ng-if="subcontractor.isProofProvided == null">&nbsp;</td>
+                              <td translate ng-if="subcontractor.isProofProvided != null">
+                                {{subcontractor.isProofProvided}}</td>
+                            </tr>
+                            <tr>
+                              <td ng-if="submittent.formalExaminationFulfilled"><strong>Ja</strong></td>
+                              <td
+                                ng-if="!submittent.formalExaminationFulfilled && submittent.formalExaminationFulfilled != null">
+                                <strong>Nein</strong></td>
+                            </tr>
+                          </tbody>
+                        </table>
 
-											</td>
-											<td class="leftborder" style="width:60" id="dropdownRow{{$index}}"><ui-select name="option" id="option"
-													ng-click="formalAuditCtrl.expandTableHeight($index)"
-													data-ng-model="submittent.existsExclusionReasons"
-													data-ng-disabled="formalAuditCtrl.dropDownDisabled(submittent)"
-													theme="select2"> <ui-select-match
-													allow-clear="true"> <span>
-													{{$select.selected.label}}</span> </ui-select-match> <ui-select-choices
-													repeat="item.value as item in (formalAuditCtrl.options | propsFilter: {label: $select.search} | orderBy:'label')">
-												<span ng-bind="item.label"></span> </ui-select-choices> </ui-select></td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</fieldset>
-				</form>
-		</div>
-	</div>
+                      </td>
+                      <td class="leftborder" style="width:60" id="dropdownRow{{$index}}">
+                        <ui-select name="option" id="option" ng-click="formalAuditCtrl.expandTableHeight($index)"
+                          data-ng-model="submittent.existsExclusionReasons"
+                          data-ng-disabled="formalAuditCtrl.dropDownDisabled(submittent)" theme="select2">
+                          <ui-select-match allow-clear="true"> <span>
+                              {{$select.selected.label}}</span> </ui-select-match>
+                          <ui-select-choices
+                            repeat="item.value as item in (formalAuditCtrl.options | propsFilter: {label: $select.search} | orderBy:'label')">
+                            <span ng-bind="item.label"></span> </ui-select-choices>
+                        </ui-select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
 </div>

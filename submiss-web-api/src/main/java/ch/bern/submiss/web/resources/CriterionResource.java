@@ -45,11 +45,13 @@ import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.fasterxml.jackson.annotation.JsonView;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -140,14 +142,22 @@ public class CriterionResource {
   /**
    * Adds the criterion to submission.
    *
-   * @param criterion the criterion
+   * @param criterion the criterion form
    * @return the UUID of the created criterion.
    */
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/criterion")
+  @Path("/criterion/add")
   public Response addCriterionToSubmission(@Valid CriterionForm criterion) {
+    // Check for changes by other users and optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = criterionService
+      .examinationCheckForChangesByOtherUsers(criterion.getSubmission(),
+        criterion.getPageRequestedOn(), criterion.getSubmissionVersion());
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+    // Check for validation errors
     boolean criteriaWeightingLimit = false;
     if (criterion.getSubmission() != null && criterion.getWeighting() != null
       && criterion.getCriterionType().equals(LookupValues.EVALUATED_CRITERION_TYPE)) {
@@ -164,6 +174,7 @@ public class CriterionResource {
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
+    // If no errors occurred proceed with adding the criterion
     String id = criterionService
       .addCriterionToSubmission(CriterionFormMapper.INSTANCE.toCriterionDTO(criterion));
     CriterionForm form = new CriterionForm();
@@ -175,14 +186,18 @@ public class CriterionResource {
    * Deletes a criterion.
    *
    * @param id the UUID of the criterion to be deleted.
+   * @param pageRequestedOn the pageRequestedOn
    * @return the response
    */
   @DELETE
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/criterion/{id}")
-  public Response deleteCriterion(@PathParam("id") String id) {
-    criterionService.deleteCriterion(id);
-    return Response.ok().build();
+  @Path("/criterion/{id}/{pageRequestedOn}")
+  public Response deleteCriterion(@PathParam("id") String id, @PathParam("pageRequestedOn") long pageRequestedOn) {
+    Set<ValidationError> optimisticLockErrors =
+      criterionService.deleteCriterion(id, new Timestamp(pageRequestedOn));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -208,8 +223,16 @@ public class CriterionResource {
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/criterion")
+  @Path("/criterion/update")
   public Response updateCriterion(@Valid ExaminationForm examination) {
+    // Check for changes by other users and optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = criterionService
+      .examinationCheckForChangesByOtherUsers(examination.getSubmissionId(),
+        examination.getPageRequestedOn(), examination.getSubmissionVersion());
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+    // Check for validation errors
     int criterionLimit = 0;
     if (examination.getCriterion() != null) {
       criterionLimit = criterionService.checkExaminationCriterionWeightingLimit(
@@ -219,6 +242,7 @@ public class CriterionResource {
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
+    // If no errors occurred proceed with updating the criterion
     criterionService.updateCriterion(ExaminationFormMapper.INSTANCE.toExaminationDTO(examination));
     return Response.ok().build();
   }
@@ -232,8 +256,16 @@ public class CriterionResource {
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/awardCriterion")
+  @Path("/awardCriterion/update")
   public Response updateAwardCriterion(@Valid AwardForm award) {
+    criterionService.awardEvaluationEditSecurityCheck(award.getSubmissionId());
+    // Check for changes by other users and optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = criterionService
+      .awardCheckForChangesByOtherUsers(award.getSubmissionId(), award.getPageRequestedOn());
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+    // Check for validation errors
     int criterionLimit = 0;
     if (award.getCriterion() != null) {
       criterionLimit = criterionService.checkAwardCriterionWeightingLimit(
@@ -317,14 +349,24 @@ public class CriterionResource {
   /**
    * Adds the subcriterion to criterion.
    *
+   * @param submissionId the submissionId
+   * @param submissionVersion the submissionVersion
    * @param subcriterion the subcriterion
    * @return the UUID of the created subcriterion.
    */
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/subcriterion")
-  public Response addSubcriterionToCriterion(@Valid SubcriterionForm subcriterion) {
+  @Path("/{submissionId}/{submissionVersion}/subcriterion/add")
+  public Response addSubcriterionToCriterion(@PathParam("submissionId") String submissionId,
+    @PathParam("submissionVersion") Long submissionVersion, @Valid SubcriterionForm subcriterion) {
+    // Check for changes by other users and optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = criterionService
+      .examinationCheckForChangesByOtherUsers(submissionId, subcriterion.getPageRequestedOn(), submissionVersion);
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+    // Check for validation errors
     boolean subcriteriaWeightingLimit = false;
     if (subcriterion.getCriterion() != null && subcriterion.getWeighting() != null) {
       subcriteriaWeightingLimit = criterionService
@@ -335,8 +377,9 @@ public class CriterionResource {
     if (!subcriterionErrors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(subcriterionErrors).build();
     }
-    String id = criterionService.addSubcriterionToCriterion(
-      SubcriterionFormMapper.INSTANCE.toSubcriterionDTO(subcriterion));
+    // If no errors occurred proceed with adding the sub criterion
+    String id = criterionService.addSubcriterionToCriterion(SubcriterionFormMapper.INSTANCE
+      .toSubcriterionDTO(subcriterion));
     SubcriterionForm form = new SubcriterionForm();
     form.setId(id);
     return Response.ok(form).build();
@@ -682,14 +725,16 @@ public class CriterionResource {
               .equals(LookupValues.PRICE_AWARD_CRITERION_TYPE)) {
               BigDecimal grade =
                 criterionService.calculateGrade(offer.getAmount(), minAmount, expression);
-              if (grade.compareTo(award.getAwardMaxGrade()) > 0 && !maxErrorFound) {
+              if (award.getAwardMaxGrade() != null
+                && grade.compareTo(award.getAwardMaxGrade()) > 0 && !maxErrorFound) {
                 errors.add(new ValidationError(PRICE_FORMULA,
                   ValidationMessages.PRICE_FORMULA_MAX_GRADE_ERROR));
                 errors.add(new ValidationError("priceMaxGradeErrorField",
                   ValidationMessages.PRICE_FORMULA_MAX_GRADE_ERROR));
                 maxErrorFound = true;
               }
-              if (grade.compareTo(award.getAwardMinGrade()) < 0 && !minErrorFound) {
+              if (award.getAwardMinGrade() != null
+                && grade.compareTo(award.getAwardMinGrade()) < 0 && !minErrorFound) {
                 errors.add(new ValidationError(PRICE_FORMULA,
                   ValidationMessages.PRICE_FORMULA_MIN_GRADE_ERROR));
                 errors.add(new ValidationError("priceMinGradeErrorField",
@@ -754,14 +799,16 @@ public class CriterionResource {
               .equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)) {
               BigDecimal grade = criterionService.calculateGrade(offer.getOperatingCostsAmount(),
                 minAmount, expression);
-              if (grade.compareTo(award.getAwardMaxGrade()) > 0 && !maxErrorFound) {
+              if (award.getAwardMaxGrade() != null
+                && grade.compareTo(award.getAwardMaxGrade()) > 0 && !maxErrorFound) {
                 errors.add(new ValidationError(OPERATING_COST_FORMULA,
                   ValidationMessages.OP_COST_FORMULA_MAX_GRADE_ERROR));
                 errors.add(new ValidationError("opCostMaxGradeErrorField",
                   ValidationMessages.OP_COST_FORMULA_MAX_GRADE_ERROR));
                 maxErrorFound = true;
               }
-              if (grade.compareTo(award.getAwardMinGrade()) < 0 && !minErrorFound) {
+              if (award.getAwardMinGrade() != null
+                && grade.compareTo(award.getAwardMinGrade()) < 0 && !minErrorFound) {
                 errors.add(new ValidationError(OPERATING_COST_FORMULA,
                   ValidationMessages.OP_COST_FORMULA_MIN_GRADE_ERROR));
                 errors.add(new ValidationError("opCostMinGradeErrorField",
@@ -844,14 +891,18 @@ public class CriterionResource {
    * Deletes a subcriterion.
    *
    * @param id the UUID of the subcriterion to be deleted.
+   * @param pageRequestedOn the pageRequestedOn
    * @return the response
    */
   @DELETE
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/subcriterion/{id}")
-  public Response deleteSubcriterion(@PathParam("id") String id) {
-    criterionService.deleteSubcriterion(id);
-    return Response.ok().build();
+  @Path("/subcriterion/{id}/{pageRequestedOn}")
+  public Response deleteSubcriterion(@PathParam("id") String id, @PathParam("pageRequestedOn") long pageRequestedOn) {
+    Set<ValidationError> optimisticLockErrors =
+      criterionService.deleteSubcriterion(id, new Timestamp(pageRequestedOn));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
@@ -893,7 +944,7 @@ public class CriterionResource {
    */
   @GET
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/qualification/{submissionId}/{type}")
+  @Path("/qualification/{submissionId}/{type}/offerCriteria")
   public Response getOfferCriteria(@PathParam("submissionId") String submissionId,
     @PathParam("type") String type) {
     List<OfferDTO> offerCriterionDTOs = criterionService.getOfferCriteria(submissionId, type);
@@ -908,32 +959,53 @@ public class CriterionResource {
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/qualification")
-  public Response updateOfferCriteria(@Valid List<SuitabilityForm> suitabilityForms) {
-
+  @Path("/qualification/{submissionId}/{pageRequestedOn}/offerCriteria")
+  public Response updateOfferCriteria(@Valid List<SuitabilityForm> suitabilityForms,
+    @PathParam("submissionId") String submissionId,
+    @PathParam("pageRequestedOn") long pageRequestedOn) {
     List<SuitabilityDTO> suitabilityDTOs =
       SuitabilityFormMapper.INSTANCE.toSuitabilityDTO(suitabilityForms);
+    // Check for changes by other users and optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = criterionService
+      .suitabilityCheckForChangesByOtherUsers(submissionId, new Timestamp(pageRequestedOn),
+        suitabilityDTOs);
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
+    // Check for validation errors
     List<String> notesAreMandatory =
       criterionService.checkSubcriteriaWeightingLimit(suitabilityDTOs);
     Set<ValidationError> errors = validateSuitabilityForm(notesAreMandatory, suitabilityDTOs);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
-    criterionService
-      .updateOfferCriteria(SuitabilityFormMapper.INSTANCE.toSuitabilityDTO(suitabilityForms));
-    return Response.ok().build();
+    // If no errors occurred proceed with updating the criteria
+    optimisticLockErrors = criterionService.updateOfferCriteria(suitabilityDTOs);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
    * Update the list of offer criteria for the award process.
    *
    * @param awardAssessForms the award assess forms
+   * @param submissionId the submissionId
+   * @param pageRequestedOn the pageRequestedOn
    * @return the response
    */
-  @POST
+  @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/awardAssess")
-  public Response updateOfferCriteriaAward(@Valid List<AwardAssessForm> awardAssessForms) {
+  @Path("/awardAssess/{submissionId}/{pageRequestedOn}/update")
+  public Response updateOfferCriteriaAward(@Valid List<AwardAssessForm> awardAssessForms,
+    @PathParam("submissionId") String submissionId, @PathParam("pageRequestedOn") long pageRequestedOn) {
+    criterionService.awardEvaluationEditSecurityCheck(submissionId);
+    // Check for changes by other users and optimistic locking errors
+    Set<ValidationError> optimisticLockErrors = criterionService
+      .checkForChangesByOtherUsers(submissionId, new Timestamp(pageRequestedOn));
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
     criterionService.updateOfferCriteriaAward(
       AwardAssessFormMapper.INSTANCE.toAwardAssessDTO(awardAssessForms));
     return Response.ok().build();
@@ -1192,5 +1264,99 @@ public class CriterionResource {
     List<OfferDTO> offerCriterionDTOs =
       criterionService.getExaminationSubmittentListWithCriteria(submissionId, type, all);
     return Response.ok(offerCriterionDTOs).build();
+  }
+
+  /**
+   * Check if examination is already locked by another user.
+   *
+   * @param submissionId the submissionId
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/examinationLockedByAnotherUser/{submissionId}")
+  public Response examinationLockedByAnotherUser(@PathParam("submissionId") String submissionId) {
+    Set<ValidationError> optimisticLockErrors =
+      criterionService.examinationLockedByAnotherUser(submissionId);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Check if award is already locked by another user.
+   *
+   * @param submissionId the submissionId
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/awardLockedByAnotherUser/{submissionId}")
+  public Response awardLockedByAnotherUser(@PathParam("submissionId") String submissionId) {
+    Set<ValidationError> optimisticLockErrors =
+      criterionService.awardLockedByAnotherUser(submissionId);
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Check if award form is already updated by another user.
+   *
+   * @param submissionId the submissionId
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/award/optimisticLock/{submissionId}/{pageRequestedOn}")
+  public Response checkAwardOptimisticLock(@PathParam("submissionId") String submissionId,
+    @PathParam("pageRequestedOn") long pageRequestedOn) {
+    if (!criterionService
+      .awardCheckForChangesByOtherUsers(submissionId, new Timestamp(pageRequestedOn)).isEmpty()) {
+      // returns custom response with OptimisticLockExceptionMapper
+      throw new OptimisticLockException();
+    }
+    return Response.ok().build();
+  }
+
+  /**
+   * Check if examination form is already updated by another user.
+   *
+   * @param submissionId the submissionId
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/optimisticLock/{submissionId}/{pageRequestedOn}/{submissionVersion}")
+  public Response checkExaminationOptimisticLock(@PathParam("submissionId") String submissionId,
+    @PathParam("pageRequestedOn") long pageRequestedOn,
+    @PathParam("submissionVersion") Long submissionVersion) {
+    if (!criterionService
+      .examinationCheckForChangesByOtherUsers(submissionId,
+        new Timestamp(pageRequestedOn), submissionVersion).isEmpty()) {
+      // returns custom response with OptimisticLockExceptionMapper
+      throw new OptimisticLockException();
+    }
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Zuschlagsbewertung form.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadAwardEvaluation/{submissionId}")
+  public Response loadAwardEvaluation(@PathParam("submissionId") String submissionId) {
+    criterionService.awardEvaluationViewSecurityCheck(submissionId);
+    return Response.ok().build();
   }
 }

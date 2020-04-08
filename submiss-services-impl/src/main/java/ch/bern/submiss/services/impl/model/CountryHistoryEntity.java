@@ -14,29 +14,18 @@
 package ch.bern.submiss.services.impl.model;
 
 import java.sql.Timestamp;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * The Class CountryHistoryEntity.
  */
 @Entity
 @Table(name = "SUB_COUNTRY_HISTORY")
-public class CountryHistoryEntity {
-
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
+public class CountryHistoryEntity extends AbstractEntity {
 
   /** The country name. */
   @Column(name = "COUNTRY_NAME", length = 50)
@@ -66,24 +55,6 @@ public class CountryHistoryEntity {
   /** The active. */
   @Column(name = "IS_ACTIVE")
   private Boolean active;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the country name.

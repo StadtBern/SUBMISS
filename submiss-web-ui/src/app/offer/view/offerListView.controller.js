@@ -116,18 +116,25 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      AppService.setIsDirty(false);
-      vm.readSubmission($stateParams.id);
-      vm.readCompaniesBySubmission($stateParams.id);
-      vm.readStatusOfSubmission($stateParams.id);
-      vm.hasSubmissionStatusCheck($stateParams.id);
-      vm.hasSubmissionStatusChecked($stateParams.id);
-      vm.secOfferDetailsEdit = AppService.isOperationPermitted(
-        AppConstants.OPERATION.OFFER_DETAILS_EDIT, null);
-      vm.secTenderMove = AppService.isOperationPermitted(
-        AppConstants.OPERATION.TENDER_MOVE, null);
-      vm.secSentEmail = AppService.isOperationPermitted(
-        AppConstants.OPERATION.SENT_EMAIL, null);
+      OfferService.loadOfferList($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            AppService.setIsDirty(false);
+            vm.readSubmission($stateParams.id);
+            vm.readCompaniesBySubmission($stateParams.id);
+            vm.readStatusOfSubmission($stateParams.id);
+            vm.hasSubmissionStatusCheck($stateParams.id);
+            vm.hasSubmissionStatusChecked($stateParams.id);
+            vm.secOfferDetailsEdit = AppService.isOperationPermitted(
+              AppConstants.OPERATION.OFFER_DETAILS_EDIT, null);
+            vm.secTenderMove = AppService.isOperationPermitted(
+              AppConstants.OPERATION.TENDER_MOVE, null);
+            vm.secSentEmail = AppService.isOperationPermitted(
+              AppConstants.OPERATION.SENT_EMAIL, null);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -353,41 +360,49 @@
       if (AppService.getIsDirty()) {
         handleUnsavedChanges();
       } else {
-        if (vm.data.submission.process === 'NEGOTIATED_PROCEDURE' &&
-          vm.offers.length === 1) {
-          // submittent already exists, display error message
-          vm.moreThanOneError = true;
-        } else {
-          // if process = 'NEGOTIATED_PROCEDURE' then only one company is
-          // allowed
-          var addCompany = AppService.addCompany(
-            vm.data.submission.process === 'NEGOTIATED_PROCEDURE', null);
-          return addCompany.result.then(function (response) {
-            vm.companyList = [];
-            vm.companyList = response;
-            if (vm.companyList) {
-              var companyId = '';
-              for (var i = 0; i < vm.companyList.length; i++) {
-                companyId = companyId + 'companyId=' + vm.companyList[i].id;
-                if (vm.companyList.length !== i + 1) {
-                  companyId = companyId + '&';
+        SubmissionService.isStatusChanged(vm.data.submission.id, vm.data.submission.status)
+          .success(function (data) {
+            if (vm.data.submission.process === 'NEGOTIATED_PROCEDURE' &&
+              vm.offers.length === 1) {
+              // submittent already exists, display error message
+              vm.moreThanOneError = true;
+            } else {
+              // if process = 'NEGOTIATED_PROCEDURE' then only one company is
+              // allowed
+              var addCompany = AppService.addCompany(
+                vm.data.submission.process === 'NEGOTIATED_PROCEDURE', null);
+              return addCompany.result.then(function (response) {
+                vm.companyList = [];
+                vm.companyList = response;
+                if (vm.companyList) {
+                  var companyId = '';
+                  for (var i = 0; i < vm.companyList.length; i++) {
+                    companyId = companyId + 'companyId=' + vm.companyList[i].id;
+                    if (vm.companyList.length !== i + 1) {
+                      companyId = companyId + '&';
+                    }
+                  }
+                  SubmissionService
+                    .setCompanyToSubmission($stateParams.id, companyId)
+                    .success(function (data) {
+                      AppService.setPaneShown(true);
+                      $state.go('offerListView', {
+                        id: $stateParams.id,
+                        displayedOfferId: data.id,
+                        offerDetails: true
+                      }, {
+                        reload: true
+                      });
+                    });
                 }
-              }
-              SubmissionService
-                .setCompanyToSubmission($stateParams.id, companyId)
-                .success(function (data) {
-                  AppService.setPaneShown(true);
-                  $state.go('offerListView', {
-                    id: $stateParams.id,
-                    displayedOfferId: data.id,
-                    offerDetails: true
-                  }, {
-                    reload: true
-                  });
-                });
+              });
+            }
+          }).error(function (response, status) {
+            if (status === 400) { // Validation errors.
+              QFormJSRValidation.markErrors($scope,
+                $scope.offerListViewCtrl.offerForm, response);
             }
           });
-        }
       }
       AppService.setPaneShown(false);
     }
@@ -512,7 +527,7 @@
       });
     }
 
-    function closeOfferModal(submissionId) {
+    function closeOfferModal(submissionId, submissionVersion) {
       if (AppService.getIsDirty()) {
         handleUnsavedChanges();
       } else {
@@ -548,7 +563,7 @@
           // Modal Success Handler
         }, function (response) { // Modal Dismiss Handler
           if (response === 'ja') {
-            closeOffer(submissionId);
+            closeOffer(submissionId, submissionVersion);
           } else {
             return false;
           }
@@ -558,8 +573,8 @@
       return null;
     }
 
-    function closeOffer(submissionId) {
-      OfferService.closeOffer(submissionId)
+    function closeOffer(submissionId, submissionVersion) {
+      OfferService.closeOffer(submissionId, submissionVersion)
         .success(function (data) {
           // Set displayedOfferId to null, so that there is no open accordion after reloading the page.
           $state.go("offerListView", {
@@ -568,7 +583,7 @@
             reload: true
           }); // reload the list
         }).error(function (response, status) {
-          if (status === 400) { // Validation errors.
+          if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
             QFormJSRValidation.markErrors($scope,
               $scope.offerListViewCtrl.offerForm, response);
           }
@@ -587,7 +602,7 @@
             var reopenForm = {};
             if (!angular.isUndefined(response)) {
               reopenForm.reopenReason = response;
-              OfferService.reopenOffer(reopenForm, $stateParams.id)
+              OfferService.reopenOffer(reopenForm, vm.data.submission.id, vm.data.submission.version)
                 .success(function (data) {
                   // Set displayedOfferId to null, so that there is no open accordion after reloading the page.
                   $state.go("offerListView", {
@@ -595,7 +610,12 @@
                   }, {
                     reload: true
                   });
-                }).error(function (response, status) {});
+                }).error(function (response, status) {
+                  if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+                    QFormJSRValidation.markErrors($scope,
+                      $scope.offerListViewCtrl.offerForm, response);
+                  }
+                });
             }
           });
       }
@@ -665,16 +685,23 @@
             vm.reopenQuestion.MANUAL_AWARD, vm.reopen.MANUAL_AWARD);
           return reopenTenderStatusModal.result.then(function (response) {
             if (!angular.isUndefined(response)) {
-              var reopenForm = {};
-              reopenForm.reopenReason = response;
-              OfferService.reopenAward($stateParams.id,
-                reopenForm.reopenReason).success(function (data) {
-                $state.reload();
-              }).error(function (response, status) {});
+              var reopenForm = {
+                reopenReason: response
+              };
+              OfferService.reopenManualAward(reopenForm, vm.data.submission.id,
+                  vm.data.submission.version)
+                .success(function (data) {
+                  $state.reload();
+                }).error(function (response, status) {
+                  if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) {
+                    QFormJSRValidation.markErrors($scope,
+                      $scope.offerListViewCtrl.offerForm, response);
+                  }
+                });
             }
           });
         }).error(function (response, status) {
-          if (status === 400) { // Validation errors.
+          if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Conflicts
             QFormJSRValidation.markErrors($scope,
               $scope.offerListViewCtrl.offerForm, response);
           }
@@ -779,12 +806,19 @@
         return confirmationWindowInstance.result.then(function () {
           // Modal Success Handler
         }, function (response) { // Modal Dismiss Handler
-          if (response === 'ja') {
-            deleteOffer(offerId);
-          } else {
-            return false;
-          }
-          return null;
+          SubmissionService.isStatusChanged(vm.data.submission.id, vm.data.submission.status)
+            .success(function (data) {
+              if (response === 'ja') {
+                deleteOffer(offerId);
+              } else {
+                return false;
+              }
+            }).error(function (response, status) {
+              if (status === 400) { // Validation errors.
+                QFormJSRValidation.markErrors($scope,
+                  $scope.offerListViewCtrl.offerForm, response);
+              }
+            });
         });
       }
       return null;

@@ -22,10 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * The Class AwardInfoDTO.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AwardInfoForm {
-
-  /** The id. */
-  private String id;
+public class AwardInfoForm extends AbstractForm {
 
   /** The submission. */
   private SubmissionForm submission;
@@ -53,24 +50,6 @@ public class AwardInfoForm {
   
   /** The offers. */
   private List<AwardInfoOfferForm> offers;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -236,7 +215,7 @@ public class AwardInfoForm {
 
   @Override
   public String toString() {
-    return "AwardInfoForm [id=" + id + ", availableDate=" + availableDate
+    return "AwardInfoForm [id=" + super.getId() + ", availableDate=" + availableDate
         + ", freezeCloseSubmission=" + freezeCloseSubmission + ", objectNameRead=" + objectNameRead
         + ", projectNameRead=" + projectNameRead + ", workingClassRead=" + workingClassRead
         + ", descriptionRead=" + descriptionRead + ", addedAwardRecipients=" + addedAwardRecipients

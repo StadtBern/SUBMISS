@@ -21,7 +21,9 @@ import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.SettingsDTO;
 import ch.bern.submiss.services.api.dto.SignatureCopyDTO;
 import ch.bern.submiss.services.api.dto.SignatureProcessTypeDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The Interface SDService.
@@ -31,7 +33,7 @@ public interface SDService {
   /**
    * Returns Master List Value History DTOs according to the name parameter and tenant id.
    *
-   * @param type the type
+   * @param type     the type
    * @param tenantId the tenant id
    * @return Master List Value History DTOs
    */
@@ -56,9 +58,9 @@ public interface SDService {
   /**
    * Retrieve signature.
    *
-   * @param departmentId the department id
+   * @param departmentId  the department id
    * @param directorateId the directorate id
-   * @param process the process
+   * @param process       the process
    * @return the signature process type DTO
    */
   SignatureProcessTypeDTO retrieveSignature(String departmentId, String directorateId,
@@ -99,8 +101,8 @@ public interface SDService {
    * Checks if the description is unique.
    *
    * @param description the description
-   * @param type the master list type
-   * @param id the master list value history id
+   * @param type        the master list type
+   * @param id          the master list value history id
    * @return true, if description is unique
    */
   boolean isDescriptionUnique(String description, String type, String id);
@@ -117,9 +119,9 @@ public interface SDService {
    * Save the master list value history entry.
    *
    * @param sdHistoryDTO the master list value history DTO
-   * @param type the master list type
+   * @param type         the master list type
    */
-  void saveSDEntry(MasterListValueHistoryDTO sdHistoryDTO, String type);
+  Set<ValidationError> saveSDEntry(MasterListValueHistoryDTO sdHistoryDTO, String type);
 
   /**
    * Returns active and inactive Master List Value History DTOs according to the given type.
@@ -149,15 +151,18 @@ public interface SDService {
    * Update signature process entitled.
    *
    * @param signatureProcessTypeDTO the signature process type DTO
+   * @return the optimistic lock error
    */
-  void updateSignatureProcessEntitled(SignatureProcessTypeDTO signatureProcessTypeDTO);
+  Set<ValidationError> updateSignatureProcessEntitled(
+    SignatureProcessTypeDTO signatureProcessTypeDTO);
 
   /**
    * Update signature copies.
    *
    * @param signatureProcessTypeDTO the signature process type DTO
+   * @return the optimistic lock error
    */
-  void updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO);
+  Set<ValidationError> updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO);
 
   /**
    * Uploads image.
@@ -177,7 +182,7 @@ public interface SDService {
   /**
    * Gets the user settings for the contact information.
    *
-   * @param tenantId the tenant id
+   * @param tenantId  the tenant id
    * @param groupName the group name
    * @return the user settings
    */
@@ -193,7 +198,7 @@ public interface SDService {
   /**
    * Gets Master List Value History
    *
-   * @param type the type
+   * @param type     the type
    * @param tenantId the tenantId
    * @return the Master List Value History
    */
@@ -203,7 +208,7 @@ public interface SDService {
    * Gets the Master List Value History by submission.
    *
    * @param submissionId the submissionId
-   * @param category the category
+   * @param category     the category
    * @return the Master List Value History by submission
    */
   List<MasterListValueHistoryDTO> getMasterListValueHistoryDataBySubmission(String submissionId,
@@ -220,7 +225,7 @@ public interface SDService {
    * Gets the document template id by its short code.
    *
    * @param templateShortCode the template short code
-   * @param tenantId the tenant id
+   * @param tenantId          the tenant id
    * @return the template id
    */
   String getTemplateIdByShortCode(String templateShortCode, String tenantId);
@@ -245,9 +250,14 @@ public interface SDService {
    * Gets the current Master List Value History Entries by type for the given submission.
    *
    * @param submissionId the submission id
-   * @param typeName the master list type name
+   * @param typeName     the master list type name
    * @return the current Master List Value History Entries by type
    */
   List<MasterListValueHistoryDTO> getCurrentMLVHEntriesForSubmission(String submissionId,
     String typeName);
+
+  /**
+   * Security check for Stammdaten.
+   */
+  void sdSecurityCheck();
 }

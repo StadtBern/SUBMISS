@@ -10,19 +10,26 @@
   ~  express or implied. See the Licence for the specific language governing permissions and limitations
   ~  under the Licence.
   -->
+<form name="editForm" role="form" autocomplete="off" shows-validation-errors>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+      ng-click="AuthorisedSignatoryEditCtrl.closeModal()">
+      <span aria-hidden="true">×</span>
+    </button>
+    <h4 class="modal-title" id="">Unterschriftsberechtigter</h4>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-sm-12" id="fields">
+        <div class="alert alert-danger" ng-if="AuthorisedSignatoryEditCtrl.errorFieldsVisible" role="alert">
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        </div>
+        <div class="form-group">
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+        </div>
+        <label class="control-label" for="field1">Unterschriftsberechtigter</label>
+        <div class="controls">
 
-<div class="modal-header">
-  <button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="$close()">
-    <span aria-hidden="true">×</span>
-  </button>
-  <h4 class="modal-title" id="">Unterschriftsberechtigter</h4>
-</div>
-<div class="modal-body">
-  <div class="row">
-    <div class="col-sm-12" id="fields">
-      <label class="control-label" for="field1">Unterschriftsberechtigter</label>
-      <div class="controls">
-        <form role="form" autocomplete="off">
           <div class="entry input-group col-xs-12"
             ng-repeat="signature in AuthorisedSignatoryEditCtrl.signatureProcessTypeEntitled">
 
@@ -49,14 +56,19 @@
                 <i class="fa fa-plus" aria-hidden="true"></i>
               </button>
             </span>
-
           </div>
-        </form>
+          <div ng-if="editForm.$dirty">
+            <input ng-hide="true" data-ng-model="AuthorisedSignatoryEditCtrl.dirtyFlag"
+              ng-init="AuthorisedSignatoryEditCtrl.dirtyFlag = true">
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-primary" ng-click="AuthorisedSignatoryEditCtrl.save()">Speichern</button>
-  <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="$close()">Abbrechen</button>
-</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-click="AuthorisedSignatoryEditCtrl.save()">Speichern</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal"
+      ng-click="AuthorisedSignatoryEditCtrl.closeModal()">Abbrechen</button>
+  </div>
+</form>

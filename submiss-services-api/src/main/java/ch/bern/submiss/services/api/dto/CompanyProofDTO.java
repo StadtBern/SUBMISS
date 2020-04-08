@@ -41,6 +41,9 @@ public class CompanyProofDTO {
   /** The has changed. */
   private boolean hasChanged;
 
+  /** The is valid. */
+  private boolean isInvalid;
+
   /**
    * Gets the company id.
    *
@@ -165,6 +168,24 @@ public class CompanyProofDTO {
    */
   public void setHasChanged(boolean hasChanged) {
     this.hasChanged = hasChanged;
+  }
+
+  /**
+   * Get the isInvalid value.
+   *
+   * @return true if proof is valid
+   */
+  public boolean isInvalid() {
+    return isInvalid;
+  }
+
+  /**
+   * Sets the isInvalid value.
+   *
+   * @param invalid true if proof is invalid
+   */
+  public void setInvalid(boolean invalid) {
+    isInvalid = invalid;
   }
 
   /*

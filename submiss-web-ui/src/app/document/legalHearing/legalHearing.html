@@ -18,21 +18,26 @@
         <form name="legalHearingCtrl.legalTerminationForm" data-ng-submit="legalHearingCtrl.save()"
           shows-validation-errors>
           <div class="col-sm-12">
-            <div class="alert alert-danger" ng-if="legalHearingCtrl.legalTerminationForm.$invalid && legalHearingCtrl.errorFieldsVisible"
+            <div class="alert alert-danger"
+              ng-if="legalHearingCtrl.legalTerminationForm.$invalid && legalHearingCtrl.errorFieldsVisible"
               role="alert">
               <field-error form-element-name="errorField" translate name="error"></field-error>
               <field-error form-element-name="reasonError" translate name="error"></field-error>
               <field-error form-element-name="deadlineErrorField" translate name="error"></field-error>
+              <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
             </div>
           </div>
           <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
           <input name="reasonError" ng-hide="true" data-ng-model="fd"></input>
           <input name="deadlineErrorField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
           <div class="form-group">
-            <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" checked="checked" id="inlineRadio1"
-                value="submissionTermination" ui-sref="documentView.legalHearing({submissionId: documentViewCtrl.submission.id})">
+            <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" checked="checked"
+                id="inlineRadio1" value="submissionTermination"
+                ui-sref="documentView.legalHearing({submissionId: documentViewCtrl.submission.id})">
               ÖBV Abbruch
-            </label> <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="submittentsExcluded"
+            </label> <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" id="inlineRadio2"
+                value="submittentsExcluded"
                 ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">
               ÖBV Ausschluss
             </label>
@@ -43,18 +48,21 @@
                 <label for="bewerbung">Frist Anhörung<span class="mandatory">*</span></label>
                 <div class="input-group">
                   <input class="form-control datepicker" id="hearingDeadline" type="text" name="hearingDeadline"
-                    uib-datepicker-popup="dd.MM.yyyy" is-open="legalHearingCtrl.hearingDeadlineOpened" data-ng-model="legalHearingCtrl.submissionTerminate.deadline"
+                    uib-datepicker-popup="dd.MM.yyyy" is-open="legalHearingCtrl.hearingDeadlineOpened"
+                    data-ng-model="legalHearingCtrl.submissionTerminate.deadline"
                     ng-click="legalHearingCtrl.openHearingDeadline()"> <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" data-ng-click="legalHearingCtrl.openHearingDeadline()">
+                    <button class="btn btn-default" type="button"
+                      data-ng-click="legalHearingCtrl.openHearingDeadline()">
                       <span class="fa fa-calendar"></span>
                     </button>
                   </span>
                 </div>
               </div>
               <label for="OBV">Art. 29 ÖBV Abs.<span class="mandatory">*</span></label>
-              <div class="form-group" ng-repeat="terminationReason in legalHearingCtrl.terminationReasons track by terminationReason.id">
-                <label class="checkbox-inline"> <input type="checkbox" id="terminationReason" data-ng-model="terminationReason.selected"
-                    name="terminationReason">{{terminationReason.value1}}
+              <div class="form-group"
+                ng-repeat="terminationReason in legalHearingCtrl.terminationReasons track by terminationReason.id">
+                <label class="checkbox-inline"> <input type="checkbox" id="terminationReason"
+                    data-ng-model="terminationReason.selected" name="terminationReason">{{terminationReason.value1}}
                   {{terminationReason.value2}}
                 </label>
               </div>
@@ -68,12 +76,14 @@
             <div class=" btn-bar">
               <div class="form-group">
                 <button type="submit" class="btn btn-primary">Speichern</button>
-                <button type="button" ng-click="legalHearingCtrl.cancelButton(legalHearingCtrl.legalTerminationForm.$dirty)"
+                <button type="button"
+                  ng-click="legalHearingCtrl.cancelButton(legalHearingCtrl.legalTerminationForm.$dirty)"
                   class="btn btn-default">Abbrechen</button>
               </div>
             </div>
             <div ng-if="legalHearingCtrl.legalTerminationForm.$dirty">
-              <input ng-hide="true" type="checkbox" data-ng-model="legalHearingCtrl.dirtyFlag" ng-init="legalHearingCtrl.dirtyFlag = true">
+              <input ng-hide="true" type="checkbox" data-ng-model="legalHearingCtrl.dirtyFlag"
+                ng-init="legalHearingCtrl.dirtyFlag = true">
             </div>
           </fieldset>
         </form>

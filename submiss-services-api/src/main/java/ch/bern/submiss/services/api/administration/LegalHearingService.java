@@ -13,11 +13,13 @@
 
 package ch.bern.submiss.services.api.administration;
 
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.Date;
 import java.util.List;
 
 import ch.bern.submiss.services.api.dto.LegalHearingExclusionDTO;
 import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
+import java.util.Set;
 
 /**
  * The Interface LegalHearingService.
@@ -25,12 +27,22 @@ import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
 public interface LegalHearingService {
 
   /**
+   * Create legal hearing termination.
+   *
+   * @param legalHearingTerminateDTO the legal hearing terminate DTO
+   * @param submissionId the submissionId
+   * @return the error
+   */
+  Set<ValidationError> createLegalHearingTermination(LegalHearingTerminateDTO legalHearingTerminateDTO, String submissionId);
+
+  /**
    * Update legal hearing termination.
    *
-   * @param legalHearingTerminate the legal hearing terminate
-   * @param submissionId 
+   * @param legalHearingTerminateDTO the legal hearing terminate DTO
+   * @param submissionId the submissionId
+   * @return the error
    */
-  void updateLegalHearingTermination(LegalHearingTerminateDTO legalHearingTerminate, String submissionId);
+  Set<ValidationError> updateLegalHearingTermination(LegalHearingTerminateDTO legalHearingTerminateDTO, String submissionId);
 
   /**
    * Gets the submission legal hearing termination.
@@ -63,8 +75,8 @@ public interface LegalHearingService {
    * @param submissionId 
    * @param firstLevelExclusionDate 
    */
-  void updateExcludedSubmittent(List<LegalHearingExclusionDTO> legalHearingExclusionDTO,
-      Date exclusionDate, String submissionId, Date firstLevelExclusionDate);
+  Set<ValidationError> updateExcludedSubmittent(List<LegalHearingExclusionDTO> legalHearingExclusionDTO,
+      Date exclusionDate, String submissionId, Long submissionVersion, Date firstLevelExclusionDate);
 
   /**
    * Gets the exclusion deadline.

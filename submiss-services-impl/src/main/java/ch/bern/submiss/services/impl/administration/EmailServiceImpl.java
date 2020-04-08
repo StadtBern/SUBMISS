@@ -16,31 +16,6 @@
  */
 package ch.bern.submiss.services.impl.administration;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiService;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import ch.bern.submiss.services.api.administration.CompanyService;
 import ch.bern.submiss.services.api.administration.EmailService;
 import ch.bern.submiss.services.api.administration.LexiconService;
@@ -56,6 +31,7 @@ import ch.bern.submiss.services.api.constants.EmailTemplate;
 import ch.bern.submiss.services.api.constants.EmailTemplate.RECIEVER_TYPE;
 import ch.bern.submiss.services.api.constants.Group;
 import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.TaskTypes;
 import ch.bern.submiss.services.api.constants.Template;
 import ch.bern.submiss.services.api.dto.CompanyDTO;
@@ -85,6 +61,27 @@ import ch.bern.submiss.services.impl.model.QEmailTemplateTenant;
 import ch.bern.submiss.services.impl.model.QMasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.apache.commons.lang.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiService;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The Class EmailServiceImpl.
@@ -1090,5 +1087,14 @@ public class EmailServiceImpl extends BaseService implements EmailService {
         getEmailTemplateTenantByShortCode(EmailTemplate.TEMPLATE_SHORT_CODE.ET15.name());
     }
     return prepareSubmissEmail(userId, template, null);
+  }
+
+  @Override
+  public void emailSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method emailSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.SENT_EMAIL.getValue(), null);
   }
 }

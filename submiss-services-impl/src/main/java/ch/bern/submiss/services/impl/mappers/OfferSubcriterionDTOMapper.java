@@ -13,22 +13,22 @@
 
 package ch.bern.submiss.services.impl.mappers;
 
+import ch.bern.submiss.services.impl.model.OfferSubcriterionEntity;
 import java.util.List;
 import org.mapstruct.factory.Mappers;
 import ch.bern.submiss.services.api.dto.OfferSubcriterionDTO;
-import ch.bern.submiss.services.impl.model.OfferSubriterionEntity;
 
 public abstract class OfferSubcriterionDTOMapper {
   public static final OfferSubcriterionDTOMapper INSTANCE =
       Mappers.getMapper(OfferSubcriterionDTOMapper.class);
 
-  public abstract OfferSubriterionEntity toOfferSubriterion(OfferSubcriterionDTO dto);
+  public abstract OfferSubcriterionEntity toOfferSubriterion(OfferSubcriterionDTO dto);
 
-  public abstract List<OfferSubriterionEntity> toOfferSubriterion(
+  public abstract List<OfferSubcriterionEntity> toOfferSubriterion(
       List<OfferSubcriterionDTO> dtoList);
 
-  public abstract OfferSubcriterionDTO toOfferSubriterionDTO(OfferSubriterionEntity entity);
+  public abstract OfferSubcriterionDTO toOfferSubriterionDTO(OfferSubcriterionEntity entity);
 
   public abstract List<OfferSubcriterionDTO> toOfferSubriterionDTO(
-      List<OfferSubriterionEntity> entityList);
+      List<OfferSubcriterionEntity> entityList);
 }

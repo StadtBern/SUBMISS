@@ -97,14 +97,21 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      readStatusOfSubmission($stateParams.id);
-      readSubmission($stateParams.id);
-      findUserOperations();
-      // If a command was given to close the formal audit before the page
-      // reloaded, proceed with the command.
-      if ($stateParams.proceedToClose) {
-        closeFormalAudit();
-      }
+      SubmissionService.loadFormalAudit($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            readStatusOfSubmission($stateParams.id);
+            readSubmission($stateParams.id);
+            findUserOperations();
+            // If a command was given to close the formal audit before the page
+            // reloaded, proceed with the command.
+            if ($stateParams.proceedToClose) {
+              closeFormalAudit();
+            }
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -148,19 +155,27 @@
     }
 
     function save(submittents) {
-      AppService.setPaneShown(true);
-      ExaminationService.updateFormalAuditExamination(submittents)
+      ExaminationService.examinationLockedByAnotherUser(vm.data.submission.id)
         .success(function (data) {
-          ExaminationService.updateSubmissionFormalAuditExaminationStatus(
-              $stateParams.id)
+          AppService.setPaneShown(true);
+          ExaminationService.updateFormalAuditExamination(submittents)
             .success(function (data) {
-              // Here we simply reload the page without hiding the spinner.
-              // The spinner will be removed on page reload from the
-              // readSubmittentsBySubmission function.
-              defaultReload();
+              ExaminationService.updateSubmissionFormalAuditExaminationStatus(
+                  $stateParams.id)
+                .success(function (data) {
+                  // Here we simply reload the page without hiding the spinner.
+                  // The spinner will be removed on page reload from the
+                  // readSubmittentsBySubmission function.
+                  defaultReload();
+                });
+            }).error(function (response, status) {
+              AppService.setPaneShown(false);
+              if (status === 400) { // Validation errors.
+                QFormJSRValidation.markErrors($scope,
+                  $scope.formalAuditCtrl.evidenceForm, response);
+              }
             });
         }).error(function (response, status) {
-          AppService.setPaneShown(false);
           if (status === 400) { // Validation errors.
             QFormJSRValidation.markErrors($scope,
               $scope.formalAuditCtrl.evidenceForm, response);
@@ -322,7 +337,7 @@
         // Modal Success Handler
       }, function (response) { // Modal Dismiss Handler
         if (response) {
-          ExaminationService.closeFormalAudit(vm.data.submission.id)
+          ExaminationService.closeFormalAudit(vm.data.submission.id, vm.data.submission.version)
             .success(function (data) {
               defaultReload();
             }).error(function (response, status) {
@@ -330,7 +345,7 @@
               if (vm.noCheckedSubmittents) {
                 vm.noCheckedSubmittents = false;
               }
-              if (status === 400) { // Validation errors.
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
                 QFormJSRValidation.markErrors($scope,
                   $scope.formalAuditCtrl.evidenceForm, response);
               }
@@ -385,10 +400,15 @@
           if (!angular.isUndefined(response)) {
             reopenForm.reopenReason = response;
             ExaminationService.reopenFormalAudit(reopenForm,
-              $stateParams.id).success(
+              vm.data.submission.id, vm.data.submission.version).success(
               function (data) {
                 defaultReload();
-              }).error(function (response, status) {});
+              }).error(function (response, status) {
+              if (status === 400 || status === 409) {
+                QFormJSRValidation.markErrors($scope,
+                  $scope.formalAuditCtrl.evidenceForm, response);
+              }
+            });
           }
         });
     }

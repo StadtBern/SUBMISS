@@ -212,6 +212,14 @@
         class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.JSONMappingExceptionMapper"/>
       <bean id="InvalidFormatExceptionMapper"
         class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.InvalidFormatExceptionMapper"/>
+      <bean id="AuthorisationExceptionMapper"
+        class="ch.bern.submiss.web.exceptions.AuthorisationExceptionMapper"/>
+      <!-- Map OptimisticLock exceptions to provide an appropriate Response code and message-->
+      <bean id="OptimisticLockExceptionMapper"
+        class="ch.bern.submiss.web.exceptions.OptimisticLockExceptionMapper"/>
+      <!-- Map Rollback exceptions to provide an appropriate Response code and message-->
+      <bean id="RollbackExceptionMapper"
+        class="ch.bern.submiss.web.exceptions.RollbackExceptionMapper"/>
       <!-- Map JSR-303 validation errors -->
       <bean id="ValidationExceptionMapper"
         class="com.eurodyn.qlack2.util.jsr.validator.util.mapper.ValidationExceptionMapper"/>

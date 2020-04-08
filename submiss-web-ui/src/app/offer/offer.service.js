@@ -42,10 +42,10 @@
         return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/submittent/' + id);
       },
       deleteOffer: function (id) {
-        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/' + id);
+        return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/delete/' + id);
       },
-      closeOffer: function (id) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/close/' + id);
+      closeOffer: function (id, version) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/close/' + id + '/' + version);
       },
       getOfferById: function (id) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/' + id);
@@ -69,13 +69,13 @@
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/resetOffer', offer, {});
       },
       updateAwardOffers: function (checkedOffersIds, submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/update/award/' + submissionId, checkedOffersIds, {});
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/update/award/' + submissionId, checkedOffersIds, {});
       },
       updateOperatingCostOffer: function (offer) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/operating/update', offer, {});
       },
-      reopenOffer: function (reopen, id) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/offer/' + id, reopen, {});
+      reopenOffer: function (reopen, id, version) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/offer/' + id + '/' + version, reopen, {});
       },
       readActiveSubmittentsBySubmission: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/submittent/submission/' + submissionId, {});
@@ -83,20 +83,23 @@
       readAwardSubmittents: function (value) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/awardSubmittents', value);
       },
-      reopenAward: function (submissionId, reopenReason) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/update/award/' + submissionId + '/reason/' + reopenReason);
+      reopenManualAward: function (reopenForm, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopen/manualAward/' + submissionId + '/' + submissionVersion, reopenForm);
       },
       updateAndGetThreshold: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/update/threshold/' + submissionId, {});
       },
       manualAwardReopenCheck: function (submissionId) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/manualAwardReopenCheck/' + submissionId);
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/manualAwardReopenCheck/' + submissionId);
       },
       resetOperatingCostValues: function (offer) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/resetOperatingCostValues', offer);
       },
       validateManualAward: function (manualAwardForm) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/validateManualAward', manualAwardForm);
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/validateManualAward', manualAwardForm);
+      },
+      loadOfferList: function (submissionId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/loadOfferList/' + submissionId);
       }
     }
   }

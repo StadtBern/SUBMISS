@@ -190,6 +190,16 @@ public class TemplateConstants {
   public static final String SUBMITTED_OFFERS = "Eingereichte Offerten"; 
   
   public static final String GRAY_COLOR = "808080";
+
+  /**
+   * The Constant GERMAN_TEXT_ZERTIFIKAT.
+   */
+  public static final String GERMAN_TEXT_ZERTIFIKAT = "Das vollständig ausgefüllte und unterschriebene Selbstdeklarationsformular\n";
+
+  /**
+   * The Constant FRENCH_TEXT_ZERTIFIKAT.
+   */
+  public static final String FRENCH_TEXT_ZERTIFIKAT = "Le formulaire de déclaration spontanée dûment rempli et signé\n";
   
   public enum TEMPLATE_TABLE_HEADER {
     HEADER_COLUMN_DATE("Datum"),

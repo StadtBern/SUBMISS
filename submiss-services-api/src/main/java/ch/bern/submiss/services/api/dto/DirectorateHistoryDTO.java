@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 /**
  * The Class DirectorateHistoryDTO.
  */
-public class DirectorateHistoryDTO extends AbstractDTO {
+public class DirectorateHistoryDTO extends AbstractStammdatenDTO {
 
   /** The active. */
   private boolean active;

@@ -30,7 +30,8 @@
     /***********************************************************************
      * Local variables.
      **********************************************************************/
-
+    var bewerbStatus = [10, 20, 30];
+    var formelle_eignungsprufungStatus = [40, 50];
     /***********************************************************************
      * Exported variables.
      **********************************************************************/
@@ -39,9 +40,11 @@
     vm.status = AppConstants.STATUS;
     vm.secApplicantsView = false;
     vm.examinationTabVisible = false;
+    vm.tabStatus = null;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
+    vm.getStatusSubTab = getStatusSubTab;
     // Activating the controller.
     activate();
 
@@ -77,9 +80,20 @@
           vm.currentStatus = data;
           setApplicantListTitle(vm.currentStatus);
         }
+        vm.tabStatus = data;
       }).error(function (response, status) {
 
       });
+    }
+
+    function getStatusSubTab(status) {
+      var statusSubTab = -1;
+      if (bewerbStatus.includes(status)) {
+        statusSubTab = 0;
+      } else if (formelle_eignungsprufungStatus.includes(status)) {
+        statusSubTab = 1;
+      }
+      return statusSubTab;
     }
 
     /** Function to set the applicant list tab title according to the current status */

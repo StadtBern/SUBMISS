@@ -53,7 +53,7 @@ public class ProofToTypeDataMapper {
     if (proofHistoryEntity != null) {
       MasterListTypeDataDTO typeData = new MasterListTypeDataDTO();
       typeData.setId(proofHistoryEntity.getId());
-      typeData.setDescription(proofHistoryEntity.getProofName());
+      typeData.setDescription(proofHistoryEntity.getName());
       typeData.setAddedDescription(proofHistoryEntity.getDescription());
       typeData.setIsActive(BooleanUtils.toBoolean(proofHistoryEntity.getActive()));
       typeData.setValidityPeriod(proofHistoryEntity.getValidityPeriod());

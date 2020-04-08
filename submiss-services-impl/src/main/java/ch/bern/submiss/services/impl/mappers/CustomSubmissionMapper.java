@@ -163,6 +163,8 @@ public abstract class CustomSubmissionMapper {
     submissionEntity.setLegalHearingTerminate(dtoToLegalHearingTerminateEntity(dto));
     submissionEntity.setCustomPriceFormula(dto.getCustomPriceFormula());
     submissionEntity.setCustomOperatingCostFormula(dto.getCustomOperatingCostFormula());
+    submissionEntity.setVersion(dto.getVersion());
+    submissionEntity.setUpdatedOn(dto.getUpdatedOn());
 
     return submissionEntity;
   }

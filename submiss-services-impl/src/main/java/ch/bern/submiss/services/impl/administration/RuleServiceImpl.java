@@ -18,6 +18,7 @@ import ch.bern.submiss.services.api.administration.EmailService;
 import ch.bern.submiss.services.api.administration.LexiconService;
 import ch.bern.submiss.services.api.administration.RuleService;
 import ch.bern.submiss.services.api.administration.SDTenantService;
+import ch.bern.submiss.services.api.administration.SubDocumentService;
 import ch.bern.submiss.services.api.administration.TenderStatusHistoryService;
 import ch.bern.submiss.services.api.constants.EmailTemplate;
 import ch.bern.submiss.services.api.constants.EmailTemplate.TEMPLATE_SHORT_CODE;
@@ -129,6 +130,12 @@ public class RuleServiceImpl extends BaseService implements RuleService {
   @Inject
   private TenderStatusHistoryService tenderStatusHistoryService;
 
+  /**
+   * The sub document service.
+   */
+  @Inject
+  private SubDocumentService documentService;
+
   /*
    * (non-Javadoc)
    *
@@ -193,6 +200,8 @@ public class RuleServiceImpl extends BaseService implements RuleService {
       globals.put(USER_ROLE_STR, getGroupName(getUser()));
       globals.put(SUBMISS_STATUS_STR, LookupValues.getSubmissstatuses());
       globals.put(TENANT_NAME_STR, tenant.getName());
+      globals.put("legalHearingTerminateDocumentExists",
+        documentService.legalHearingTerminateDocumentExists(submissionDTO.getId(), Template.RECHTLICHES_GEHOR));
 
       // check for case where submission status list
       // has less than 2 entries
@@ -215,12 +224,7 @@ public class RuleServiceImpl extends BaseService implements RuleService {
     if (templateCodes.contains(Template.ZUSCHLAGSBEWERTUNG)
       && submissionDTO.getProcess().equals(Process.SELECTIVE)
       && StringUtils.isBlank(submissionDTO.getEvaluationThrough())) {
-      for (Iterator<String> iterator = templateCodes.iterator(); iterator.hasNext(); ) {
-        String templateCode = iterator.next();
-        if (templateCode.equals(Template.ZUSCHLAGSBEWERTUNG)) {
-          iterator.remove();
-        }
-      }
+      templateCodes.removeIf((String templateCode) -> templateCode.equals(Template.ZUSCHLAGSBEWERTUNG));
     }
     return sdService.getMasterListHistoryByCode(templateCodes);
   }

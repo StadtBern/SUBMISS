@@ -26,6 +26,7 @@ import ch.bern.submiss.services.api.constants.DocumentPlaceholders;
 import ch.bern.submiss.services.api.constants.DocumentProperties;
 import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.constants.ProofStatus;
+import ch.bern.submiss.services.api.constants.SelectiveLevel;
 import ch.bern.submiss.services.api.constants.Template;
 import ch.bern.submiss.services.api.constants.TemplateConstants;
 import ch.bern.submiss.services.api.constants.TenderStatus;
@@ -69,6 +70,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -985,13 +987,13 @@ public class TemplateBean extends BaseService {
       cellProperties6.put(DocumentProperties.VALUE.getValue(),
         DocumentProperties.NUMBER_2.getValue());
 
-      /**
+      /*
        * show both address for the company if the second is there , else show only the first
        */
       if (offer.getSubmittent().getCompanyId().getAddress2() != null
         && !offer.getSubmittent().getCompanyId().getAddress2().isEmpty()) {
         subContent.put(cellProperties6,
-          String.join(", ", offer.getSubmittent().getCompanyId().getAddress1(),
+          String.join(LookupValues.COMMA, offer.getSubmittent().getCompanyId().getAddress1(),
             offer.getSubmittent().getCompanyId().getAddress2()));
       } else {
         subContent.put(cellProperties6, offer.getSubmittent().getCompanyId().getAddress1());
@@ -1136,6 +1138,227 @@ public class TemplateBean extends BaseService {
   }
 
   /**
+   * Generate the awarded table for BeKo documents.
+   *
+   * @param offers the offers
+   * @return the tableList
+   */
+  public List<LinkedHashMap<Map<String, String>, Map<String, String>>> replaceBekoAwardedCompanies(
+    List<SubmittentOfferDTO> offers) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method replaceBekoAwardedCompanies, Parameters: offers: {0}", offers);
+
+    // the number of awarded companies
+    int awardedNumber = getAwardedNumber(offers);
+
+    List<LinkedHashMap<Map<String, String>, Map<String, String>>> tableList = new ArrayList<>();
+
+    for (SubmittentOfferDTO offer : offers) {
+      LinkedHashMap<Map<String, String>, Map<String, String>> subContent = new LinkedHashMap<>();
+      if (offer.getOffer().getIsAwarded() != null && offer.getOffer().getIsAwarded()) {
+        /*
+         * Create a map with
+         * key: the awarded company name
+         * value: the awarded amount
+         */
+        Map<String, String> awardedNameWithAmount = getAwardedNameWithAmount(offer, awardedNumber);
+        /*
+         * Create a map with
+         * key: the awarded operating cost (Betriebskosten) if exits
+         * value: empty string
+         */
+        Map<String, String> awardedOperCost = getAwardedOperCost(offer, awardedNumber);
+        /*
+         * Create a map with
+         * key: the awarded free text if exists
+         * value: empty string
+         */
+        Map<String, String> awardedFreeText = getAwardedFreeText(offer, awardedNumber);
+        awardedNumber--;
+        // create the table properties
+        Map<String, String> tableProperties = getBekoTableProperties();
+        // put the table data and table properties in subContent
+        subContent.put(awardedNameWithAmount, tableProperties);
+        if (!awardedOperCost.isEmpty()) {
+          subContent.put(awardedOperCost, tableProperties);
+        }
+        if (!awardedFreeText.isEmpty()) {
+          subContent.put(awardedFreeText, tableProperties);
+        }
+      }
+      // add the subcontent to the list
+      tableList.add(subContent);
+    }
+    return tableList;
+  }
+
+  /**
+   * Gets the table properties for BeKo documents.
+   *
+   * @return the table properties
+   */
+  private Map<String, String> getBekoTableProperties() {
+
+    LOGGER.log(Level.CONFIG, "Executing method getBekoTableProperties");
+
+    Map<String, String> tableProperties = new HashMap<>();
+    tableProperties.put("width-left", "6203"); // left column width -> 10.94 cm
+    tableProperties.put("width-right", "2517"); // right column width -> 4.44 cm
+    tableProperties.put("line", "280"); // line spacing at: 14 pt
+    tableProperties.put("lineRule", "atLeast"); // line spacing: At least
+    tableProperties.put("charSpacing", "8"); // character spacing: expanded by 0.4 pt
+    return tableProperties;
+  }
+
+  /**
+   * Get the number of awarded companies.
+   *
+   * @param offers the offers
+   * @return the number of awarded companies
+   */
+  private int getAwardedNumber(List<SubmittentOfferDTO> offers) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAwardedNumber, Parameters: offers: {0}", offers);
+
+    return (int) offers.stream()
+      .filter(
+        submittentOfferDTO -> Boolean.TRUE.equals(submittentOfferDTO.getOffer().getIsAwarded()))
+      .count();
+  }
+
+  /**
+   * Get the map with awarded name and amount.
+   *
+   * @param offer the offer
+   * @return the map
+   */
+  private Map<String, String> getAwardedNameWithAmount(SubmittentOfferDTO offer, int awardedNum) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAwardedNameWithAmount, Parameters: offer: {0}, awardedNum: {1}",
+      new Object[]{offer, awardedNum});
+
+    Map<String, String> awardedNameWithAmount = new HashMap<>();
+    StringBuilder awardedName = new StringBuilder(offer.getSubmittent().getSubmittentNameArgeSub());
+    String awardedAmount = (offer.getOffer().getAmount() != null)
+      ? SubmissConverter.convertToCHFCurrency(offer.getOffer().getAmount())
+      : StringUtils.EMPTY;
+    /*
+     * Add an empty line
+     * If there are more than 1 awarded companies and other fields are empty
+     */
+    if (StringUtils.isBlank(offer.getOffer().getAwardRecipientFreeTextField())
+        && offer.getOffer().getOperatingCostsAmount() == null
+        && StringUtils.isBlank(offer.getOffer().getOperatingCostNotes())
+        && awardedNum > 1) {
+      awardedName.append(TemplateConstants.NEW_LINE_STRING);
+    }
+    awardedNameWithAmount.put(awardedName.toString(), awardedAmount);
+    return awardedNameWithAmount;
+  }
+
+  /**
+   * Get the map with the awarded Operating Cost.
+   *
+   * @param offer the offer
+   * @return the map
+   */
+  private Map<String, String> getAwardedOperCost(SubmittentOfferDTO offer, int awardedNum) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAwardedOperCost, Parameters: offer: {0}, awardedNum: {1}",
+      new Object[]{offer, awardedNum});
+
+    Map<String, String> awardedOperCost = new HashMap<>();
+    if (offer.getOffer().getOperatingCostsAmount() != null) {
+      StringBuilder awardedOper = new StringBuilder();
+      if (offer.getOffer().getOperatingCostNotes() != null
+        && offer.getOffer().getOperatingCostNotes().length() > 1) {
+        awardedOper.append(offer.getOffer().getOperatingCostNotes()).append(LookupValues.COMMA);
+      }
+      awardedOper.append(SubmissConverter
+        .convertToCHFCurrency(offer.getOffer().getOperatingCostsAmount()));
+      /*
+       * Add an empty line
+       * if there are more than 1 awarded companies with no free text
+       */
+      if (StringUtils.isBlank(offer.getOffer().getAwardRecipientFreeTextField())
+          && awardedNum > 1) {
+        awardedOper.append(TemplateConstants.NEW_LINE_STRING);
+      }
+      awardedOperCost.put(awardedOper.toString(), StringUtils.EMPTY);
+    }
+    return awardedOperCost;
+  }
+
+  /**
+   * Get the map with the awarded free text.
+   *
+   * @param offer the offer
+   * @return the map
+   */
+  private Map<String, String> getAwardedFreeText(SubmittentOfferDTO offer, int awardedNum) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAwardedFreeText, Parameters: offer: {0}, awardedNum: {1}",
+      new Object[]{offer, awardedNum});
+
+    Map<String, String> awardedFreeText = new HashMap<>();
+    if (StringUtils.isNotBlank(offer.getOffer().getAwardRecipientFreeTextField())) {
+      StringBuilder awardedText = new StringBuilder(
+        offer.getOffer().getAwardRecipientFreeTextField());
+      /*
+       * If there are more than 1 awarded companies, add an empty line before next awarded company
+       */
+      if (awardedNum > 1) {
+        awardedText.append(TemplateConstants.NEW_LINE_STRING);
+      }
+      awardedFreeText.put(awardedText.toString(), StringUtils.EMPTY);
+    }
+    return awardedFreeText;
+  }
+
+  /**
+   * Get the basic table properties.
+   *
+   * @param isItalic the isItalic
+   * @return the map
+   */
+  private Map<String, String> getBasicTableProperties(Boolean isItalic) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getBasicTableProperties, Parameters: isItalic: {0}", isItalic);
+
+    Map<String, String> tableProperties = new HashMap<>();
+    tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
+    tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
+    tableProperties.put(DocumentProperties.ITALIC.getValue(), isItalic.toString());
+    return tableProperties;
+  }
+
+  /**
+   * Get the table properties for awarded applicants in verfugungen stufe 1.
+   *
+   * @param isItalic the isItalic
+   * @return the map
+   */
+  private Map<String, String> getAwardedApplicantsTableProperties(Boolean isItalic) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAwardedApplicantsTableProperties, Parameters: isItalic: {0}",
+      isItalic);
+
+    Map<String, String> tableProperties = new HashMap<>();
+    tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
+    tableProperties.put("width-left", "6203"); // left column width -> 10.94 cm
+    tableProperties.put("width-right", "2517"); // right column width -> 4.44 cm
+    tableProperties.put(DocumentProperties.ITALIC.getValue(), isItalic.toString());
+    return tableProperties;
+  }
+
+  /**
    * Replace awarded applicants placeholders.
    *
    * @param offer the offer
@@ -1146,12 +1369,12 @@ public class TemplateBean extends BaseService {
   public List<LinkedHashMap<Map<String, String>, Map<String, String>>> replaceAwardedApplicantsPlaceholders(
     OfferDTO offer, DocumentDTO documentDTO, Map<String, String> placeholders) {
 
-    List<LinkedHashMap<Map<String, String>, Map<String, String>>> tableList = new ArrayList<>();
-
     LOGGER.log(Level.CONFIG,
       "Executing method replaceAwardedApplicantsPlaceholders, Parameters: offer: {0}, "
         + "documentDTO: {1}, placeholders: {2}",
       new Object[]{offer, documentDTO, placeholders});
+
+    List<LinkedHashMap<Map<String, String>, Map<String, String>>> tableList = new ArrayList<>();
 
     if (offer.getIsEmptyOffer() == null || !offer.getIsEmptyOffer()) {
       Collections.sort(offer.getOfferCriteria(), ComparatorUtil.offerCriteriaWithWeightings);
@@ -1171,11 +1394,7 @@ public class TemplateBean extends BaseService {
             Map<String, String> criterionContent = new HashMap<>();
             criterionContent.put(criterionName.toString(), criterionPoints.toString());
 
-            Map<String, String> tableProperties = new HashMap<>();
-            tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
-
-            tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
-            tableProperties.put(DocumentProperties.ITALIC.getValue(), Boolean.FALSE.toString());
+            Map<String, String> tableProperties = getBasicTableProperties(Boolean.FALSE);
             subContent.put(criterionContent, tableProperties);
           }
           for (SubcriterionDTO s : criterion.getCriterion().getSubcriterion()) {
@@ -1194,17 +1413,12 @@ public class TemplateBean extends BaseService {
                   Map<String, String> criterionContent = new HashMap<>();
                   criterionContent.put(subcriterionName.toString(), subcriterionPoints.toString());
 
-                  Map<String, String> tableProperties = new HashMap<>();
-                  tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
-
-                  tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
-                  tableProperties
-                    .put(DocumentProperties.ITALIC.getValue(), Boolean.TRUE.toString());
+                  Map<String, String> tableProperties = getBasicTableProperties(Boolean.TRUE);
 
                   if (getTenantName().equals(DocumentProperties.TENANT_EWB.getValue())) {
-                    tableProperties.put(DocumentProperties.FONT_SIZE.getValue(), "18");
+                    tableProperties.put(DocumentProperties.FONT_SIZE.getValue(), DocumentProperties.NUMBER_18.getValue());
                   } else {
-                    tableProperties.put(DocumentProperties.FONT_SIZE.getValue(), "16");
+                    tableProperties.put(DocumentProperties.FONT_SIZE.getValue(), DocumentProperties.NUMBER_16.getValue());
                   }
                   tableProperties.put(DocumentProperties.FONT_COLOR.getValue(),
                     TemplateConstants.GRAY_COLOR);
@@ -1226,13 +1440,13 @@ public class TemplateBean extends BaseService {
   }
 
   /**
-   * Replace awarded applicants placeholders.
+   * Replace awarded applicants placeholders with alphabet.
    *
    * @param offers the offers
    * @param documentDTO the document DTO
    * @param placeholders the placeholders
    */
-  public void replaceAwardedApplicantsPlaceholders(List<OfferDTO> offers, DocumentDTO documentDTO,
+  public void replaceAwardedApplicantsPlaceholdersWithAlphabet(List<OfferDTO> offers, DocumentDTO documentDTO,
     Map<String, String> placeholders) {
 
     LOGGER.log(Level.CONFIG,
@@ -1274,6 +1488,64 @@ public class TemplateBean extends BaseService {
       placeholders.put(DocumentPlaceholders.AWARDED_TOTAL_POINTS.getValue(),
         TemplateConstants.EMPTY_STRING);
     }
+  }
+
+  /**
+   * Replace awarded applicants placeholders with names.
+   *
+   * @param offers the offers
+   */
+  public List<LinkedHashMap<Map<String, String>, Map<String, String>>> replaceAwardedApplicantsPlaceholdersWithNames(List<OfferDTO> offers) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method replaceAwardedApplicantsPlaceholders, "
+        + "Parameters: offers: {0}, documentDTO: {1}, placeholders: {2}",
+      new Object[]{offers});
+
+    List<LinkedHashMap<Map<String, String>, Map<String, String>>> tableList = new ArrayList<>();
+
+    for (OfferDTO offer : offers) {
+      LinkedHashMap<Map<String, String>, Map<String, String>> subContent = new LinkedHashMap<>();
+      if ((offer.getIsEmptyOffer() == null || !offer.getIsEmptyOffer())
+        && (offer.getExcludedFirstLevel() == null || !offer.getExcludedFirstLevel())) {
+        // get the table values
+        Map<String, String> awardedApplicants = getAwardedApplicants(offer);
+        // get the table properties
+        Map<String, String> tableProperties = getAwardedApplicantsTableProperties(Boolean.FALSE);
+        // put the table data and table properties in subContent
+        subContent.put(awardedApplicants, tableProperties);
+      }
+      tableList.add(subContent);
+    }
+    return tableList;
+  }
+
+  /**
+   * Gets the awarded applicant names and points.
+   *
+   * @param offer the offer
+   * @return the awarded applicants
+   */
+  private Map<String, String> getAwardedApplicants(OfferDTO offer) {
+    Map<String, String> awardedApplicants = new HashMap<>();
+    StringBuilder awardedName = new StringBuilder();
+    if (offer.getSubmittent().getJointVentures() != null && !offer.getSubmittent()
+      .getJointVentures().isEmpty()) {
+      awardedName.append(TemplateConstants.ARGE)
+        .append(offer.getSubmittent().getCompanyId().getCompanyName());
+      for (CompanyDTO jointVenture : offer.getSubmittent().getJointVentures()) {
+        awardedName.append(LookupValues.SLASH).append(jointVenture.getCompanyName());
+      }
+    } else {
+      awardedName.append(offer.getSubmittent().getCompanyId().getCompanyName());
+    }
+    awardedName.append(LookupValues.COMMA)
+      .append(offer.getSubmittent().getCompanyId().getLocation());
+    String awardedPoints = (offer.getqExTotalGrade() != null)
+      ? String.format(TemplateConstants.THREE_DECIMAL_PLACES, offer.getqExTotalGrade())
+      : StringUtils.EMPTY;
+    awardedApplicants.put(awardedName.toString(), awardedPoints);
+    return awardedApplicants;
   }
 
   /**
@@ -1368,11 +1640,7 @@ public class TemplateBean extends BaseService {
                   .append(String.format("%.2f", criterion.getCriterion().getWeighting()))
                   .append("%)");
                 Map<String, String> criterionContent = new HashMap<>();
-                Map<String, String> tableProperties = new HashMap<>();
-                tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
-
-                tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
-                tableProperties.put(DocumentProperties.ITALIC.getValue(), Boolean.FALSE.toString());
+                Map<String, String> tableProperties = getBasicTableProperties(Boolean.FALSE);
                 criterionContent.put(criterionName.toString(), criterionPoints.toString());
                 subContent.put(criterionContent, tableProperties);
               }
@@ -1388,12 +1656,7 @@ public class TemplateBean extends BaseService {
                         .append(String.format("%.2f", sub.getSubcriterion().getWeighting()))
                         .append("%)");
                       Map<String, String> criterionContent = new HashMap<>();
-                      Map<String, String> tableProperties = new HashMap<>();
-                      tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
-
-                      tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
-                      tableProperties.put(DocumentProperties.ITALIC.getValue(),
-                        Boolean.TRUE.toString());
+                      Map<String, String> tableProperties = getBasicTableProperties(Boolean.TRUE);
                       if (getTenantName().equals("EWB")) {
                         tableProperties.put(DocumentProperties.FONT_SIZE.getValue(), "18");
                       } else {
@@ -1524,21 +1787,21 @@ public class TemplateBean extends BaseService {
     if (submission.getSubmissionCancel().get(0).getObjectNameRead() != null
       && submission.getSubmissionCancel().get(0).getObjectNameRead()) {
       value.append(submission.getProject().getObjectName().getValue1());
-      value.append(", ");
+      value.append(LookupValues.COMMA);
     }
     if (submission.getSubmissionCancel().get(0).getProjectNameRead() != null
       && submission.getSubmissionCancel().get(0).getProjectNameRead()) {
-      value.append(submission.getProject().getProjectName() + ", ");
+      value.append(submission.getProject().getProjectName()).append(LookupValues.COMMA);
     }
     if (submission.getSubmissionCancel().get(0).getWorkingClassRead() != null
       && submission.getSubmissionCancel().get(0).getWorkingClassRead()) {
-      value.append(
-        submission.getWorkType().getValue1() + " " + submission.getWorkType().getValue2() + ", ");
+      value.append(submission.getWorkType().getValue1()).append(LookupValues.SPACE)
+        .append(submission.getWorkType().getValue2()).append(LookupValues.COMMA);
     }
     if (submission.getSubmissionCancel().get(0).getDescriptionRead() != null
       && submission.getSubmissionCancel().get(0).getDescriptionRead()
       && StringUtils.isNotBlank(submission.getDescription())) {
-      value.append(submission.getDescription() + ", ");
+      value.append(submission.getDescription()).append(LookupValues.COMMA);
     }
     if (value.length() > 1) {
       placeholders.put(DocumentPlaceholders.READ_VALUES.getValue(),
@@ -1627,8 +1890,8 @@ public class TemplateBean extends BaseService {
     placeholders.put(DocumentPlaceholders.R_DIRECTORATE_WEBSITE.getValue(), direction.getWebsite());
     placeholders.put(DocumentPlaceholders.R_DIRECTORATE_NAME.getValue(), direction.getName());
     placeholders.put(DocumentPlaceholders.R_DIRECTORATE_SHORT.getValue(),
-      department.getName() + ", " + direction.getAddress() + ", "
-        + direction.getPostCode() + " " + direction.getLocation());
+      department.getName() + LookupValues.COMMA + direction.getAddress() + LookupValues.COMMA
+        + direction.getPostCode() + LookupValues.SPACE + direction.getLocation());
 
     /*
      * If the user has inserted a department in the field "Abteilung" in
@@ -1654,15 +1917,16 @@ public class TemplateBean extends BaseService {
         signatureDepartment.getFax());
 
       placeholders.put(DocumentPlaceholders.R_DEPARTMENT_SHORT.getValue(),
-        signatureDepartment.getName() + ", " + signatureDepartment.getAddress() + ", "
-          + signatureDepartment.getPostCode() + " " + signatureDepartment.getLocation());
+        signatureDepartment.getName() + LookupValues.COMMA + signatureDepartment.getAddress()
+          + LookupValues.COMMA + signatureDepartment.getPostCode()
+          + LookupValues.SPACE + signatureDepartment.getLocation());
     } else {
       placeholders.put(DocumentPlaceholders.R_DEPARTMENT_NAME.getValue(),
         department.getName());
       placeholders.put(DocumentPlaceholders.R_DEPARTMENT_ADDRESS.getValue(),
         department.getAddress());
       placeholders.put(DocumentPlaceholders.R_DEPARTMENT_POST.getValue(),
-        department.getPostCode() + " " + department.getLocation());
+        department.getPostCode() + LookupValues.SPACE + department.getLocation());
 
       placeholders.put(DocumentPlaceholders.R_DEPARTMENT_TEL.getValue(),
         department.getTelephone());
@@ -1675,8 +1939,9 @@ public class TemplateBean extends BaseService {
         department.getFax());
 
       placeholders.put(DocumentPlaceholders.R_DEPARTMENT_SHORT.getValue(),
-        department.getName() + ", " + department.getAddress() + ", " + department.getPostCode()
-          + " " + department.getLocation());
+        department.getName() + LookupValues.COMMA + department.getAddress()
+          + LookupValues.COMMA + department.getPostCode()
+          + LookupValues.SPACE + department.getLocation());
     }
 
     if (getUser().getAttributeData(USER_ATTRIBUTES.FUNCTION.getValue()) != null) {
@@ -1688,11 +1953,11 @@ public class TemplateBean extends BaseService {
     }
 
     placeholders.put(DocumentPlaceholders.R_PERSON_NAME.getValue(),
-      getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + " "
+      getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + LookupValues.SPACE
         + getUser().getAttributeData(USER_ATTRIBUTES.LASTNAME.getValue()));
 
     placeholders.put(DocumentPlaceholders.R_PERSON_FIRSTNAME.getValue(),
-      getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + ", "
+      getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + LookupValues.COMMA
         + getUser().getAttributeData(USER_ATTRIBUTES.LASTNAME.getValue()));
 
     placeholders.put(DocumentPlaceholders.R_INITIALS.getValue(),
@@ -1802,19 +2067,21 @@ public class TemplateBean extends BaseService {
 
     if (offer.getSubmittent().getJointVentures().isEmpty()
       && offer.getSubmittent().getSubcontractors().isEmpty()) {
-      return offer.getSubmittent().getCompanyId().getCompanyName() + ", "
+      return offer.getSubmittent().getCompanyId().getCompanyName() + LookupValues.COMMA
         + offer.getSubmittent().getCompanyId().getLocation();
     } else {
       StringBuilder companyNameStr = new StringBuilder();
       companyNameStr.append(offer.getSubmittent().getCompanyId().getCompanyName());
       if (!offer.getSubmittent().getJointVentures().isEmpty()) {
         for (CompanyDTO jointVenture : offer.getSubmittent().getJointVentures()) {
-          companyNameStr.append(", ").append(jointVenture.getCompanyName()).append(" (ARGE)");
+          companyNameStr.append(LookupValues.COMMA)
+            .append(jointVenture.getCompanyName()).append(" (ARGE)");
         }
       }
       if (!offer.getSubmittent().getSubcontractors().isEmpty()) {
         for (CompanyDTO subcontractor : offer.getSubmittent().getSubcontractors()) {
-          companyNameStr.append(", ").append(subcontractor.getCompanyName()).append(" (Sub U.)");
+          companyNameStr.append(LookupValues.COMMA)
+            .append(subcontractor.getCompanyName()).append(" (Sub U.)");
         }
       }
       return companyNameStr.toString();
@@ -1835,31 +2102,31 @@ public class TemplateBean extends BaseService {
 
     StringBuilder companyColumn = new StringBuilder();
 
-    /** create a default StringBuilder for main company's name */
+    /* create a default StringBuilder for main company's name */
     StringBuilder mainCompany = new StringBuilder();
-    mainCompany.append(offer.getSubmittent().getCompanyId().getCompanyName()).append(", ")
-      .append(offer.getSubmittent().getCompanyId().getLocation());
+    mainCompany.append(offer.getSubmittent().getCompanyId().getCompanyName())
+      .append(LookupValues.COMMA).append(offer.getSubmittent().getCompanyId().getLocation());
 
-    /** create a default StringBuilder for the jointVentures */
+    /* create a default StringBuilder for the jointVentures */
     StringBuilder jointVentures = new StringBuilder();
     for (CompanyDTO jointVenture : offer.getSubmittent().getJointVentures()) {
-      jointVentures.append(" / ").append(jointVenture.getCompanyName()).append(", ")
+      jointVentures.append(LookupValues.SLASH).append(jointVenture.getCompanyName()).append(LookupValues.COMMA)
         .append(jointVenture.getLocation());
     }
-    /** create a default StringBuilder for the sub contarctors */
+    /* create a default StringBuilder for the sub contarctors */
     StringBuilder subContractors = new StringBuilder();
     for (CompanyDTO subcontractor : offer.getSubmittent().getSubcontractors()) {
-      subContractors.append(subcontractor.getCompanyName()).append(", ")
-        .append(subcontractor.getLocation()).append(" / ");
+      subContractors.append(subcontractor.getCompanyName()).append(LookupValues.COMMA)
+        .append(subcontractor.getLocation()).append(LookupValues.SLASH);
     }
 
-    /** When no joint ventures and no sub Contractors */
+    /* When no joint ventures and no sub Contractors */
     if (offer.getSubmittent().getJointVentures().isEmpty()
       && offer.getSubmittent().getSubcontractors().isEmpty()) {
       companyColumn.append(new StringBuilder(mainCompany));
     }
 
-    /** When there are Joint ventures and no Sub Contractors */
+    /* When there are Joint ventures and no Sub Contractors */
     else if (!offer.getSubmittent().getJointVentures().isEmpty()
       && offer.getSubmittent().getSubcontractors().isEmpty()) {
       companyColumn.append(TemplateConstants.ARGE).append(new StringBuilder(mainCompany));
@@ -1867,7 +2134,7 @@ public class TemplateBean extends BaseService {
 
     }
 
-    /** When sub contractors and no Joint ventures */
+    /* When sub contractors and no Joint ventures */
     else if (offer.getSubmittent().getJointVentures().isEmpty()
       && !offer.getSubmittent().getSubcontractors().isEmpty()) {
 
@@ -1875,15 +2142,15 @@ public class TemplateBean extends BaseService {
       companyColumn.append(SUB_U).append(new StringBuilder(subContractors));
     }
 
-    // when both joint ventures and sub contractors
+    /* when both joint ventures and sub contractors */
     else {
       companyColumn.append(TemplateConstants.ARGE)
         .append(new StringBuilder(mainCompany).append(new StringBuilder(jointVentures)));
       companyColumn.append(SUB_U).append(new StringBuilder(subContractors));
     }
-    if (companyColumn.toString().endsWith(" / ")) {
+    if (companyColumn.toString().endsWith(LookupValues.SLASH)) {
       companyColumn.delete(companyColumn.length() - 3, companyColumn.length());
-      companyColumn.append(")");
+      companyColumn.append(LookupValues.RIGHT_PARENTHESIS);
     }
 
     return companyColumn.toString();
@@ -1908,8 +2175,8 @@ public class TemplateBean extends BaseService {
     if (exclusionReasons != null && !exclusionReasons.isEmpty()) {
       for (MasterListValueHistoryDTO exclusionReason : exclusionReasons) {
         if (exclusionReason.getToDate() == null) {
-          cancelNumber.append(exclusionReason.getValue1()).append(", ");
-          cancelDescr.append(exclusionReason.getValue2()).append(", ");
+          cancelNumber.append(exclusionReason.getValue1()).append(LookupValues.COMMA);
+          cancelDescr.append(exclusionReason.getValue2()).append(LookupValues.COMMA);
         }
       }
 
@@ -1953,18 +2220,18 @@ public class TemplateBean extends BaseService {
     if (awardInfo.getAvailableDate() != null && awardInfo != null) {
       if (awardInfo.getObjectNameRead() != null && awardInfo.getObjectNameRead()) {
         value.append(submission.getProject().getObjectName().getValue1());
-        value.append(", ");
+        value.append(LookupValues.COMMA);
       }
       if (awardInfo.getProjectNameRead() != null && awardInfo.getProjectNameRead()) {
-        value.append(submission.getProject().getProjectName() + ", ");
+        value.append(submission.getProject().getProjectName()).append(LookupValues.COMMA);
       }
       if (awardInfo.getWorkingClassRead() != null && awardInfo.getWorkingClassRead()) {
-        value.append(submission.getWorkType().getValue1() + " "
-          + submission.getWorkType().getValue2() + ", ");
+        value.append(submission.getWorkType().getValue1()).append(LookupValues.SPACE)
+          .append(submission.getWorkType().getValue2()).append(LookupValues.COMMA);
       }
       if (awardInfo.getDescriptionRead() != null && awardInfo.getDescriptionRead()
         && StringUtils.isNotBlank(submission.getDescription())) {
-        value.append(submission.getDescription() + ", ");
+        value.append(submission.getDescription()).append(LookupValues.COMMA);
       }
       if (value.length() > 1) {
         placeholders.put(DocumentPlaceholders.READ_VALUES.getValue(),
@@ -1981,10 +2248,10 @@ public class TemplateBean extends BaseService {
           SubmissConverter.convertToSwissDate(new Timestamp(new Date().getTime())));
       }
       if (awardInfo.getReason() != null) {
-        placeholders.put(DocumentPlaceholders.FIRST_AWARD_EXCL_REASON.getValue(),
+        placeholders.put(DocumentPlaceholders.FIRST_LEVEL_AWARD_REASON.getValue(),
           awardInfo.getReason());
       } else {
-        placeholders.put(DocumentPlaceholders.FIRST_AWARD_EXCL_REASON.getValue(),
+        placeholders.put(DocumentPlaceholders.FIRST_LEVEL_AWARD_REASON.getValue(),
           TemplateConstants.EMPTY_STRING);
       }
     } else {
@@ -2028,11 +2295,7 @@ public class TemplateBean extends BaseService {
           Map<String, String> criterionContent = new HashMap<>();
           criterionContent.put(criterionName.toString(), criterionPoints.toString());
 
-          Map<String, String> tableProperties = new HashMap<>();
-          tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
-
-          tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
-          tableProperties.put(DocumentProperties.ITALIC.getValue(), Boolean.FALSE.toString());
+          Map<String, String> tableProperties = getBasicTableProperties(Boolean.FALSE);
 
           subContent.put(criterionContent, tableProperties);
         }
@@ -2052,11 +2315,7 @@ public class TemplateBean extends BaseService {
               Map<String, String> criterionContent = new HashMap<>();
               criterionContent.put(subcriterionName.toString(), subcriterionPoints.toString());
 
-              Map<String, String> tableProperties = new HashMap<>();
-              tableProperties.put(DocumentProperties.SPACING.getValue(), "60");
-
-              tableProperties.put(DocumentProperties.WIDTH.getValue(), "4450");
-              tableProperties.put(DocumentProperties.ITALIC.getValue(), Boolean.TRUE.toString());
+              Map<String, String> tableProperties = getBasicTableProperties(Boolean.TRUE);
               if (getTenantName().equals(DocumentProperties.TENANT_EWB.getValue())) {
                 tableProperties.put(DocumentProperties.FONT_SIZE.getValue(), "18");
               } else {
@@ -2093,17 +2352,17 @@ public class TemplateBean extends BaseService {
     boolean first = true;
     for (CompanyDTO jointVenture : offer.getSubmittent().getJointVentures()) {
       if (!first) {
-        jointVentures.append(jointVenture.getCompanyName());
-        jointVentures.append(", ");
+        jointVentures.append(jointVenture.getCompanyName())
+          .append(LookupValues.COMMA);
       } else {
-        jointVentures.append("(").append(jointVenture.getCompanyName());
-        jointVentures.append(", ");
+        jointVentures.append(LookupValues.LEFT_PARENTHESIS).append(jointVenture.getCompanyName())
+          .append(LookupValues.COMMA);
         first = false;
       }
     }
     if (jointVentures.length() > 1) {
       jointVentures.replace(jointVentures.lastIndexOf(","), jointVentures.lastIndexOf(",") + 1,
-        ")");
+        LookupValues.RIGHT_PARENTHESIS);
       placeholders.put(DocumentPlaceholders.F_COMPANY_JOINT.getValue(), jointVentures.toString());
     } else {
       placeholders.put(DocumentPlaceholders.F_COMPANY_JOINT.getValue(),
@@ -2130,19 +2389,19 @@ public class TemplateBean extends BaseService {
     StringBuilder value = new StringBuilder();
     if (awardInfo != null && awardInfo.getAvailableDate() != null) {
       if (awardInfo.getObjectNameRead() != null && awardInfo.getObjectNameRead()) {
-        value.append(submission.getProject().getObjectName().getValue1());
-        value.append(", ");
+        value.append(submission.getProject().getObjectName().getValue1())
+          .append(LookupValues.COMMA);
       }
       if (awardInfo.getProjectNameRead() != null && awardInfo.getProjectNameRead()) {
-        value.append(submission.getProject().getProjectName() + ", ");
+        value.append(submission.getProject().getProjectName()).append(LookupValues.COMMA);
       }
       if (awardInfo.getWorkingClassRead() != null && awardInfo.getWorkingClassRead()) {
-        value.append(submission.getWorkType().getValue1() + " "
-          + submission.getWorkType().getValue2() + ", ");
+        value.append(submission.getWorkType().getValue1()).append(LookupValues.SPACE)
+          .append(submission.getWorkType().getValue2()).append(LookupValues.COMMA);
       }
       if (awardInfo.getDescriptionRead() != null && awardInfo.getDescriptionRead()
         && StringUtils.isNotBlank(submission.getDescription())) {
-        value.append(submission.getDescription() + ", ");
+        value.append(submission.getDescription()).append(LookupValues.COMMA);
       }
       if (value.length() > 1) {
         placeholders.put(DocumentPlaceholders.READ_VALUES.getValue(),
@@ -2194,11 +2453,13 @@ public class TemplateBean extends BaseService {
       new Object[]{submission, placeholders, value});
 
     value.append(submission.getProject().getObjectName().getValue1());
-    value.append(", ").append(submission.getProject().getProjectName() + ", ").append(
-      submission.getWorkType().getValue1() + " " + submission.getWorkType().getValue2() + ", ");
+    value.append(LookupValues.COMMA).append(submission.getProject().getProjectName())
+      .append(LookupValues.COMMA).append(submission.getWorkType().getValue1())
+      .append(LookupValues.SPACE).append(submission.getWorkType().getValue2())
+      .append(LookupValues.COMMA);
     if (submission.getDescription() != null
       && StringUtils.isNotBlank(submission.getDescription())) {
-      value.append(submission.getDescription() + ", ");
+      value.append(submission.getDescription()).append(LookupValues.COMMA);
     }
     if (value.length() > 1) {
       placeholders.put(DocumentPlaceholders.READ_VALUES.getValue(),
@@ -2208,7 +2469,9 @@ public class TemplateBean extends BaseService {
       SubmissConverter.convertToSwissDate(new Timestamp(new Date().getTime())));
     placeholders.put(DocumentPlaceholders.FIRST_AWARD_DATE.getValue(),
       SubmissConverter.convertToSwissDate(new Timestamp(new Date().getTime())));
-    placeholders.put(DocumentPlaceholders.FIRST_AWARD_EXCL_REASON.getValue(),
+    placeholders.put(DocumentPlaceholders.FIRST_LEVEL_EXCLUSION_REASON.getValue(),
+      TemplateConstants.EMPTY_STRING);
+    placeholders.put(DocumentPlaceholders.FIRST_LEVEL_AWARD_REASON.getValue(),
       TemplateConstants.EMPTY_STRING);
   }
 
@@ -2273,6 +2536,7 @@ public class TemplateBean extends BaseService {
       StringBuilder awardedAmount = new StringBuilder();
       StringBuilder awardedFreeText = new StringBuilder();
       StringBuilder awardedOperCost = new StringBuilder();
+
       for (SubmittentOfferDTO offer : offers) {
         placeholders.put(DocumentPlaceholders.S_MAIN_COMPANY.getValue(),
           offer.getSubmittent().getCompanyId().getCompanyName());
@@ -2282,56 +2546,108 @@ public class TemplateBean extends BaseService {
           offer.getSubmittent().getCompanyId().getLocation());
 
         if (offer.getOffer().getIsAwarded() != null && offer.getOffer().getIsAwarded()) {
+          // Add an extra line if there are more than 1 zuschlag companies
+          if (awardedName.length() > 1) {
+            awardedName.append(TemplateConstants.NEW_LINE_STRING);
+          }
           awardedName.append(offer.getSubmittent().getSubmittentNameArgeSub());
+
           if (offer.getOffer().getAmount() != null) {
-            awardedAmount.append(
-              SubmissConverter.convertToCHFCurrency(offer.getOffer().getAmount()));
+            // Add an extra line if there are more than 1 zuschlag companies
+            if (awardedAmount.length() > 1) {
+              awardedAmount.append(TemplateConstants.NEW_LINE_STRING);
+            }
+            awardedAmount.append(SubmissConverter.convertToCHFCurrency(offer.getOffer().getAmount()));
           }
 
           if (offer.getOffer().getAwardRecipientFreeTextField() != null
             && offer.getOffer().getAwardRecipientFreeTextField().length() > 1) {
+            // Add an extra line if there are more than 1 awardedFreeText
+            if (awardedFreeText.length() > 1) {
+              awardedFreeText.append(TemplateConstants.NEW_LINE_STRING);
+            }
             awardedFreeText.append(offer.getOffer().getAwardRecipientFreeTextField());
           }
 
           if (offer.getOffer().getOperatingCostsAmount() != null) {
-            awardedOperCost.append(SubmissConverter
-              .convertToCHFCurrency(offer.getOffer().getOperatingCostsAmount()));
+            // Add an extra line if there are more than 1 awardedOperCost
+            if (awardedOperCost.length() > 1) {
+              awardedOperCost.append(TemplateConstants.NEW_LINE_STRING);
+            }
             if (offer.getOffer().getOperatingCostNotes() != null
               && offer.getOffer().getOperatingCostNotes().length() > 1) {
-              awardedOperCost.append(", ").append(offer.getOffer().getOperatingCostNotes());
+              awardedOperCost
+                .append(offer.getOffer().getOperatingCostNotes())
+                .append(LookupValues.COMMA);
             }
+            awardedOperCost.append(SubmissConverter
+              .convertToCHFCurrency(offer.getOffer().getOperatingCostsAmount()));
           }
         }
       }
-      if (awardedName.length() > 1) {
-        placeholders.put(DocumentPlaceholders.BA_AWARD.getValue(),
-          awardedName.substring(0, awardedName.length()));
-      } else {
-        placeholders.put(DocumentPlaceholders.BA_AWARD.getValue(), TemplateConstants.EMPTY_STRING);
-      }
-      if (awardedAmount.length() > 1) {
-        placeholders.put("ba_award_amount", awardedAmount.substring(0, awardedAmount.length()));
-      } else {
-        placeholders.put("ba_award_amount", TemplateConstants.EMPTY_STRING);
-      }
-      if (awardedFreeText.length() > 1) {
-        placeholders
-          .put("ba_award_text", awardedFreeText.substring(0, awardedFreeText.length()));
-      } else {
-        placeholders.put("ba_award_text", TemplateConstants.EMPTY_STRING);
-      }
-      if (awardedOperCost.length() > 1) {
-        placeholders
-          .put("ba_award_oper", awardedOperCost.substring(0, awardedOperCost.length()));
-      } else {
-        placeholders.put("ba_award_oper", TemplateConstants.EMPTY_STRING);
-      }
+      // Fill placeholders
+      fillSubmissionPlaceholders(awardedName, awardedAmount, awardedFreeText, awardedOperCost, placeholders);
     }
     placeholders.put(DocumentPlaceholders.BA_DIR_DEP.getValue(),
-      submission.getProject().getDepartment().getDirectorate().getShortName() + " "
+      submission.getProject().getDepartment().getDirectorate().getShortName() + LookupValues.SPACE
         + submission.getProject().getDepartment().getShortName());
-
     ruleService.replaceSubmissionPlaceholders(submission, placeholders);
+  }
+
+  /**
+   * Fill Submission Placeholders with calculated values.
+   *
+   * @param awardedName the awardedName
+   * @param awardedAmount the awardedAmount
+   * @param awardedFreeText the awardedFreeText
+   * @param awardedOperCost the awardedOperCost
+   * @param placeholders the placeholders
+   */
+  private void fillSubmissionPlaceholders(StringBuilder awardedName, StringBuilder awardedAmount,
+    StringBuilder awardedFreeText, StringBuilder awardedOperCost, Map<String, String> placeholders) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method fillSubmissionPlaceholders, Parameters: awardedName: {0}, "
+        + "awardedAmount: {1}, awardedFreeText: {2}, awardedOperCost: {3}, placeholders: {4}",
+      new Object[]{awardedName, awardedAmount, awardedFreeText, awardedOperCost, placeholders});
+
+    // Add the ba_award placeholder
+    if (awardedName.length() > 1) {
+      placeholders.put(DocumentPlaceholders.BA_AWARD.getValue(), awardedName.toString());
+    } else {
+      placeholders.put(DocumentPlaceholders.BA_AWARD.getValue(), TemplateConstants.EMPTY_STRING);
+    }
+
+    // Add the ba_award_amount placeholder
+    if (awardedAmount.length() > 1) {
+      placeholders.put(DocumentPlaceholders.BA_AWARD_AMOUNT.getValue(), awardedAmount.toString());
+    } else {
+      placeholders.put(DocumentPlaceholders.BA_AWARD_AMOUNT.getValue(), TemplateConstants.EMPTY_STRING);
+    }
+
+    // Add the ba_award_text placeholder
+    if (awardedFreeText.length() > 1) {
+      // Add an extra line between ba_award and ba_award_text placeholders
+      if (awardedName.length() > 1) {
+        awardedFreeText.insert(0, TemplateConstants.NEW_LINE_STRING);
+      }
+      placeholders
+        .put(DocumentPlaceholders.BA_AWARD_TEXT.getValue(), awardedFreeText.toString());
+    } else {
+      placeholders.put(DocumentPlaceholders.BA_AWARD_TEXT.getValue(), TemplateConstants.EMPTY_STRING);
+    }
+
+    // Add the ba_award_oper placeholder
+    if (awardedOperCost.length() > 1) {
+      // Add an extra line between ba_award_text and ba_award_oper placeholders
+      if (awardedFreeText.length() > 1) {
+        awardedOperCost.insert(0, TemplateConstants.NEW_LINE_STRING);
+      }
+      placeholders
+        .put(DocumentPlaceholders.BA_AWARD_OPER.getValue(), awardedOperCost.toString());
+    } else {
+      placeholders.put(DocumentPlaceholders.BA_AWARD_OPER.getValue(), TemplateConstants.EMPTY_STRING);
+    }
   }
 
   /**
@@ -2396,11 +2712,11 @@ public class TemplateBean extends BaseService {
       }
 
       placeholders.put(DocumentPlaceholders.R_PERSON_NAME.getValue(),
-        getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + " "
+        getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + LookupValues.SPACE
           + getUser().getAttributeData(USER_ATTRIBUTES.LASTNAME.getValue()));
 
       placeholders.put(DocumentPlaceholders.R_PERSON_FIRSTNAME.getValue(),
-        getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + ", "
+        getUser().getAttributeData(USER_ATTRIBUTES.FIRSTNAME.getValue()) + LookupValues.COMMA
           + getUser().getAttributeData(USER_ATTRIBUTES.LASTNAME.getValue()));
 
       placeholders.put(DocumentPlaceholders.R_INITIALS.getValue(),
@@ -2431,16 +2747,16 @@ public class TemplateBean extends BaseService {
       if (placeholderName.equals(DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue())) {
         placeholders.put(placeholderName,
           TemplateConstants.COMPANY_DE + offer.getSubmittent().getCompanyId().getCompanyName()
-            + ", " + offer.getSubmittent().getCompanyId().getLocation());
+            + LookupValues.COMMA + offer.getSubmittent().getCompanyId().getLocation());
       } else {
         placeholders.put(placeholderName,
           TemplateConstants.COMPANY_DE + offer.getSubmittent().getCompanyId().getCompanyName());
       }
     } else {
       companyName.append(TemplateConstants.ARGE)
-        .append(offer.getSubmittent().getCompanyId().getCompanyName()).append(", ");
+        .append(offer.getSubmittent().getCompanyId().getCompanyName()).append(LookupValues.COMMA);
       for (CompanyDTO jointVenture : offer.getSubmittent().getJointVentures()) {
-        companyName.append(jointVenture.getCompanyName()).append(", ");
+        companyName.append(jointVenture.getCompanyName()).append(LookupValues.COMMA);
       }
       if (placeholderName.equals(DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue())) {
         placeholders.put(placeholderName,
@@ -2566,20 +2882,19 @@ public class TemplateBean extends BaseService {
       new Object[]{documentParameters, submissionDTO});
 
     StringBuilder readValues = new StringBuilder();
-    readValues.append(submissionDTO.getProject().getObjectName().getValue1());
-    readValues.append(", ");
-    readValues.append(submissionDTO.getProject().getProjectName());
-    readValues.append(", ");
-    readValues.append(submissionDTO.getWorkType().getValue1());
-    readValues.append(", ");
+    readValues.append(submissionDTO.getProject().getObjectName().getValue1())
+      .append(LookupValues.COMMA)
+      .append(submissionDTO.getProject().getProjectName())
+      .append(LookupValues.COMMA)
+      .append(submissionDTO.getWorkType().getValue1())
+      .append(LookupValues.COMMA);
     if (submissionDTO.getWorkType().getValue2() != null) {
-      readValues.append(submissionDTO.getWorkType().getValue2());
-      readValues.append(", ");
+      readValues.append(submissionDTO.getWorkType().getValue2())
+        .append(LookupValues.COMMA);
     }
     readValues.append(submissionDTO.getDescription());
-    readValues.append(" (");
-    readValues.append(submissionDTO.getCurrentProcess());
-    readValues.append(")");
+    readValues.append(LookupValues.SPACE).append(LookupValues.LEFT_PARENTHESIS)
+      .append(submissionDTO.getCurrentProcess()).append(LookupValues.RIGHT_PARENTHESIS);
 
     documentParameters.put("ReadValues", readValues.toString());
     documentParameters.put("AddedAwardRecipients", submissionDTO.getAddedAwardRecipients());
@@ -2608,8 +2923,8 @@ public class TemplateBean extends BaseService {
     StringBuilder objectInfo = new StringBuilder();
     objectInfo.append(submission.getProject().getObjectName().getValue1());
     if (submission.getProject().getObjectName().getValue2() != null) {
-      objectInfo.append(", ");
-      objectInfo.append(submission.getProject().getObjectName().getValue2());
+      objectInfo.append(LookupValues.COMMA)
+        .append(submission.getProject().getObjectName().getValue2());
     }
 
     StringBuilder workTypeInfo = new StringBuilder();
@@ -2642,7 +2957,9 @@ public class TemplateBean extends BaseService {
       submittentOffer);
 
     StringBuilder companies = new StringBuilder();
+    // Adding the submittent
     companies.append(submittentOffer.getSubmittent().getCompanyId().getCompanyName());
+    // Adding ARGE partners
     if (submittentOffer.getSubmittent().getJointVentures() != null
       && !submittentOffer.getSubmittent().getJointVentures().isEmpty()) {
       companies.append(" / ");
@@ -2652,6 +2969,7 @@ public class TemplateBean extends BaseService {
       }
       companies.append(StringUtils.join(argePartnersList, " / "));
     }
+    // Adding Sub.U. partners
     if (submittentOffer.getSubmittent().getSubcontractors() != null
       && !submittentOffer.getSubmittent().getSubcontractors().isEmpty()) {
       ArrayList<String> subcontractorsList = new ArrayList<>();
@@ -2660,7 +2978,7 @@ public class TemplateBean extends BaseService {
         subcontractorsList.add(subcostractor.getCompanyName());
       }
       companies.append(StringUtils.join(subcontractorsList, " / "));
-      companies.append(")");
+      companies.append(LookupValues.RIGHT_PARENTHESIS);
     }
     return companies.toString();
   }
@@ -2721,7 +3039,7 @@ public class TemplateBean extends BaseService {
     Set<SubmissionCompanyOverviewDTO> subCompanyOverviewList, String companyDesc) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method setCompanyOverviewInfo, Parameters: company: {1}, "
+      "Executing method setCompanyOverviewInfo, Parameters: company: {0}, "
         + "submissionOverview: {1}, subCompanyOverviewList: {2}, companyDesc: {3}",
       new Object[]{company, submissionOverview, subCompanyOverviewList, companyDesc});
 
@@ -2739,13 +3057,36 @@ public class TemplateBean extends BaseService {
     List<String> proofs = getCompanyListOfProofs(companyProofs, sbproofStatuses);
     subCompanyOverview.setAllProofStatuses(StringUtils.join(proofs, " / "));
     subCompanyOverview.setCompanyPartnershipDesc(companyDesc);
-    if (company.getIsProofProvided() != null && company.getIsProofProvided()) {
-      subCompanyOverview.setProofStatus("Alle Nachweise vorhanden");
-    } else {
-      subCompanyOverview.setProofStatus("nicht aktuell");
-    }
+    subCompanyOverview.setProofStatus(getCompanyOverviewProofStatus(company));
     submissionOverview.setHasPartners(true);
     subCompanyOverviewList.add(subCompanyOverview);
+  }
+
+  /**
+   * Setting the proof status.
+   *
+   * @param company the company
+   * @return the proof status
+   */
+  public String getCompanyOverviewProofStatus(CompanyDTO company) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setCompanyOverviewProofStatus, Parameters: company: {0}",
+      company);
+
+    String proofStatus;
+    if (company.getConsultKaio() && (company.getProofStatus() == ProofStatus.WITH_KAIO.getValue())
+      && (company.getProofStatusFabe() == ProofStatus.WITH_KAIO.getValue())) {
+      proofStatus = "Rücksprache mit KAIO ZKB / FaBe";
+    } else if (company.getConsultAdmin() && (company.getProofStatusFabe() == ProofStatus.WITH_FABE
+      .getValue())) {
+      proofStatus = "Rücksprache mit der Fachstelle Beschaffungswesen";
+    } else if (company.getIsProofProvided() != null && company.getIsProofProvided()) {
+      proofStatus = "Alle Nachweise vorhanden";
+    } else {
+      proofStatus = "nicht aktuell";
+    }
+    return proofStatus;
   }
 
   /**
@@ -2766,7 +3107,7 @@ public class TemplateBean extends BaseService {
     List<String> proofs = new ArrayList<>();
     SimpleDateFormat df = new SimpleDateFormat(TemplateConstants.DATE_FORMAT);
     for (CompanyProofDTO companyProof : companyProofs) {
-      sbproofStatuses.append(companyProof.getProof().getProofName()).append(": ");
+      sbproofStatuses.append(companyProof.getProof().getName()).append(": ");
       if (companyProof.getProof().getRequired() != null && companyProof.getRequired()) {
         if (companyProof.getProofDate() != null) {
           sbproofStatuses.append(df.format(companyProof.getProofDate()));
@@ -2801,7 +3142,7 @@ public class TemplateBean extends BaseService {
 
     if (company.getFiftyPlusFactor() != null) {
       if (company.getApprenticeFactor() != null) {
-        sbRemarks.append(" / ");
+        sbRemarks.append(LookupValues.SLASH);
       }
       sbRemarks.append("F50+ ").append(company.getFiftyPlusFactor());
     }
@@ -2823,7 +3164,7 @@ public class TemplateBean extends BaseService {
     if (company.getApprenticeFactor() != null || company.getTlp() != null
       || company.getFiftyPlusFactor() != null) {
       if (company.getNotes() != null && !company.getNotes().isEmpty()) {
-        sbRemarks.append(" / ").append(company.getNotes());
+        sbRemarks.append(LookupValues.SLASH).append(company.getNotes());
       }
     } else {
       if (company.getNotes() != null && !company.getNotes().isEmpty()) {
@@ -2833,10 +3174,10 @@ public class TemplateBean extends BaseService {
 
     if (company.getNoteAdmin() != null && !company.getNoteAdmin().isEmpty()) {
       if (company.getNotes() != null && !company.getNotes().isEmpty()) {
-        sbRemarks.append(", ").append(company.getNoteAdmin());
+        sbRemarks.append(LookupValues.COMMA).append(company.getNoteAdmin());
       } else {
         if (company.getApprenticeFactor() != null || company.getTlp() != null) {
-          sbRemarks.append(" / ").append(company.getNoteAdmin());
+          sbRemarks.append(LookupValues.SLASH).append(company.getNoteAdmin());
         } else {
           sbRemarks.append(company.getNoteAdmin());
         }
@@ -2920,67 +3261,87 @@ public class TemplateBean extends BaseService {
   /**
    * Calculates the offer's price percentage in comparison with the lowest offer.
    *
-   * @param submittentOffer the submittent offer
-   * @param offers the offers
-   * @return the string
+   * @param submission             the submission
+   * @param submissionOverviewList the submissionOverviewList
    */
-  public String calculateOfferPricePercentage(SubmittentOfferDTO submittentOffer,
-    List<SubmittentOfferDTO> offers) {
+  public void calculateOfferPricePercentage(SubmissionDTO submission,
+    List<SubmissionOverviewDTO> submissionOverviewList) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method calculateOfferPricePercentage, Parameters: submittentOffer: {0}, "
-        + "offers: {1}",
-      new Object[]{submittentOffer, offers});
+      "Executing method calculateOfferPricePercentage, Parameters: submission: {0}, "
+        + "submissionOverviewList: {1}",
+      new Object[]{submission, submissionOverviewList});
 
-    List<BigDecimal> list = new ArrayList<>();
-    List<BigDecimal> nonZerolist = new ArrayList<>();
-    boolean hasEmptyOffers = false;
-    for (int i = 0; i < offers.size(); i++) {
-      if (offers.get(i).getOffer().getAmount() == null
-        || offers.get(i).getOffer().getAmount().compareTo(BigDecimal.ZERO) == 0) {
-        list.add(new BigDecimal(Double.valueOf(0)));
-        hasEmptyOffers = true;
-      } else {
-        list.add(i, offers.get(i).getOffer().getAmount());
-        nonZerolist.add(offers.get(i).getOffer().getAmount());
+    // the lowest offer
+    BigDecimal lowestOffer = getLowestOffer(submissionOverviewList);
+    // set price percentage for every submittent
+    submissionOverviewList.forEach(submissionOverviewDTO -> submissionOverviewDTO
+      .setPricePercentage(getPercentage(submission, submissionOverviewDTO, lowestOffer)));
+  }
+
+  /**
+   * Gets the lowest offer.
+   *
+   * @param submissionOverviewList the submissionOverviewList
+   * @return the lowest offer
+   */
+  private BigDecimal getLowestOffer(List<SubmissionOverviewDTO> submissionOverviewList) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getLowestOffer, Parameters: submissionOverviewList: {0}",
+      submissionOverviewList);
+
+    List<BigDecimal> offerAmounts = new ArrayList<>();
+    for (SubmissionOverviewDTO submissionOverviewDTO : submissionOverviewList) {
+      if (!submissionOverviewDTO.getOffer().getIsExcludedFromProcess()
+        && submissionOverviewDTO.getOffer().getAmount() != null
+        && submissionOverviewDTO.getOffer().getAmount().compareTo(BigDecimal.ZERO) > 0) {
+        offerAmounts.add(submissionOverviewDTO.getOffer().getAmount());
       }
     }
+    return (!offerAmounts.isEmpty()) ? Collections.min(offerAmounts) : BigDecimal.ZERO;
+  }
 
-    int minIndex;
-    Double lowestOffer = null;
-    Double currentOffer = null;
-    if (hasEmptyOffers) {
-      // check if all values of list are zero
-      if (Collections.frequency(list, new BigDecimal(Double.valueOf(0))) == list.size()) {
-        lowestOffer = Double.valueOf(0);
-      } else {
-        minIndex = nonZerolist.indexOf(Collections.min(nonZerolist));
-        lowestOffer = nonZerolist.get(minIndex).doubleValue();
-      }
+  /**
+   * Gets the price percentage for current offer compared to the lowest offer.
+   *
+   * @param submission the submission
+   * @param submissionOverviewDTO the submissionOverviewDTO
+   * @param lowestOffer the lowestOffer
+   * @return the percentage
+   */
+  private String getPercentage(SubmissionDTO submission,
+    SubmissionOverviewDTO submissionOverviewDTO, BigDecimal lowestOffer) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getPercentage, Parameters: submission: {0}, "
+        + "submissionOverviewDTO: {1}, lowestOffer: {2}",
+      new Object[]{submission, submissionOverviewDTO, lowestOffer});
+
+    String percentage;
+    /*
+     * Set percentage to 0.00
+     * if lowest offer is 0
+     * or
+     * if a submittent is excluded and the submission status is after Zuschlagsbewertung abschliessen
+     * else calculate the price percentage for current offer
+     */
+    if ((Integer.parseInt(submission.getStatus()) >= Integer
+      .parseInt(TenderStatus.AWARD_EVALUATION_CLOSED.getValue()) && submissionOverviewDTO.getOffer()
+      .getIsExcludedFromProcess()) || (Integer.parseInt(submission.getStatus()) >= Integer
+      .parseInt(TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue())
+      && submissionOverviewDTO.getOffer().getIsExcludedFromProcess())
+      || lowestOffer.intValue() == 0) {
+      percentage = "0.00";
     } else {
-      minIndex = list.indexOf(Collections.min(list));
-      lowestOffer = list.get(minIndex).doubleValue();
+      BigDecimal currentOffer =
+        (submissionOverviewDTO.getOffer().getAmount() != null) ? submissionOverviewDTO.getOffer()
+          .getAmount() : BigDecimal.ZERO;
+      BigDecimal percentageCalculation = currentOffer.multiply(BigDecimal.valueOf(100))
+        .divide(lowestOffer, 2, RoundingMode.HALF_UP);
+      percentage = percentageCalculation.toPlainString();
     }
-
-    if (submittentOffer.getOffer().getAmount() != null) {
-      currentOffer = submittentOffer.getOffer().getAmount().doubleValue();
-    } else {
-      currentOffer = Double.valueOf(0);
-    }
-
-    // The formula for calculation will be:
-    // (currentOffer / lowestOffer) * 100
-    Double offer = null;
-
-    if (currentOffer.equals(lowestOffer) && !lowestOffer.equals(Double.valueOf(0))) {
-      return new BigDecimal(Double.valueOf(100)).toString();
-    }
-
-    DecimalFormat df = new DecimalFormat("#.##");
-    if (lowestOffer != 0) {
-      offer = (currentOffer / lowestOffer) * 100;
-    }
-    return offer != null ? df.format(offer) : "0.00";
+    return percentage;
   }
 
   /**
@@ -3021,20 +3382,20 @@ public class TemplateBean extends BaseService {
 
     StringBuilder readValues = new StringBuilder();
     readValues.append(submission.getProject().getObjectName().getValue1());
-    readValues.append(", ");
+    readValues.append(LookupValues.COMMA);
     readValues.append(submission.getProject().getProjectName());
-    readValues.append(", ");
+    readValues.append(LookupValues.COMMA);
     readValues.append(submission.getWorkType().getValue1());
-    readValues.append(" ");
+    readValues.append(LookupValues.SPACE);
     if (submission.getWorkType().getValue2() != null) {
       readValues.append(submission.getWorkType().getValue2());
-      readValues.append(", ");
+      readValues.append(LookupValues.COMMA);
     }
     readValues.append(submission.getDescription());
     if (submission.getProcess() != null) {
-      readValues.append(" (");
+      readValues.append(LookupValues.SPACE).append(LookupValues.LEFT_PARENTHESIS);
       readValues.append(getTranslatedProcess(submission.getProcess()));
-      readValues.append(")");
+      readValues.append(LookupValues.RIGHT_PARENTHESIS);
     }
     return readValues;
   }
@@ -3126,20 +3487,24 @@ public class TemplateBean extends BaseService {
     if (legalHearingExclusionDTO != null && !legalHearingExclusionDTO.getExclusionReasons()
       .isEmpty()) {
       if (legalHearingExclusionDTO.getExclusionReason() != null) {
-        placeholders.put("v2_reason_exclusion", legalHearingExclusionDTO.getExclusionReason());
+        if (levels.contains(SelectiveLevel.FIRST_LEVEL.getValue())) {
+          placeholders
+            .put(DocumentPlaceholders.FIRST_LEVEL_EXCLUSION_REASON.getValue(), legalHearingExclusionDTO.getExclusionReason());
+        } else {
+          placeholders.put("v2_reason_exclusion", legalHearingExclusionDTO.getExclusionReason());
+        }
       } else {
-        placeholders.put("v2_reason_exclusion", TemplateConstants.EMPTY_STRING);
+        if (levels.contains(SelectiveLevel.FIRST_LEVEL.getValue())) {
+          placeholders.put(DocumentPlaceholders.FIRST_LEVEL_EXCLUSION_REASON.getValue(), TemplateConstants.EMPTY_STRING);
+        } else {
+          placeholders.put("v2_reason_exclusion", TemplateConstants.EMPTY_STRING);
+        }
       }
-      if (legalHearingExclusionDTO.getExclusionReason() != null) {
-        placeholders
-          .put("first_level_exclusion_reason", legalHearingExclusionDTO.getExclusionReason());
-      } else {
-        placeholders.put("first_level_exclusion_reason", TemplateConstants.EMPTY_STRING);
-      }
+
       for (ExclusionReasonDTO exclusionReason : legalHearingExclusionDTO.getExclusionReasons()) {
         if (exclusionReason.getExclusionReason().getToDate() == null) {
-          cancelNumber.append(exclusionReason.getExclusionReason().getValue1()).append(", ");
-          cancelDescr.append(exclusionReason.getExclusionReason().getValue2()).append(", ");
+          cancelNumber.append(exclusionReason.getExclusionReason().getValue1()).append(LookupValues.COMMA);
+          cancelDescr.append(exclusionReason.getExclusionReason().getValue2()).append(LookupValues.COMMA);
         }
       }
 
@@ -3363,7 +3728,7 @@ public class TemplateBean extends BaseService {
           Object value = jpt.getValue();
           if (value instanceof String) {
             if (((String) value).contains(seite)) {
-              jpt.setText("Seite " + currentPage + " / " + totalPageNumber);
+              jpt.setText("Seite " + currentPage + LookupValues.SLASH + totalPageNumber);
             }
           }
         }
@@ -3434,7 +3799,7 @@ public class TemplateBean extends BaseService {
           workTypeList.add(worktypeSb.toString());
           worktypeSb.setLength(0);
         }
-        searchCriteriaList.add(StringUtils.join(workTypeList, ", "));
+        searchCriteriaList.add(StringUtils.join(workTypeList, LookupValues.COMMA));
       }
       if (companySearchDTO.getLogibStatus() != null
         && companySearchDTO.getLogibStatus().getValue() != 4) {
@@ -3503,7 +3868,10 @@ public class TemplateBean extends BaseService {
   }
 
   /**
+   * Ranking companies.
    *
+   * @param submission the submissionDTO
+   * @param submissionOverviewList the submission overview list
    */
   public void setCompaniesRank(SubmissionDTO submission,
     List<SubmissionOverviewDTO> submissionOverviewList) {
@@ -3517,9 +3885,6 @@ public class TemplateBean extends BaseService {
       if (compareCurrentVsSpecificStatus(TenderStatus.fromValue(submission.getStatus()),
         TenderStatus.AWARD_EVALUATION_CLOSED)) {
         Collections.sort(submissionOverviewList, ComparatorUtil.sortCompaniesByAwardRank);
-      } else if (compareCurrentVsSpecificStatus(TenderStatus.fromValue(submission.getStatus()),
-        TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED)) {
-        Collections.sort(submissionOverviewList, ComparatorUtil.sortCompaniesByRank);
       } else {
         Collections.sort(submissionOverviewList, ComparatorUtil.sortCompaniesByAmount);
       }
@@ -3542,6 +3907,19 @@ public class TemplateBean extends BaseService {
         Collections.sort(submissionOverviewList, ComparatorUtil.sortCompaniesByAwardRank);
       }
     }
+    addRankingNumbers(submissionOverviewList);
+  }
+
+  /**
+   * Add the ranking numbers.
+   *
+   * @param submissionOverviewList the submission overview list
+   */
+  private void addRankingNumbers(List<SubmissionOverviewDTO> submissionOverviewList) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method addRankingNumbers, Parameters: submissionOverviewList: {0}",
+      submissionOverviewList);
 
     for (int i = 0; i < submissionOverviewList.size(); i++) {
       submissionOverviewList.get(i).setRank(i + 1);

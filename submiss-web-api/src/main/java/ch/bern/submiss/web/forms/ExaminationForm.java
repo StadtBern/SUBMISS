@@ -13,10 +13,10 @@
 
 package ch.bern.submiss.web.forms;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExaminationForm {
@@ -24,7 +24,9 @@ public class ExaminationForm {
   private BigDecimal minGrade;
   private BigDecimal maxGrade;
   private String submissionId;
+  private Long submissionVersion;
   private List<CriterionForm> criterion;
+  private Timestamp pageRequestedOn;
 
   public BigDecimal getMinGrade() {
     return minGrade;
@@ -58,4 +60,19 @@ public class ExaminationForm {
     this.criterion = criterion;
   }
 
+  public Timestamp getPageRequestedOn() {
+    return pageRequestedOn;
+  }
+
+  public void setPageRequestedOn(Timestamp pageRequestedOn) {
+    this.pageRequestedOn = pageRequestedOn;
+  }
+
+  public Long getSubmissionVersion() {
+    return submissionVersion;
+  }
+
+  public void setSubmissionVersion(Long submissionVersion) {
+    this.submissionVersion = submissionVersion;
+  }
 }

@@ -12,105 +12,106 @@
   -->
 
 <div class="row">
-	<div class="col-sm-12">
-		<h2 class="page-title">
-			{{submissionsViewCtr.data.project.projectName}},<small>&nbsp;{{submissionsViewCtr.getObjectInfo(submissionsViewCtr.data.project.objectName)}}</small>
-		</h2>
-	</div>
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{submissionsViewCtr.data.project.projectName}},<small>&nbsp;{{submissionsViewCtr.getObjectInfo(submissionsViewCtr.data.project.objectName)}}</small>
+    </h2>
+  </div>
 </div>
 <div class="row">
-	<div class="card-box">
-		<div class="col-sm-12 ToolbarContainer">
-			<div class="btn-toolbar pull-right" role="toolbar">
-				<button type="button" class="btn btn-primary" data-toggle="modal"
-					data-ng-click="submissionsViewCtr.createSubmission()"
-					data-ng-disabled="!submissionsViewCtr.secTenderCreate || !submissionsViewCtr.data.project.constructionPermit || !submissionsViewCtr.data.project.loanApproval || submissionsViewCtr.data.project.gattWto ==null">
-					<span class="fa fa-plus" aria-hidden="true"></span> Submission eröffnen
-				</button>
-			</div>
-		</div>
-		<form name="submissionsViewCtr.submissionForm" id="submissionForm" shows-validation-errors>
-		<div class="col-sm-12">
-          <div class="alert alert-danger" ng-if="submissionsViewCtr.submissionForm.$invalid" role="alert">
-       		 <field-error form-element-name="submissionHasSubmittentField" translate name="error"></field-error>
-          </div> 
-          <input name="submissionHasSubmittentField" ng-hide="true" data-ng-model="fd"></input>
+  <div class="card-box">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="btn-toolbar pull-right" role="toolbar">
+        <button type="button" class="btn btn-primary" data-toggle="modal"
+          data-ng-click="submissionsViewCtr.createSubmission()"
+          data-ng-disabled="!submissionsViewCtr.secTenderCreate || !submissionsViewCtr.data.project.constructionPermit || !submissionsViewCtr.data.project.loanApproval || submissionsViewCtr.data.project.gattWto ==null">
+          <span class="fa fa-plus" aria-hidden="true"></span> Submission eröffnen
+        </button>
+      </div>
+    </div>
+    <form name="submissionsViewCtr.submissionForm" id="submissionForm" shows-validation-errors>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="submissionsViewCtr.submissionForm.$invalid" role="alert">
+          <field-error form-element-name="submissionHasSubmittentField" translate name="error"></field-error>
+          <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
         </div>
-        </form>
-		<div class="col-sm-12">
-			<!-- Nav tabs -->
-			<ul class="nav nav-tabs" role="tablist">
-				<li role="presentation"><a  aria-controls="Projektdetails" role="tab" data-toggle="tab" 
-				ng-click="submissionsViewCtr.navigateToProject(submissionsViewCtr.data.project.id)">Projektdetails</a></li>
-				<li role="presentation" class="active"><a href="#submissionen"
-					aria-controls="Submissionen" role="tab" data-toggle="tab">Submissionen</a></li>
-			</ul>
-			<!-- Tab panes -->
-			<div class="tab-content">
-					<div class="row" id="results">
-						<div class="card-box">
-							<div class="col-sm-12 ToolbarContainer"></div>
-							<div class="col-sm-12">
-								<div>
-									<div ng-table-pagination="submissionsViewCtr.tableParams"
-										template-url="'app/layout/pager.html'"></div>
-									<div class="table-responsive">
-										<table ng-table="submissionsViewCtr.tableParams"
-											class="table table-striped" show-filter="true">
-											<tr ng-repeat="submission in $data">
-												<td title="'Arbeitsgattung'" sortable="'workType'">
-													{{submission.workType.value2}}</td>
-												<td title="'Beschreibung'" sortable="'description'">
-													{{submission.description}}</td>
-												<td title="'Verfahrensart'" sortable="'process'" translate>
-													{{submission.process}}</td>
-												<td title="'Eingabetermin 2'" sortable="'secondDeadline'">
-													{{submission.secondDeadline | date:'dd.MM.yyyy'}}</td>
-												<td title="'Projektleitung der Abt.'"
-													sortable="'pmDepartmentName'">{{submission.pmDepartmentName}}</td>
+        <input name="submissionHasSubmittentField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+    </form>
+    <div class="col-sm-12">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation"><a aria-controls="Projektdetails" role="tab" data-toggle="tab"
+            ng-click="submissionsViewCtr.navigateToProject(submissionsViewCtr.data.project.id)">Projektdetails</a></li>
+        <li role="presentation" class="active"><a aria-controls="Submissionen" role="tab"
+            data-toggle="tab">Submissionen</a></li>
+      </ul>
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div class="row" id="results">
+          <div class="card-box">
+            <div class="col-sm-12 ToolbarContainer"></div>
+            <div class="col-sm-12">
+              <div>
+                <div ng-table-pagination="submissionsViewCtr.tableParams" template-url="'app/layout/pager.html'"></div>
+                <div class="table-responsive">
+                  <table ng-table="submissionsViewCtr.tableParams" class="table table-striped" show-filter="true">
+                    <tr ng-repeat="submission in $data">
+                      <td title="'Arbeitsgattung'" sortable="'workType'">
+                        {{submission.workType.value2}}</td>
+                      <td title="'Beschreibung'" sortable="'description'">
+                        {{submission.description}}</td>
+                      <td title="'Verfahrensart'" sortable="'process'" translate>
+                        {{submission.process}}</td>
+                      <td title="'Eingabetermin 2'" sortable="'secondDeadline'">
+                        {{submission.secondDeadline | date:'dd.MM.yyyy'}}</td>
+                      <td title="'Projektleitung der Abt.'" sortable="'pmDepartmentName'">
+                        {{submission.pmDepartmentName}}</td>
 
-												<td class="w90" title="'Aktion'">
-													<div style="display: inline-block">
-														<button type="button" data-ng-disabled="!submissionsViewCtr.secTenderView" data-ng-click="submissionsViewCtr.navigateToSubmissionView(submission.id)"
-															class="btn action btn-primary" title="Submission ansehen"><span
-															class="fa fa-eye" aria-hidden="true"></span></button>
-													</div>
-													<div style="display: inline-block">
-														<button type="button" class="btn action btn-primary"
-															data-ng-disabled="!submissionsViewCtr.secTenderEdit[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index]
+                      <td class="w90" title="'Aktion'">
+                        <div style="display: inline-block">
+                          <button type="button" data-ng-disabled="!submissionsViewCtr.secTenderView"
+                            data-ng-click="submissionsViewCtr.navigateToSubmissionView(submission.id)"
+                            class="btn action btn-primary" title="Submission ansehen"><span class="fa fa-eye"
+                              aria-hidden="true"></span></button>
+                        </div>
+                        <div style="display: inline-block">
+                          <button type="button" class="btn action btn-primary"
+                            data-ng-disabled="!submissionsViewCtr.secTenderEdit[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index]
 																			 || submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] >= submissionsViewCtr.status.PROCEDURE_COMPLETED
 																			 || submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] >= submissionsViewCtr.status.PROCEDURE_CANCELED
 																			 || !((appCtrl.getLoggedUser().userGroup.name == submissionsViewCtr.group.ADMIN)
 																			 || (appCtrl.getLoggedUser().userGroup.name == submissionsViewCtr.group.PL
-																			 && (((submission.process == 'OPEN' || submission.process == 'INVITATION') 
-																			 && submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] < submissionsViewCtr.status.OFFER_OPENING_STARTED) 
+																			 && (((submission.process == 'OPEN' || submission.process == 'INVITATION')
+																			 && submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] < submissionsViewCtr.status.OFFER_OPENING_STARTED)
 																			 || (submission.process == 'SELECTIVE'
 																			 && submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] < submissionsViewCtr.status.APPLICATION_OPENING_STARTED)
 																			 || (submission.process == 'NEGOTIATED_PROCEDURE' || submission.process == 'NEGOTIATED_PROCEDURE_WITH_COMPETITION'))))"
-															data-ng-click="submissionsViewCtr.editSubmission(submission)"
-															title="Submission bearbeiten">
-															<span class="fa fa-pencil" aria-hidden="true"></span>
-														</button>
-													</div>
-													<div style="display: inline-block">
-														<button type="button" data-ng-disabled="!submissionsViewCtr.secTenderDelete
+                            data-ng-click="submissionsViewCtr.editSubmission(submission)" title="Submission bearbeiten">
+                            <span class="fa fa-pencil" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                        <div style="display: inline-block">
+                          <button type="button"
+                            data-ng-disabled="!submissionsViewCtr.secTenderDelete
 																							 || submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] >= submissionsViewCtr.status.PROCEDURE_COMPLETED
 																			                 || submissionsViewCtr.currentStatus[((submissionsViewCtr.tableParams.page() - 1) * submissionsViewCtr.tableParams.count()) + $index] >= submissionsViewCtr.status.PROCEDURE_CANCELED"
-														data-ng-click="submissionsViewCtr.deleteModal(submission.id)" class="btn action btn-primary"
-															title="Submission löschen">
-															<span class="fa fa-trash-o" aria-hidden="true"></span>
-														</button>
-													</div>
-												</td>
+                            data-ng-click="submissionsViewCtr.deleteModal(submission.id)" class="btn action btn-primary"
+                            title="Submission löschen">
+                            <span class="fa fa-trash-o" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </td>
 
-											</tr>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

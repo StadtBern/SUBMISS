@@ -56,17 +56,24 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      if ($rootScope.$previousState === 'project.search' || $rootScope.$previousState === undefined || $rootScope.$previousState === 'project.create' ||
-        $rootScope.$previousState === 'project.view' || $rootScope.$previousState === 'project.view.from.Offers' ||
-        $rootScope.$previousState === 'company.search' || $rootScope.$previousState === '' || $rootScope.$previousState === 'projectSubmissionsView') {
-        vm.readProject($stateParams.id);
-      } else {
-        vm.readProject($rootScope.selectedProjectId);
-      }
-      vm.secProjectEdit = AppService.isOperationPermitted(AppConstants.OPERATION.PROJECT_EDIT, null);
-      vm.secProjectDelete = AppService.isOperationPermitted(AppConstants.OPERATION.PROJECT_DELETE, null);
-      vm.secTenderCreate = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_CREATE, null);
-      vm.secTenderListView = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_LIST_VIEW, null);
+      ProjectService.loadProjectDetails($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            if ($rootScope.$previousState === 'project.search' || $rootScope.$previousState === undefined || $rootScope.$previousState === 'project.create' ||
+              $rootScope.$previousState === 'project.view' || $rootScope.$previousState === 'project.view.from.Offers' ||
+              $rootScope.$previousState === 'company.search' || $rootScope.$previousState === '' || $rootScope.$previousState === 'projectSubmissionsView') {
+              vm.readProject($stateParams.id);
+            } else {
+              vm.readProject($rootScope.selectedProjectId);
+            }
+            vm.secProjectEdit = AppService.isOperationPermitted(AppConstants.OPERATION.PROJECT_EDIT, null);
+            vm.secProjectDelete = AppService.isOperationPermitted(AppConstants.OPERATION.PROJECT_DELETE, null);
+            vm.secTenderCreate = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_CREATE, null);
+            vm.secTenderListView = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_LIST_VIEW, null);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -130,7 +137,10 @@
     function deleteProject() {
       if (vm.data.project) {
         ProjectService.deleteProject(vm.data.project.id)
-          .success(function (data) {
+          .success(function (data, status) {
+            if (status === 403) { // Security checks.
+              return;
+            }
             $state.go('project.search', {});
           }).error(function (response, status) {
             if (status === 400) { // Validation errors.
@@ -175,10 +185,17 @@
     }
 
     function navigateToProjectSubmissions(projectId, projectName) {
-      $state.go('projectSubmissionsView', {
-        id: projectId,
-        name: projectName,
-        stateFrom: 'project.view'
+      ProjectService.projectExists(projectId).success(function (data) {
+        $state.go('projectSubmissionsView', {
+          id: projectId,
+          name: projectName,
+          stateFrom: 'project.view'
+        });
+      }).error(function (response, status) {
+        if (status === 400) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.projectViewCtr.projectForm, response);
+        }
       });
     }
 

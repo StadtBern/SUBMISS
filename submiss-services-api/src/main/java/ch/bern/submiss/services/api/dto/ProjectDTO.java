@@ -13,94 +13,100 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import java.sql.Timestamp;
-import com.fasterxml.jackson.annotation.JsonView;
 import ch.bern.submiss.services.api.constants.ConstructionPermit;
 import ch.bern.submiss.services.api.constants.LoanApproval;
 import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonView;
+import java.sql.Timestamp;
 
 /**
  * The Class ProjectDTO.
  */
-public class ProjectDTO {
+public class ProjectDTO extends AbstractDTO {
 
-  /** The id. */
-  @JsonView(View.Internal.class)
-  private String id;
-
-  /** The project name. */
+  /**
+   * The project name.
+   */
   @JsonView(View.Public.class)
   private String projectName;
 
-  /** The tenant. */
+  /**
+   * The tenant.
+   */
   @JsonView(View.Internal.class)
   private TenantDTO tenant;
 
-  /** The object name. */
+  /**
+   * The object name.
+   */
   @JsonView(View.Public.class)
   private MasterListValueHistoryDTO objectName;
 
-  /** The procedure. */
+  /**
+   * The procedure.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO procedure;
 
-  /** The gatt wto. */
+  /**
+   * The gatt wto.
+   */
   @JsonView(View.Internal.class)
   private Boolean gattWto;
 
-  /** The pm department name. */
+  /**
+   * The pm department name.
+   */
   @JsonView(View.Internal.class)
   private String pmDepartmentName;
 
-  /** The pm external. */
+  /**
+   * The pm external.
+   */
   @JsonView(View.Internal.class)
   private CompanyDTO pmExternal;
 
-  /** The department. */
+  /**
+   * The department.
+   */
   @JsonView(View.Internal.class)
   private DepartmentHistoryDTO department;
 
-  /** The project number. */
+  /**
+   * The project number.
+   */
   @JsonView(View.Internal.class)
   private String projectNumber;
 
-  /** The notes. */
+  /**
+   * The notes.
+   */
   @JsonView(View.Internal.class)
   private String notes;
 
-  /** The construction permit. */
+  /**
+   * The construction permit.
+   */
   @JsonView(View.Internal.class)
   private ConstructionPermit constructionPermit;
 
-  /** The loan approval. */
+  /**
+   * The loan approval.
+   */
   @JsonView(View.Internal.class)
   private LoanApproval loanApproval;
 
-  /** The create by. */
+  /**
+   * The create by.
+   */
   @JsonView(View.Internal.class)
   private String createdBy;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @JsonView(View.Internal.class)
   private Timestamp createdOn;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the project name.
@@ -356,19 +362,12 @@ public class ProjectDTO {
     this.createdOn = createdOn;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "ProjectDTO [id=" + id + ", projectName=" + projectName + ", gattWto=" + gattWto
-        + ", pmDepartmentName=" + pmDepartmentName + ", projectNumber=" + projectNumber + ", notes="
-        + notes + ", constructionPermit=" + ", createdBy=" + createdBy + ", createdOn=" + createdOn
-        + "]";
+    return "ProjectDTO [id=" + super.getId() + ", version=" + super.getVersion() + ", projectName="
+      + projectName + ", gattWto=" + gattWto
+      + ", pmDepartmentName=" + pmDepartmentName + ", projectNumber=" + projectNumber + ", notes="
+      + notes + ", constructionPermit=" + ", createdBy=" + createdBy + ", createdOn=" + createdOn
+      + "]";
   }
-
-
-
 }

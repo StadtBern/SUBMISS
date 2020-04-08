@@ -62,6 +62,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiService;
 
@@ -238,10 +239,20 @@ public class UserAdministrationResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response edit(@Valid UserForm form) {
+    userAdministrationService.userSearchSecurityCheck();
+    // Check for validation errors
     Set<ValidationError> errors = validationEdit(form);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
+    // Check for optimistic lock errors
+    Set<ValidationError> optimisticLockErrors = userAdministrationService
+      .editUserOptimisticLock(form.getId(), form.getVersion(), form.getFunctionVersion(),
+        form.getSecondaryDepartmentsVersion());
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+    }
+    // Proceed with editing user
     String email = userAdministrationService.editUser(UserFormMapper.INSTANCE.toUserDTO(form),
       form.getUserGroup().getName(), form.getGroupChanged(), form.getSecDeptsChanged(),
       form.isUserAdminRight(), form.getUserAdminRightChanged(), form.getRegister());
@@ -262,6 +273,8 @@ public class UserAdministrationResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response search(UserSearchForm form) {
+
+    userAdministrationService.userSearchSecurityCheck();
 
     SubmissUserDTO searchDTO = UserSearchFormMapper.INSTANCE.toSubmissUserDTO(form);
 
@@ -498,6 +511,7 @@ public class UserAdministrationResource {
   @Produces("application/octet-stream")
   @Path("/export")
   public Response exportUsers(UserExportForm exportForm) {
+    userAdministrationService.userExportSecurityCheck();
     if (exportForm != null) {
       Date startDate = exportForm.getStartDate();
       Date endDate = exportForm.getEndDate();
@@ -528,6 +542,7 @@ public class UserAdministrationResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/validateExportForm")
   public Response validateForm(UserExportForm exportForm) {
+    userAdministrationService.userExportSecurityCheck();
     Set<ValidationError> errors = validateExportForm(exportForm);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
@@ -557,5 +572,33 @@ public class UserAdministrationResource {
       }
     }
     return errors;
+  }
+
+  /**
+   * Run security check before loading User Export.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadUserExport")
+  public Response loadUserExport() {
+    userAdministrationService.userExportSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading User Edit.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadUserSearch")
+  public Response loadUserSearch() {
+    userAdministrationService.userSearchSecurityCheck();
+    return Response.ok().build();
   }
 }

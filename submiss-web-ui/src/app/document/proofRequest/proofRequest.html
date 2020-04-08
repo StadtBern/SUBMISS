@@ -15,15 +15,17 @@
 	<button type="button" class="close" aria-label="Close" ng-click="$close()"><span aria-hidden="true">&times;</span></button>
 	<h4 class="modal-title">Nachweise anfordern</h4>
 </div>
-<form name ="proofRequestCtrl.requestForm" id=requestForm 
-	data-ng-submit="proofRequestCtrl.requestProofs()" shows-validation-errors>	
+<form name ="proofRequestCtrl.requestForm" id=requestForm
+	data-ng-submit="proofRequestCtrl.requestProofs()" shows-validation-errors>
 	<div class="modal-body">
 			<div class="alert alert-danger" ng-if="proofRequestCtrl.requestForm.$invalid && proofRequestCtrl.errorFieldsVisible" role="alert">
 				<field-error form-element-name="submitDateErrorField" translate name="error"></field-error>
 				<field-error form-element-name="noSubmittentsChecked" translate name="error"></field-error>
+        <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
 			</div>
 			<input name="submitDateErrorField" ng-hide="true" data-ng-model="fd"></input>
 			<input name="noSubmittentsChecked" ng-hide="true" data-ng-model="fd"></input>
+      <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
 			<div class="form-group"
 			data-ng-mouseleave="proofRequestCtrl.submitDate.opened = false">
 			<label for="submitDate">Einzureichen<span

@@ -72,6 +72,9 @@
       },
       getOperationReportCalculationResults: function (report) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/report/operation/results', report);
+      },
+      loadReport: function (reportType) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/report/loadReport/' + reportType);
       }
     };
   }

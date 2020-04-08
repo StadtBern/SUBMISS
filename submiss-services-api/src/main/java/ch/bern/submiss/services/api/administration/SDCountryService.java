@@ -13,11 +13,13 @@
 
 package ch.bern.submiss.services.api.administration;
 
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.List;
 import java.util.Map;
 
 import ch.bern.submiss.services.api.dto.CountryHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
+import java.util.Set;
 
 public interface SDCountryService {
 
@@ -58,8 +60,9 @@ public interface SDCountryService {
    * Save the country history entry.
    *
    * @param countryHistoryDTO the country history DTO
+   * @return the optimistic lock error
    */
-  void saveCountryEntry(CountryHistoryDTO countryHistoryDTO);
+  Set<ValidationError> saveCountryEntry(CountryHistoryDTO countryHistoryDTO);
 
   /**
    * Maps country ids to the latest country history DTOs.

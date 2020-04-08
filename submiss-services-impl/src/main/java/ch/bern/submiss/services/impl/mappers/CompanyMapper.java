@@ -128,8 +128,9 @@ public abstract class CompanyMapper {
       return null;
     }
     Set<MasterListValueHistoryDTO> workTypeHistoryDTOs = new HashSet<>();
-    MasterListValueHistoryDTO workTypeHistoryDTO = new MasterListValueHistoryDTO();
+
     for (MasterListValueEntity workTypeEntity : workTypeEntities) {
+      MasterListValueHistoryDTO workTypeHistoryDTO = new MasterListValueHistoryDTO();
       workTypeHistoryDTO.setMasterListValueId(
           MasterListValueMapper.INSTANCE.toMasterListValueDTO(workTypeEntity));
       workTypeHistoryDTOs.add(workTypeHistoryDTO);

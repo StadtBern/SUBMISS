@@ -39,6 +39,9 @@
       getAuditLogs: function (page, pageItems, sortColumn, sortType, levelIdOption, filter) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
           AppConstants.URLS.AUDIT_LOGS + page + '/' + pageItems + '/' + sortColumn + '/' + sortType + '/' + levelIdOption, filter);
+      },
+      loadAuditLogs: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/audit/loadAuditLogs');
       }
     };
   }

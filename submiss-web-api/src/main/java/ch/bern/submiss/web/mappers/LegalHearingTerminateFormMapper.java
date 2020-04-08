@@ -13,28 +13,27 @@
 
 package ch.bern.submiss.web.mappers;
 
-import java.util.List;
-
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-
 import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
 import ch.bern.submiss.web.forms.LegalHearingTerminateForm;
+import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(uses = {SubmissionMapper.class, MasterListValueMapper.class})
 public abstract class LegalHearingTerminateFormMapper {
 
-    public static final LegalHearingTerminateFormMapper INSTANCE =
-        Mappers.getMapper(LegalHearingTerminateFormMapper.class);
+  public static final LegalHearingTerminateFormMapper INSTANCE =
+    Mappers.getMapper(LegalHearingTerminateFormMapper.class);
 
-    public abstract LegalHearingTerminateDTO toLegalHearingTerminateDTO(LegalHearingTerminateForm form);
+  public abstract LegalHearingTerminateDTO toLegalHearingTerminateDTO(
+    LegalHearingTerminateForm form);
 
-    public abstract List<LegalHearingTerminateDTO> toLegalHearingTerminateDTO(
-        List<LegalHearingTerminateForm> formList);
+  public abstract List<LegalHearingTerminateDTO> toLegalHearingTerminateDTO(
+    List<LegalHearingTerminateForm> formList);
 
-    public abstract LegalHearingTerminateForm toLegalHearingTerminateForm(LegalHearingTerminateDTO dto);
+  public abstract LegalHearingTerminateForm toLegalHearingTerminateForm(
+    LegalHearingTerminateDTO dto);
 
-    public abstract List<LegalHearingTerminateForm> toLegalHearingTerminateForm(
-        List<LegalHearingTerminateDTO> dtoList);
-    
+  public abstract List<LegalHearingTerminateForm> toLegalHearingTerminateForm(
+    List<LegalHearingTerminateDTO> dtoList);
 }

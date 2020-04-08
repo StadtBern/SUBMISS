@@ -13,28 +13,21 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.sql.Timestamp;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CriterionForm {
+public class CriterionForm extends AbstractForm {
 
-  private String id;
   private String submission;
+  private Long submissionVersion;
   private String criterionText;
   private Double weighting;
   private String criterionType;
   private List<SubcriterionForm> subcriterion;
   private Boolean show;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
+  private Timestamp pageRequestedOn;
 
   public String getSubmission() {
     return submission;
@@ -84,4 +77,19 @@ public class CriterionForm {
     this.show = show;
   }
 
+  public Timestamp getPageRequestedOn() {
+    return pageRequestedOn;
+  }
+
+  public void setPageRequestedOn(Timestamp pageRequestedOn) {
+    this.pageRequestedOn = pageRequestedOn;
+  }
+
+  public Long getSubmissionVersion() {
+    return submissionVersion;
+  }
+
+  public void setSubmissionVersion(Long submissionVersion) {
+    this.submissionVersion = submissionVersion;
+  }
 }

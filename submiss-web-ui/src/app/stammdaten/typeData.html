@@ -25,7 +25,7 @@
 					ng-click="typeDataCtrl.editTypeData(null)"><i class="fa fa-plus" aria-hidden="true"></i> Neuer Eintrag</button>
 			</div>
 		</div>
-		<div class="col-sm-12">		
+		<div class="col-sm-12">
 			<div ng-table-pagination="typeDataCtrl.tableParams"
 				template-url="'custom/pager'"></div>
 			<div class="table-responsive">
@@ -80,7 +80,7 @@
 							title="'Aktiv'" filter="{'isActive': 'select'}" filter-data="typeDataCtrl.yesOrNo"
 							sortable="'isActive'" translate>{{typeData.isActive}}</td>
 						<td title="Aktion">
-							<button type="button"
+							<button type="button" ng-disabled="typeDataCtrl.isEditAllowed(typeData.shortCode)"
 								ng-if="!typeDataCtrl.isTemplateType()"
 								ng-click="typeDataCtrl.editTypeData(typeData.id)"
 								class="btn action btn-primary" title="Bearbeiten">
@@ -89,7 +89,7 @@
 						</td>
 					</tr>
 				</table>
-			</div>	
+			</div>
 		</div>
 	</div>
 </div>

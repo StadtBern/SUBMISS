@@ -14,67 +14,67 @@
 package ch.bern.submiss.services.impl.model;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class OfferCriterionEntity.
  */
 @Entity
 @Table(name = "SUB_OFFER_CRITERION")
-public class OfferCriterionEntity {
+public class OfferCriterionEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The offer. */
+  /**
+   * The offer.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_OFFER")
   private OfferEntity offer;
 
-  /** The criterion. */
+  /**
+   * The criterion.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_CRITERION")
   private CriterionEntity criterion;
 
-  /** The grade. */
+  /**
+   * The grade.
+   */
   @Column(name = "GRADE")
   private BigDecimal grade;
 
-  /** The score. */
+  /**
+   * The score.
+   */
   @Column(name = "SCORE")
   private BigDecimal score;
 
-  /** The is fulfilled. */
+  /**
+   * The is fulfilled.
+   */
   @Column(name = "IS_FULFILLED")
   private Boolean isFulfilled;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The created on.
    */
-  public String getId() {
-    return id;
-  }
+  @CreationTimestamp
+  @Column(name = "CREATED_ON")
+  private Timestamp createdOn;
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The updated on.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
   /**
    * Gets the offer.
@@ -166,15 +166,47 @@ public class OfferCriterionEntity {
     this.isFulfilled = isFulfilled;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the created on.
+   *
+   * @return the createdOn
    */
-  @Override
-  public String toString() {
-    return "OfferCriterionEntity [id=" + id + ",  grade=" + grade + ", score=" + score
-        + ", isFulfilled=" + isFulfilled + "]";
+  public Timestamp getCreatedOn() {
+    return createdOn;
   }
 
+  /**
+   * Sets the created on.
+   *
+   * @param createdOn the createdOn
+   */
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "OfferCriterionEntity [id=" + super.getId() + ", version=" + super.getVersion()
+      + ",  grade=" + grade + ", score=" + score
+      + ", isFulfilled=" + isFulfilled + ", createdOn=" + createdOn + ", updatedOn="
+      + updatedOn + "]";
+  }
 }

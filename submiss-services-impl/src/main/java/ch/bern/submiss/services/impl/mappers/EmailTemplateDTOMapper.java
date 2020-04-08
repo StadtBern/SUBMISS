@@ -13,18 +13,17 @@
 
 package ch.bern.submiss.services.impl.mappers;
 
+import ch.bern.submiss.services.api.dto.EmailTemplateDTO;
+import ch.bern.submiss.services.impl.model.EmailTemplateEntity;
 import java.util.List;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import ch.bern.submiss.services.api.dto.EmailTemplateDTO;
-import ch.bern.submiss.services.impl.model.EmailTemplateEntity;
-
 @Mapper
 public abstract class EmailTemplateDTOMapper {
+
   public static final EmailTemplateDTOMapper INSTANCE =
-      Mappers.getMapper(EmailTemplateDTOMapper.class);
+    Mappers.getMapper(EmailTemplateDTOMapper.class);
 
   public abstract EmailTemplateEntity toEmailTemplate(EmailTemplateDTO dto);
 

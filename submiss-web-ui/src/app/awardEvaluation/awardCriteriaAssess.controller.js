@@ -26,7 +26,7 @@
   /** @ngInject */
   function AwardCriteriaAssessController($rootScope, $scope, $state,
     $stateParams, SubmissionService, ExaminationService, AwardService,
-    AppConstants, $filter, AppService, $uibModal) {
+    AppConstants, $filter, AppService, $uibModal, $anchorScroll, QFormJSRValidation) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -79,10 +79,17 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      readSubmission($stateParams.id);
-      readCriteriaOfSubmission($stateParams.id);
-      readOfferCriteriaOfSubmission($stateParams.id);
-      readStatusOfSubmission($stateParams.id);
+      AwardService.loadAwardEvaluation($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            readSubmission($stateParams.id);
+            readCriteriaOfSubmission($stateParams.id);
+            readOfferCriteriaOfSubmission($stateParams.id);
+            readStatusOfSubmission($stateParams.id);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -405,7 +412,12 @@
     }
     /* function that rounds the given numbers according to the requirement for score */
     function roundScore(input) {
-      return (input == null) ? null : parseFloat(input.toFixed(AppConstants.ROUND_DECIMALS.SCORE));
+      //Javascript rounding is not working by default for the decimal 5. It is rounded down instead of up
+      //This rounding problem can be avoided by using numbers represented in exponential notation and to round twice.
+      //First we round with the decimal places required + 1 and then with the required
+      let scoreConstant = AppConstants.ROUND_DECIMALS.SCORE + 1;
+      let n = Number(Math.round(input + 'e' + scoreConstant) + 'e-' + scoreConstant);
+      return (input == null) ? null : parseFloat(Math.round(n + 'e' + AppConstants.ROUND_DECIMALS.SCORE) + 'e-' + AppConstants.ROUND_DECIMALS.SCORE);
     }
     /** function that rounds the given numbers according to the requirement for score
      * and returns a string so that the trailing zeros are displayed
@@ -443,7 +455,20 @@
       }
     }
 
-    function save(form) {
+    function save() {
+      ExaminationService.awardLockedByAnotherUser(vm.data.submission.id)
+        .success(function (data) {
+          proceedWithSaving();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.awardCriteriaAssessCtrl.awardCriteriaAssessForm, response);
+          }
+        });
+    }
+
+    function proceedWithSaving() {
       var awardAssessList = [];
       for (var i = 0; i < vm.offers.length; i++) {
         var awardAssess = {
@@ -499,11 +524,21 @@
         }
         awardAssessList.push(awardAssess);
       }
-      AwardService.updateOfferCriteriaAward(awardAssessList)
-        .success(function (data) {
+      AwardService.updateOfferCriteriaAward(awardAssessList, vm.data.submission.id, vm.data.submission.pageRequestedOn)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          }
           $state.reload();
-        }).error(function (response, status) {});
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            $anchorScroll('page-title');
+            QFormJSRValidation.markErrors($scope,
+              $scope.awardCriteriaAssessCtrl.awardCriteriaAssessForm, response);
+          }
+        });
     }
+
     /** Format number according to specifications */
     function formatAmount(num) {
       return AppService.formatAmount(num);

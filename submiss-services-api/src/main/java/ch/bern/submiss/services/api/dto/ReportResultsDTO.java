@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * The Class ReportResultsDTO.
  */
-public class ReportResultsDTO extends AbstractDTO {
+public class ReportResultsDTO extends AbstractStammdatenDTO {
 
   /** The submissions. */
   private List<SubmissionDTO> submissions;

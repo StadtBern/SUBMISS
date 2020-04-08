@@ -29,11 +29,14 @@
       getSubmissionCancelBySubmissionId: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submissionCancel/' + submissionId);
       },
-      setSubmissionCancel: function (submissionCancel) {
+      createSubmissionCancel: function (submissionCancel) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submissionCancel', submissionCancel);
       },
-      cancelSubmission: function (submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submissionCancel/cancel/' + submissionId);
+      updateSubmissionCancel: function (submissionCancel) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submissionCancel', submissionCancel);
+      },
+      cancelSubmission: function (submissionId, submissionCancelId, submissionCancelVersion) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submissionCancel/cancel/' + submissionId + '/' + submissionCancelId + '/' + submissionCancelVersion);
       },
       getAvailableDateBySubmissionId: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/submissionCancel/availableDate/' + submissionId);

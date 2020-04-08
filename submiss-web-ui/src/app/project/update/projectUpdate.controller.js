@@ -98,11 +98,19 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadObjects();
-      vm.loadProcedures();
-      vm.loadDepartments();
-      vm.hasStatusAfterOfferOpeningClosed();
-      findUserOperations();
+      ProjectService.loadProjectEdit()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            $uibModalInstance.close();
+            return;
+          } else {
+            vm.loadObjects();
+            vm.loadProcedures();
+            vm.loadDepartments();
+            vm.hasStatusAfterOfferOpeningClosed();
+            findUserOperations();
+          }
+        });
     }
 
     /***********************************************************************
@@ -123,8 +131,11 @@
 
     function save() {
       ProjectService.updateProject(vm.project)
-        .success(function (data) {
+        .success(function (data, status) {
           $uibModalInstance.close();
+          if (status === 403) { // Security checks.
+            return;
+          }
           $state.go('project.view', {
             id: vm.project.id
           }, {

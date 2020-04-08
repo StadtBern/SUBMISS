@@ -44,4 +44,8 @@ public interface SubmissAuditService {
    */
   long auditLogCount(AuditLogDTO auditLogDTO, String levelIdOption);
 
+  /**
+   * Security check for Verlauf.
+   */
+  void auditLogSecurityCheck();
 }

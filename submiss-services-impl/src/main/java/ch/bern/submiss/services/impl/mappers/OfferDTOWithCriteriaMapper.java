@@ -13,15 +13,6 @@
 
 package ch.bern.submiss.services.impl.mappers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.OfferCriterionDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
@@ -30,17 +21,23 @@ import ch.bern.submiss.services.impl.model.MasterListValueEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.OfferCriterionEntity;
 import ch.bern.submiss.services.impl.model.OfferEntity;
-import ch.bern.submiss.services.impl.model.OfferSubriterionEntity;
+import ch.bern.submiss.services.impl.model.OfferSubcriterionEntity;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(uses = {SubmittentDTOMapper.class, OfferCriterionDTOMapper.class, CriterionDTOMapper.class,
-    OfferSubcriterionDTOMapper.class})
+  OfferSubcriterionDTOMapper.class})
 public abstract class OfferDTOWithCriteriaMapper {
 
-  private final SubmittentDTOMapper submittentDTOMapper =
-      Mappers.getMapper(SubmittentDTOMapper.class);
-
   public static final OfferDTOWithCriteriaMapper INSTANCE =
-      Mappers.getMapper(OfferDTOWithCriteriaMapper.class);
+    Mappers.getMapper(OfferDTOWithCriteriaMapper.class);
+  private final SubmittentDTOMapper submittentDTOMapper =
+    Mappers.getMapper(SubmittentDTOMapper.class);
 
   public OfferEntity toOffer(OfferDTO dto) {
     if (dto == null) {
@@ -50,6 +47,7 @@ public abstract class OfferDTOWithCriteriaMapper {
     OfferEntity offerEntity = new OfferEntity();
 
     offerEntity.setId(dto.getId());
+    offerEntity.setVersion(dto.getVersion());
     offerEntity.setSubmittent(submittentDTOMapper.toSubmittent(dto.getSubmittent()));
     offerEntity.setIsAwarded(dto.getIsAwarded());
     offerEntity.setOfferDate(dto.getOfferDate());
@@ -58,7 +56,7 @@ public abstract class OfferDTOWithCriteriaMapper {
     offerEntity.setIsVariant(dto.getIsVariant());
     if (dto.getSettlement() != null) {
       offerEntity.setSettlement(MasterListValueMapper.INSTANCE
-          .toMasterListValue(dto.getSettlement().getMasterListValueId()));
+        .toMasterListValue(dto.getSettlement().getMasterListValueId()));
     }
     offerEntity.setGrossAmount(dto.getGrossAmount());
     offerEntity.setGrossAmountCorrected(dto.getGrossAmountCorrected());
@@ -116,7 +114,9 @@ public abstract class OfferDTOWithCriteriaMapper {
     offerEntity.setCreatedOn(dto.getCreatedOn());
     offerEntity.setCreatedBy(dto.getCreatedBy());
     offerEntity.setExcludedFirstLevel(dto.getExcludedFirstLevel());
-    
+    offerEntity.setExclusionReason(dto.getExclusionReason());
+    offerEntity.setExclusionReasonFirstLevel(dto.getExclusionReasonFirstLevel());
+
     return offerEntity;
   }
 
@@ -146,7 +146,7 @@ public abstract class OfferDTOWithCriteriaMapper {
       OfferCriterionEntity offerCriterionEntity = new OfferCriterionEntity();
       if (offerCriterionDTO.getCriterion() != null) {
         offerCriterionEntity.setCriterion(
-            CriterionDTOMapper.INSTANCE.toCriterion(offerCriterionDTO.getCriterion()));
+          CriterionDTOMapper.INSTANCE.toCriterion(offerCriterionDTO.getCriterion()));
       }
       if (offerCriterionDTO.getGrade() != null) {
         offerCriterionEntity.setGrade(offerCriterionDTO.getGrade());
@@ -160,36 +160,45 @@ public abstract class OfferDTOWithCriteriaMapper {
       if (offerCriterionDTO.getScore() != null) {
         offerCriterionEntity.setScore(offerCriterionDTO.getScore());
       }
+      if (offerCriterionDTO.getCreatedOn() != null) {
+        offerCriterionEntity.setCreatedOn(offerCriterionDTO.getCreatedOn());
+      }
+      if (offerCriterionDTO.getUpdatedOn() != null) {
+        offerCriterionEntity.setUpdatedOn(offerCriterionDTO.getUpdatedOn());
+      }
+      if (offerCriterionDTO.getVersion() != null) {
+        offerCriterionEntity.setVersion(offerCriterionDTO.getVersion());
+      }
       offerCriterionEntities.add(offerCriterionEntity);
     }
     return offerCriterionEntities;
   }
 
-  private List<OfferSubriterionEntity> dtoToOfferSubcriterionEntity(OfferDTO dto) {
+  private List<OfferSubcriterionEntity> dtoToOfferSubcriterionEntity(OfferDTO dto) {
     if (dto == null) {
       return Collections.emptyList();
     }
-    List<OfferSubriterionEntity> offerSubcriterionEntities = new ArrayList<>();
+    List<OfferSubcriterionEntity> offerSubcriterionEntities = new ArrayList<>();
     List<OfferSubcriterionDTO> offerSubcriterionDTOs = dto.getOfferSubcriteria();
     if (offerSubcriterionDTOs == null) {
       return Collections.emptyList();
     }
     for (OfferSubcriterionDTO offerSubcriterionDTO : offerSubcriterionDTOs) {
-      OfferSubriterionEntity offerSubriterionEntity = new OfferSubriterionEntity();
+      OfferSubcriterionEntity offerSubcriterionEntity = new OfferSubcriterionEntity();
       if (offerSubcriterionDTO.getSubcriterion() != null) {
-        offerSubriterionEntity.setSubriterion(
-            SubcriterionDTOMapper.INSTANCE.toSubcriterion(offerSubcriterionDTO.getSubcriterion()));
+        offerSubcriterionEntity.setSubriterion(
+          SubcriterionDTOMapper.INSTANCE.toSubcriterion(offerSubcriterionDTO.getSubcriterion()));
       }
       if (offerSubcriterionDTO.getGrade() != null) {
-        offerSubriterionEntity.setGrade(offerSubcriterionDTO.getGrade());
+        offerSubcriterionEntity.setGrade(offerSubcriterionDTO.getGrade());
       }
       if (offerSubcriterionDTO.getId() != null) {
-        offerSubriterionEntity.setId(offerSubcriterionDTO.getId());
+        offerSubcriterionEntity.setId(offerSubcriterionDTO.getId());
       }
       if (offerSubcriterionDTO.getScore() != null) {
-        offerSubriterionEntity.setScore(offerSubcriterionDTO.getScore());
+        offerSubcriterionEntity.setScore(offerSubcriterionDTO.getScore());
       }
-      offerSubcriterionEntities.add(offerSubriterionEntity);
+      offerSubcriterionEntities.add(offerSubcriterionEntity);
     }
     return offerSubcriterionEntities;
   }
@@ -202,6 +211,7 @@ public abstract class OfferDTOWithCriteriaMapper {
     OfferDTO offerDTO = new OfferDTO();
 
     offerDTO.setId(entity.getId());
+    offerDTO.setVersion(entity.getVersion());
     offerDTO.setSubmittent(submittentDTOMapper.toSubmittentDTO(entity.getSubmittent()));
     offerDTO.setIsAwarded(entity.getIsAwarded());
     offerDTO.setOfferDate(entity.getOfferDate());
@@ -209,13 +219,13 @@ public abstract class OfferDTOWithCriteriaMapper {
     offerDTO.setIsExcludedFromProcess(entity.getIsExcludedFromProcess());
     offerDTO.setIsVariant(entity.getIsVariant());
     if (entity.getSettlement() != null && entity.getSettlement()
-        .getMasterListValueHistory() != null) {
+      .getMasterListValueHistory() != null) {
       for (MasterListValueHistoryEntity settlement : entity.getSettlement()
-          .getMasterListValueHistory()) {
+        .getMasterListValueHistory()) {
         if (settlement.getToDate() == null) {
           // Get latest settlement value (toDate property is null).
           offerDTO.setSettlement(
-              MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(settlement));
+            MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(settlement));
           break;
         }
       }
@@ -277,10 +287,13 @@ public abstract class OfferDTOWithCriteriaMapper {
     offerDTO.setCreatedOn(entity.getCreatedOn());
     offerDTO.setExcludedFirstLevel(entity.getExcludedFirstLevel());
     offerDTO.setExclusionReason(entity.getExclusionReason());
+    offerDTO.setExclusionReasonFirstLevel(entity.getExclusionReasonFirstLevel());
     // Return a set of MasterListValueHistoryDTO instead of MasterListValueDTOs.
     // Convert MasterListValueEntity set to MasterListValueHistoryDTO set.
-    offerDTO.setExclusionReasons(masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasons()));
-    offerDTO.setExclusionReasonsFirstLevel(masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasonsFirstLevel()));
+    offerDTO.setExclusionReasons(
+      masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasons()));
+    offerDTO.setExclusionReasonsFirstLevel(
+      masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasonsFirstLevel()));
     return offerDTO;
   }
 
@@ -310,7 +323,7 @@ public abstract class OfferDTOWithCriteriaMapper {
       OfferCriterionDTO offerCriterionDTO = new OfferCriterionDTO();
       if (offerCriterionEntity.getCriterion() != null) {
         offerCriterionDTO.setCriterion(
-            CriterionDTOMapper.INSTANCE.toCriterionDTO(offerCriterionEntity.getCriterion()));
+          CriterionDTOMapper.INSTANCE.toCriterionDTO(offerCriterionEntity.getCriterion()));
       }
       if (offerCriterionEntity.getGrade() != null) {
         offerCriterionDTO.setGrade(offerCriterionEntity.getGrade());
@@ -324,6 +337,15 @@ public abstract class OfferDTOWithCriteriaMapper {
       if (offerCriterionEntity.getScore() != null) {
         offerCriterionDTO.setScore(offerCriterionEntity.getScore());
       }
+      if (offerCriterionEntity.getCreatedOn() != null) {
+        offerCriterionDTO.setCreatedOn(offerCriterionEntity.getCreatedOn());
+      }
+      if (offerCriterionEntity.getUpdatedOn() != null) {
+        offerCriterionDTO.setUpdatedOn(offerCriterionEntity.getUpdatedOn());
+      }
+      if (offerCriterionEntity.getVersion() != null) {
+        offerCriterionDTO.setVersion(offerCriterionEntity.getVersion());
+      }
       offerCriterionDTOs.add(offerCriterionDTO);
     }
     return offerCriterionDTOs;
@@ -334,30 +356,30 @@ public abstract class OfferDTOWithCriteriaMapper {
       return Collections.emptyList();
     }
     List<OfferSubcriterionDTO> offerSubcriterionDTOs = new ArrayList<>();
-    List<OfferSubriterionEntity> offerCriterionEntities = entity.getOfferSubcriteria();
+    List<OfferSubcriterionEntity> offerCriterionEntities = entity.getOfferSubcriteria();
     if (offerCriterionEntities == null) {
       return Collections.emptyList();
     }
-    for (OfferSubriterionEntity offerSubriterionEntity : offerCriterionEntities) {
+    for (OfferSubcriterionEntity offerSubcriterionEntity : offerCriterionEntities) {
       OfferSubcriterionDTO offerSubcriterionDTO = new OfferSubcriterionDTO();
-      if (offerSubriterionEntity.getSubcriterion() != null) {
+      if (offerSubcriterionEntity.getSubcriterion() != null) {
         offerSubcriterionDTO.setSubcriterion(SubcriterionDTOMapper.INSTANCE
-            .toSubcriterionDTO(offerSubriterionEntity.getSubcriterion()));
+          .toSubcriterionDTO(offerSubcriterionEntity.getSubcriterion()));
       }
-      if (offerSubriterionEntity.getGrade() != null) {
-        offerSubcriterionDTO.setGrade(offerSubriterionEntity.getGrade());
+      if (offerSubcriterionEntity.getGrade() != null) {
+        offerSubcriterionDTO.setGrade(offerSubcriterionEntity.getGrade());
       }
-      if (offerSubriterionEntity.getId() != null) {
-        offerSubcriterionDTO.setId(offerSubriterionEntity.getId());
+      if (offerSubcriterionEntity.getId() != null) {
+        offerSubcriterionDTO.setId(offerSubcriterionEntity.getId());
       }
-      if (offerSubriterionEntity.getScore() != null) {
-        offerSubcriterionDTO.setScore(offerSubriterionEntity.getScore());
+      if (offerSubcriterionEntity.getScore() != null) {
+        offerSubcriterionDTO.setScore(offerSubcriterionEntity.getScore());
       }
       offerSubcriterionDTOs.add(offerSubcriterionDTO);
     }
     return offerSubcriterionDTOs;
   }
-  
+
   /**
    * Master list value entity set to master list value DTO set.
    *
@@ -365,14 +387,14 @@ public abstract class OfferDTOWithCriteriaMapper {
    * @return the sets the
    */
   protected Set<MasterListValueHistoryDTO> masterListValueEntitySetToMasterListValueDTOSet(
-      Set<MasterListValueEntity> set) {
+    Set<MasterListValueEntity> set) {
     if (set == null) {
       return Collections.emptySet();
     }
     Set<MasterListValueHistoryDTO> mset = new HashSet<>();
     for (MasterListValueEntity masterListValueEntity : set) {
       mset.addAll(masterListValueHistoryEntitySetToMasterListValueHistoryDTOSet(
-          masterListValueEntity.getMasterListValueHistory()));
+        masterListValueEntity.getMasterListValueHistory()));
     }
 
     return mset;
@@ -385,7 +407,7 @@ public abstract class OfferDTOWithCriteriaMapper {
    * @return the sets the
    */
   protected Set<MasterListValueHistoryDTO> masterListValueHistoryEntitySetToMasterListValueHistoryDTOSet(
-      Set<MasterListValueHistoryEntity> set) {
+    Set<MasterListValueHistoryEntity> set) {
     if (set == null) {
       return Collections.emptySet();
     }
@@ -393,7 +415,7 @@ public abstract class OfferDTOWithCriteriaMapper {
     Set<MasterListValueHistoryDTO> mset = new HashSet<>();
     for (MasterListValueHistoryEntity masterListValueEntity : set) {
       mset.add(
-          MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(masterListValueEntity));
+        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(masterListValueEntity));
     }
 
     return mset;

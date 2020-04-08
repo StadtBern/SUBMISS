@@ -1,4 +1,3 @@
-
 <!--
   ~  Submiss, eProcurement system for managing tenders
   ~  Copyright (C) 2019 Stadt Bern
@@ -12,12 +11,11 @@
   ~  under the Licence.
   -->
 
-<form name="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm"
-	id="offerOperatingCostDetailsCtrlForm"
-	shows-validation-errors>
-	<fieldset data-ng-disabled="operatingCostDetailsCtrl.disabledForm(appCtrl.getLoggedUser().userGroup.name)">
-	<div class="col-sm-12">
-			          <div class="alert alert-danger" ng-if="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.errorField.$invalid
+<form name="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm" id="offerOperatingCostDetailsCtrlForm"
+  shows-validation-errors>
+  <fieldset data-ng-disabled="operatingCostDetailsCtrl.disabledForm(appCtrl.getLoggedUser().userGroup.name)">
+    <div class="col-sm-12">
+      <div class="alert alert-danger" ng-if="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.errorField.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.errorDateField.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostNotesErrorField.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid
@@ -28,179 +26,193 @@
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossErrorField.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrectedErrorField.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostsAmountErrorField.$invalid
-			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid"
-			           role="alert">
-			       		 <field-error form-element-name="errorField" translate name="error"></field-error>
-			       		 <field-error form-element-name="errorDateField" translate name="error"></field-error>
-			       		 <field-error form-element-name="operatingCostNotesErrorField" translate name="error"></field-error>
-			       		 <field-error form-element-name="operatingCostDiscount" translate name="error"></field-error>
-			       		 <field-error form-element-name="operatingCostDiscount2" translate name="error"></field-error>
-			          	 <field-error form-element-name="offerDate" translate name="error"></field-error>
-			          	 <field-error form-element-name="operatingCostGrossErrorField" translate name="error"></field-error>
-			          	 <field-error form-element-name="operatingCostGrossCorrectedErrorField" translate name="error"></field-error>
-			          	 <field-error form-element-name="operatingCostsAmountErrorField" translate name="error"></field-error>
-			          	<ul ng-if="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid
+                || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid
+                || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.optimisticLockErrorField.$invalid
+                || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.statusChangedErrorField.$invalid" role="alert">
+        <field-error form-element-name="errorField" translate name="error"></field-error>
+        <field-error form-element-name="errorDateField" translate name="error"></field-error>
+        <field-error form-element-name="operatingCostNotesErrorField" translate name="error"></field-error>
+        <field-error form-element-name="operatingCostDiscount" translate name="error"></field-error>
+        <field-error form-element-name="operatingCostDiscount2" translate name="error"></field-error>
+        <field-error form-element-name="offerDate" translate name="error"></field-error>
+        <field-error form-element-name="operatingCostGrossErrorField" translate name="error"></field-error>
+        <field-error form-element-name="operatingCostGrossCorrectedErrorField" translate name="error"></field-error>
+        <field-error form-element-name="operatingCostsAmountErrorField" translate name="error"></field-error>
+        <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        <field-error form-element-name="statusChangedErrorField" translate name="error"></field-error>
+        <ul ng-if="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount.$invalid
 			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2.$invalid
-			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid"><li translate>
-	       		 		 invalid_number_error_message
-	       				</li></ul>
-			          	</div> 
-			          <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
-			          <input name="errorDateField" ng-hide="true" data-ng-model="fd"></input>
-			          <input name="operatingCostNotesErrorField" ng-hide="true" data-ng-model="fd"></input>
-			          <input name="offerDate" ng-hide="true" data-ng-model="fd"></input>
-			          <input name="operatingCostGrossErrorField" ng-hide="true" data-ng-model="fd"></input>
-			          <input name="operatingCostGrossCorrectedErrorField" ng-hide="true" data-ng-model="fd"></input>
-			          <input name="operatingCostsAmountErrorField" ng-hide="true" data-ng-model="fd"></input>
-			         
-			           </div>
-	<div class="col-sm-12">
-		<div class="row">
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label for="operatingCostNotes">Kosteninformation</label> <input
-						data-ng-disabled="operatingCostDetailsCtrl.currentStatus >= operatingCostDetailsCtrl.status.OFFER_OPENING_CLOSED"
-						class="form-control" id="operatingCostNotes" name="operatingCostNotes"
-						data-ng-model="operatingCostDetailsCtrl.offer.operatingCostNotes"
-						placeholder="" type="text">
-				</div>
-				<div class="form-group" ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid}">
-					<label for="operatingCostGross">Bruttobetrag <span
-						class="mandatory">*</span>
-					</label> <input class="form-control" df-currency
-						ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid =
+			          || operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid">
+          <li translate>
+            invalid_number_error_message
+          </li>
+        </ul>
+      </div>
+      <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="errorDateField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="operatingCostNotesErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="offerDate" ng-hide="true" data-ng-model="fd"></input>
+      <input name="operatingCostGrossErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="operatingCostGrossCorrectedErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="operatingCostsAmountErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="statusChangedErrorField" ng-hide="true" data-ng-model="fd"></input>
+    </div>
+    <div class="col-sm-12">
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <div class="form-group">
+            <label for="operatingCostNotes">Kosteninformation</label> <input
+              data-ng-disabled="operatingCostDetailsCtrl.currentStatus >= operatingCostDetailsCtrl.status.OFFER_OPENING_CLOSED"
+              class="form-control" id="operatingCostNotes" name="operatingCostNotes"
+              data-ng-model="operatingCostDetailsCtrl.offer.operatingCostNotes" placeholder="" type="text">
+          </div>
+          <div class="form-group"
+            ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid}">
+            <label for="operatingCostGross">Bruttobetrag <span class="mandatory">*</span>
+            </label> <input class="form-control" df-currency
+              ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross.$invalid =
 								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGross)"
-						data-ng-disabled="operatingCostDetailsCtrl.offer.isOperatingCostCorrected || operatingCostDetailsCtrl.currentStatus >= operatingCostDetailsCtrl.status.OFFER_OPENING_CLOSED"
-						name="operatingCostGross" data-ng-model="operatingCostDetailsCtrl.offer.operatingCostGross"
-						value="0.00" id="operatingCostGross" placeholder="" type="text">
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12">
-							<label class="checkbox-inline"> <input type="checkbox"
-								data-ng-model="operatingCostDetailsCtrl.offer.isOperatingCostCorrected"
-								id="isOperatingCostCorrected">Korrigiert
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="form-group" ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected.$invalid}">
-					<label for="operatingCostGrossCorrected">korrigierter Bruttobetrag</label> <input df-currency
-						ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected.$invalid =
-								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected)"
-						class="form-control" id="operatingCostGrossCorrected" name="operatingCostGrossCorrected"
-						data-ng-model="operatingCostDetailsCtrl.offer.operatingCostGrossCorrected"
-						type="text" data-ng-disabled="!operatingCostDetailsCtrl.offer.isOperatingCostCorrected">
-				</div>
-				<div class="form-group"
-				ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount.$invalid}">
-					<label for="operatingCostDiscount">Rabatt</label> <input class="form-control" df-currency
-						ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount.$invalid =
-								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount)"
-						data-ng-model="operatingCostDetailsCtrl.offer.operatingCostDiscount"
-						value="8.00" id="operatingCostDiscount" type="text" name="operatingCostDiscount">
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12">
-							<label class="checkbox-inline"> <input type="checkbox"
-								data-ng-model="operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage"
-								id="isOperatingCostDiscountPercentage" checked="checked" value="option7">
-								Rabatt in %
-							</label> <span class="label label-default" ng-if="operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage">{{operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateCHFDiscountValue(operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostGrossCorrected,operatingCostDetailsCtrl.offer.operatingCostGross,operatingCostDetailsCtrl.offer.operatingCostDiscount))}}  CHF</span>
-							<span class="label label-default" ng-if="!operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage">0.00 CHF</span>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group"
-				ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2.$invalid}">
-					<label for="operatingCostDiscount2">Skonto</label> <input class="form-control" df-currency
-						ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2.$invalid =
-								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2)"
-						data-ng-model="operatingCostDetailsCtrl.offer.operatingCostDiscount2"
-						 id="operatingCostDiscount2" placeholder="" type="text" name="operatingCostDiscount2">
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12">
-							<label class="checkbox-inline"> <input type="checkbox"
-								data-ng-model="operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage"
-								id="isOperatingCostDiscount2Percentage" checked="checked" value="option8">
-								Skonto in %
-							</label> <span class="label label-default" ng-if="operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage">{{operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateCHFDiscount2Value(operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostGrossCorrected,operatingCostDetailsCtrl.offer.operatingCostGross,operatingCostDetailsCtrl.offer.operatingCostDiscount,operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage,operatingCostDetailsCtrl.offer.operatingCostDiscount2))}} CHF</span>
-							<span class="label label-default" ng-if="!operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage">0.00 CHF</span>
-						</div>
-					</div>
-				</div>
-				<div class="form-group" ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostsAmountErrorField.$invalid}">
-					<label for="nettobetrag2">Nettobetrag exkl. MWST</label> <input
-						class="form-control" disabled id="nettobetrag2" ng-value="operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,
+              data-ng-disabled="operatingCostDetailsCtrl.offer.isOperatingCostCorrected || operatingCostDetailsCtrl.currentStatus >= operatingCostDetailsCtrl.status.OFFER_OPENING_CLOSED"
+              name="operatingCostGross" data-ng-model="operatingCostDetailsCtrl.offer.operatingCostGross" value="0.00"
+              id="operatingCostGross" placeholder="" type="text">
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-12">
+                <label class="checkbox-inline"> <input type="checkbox"
+                    data-ng-model="operatingCostDetailsCtrl.offer.isOperatingCostCorrected"
+                    id="isOperatingCostCorrected">Korrigiert
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"
+            ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected.$invalid}">
+            <label for="operatingCostGrossCorrected">korrigierter Bruttobetrag</label> <input df-currency
+              ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected.$invalid =
+								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostGrossCorrected)" class="form-control" id="operatingCostGrossCorrected"
+              name="operatingCostGrossCorrected"
+              data-ng-model="operatingCostDetailsCtrl.offer.operatingCostGrossCorrected" type="text"
+              data-ng-disabled="!operatingCostDetailsCtrl.offer.isOperatingCostCorrected">
+          </div>
+          <div class="form-group"
+            ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount.$invalid}">
+            <label for="operatingCostDiscount">Rabatt</label> <input class="form-control" df-currency
+              ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount.$invalid =
+								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount)" data-ng-model="operatingCostDetailsCtrl.offer.operatingCostDiscount"
+              value="8.00" id="operatingCostDiscount" type="text" name="operatingCostDiscount">
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-12">
+                <label class="checkbox-inline"> <input type="checkbox"
+                    data-ng-model="operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage"
+                    id="isOperatingCostDiscountPercentage" checked="checked" value="option7">
+                  Rabatt in %
+                </label> <span class="label label-default"
+                  ng-if="operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage">{{operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateCHFDiscountValue(operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostGrossCorrected,operatingCostDetailsCtrl.offer.operatingCostGross,operatingCostDetailsCtrl.offer.operatingCostDiscount))}}
+                  CHF</span>
+                <span class="label label-default"
+                  ng-if="!operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage">0.00 CHF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-12 col-md-6">
+          <div class="form-group"
+            ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2.$invalid}">
+            <label for="operatingCostDiscount2">Skonto</label> <input class="form-control" df-currency
+              ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2.$invalid =
+								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostDiscount2)" data-ng-model="operatingCostDetailsCtrl.offer.operatingCostDiscount2"
+              id="operatingCostDiscount2" placeholder="" type="text" name="operatingCostDiscount2">
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-12">
+                <label class="checkbox-inline"> <input type="checkbox"
+                    data-ng-model="operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage"
+                    id="isOperatingCostDiscount2Percentage" checked="checked" value="option8">
+                  Skonto in %
+                </label> <span class="label label-default"
+                  ng-if="operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage">{{operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateCHFDiscount2Value(operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostGrossCorrected,operatingCostDetailsCtrl.offer.operatingCostGross,operatingCostDetailsCtrl.offer.operatingCostDiscount,operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage,operatingCostDetailsCtrl.offer.operatingCostDiscount2))}}
+                  CHF</span>
+                <span class="label label-default"
+                  ng-if="!operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage">0.00 CHF</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"
+            ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.operatingCostsAmountErrorField.$invalid}">
+            <label for="nettobetrag2">Nettobetrag exkl. MWST</label> <input class="form-control" disabled
+              id="nettobetrag2"
+              ng-value="operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,
 						 operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage))"
-						placeholder="" type="text">
-				</div>
-				<div class="form-group">
-					<label for="baubewilligung">MWST in %</label>
-					<div class="row">
-						<div class="col-sm-8">
-							<ui-select name="operatingCostVat"
-								data-ng-model="operatingCostDetailsCtrl.tempOperVatDD"
-								data-ng-disabled="!operatingCostDetailsCtrl.secOperationCostDetailsEdit || ((operatingCostDetailsCtrl.offer.submittent.submissionId.process != 'SELECTIVE' 
-          && operatingCostDetailsCtrl.offer.submittent.submissionId.process != null)  && (!operatingCostDetailsCtrl.offer.submittent.submissionId.secondDeadline 
-          || !operatingCostDetailsCtrl.offer.submittent.submissionId.offerOpeningDate || !operatingCostDetailsCtrl.offer.submittent.submissionId.secondLoggedBy)) 
-          || (operatingCostDetailsCtrl.offer.submittent.submissionId.process == 'SELECTIVE' 
-          && (!operatingCostDetailsCtrl.offer.submittent.submissionId.firstDeadline 
+              placeholder="" type="text">
+          </div>
+          <div class="form-group">
+            <label for="baubewilligung">MWST in %</label>
+            <div class="row">
+              <div class="col-sm-8">
+                <ui-select name="operatingCostVat" data-ng-model="operatingCostDetailsCtrl.tempOperVatDD"
+                  data-ng-disabled="!operatingCostDetailsCtrl.secOperationCostDetailsEdit || ((operatingCostDetailsCtrl.offer.submittent.submissionId.process != 'SELECTIVE'
+          && operatingCostDetailsCtrl.offer.submittent.submissionId.process != null)  && (!operatingCostDetailsCtrl.offer.submittent.submissionId.secondDeadline
+          || !operatingCostDetailsCtrl.offer.submittent.submissionId.offerOpeningDate || !operatingCostDetailsCtrl.offer.submittent.submissionId.secondLoggedBy))
+          || (operatingCostDetailsCtrl.offer.submittent.submissionId.process == 'SELECTIVE'
+          && (!operatingCostDetailsCtrl.offer.submittent.submissionId.firstDeadline
           || !operatingCostDetailsCtrl.offer.submittent.submissionId.applicationOpeningDate || !operatingCostDetailsCtrl.offer.submittent.submissionId.firstLoggedBy))
           || operatingCostDetailsCtrl.currentStatus == operatingCostDetailsCtrl.status.SUBMITTENTLIST_CHECK ||
           (operatingCostDetailsCtrl.currentStatus < operatingCostDetailsCtrl.status.OFFER_OPENING_CLOSED && appCtrl.getLoggedUser().userGroup.name == operatingCostDetailsCtrl.group.PL
           && (operatingCostDetailsCtrl.offer.submittent.submissionId.process == 'SELECTIVE' || operatingCostDetailsCtrl.offer.submittent.submissionId.process == 'OPEN' || operatingCostDetailsCtrl.offer.submittent.submissionId.process == 'INVITATION'))
           || (operatingCostDetailsCtrl.tempOperVat != '0.00' &&
-								operatingCostDetailsCtrl.tempOperVat != '0.0' && operatingCostDetailsCtrl.tempOperVat != '0' && operatingCostDetailsCtrl.tempOperVat != '') 
+								operatingCostDetailsCtrl.tempOperVat != '0.0' && operatingCostDetailsCtrl.tempOperVat != '0' && operatingCostDetailsCtrl.tempOperVat != '')
 								|| operatingCostDetailsCtrl.currentStatus == operatingCostDetailsCtrl.status.SUBMITTENTLIST_CHECK || operatingCostDetailsCtrl.fieldSetDisabled"
-								theme="select2"> <ui-select-match allow-clear="true">
-							<span> {{$select.selected | number:2 }}</span> </ui-select-match> <ui-select-choices
-								repeat="vatValue in operatingCostDetailsCtrl.vatValues | filter: $select.search track by vatValue">
-							<span ng-bind="vatValue"></span> </ui-select-choices> </ui-select>
-						</div>
-						<div class="col-sm-6" style="margin-top:5px">
-							<span class="label label-default" ng-if="operatingCostDetailsCtrl.tempOperVat == '0.00' || operatingCostDetailsCtrl.tempOperVat == '0.0' || operatingCostDetailsCtrl.tempOperVat == '0' || operatingCostDetailsCtrl.tempOperVat == ''">{{operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateOperatingMWSTValueCalc(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage),operatingCostDetailsCtrl.offer.operatingCostVat,operatingCostDetailsCtrl.offer.operatingCostIsVatPercentage,operatingCostDetailsCtrl.tempOperVat,operatingCostDetailsCtrl.tempOperVatDD))}} CHF</span>
-								<span class="label label-default" ng-if="!(operatingCostDetailsCtrl.tempOperVat == '0.00' || operatingCostDetailsCtrl.tempOperVat == '0.0' || operatingCostDetailsCtrl.tempOperVat == '0' || operatingCostDetailsCtrl.tempOperVat == '')">0.00 CHF</span>
-						</div>
-					</div>
-				</div>
-				<div class="form-group"
-					ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid}">
-					<label for="operatingCostVat">MWST</label> <input class="form-control" df-currency
-						ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid =
-								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat)"
-						data-ng-model="operatingCostDetailsCtrl.tempOperVat"
-						name="tempOperVat"
-						id="operatingCostVat" placeholder="" type="text">
-				</div>
-				<div class="form-group">
-					<label for="nettobetragin2">Nettobetrag inkl. MWST</label> <input
-						class="form-control" disabled ng-value="operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,
-						 operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage)+operatingCostDetailsCtrl.calculateOperatingMWSTValueCalc(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage),operatingCostDetailsCtrl.offer.operatingCostVat,operatingCostDetailsCtrl.offer.operatingCostIsVatPercentage,operatingCostDetailsCtrl.tempOperVat,operatingCostDetailsCtrl.tempOperVatDD))" id="nettobetragin2"
-						placeholder="" type="text">
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-12 btn-bar">
-				<button type="button" class="btn btn-primary"
-					ng-click="operatingCostDetailsCtrl.save()">Speichern</button>
-				<button type="button" class="btn btn-default"
-				ng-click="operatingCostDetailsCtrl.resetPage(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.$dirty)">Abbrechen</button>
-				<button type="button" class="btn btn-default" ng-click="operatingCostDetailsCtrl.resetFormValues()">Zurücksetzen</button>
-				<div ng-if="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.$dirty">
-					<input ng-hide="true" type="checkbox"
-						data-ng-model="operatingCostDetailsCtrl.dirtyFlag"
-						ng-init="operatingCostDetailsCtrl.dirtyFlag=true"
-						ng-value = "appCtrl.setDirtyFlag(true)">
-				</div>
-			</div>
-		</div>
-	</div>
-	</fieldset>
+                  theme="select2">
+                  <ui-select-match allow-clear="true">
+                    <span> {{$select.selected | number:2 }}</span> </ui-select-match>
+                  <ui-select-choices
+                    repeat="vatValue in operatingCostDetailsCtrl.vatValues | filter: $select.search track by vatValue">
+                    <span ng-bind="vatValue"></span> </ui-select-choices>
+                </ui-select>
+              </div>
+              <div class="col-sm-6" style="margin-top:5px">
+                <span class="label label-default"
+                  ng-if="operatingCostDetailsCtrl.tempOperVat == '0.00' || operatingCostDetailsCtrl.tempOperVat == '0.0' || operatingCostDetailsCtrl.tempOperVat == '0' || operatingCostDetailsCtrl.tempOperVat == ''">{{operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateOperatingMWSTValueCalc(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage),operatingCostDetailsCtrl.offer.operatingCostVat,operatingCostDetailsCtrl.offer.operatingCostIsVatPercentage,operatingCostDetailsCtrl.tempOperVat,operatingCostDetailsCtrl.tempOperVatDD))}}
+                  CHF</span>
+                <span class="label label-default"
+                  ng-if="!(operatingCostDetailsCtrl.tempOperVat == '0.00' || operatingCostDetailsCtrl.tempOperVat == '0.0' || operatingCostDetailsCtrl.tempOperVat == '0' || operatingCostDetailsCtrl.tempOperVat == '')">0.00
+                  CHF</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group"
+            ng-class="{'has-error': operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid}">
+            <label for="operatingCostVat">MWST</label> <input class="form-control" df-currency
+              ng-change="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat.$invalid =
+								operatingCostDetailsCtrl.ignoreInvalidNumber(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.tempOperVat)" data-ng-model="operatingCostDetailsCtrl.tempOperVat" name="tempOperVat"
+              id="operatingCostVat" placeholder="" type="text">
+          </div>
+          <div class="form-group">
+            <label for="nettobetragin2">Nettobetrag inkl. MWST</label> <input class="form-control" disabled
+              ng-value="operatingCostDetailsCtrl.customRoundNumber(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,
+						 operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage)+operatingCostDetailsCtrl.calculateOperatingMWSTValueCalc(operatingCostDetailsCtrl.calculateOperatingNet(operatingCostDetailsCtrl.offer.operatingCostGross, operatingCostDetailsCtrl.offer.operatingCostGrossCorrected, operatingCostDetailsCtrl.offer.isOperatingCostCorrected,operatingCostDetailsCtrl.offer.operatingCostDiscount, operatingCostDetailsCtrl.offer.isOperatingCostDiscountPercentage, operatingCostDetailsCtrl.offer.operatingCostDiscount2,operatingCostDetailsCtrl.offer.isOperatingCostDiscount2Percentage),operatingCostDetailsCtrl.offer.operatingCostVat,operatingCostDetailsCtrl.offer.operatingCostIsVatPercentage,operatingCostDetailsCtrl.tempOperVat,operatingCostDetailsCtrl.tempOperVatDD))"
+              id="nettobetragin2" placeholder="" type="text">
+          </div>
+        </div>
+        <div class="col-sm-12 col-md-12 btn-bar">
+          <button type="button" class="btn btn-primary" ng-click="operatingCostDetailsCtrl.save()" ng-disabled="!operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.$dirty">Speichern</button>
+          <button type="button" class="btn btn-default"
+            ng-click="operatingCostDetailsCtrl.resetPage(operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.$dirty)">Abbrechen</button>
+          <button type="button" class="btn btn-default"
+            ng-click="operatingCostDetailsCtrl.resetFormValues()">Zurücksetzen</button>
+          <div ng-if="operatingCostDetailsCtrl.offerOperatingCostDetailsCtrlForm.$dirty">
+            <input ng-hide="true" type="checkbox" data-ng-model="operatingCostDetailsCtrl.dirtyFlag"
+              ng-init="operatingCostDetailsCtrl.dirtyFlag=true" ng-value="appCtrl.setDirtyFlag(true)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </fieldset>
 </form>

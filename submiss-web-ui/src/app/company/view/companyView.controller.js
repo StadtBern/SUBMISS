@@ -58,19 +58,28 @@
     vm.requestProofs = requestProofs;
     vm.sendMailModal = sendMailModal;
     vm.fiftyPlusFactor = fiftyPlusFactor;
+    vm.getCompanyTask = getCompanyTask;
     // Activating the controller.
     activate();
     /***********************************************************************
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.readCompany($stateParams.id);
-      vm.apprenticeFactor();
-      vm.numberOfColleagues();
-      vm.secProofVerificationRequest = AppService.isOperationPermitted(AppConstants.OPERATION.PROOF_VERIFICATION_REQUEST, null);
-      vm.secMainTenantBemerkungFabeView = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BEMERKUNG_FABE_VIEW, null);
-      vm.secMainTenantBeschaffungswesenView = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW, null);
-      vm.secSentEmail = AppService.isOperationPermitted(AppConstants.OPERATION.SENT_EMAIL, null);
+      CompanyService.loadCompany()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.readCompany($stateParams.id);
+            vm.apprenticeFactor();
+            vm.numberOfColleagues();
+            vm.secProofVerificationRequest = AppService.isOperationPermitted(AppConstants.OPERATION.PROOF_VERIFICATION_REQUEST, null);
+            vm.secMainTenantBemerkungFabeView = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BEMERKUNG_FABE_VIEW, null);
+            vm.secMainTenantBeschaffungswesenView = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW, null);
+            vm.secSentEmail = AppService.isOperationPermitted(AppConstants.OPERATION.SENT_EMAIL, null);
+            vm.getCompanyTask($stateParams.id);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -93,6 +102,16 @@
         vm.secCompanyUpdate = AppService.isOperationPermitted(AppConstants.OPERATION.COMPANY_UPDATE, null);
         vm.secCompanyDelete = AppService.isOperationPermitted(AppConstants.OPERATION.COMPANY_DELETE, null);
         vm.secCompanyOffersView = AppService.isOperationPermitted(AppConstants.OPERATION.COMPANY_OFFERS_VIEW, null);
+      }).error(function (response, status) {});
+    }
+
+    function getCompanyTask(companyId) {
+      TasksService.getCompanyTask(companyId).success(function (data) {
+        var name = (data.firstName != null && data.lastName != null) ? data.firstName + ' ' + data.lastName : null;
+        vm.data.companyTask = {
+          createdOn: data.createdOn,
+          createdBy: name
+        };
       }).error(function (response, status) {});
     }
 
@@ -141,7 +160,10 @@
     function deleteCompany() {
       if (vm.data.company) {
         CompanyService.deleteCompany(vm.data.company.id).success(
-          function (data) {
+          function (data, status) {
+            if (status === 403) { // Security checks.
+              return;
+            }
             $state.go('company.search', {}, {
               reload: true
             });

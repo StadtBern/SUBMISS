@@ -218,6 +218,7 @@
           $scope.submittentsExclusionCtrl.legalExclusionForm.exclusionDate.$viewValue;
       }
       AppService.setPaneShown(true);
+      vm.legalExclusion.submissionVersion = vm.submission.version;
       LegalHearingService.updateExcludedSubmittent(vm.legalExclusion).success(function (data) {
         vm.dirtyFlag = false;
         if (vm.displayedSubmittent.submittent) {
@@ -237,7 +238,7 @@
         }
         AppService.setPaneShown(false);
       }).error(function (response, status) {
-        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) { // Validation errors.
+        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status == AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
           vm.errorFieldsVisible = true;
           $anchorScroll();
           QFormJSRValidation.markErrors($scope,

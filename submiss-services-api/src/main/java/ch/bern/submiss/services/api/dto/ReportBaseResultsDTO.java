@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * The Class ReportResultsDTO.
  */
-public class ReportBaseResultsDTO extends AbstractDTO {
+public class ReportBaseResultsDTO extends AbstractStammdatenDTO {
 
   /**
    * The start date.

@@ -39,6 +39,7 @@
      **********************************************************************/
     vm.addSubmittent = addSubmittent;
     vm.showJointVenturesSubcontractors = showJointVenturesSubcontractors;
+    vm.closeModal = closeModal;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -105,6 +106,22 @@
         $uibModalInstance.close();
         $state.reload();
       });
+    }
+
+    function closeModal() {
+      if (vm.dirtyFlag || vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('documentView.submittentsExclusion', {}, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
+      }
     }
   }
 })();

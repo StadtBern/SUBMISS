@@ -14,9 +14,11 @@
 package ch.bern.submiss.services.api.administration;
 
 
-import java.util.List;
 import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The Interface SDDirectorateService.
@@ -94,7 +96,7 @@ List<DirectorateHistoryDTO> getAllPermittedDirectorates();
    *
    * @param directorateHistoryDTO the directorate history DTO
    */
-  void saveDirectorateEntry(DirectorateHistoryDTO directorateHistoryDTO);
+  Set<ValidationError> saveDirectorateEntry(DirectorateHistoryDTO directorateHistoryDTO);
 
   
   /**

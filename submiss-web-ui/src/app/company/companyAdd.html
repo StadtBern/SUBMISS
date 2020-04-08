@@ -12,160 +12,158 @@
   -->
 
 <div class="row" id="ErrorAnchor">
-	<div id='errorScroll' class="card-box">
-		<div class="col-sm-12">
-          <div class="alert alert-danger" 
-	          ng-if="companyAddCtr.moreThanOneError || companyAddCtr.notAllowedCompanyError || companyAddCtr.notSelectedCompanyError" role="alert">
-	          	<ul ng-if="companyAddCtr.moreThanOneError"><li translate>
-	       		  company_add_only_one
-	       		</li></ul>
-	          <ul ng-if="companyAddCtr.notAllowedCompanyError"><li translate>
-	       		 company_add_not_allowed
-	       	  </li></ul>
-	          <ul ng-if="companyAddCtr.notSelectedCompanyError"><li translate>
-	       		  company_not_selected_error
-	       	  </li></ul>
-	      </div>
-        </div>	
-		<form>
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label for="companyName">Firmenname</label>
-					 <input	class="form-control" id="companyName"
-						data-ng-model="companyAddCtr.searchForm.companyName" type="text"
-						uib-typeahead="company for company in companyAddCtr.getCompanyNames($viewValue)"
-                 typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" ng-change="companyAddCtr.resetSearch()"
-                 class="form-control">
-				</div>
-				<div class="form-group">
-					<label for="companyWorkTypes">Arbeitsgattung(en)</label> <select  ng-change="companyAddCtr.resetSearch()"
-						ui-select2="{allowClear: true}" id="companyWorkTypes" multiple
-						data-ng-model="companyAddCtr.searchForm.workTypes"
-						ng-options="workType.value1 + ' ' + workType.value2 for workType in companyAddCtr.workTypes">
-						<option></option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="beschreibung">Bemerkungen</label> <input
-						class="form-control" id="notes"
-						data-ng-model="companyAddCtr.searchForm.notes" type="text"
-						uib-typeahead="companyNotes for companyNotes in companyAddCtr.getCompanyNotes($viewValue)"
-                 typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" ng-change="companyAddCtr.resetSearch()
-                 class="form-control">
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label for="beschreibung">Telefon</label> <input id="companyTel" type="text" ng-model="companyAddCtr.searchForm.companyTel" ng-change="companyAddCtr.resetSearch()"
-                 class="form-control">
-				</div>
-				<div class="form-group">
-					<label class="" for="land">Land</label> <select ng-change="companyAddCtr.resetSearch()"
-						ui-select2="{allowClear: true}" id="country"
-						data-ng-model="companyAddCtr.searchForm.countryId"
-						data-placeholder="Keine Auswahl">
-						<option></option>
-						<option
-							ng-repeat="country in companyAddCtr.countries | orderBy : 'countryName'"
-							value="{{country.id}}">{{country.countryName}}</option>
-					</select>
-				</div>
-				<div class="form-group">
-				<label class="" for="proofStatus">Nachweisstatus</label> 
-				<ui-select name="proofStatus" id="proofStatus" ng-change="companyAddCtr.resetSearch()"
-						ng-model="companyAddCtr.searchForm.proofStatus" theme="select2">
-					<ui-select-match allow-clear="true"> <span
-						ng-bind="$select.selected.title"></span> </ui-select-match> <ui-select-choices
-						repeat="item.id as item in (companyAddCtr.proofStatuses| filter: $select.search)">
-          <span ng-bind="item.title"></span></ui-select-choices> </ui-select>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-12 btn-bar">
-				<button type="submit" class="btn btn-primary" data-ng-click="companyAddCtr.search()">Suchen</button>
-				<button type="button" class="btn btn-default" data-ng-click="companyAddCtr.reloadPage()">Zurücksetzen</button>
-				<button class="btn btn-default" type="button" data-ng-click="companyAddCtr.closeModal()">Abbrechen</button>
-			</div>
-		</form>
-	</div>
+  <div id='errorScroll' class="card-box">
+    <div class="col-sm-12">
+      <div class="alert alert-danger"
+        ng-if="companyAddCtr.moreThanOneError || companyAddCtr.notAllowedCompanyError || companyAddCtr.notSelectedCompanyError"
+        role="alert">
+        <ul ng-if="companyAddCtr.moreThanOneError">
+          <li translate>
+            company_add_only_one
+          </li>
+        </ul>
+        <ul ng-if="companyAddCtr.notAllowedCompanyError">
+          <li translate>
+            company_add_not_allowed
+          </li>
+        </ul>
+        <ul ng-if="companyAddCtr.notSelectedCompanyError">
+          <li translate>
+            company_not_selected_error
+          </li>
+        </ul>
+      </div>
+    </div>
+    <form>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="companyName">Firmenname</label>
+          <input class="form-control" id="companyName" data-ng-model="companyAddCtr.searchForm.companyName" type="text"
+            uib-typeahead="company for company in companyAddCtr.getCompanyNames($viewValue)" typeahead-min-length="3"
+            typeahead-wait-ms="500" autocomplete="off" ng-change="companyAddCtr.resetSearch()" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="companyWorkTypes">Arbeitsgattung(en)</label> <select ng-change="companyAddCtr.resetSearch()"
+            ui-select2="{allowClear: true}" id="companyWorkTypes" multiple
+            data-ng-model="companyAddCtr.searchForm.workTypes"
+            ng-options="workType.value1 + ' ' + workType.value2 for workType in companyAddCtr.workTypes">
+            <option></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="beschreibung">Bemerkungen</label> <input class="form-control" id="notes"
+            data-ng-model="companyAddCtr.searchForm.notes" type="text"
+            uib-typeahead="companyNotes for companyNotes in companyAddCtr.getCompanyNotes($viewValue)"
+            typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" ng-change="companyAddCtr.resetSearch()
+                 class=" form-control">
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="beschreibung">Telefon</label> <input id="companyTel" type="text"
+            ng-model="companyAddCtr.searchForm.companyTel" ng-change="companyAddCtr.resetSearch()" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="" for="land">Land</label> <select ng-change="companyAddCtr.resetSearch()"
+            ui-select2="{allowClear: true}" id="country" data-ng-model="companyAddCtr.searchForm.countryId"
+            data-placeholder="Keine Auswahl">
+            <option></option>
+            <option ng-repeat="country in companyAddCtr.countries | orderBy : 'countryName'" value="{{country.id}}">
+              {{country.countryName}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="" for="proofStatus">Nachweisstatus</label>
+          <ui-select name="proofStatus" id="proofStatus" ng-change="companyAddCtr.resetSearch()"
+            ng-model="companyAddCtr.searchForm.proofStatus" theme="select2">
+            <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.title"></span> </ui-select-match>
+            <ui-select-choices repeat="item.id as item in (companyAddCtr.proofStatuses| filter: $select.search)">
+              <span ng-bind="item.title"></span></ui-select-choices>
+          </ui-select>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12 btn-bar">
+        <button type="submit" class="btn btn-primary" data-ng-click="companyAddCtr.search()">Suchen</button>
+        <button type="button" class="btn btn-default" data-ng-click="companyAddCtr.reloadPage()">Zurücksetzen</button>
+        <button class="btn btn-default" type="button" data-ng-click="companyAddCtr.closeModal()">Abbrechen</button>
+      </div>
+    </form>
+  </div>
 </div>
 <div class="row">
-	<div class="col-sm-12" ng-if="companyAddCtr.tableParams != null">
-		<h2 class="page-title">Suchresultate</h2>
-	</div>
+  <div class="col-sm-12" ng-if="companyAddCtr.tableParams != null">
+    <h2 class="page-title">Suchresultate</h2>
+  </div>
 </div>
 <div class="row" id="results">
-	<div class="card-box">
-		<div class="col-sm-12 ToolbarContainer">
-			<div class="btn-toolbar  pull-right">
-				
-				
-				<ul class="dropdown-menu">
-					<li><a href="#"><span class="fa fa-file-pdf-o"
-							aria-hidden="true"></span> Firmenliste komplett</a></li>
-					<li><a href="#"><span class="fa fa-file-excel-o"
-							aria-hidden="true"></span> Liste Winbau</a></li>
-					<li><a href="#"><span class="fa fa-file-excel-o"
-							aria-hidden="true"></span> Liste Arbeitsgattung</a></li>
-					<li><a href="#"><span class="fa fa-file-pdf-o"
-							aria-hidden="true"></span> Firmenliste nach Suchresultat</a></li>
-				</ul>
-			</div>
-		</div>
-		<form data-ng-submit="companyAddCtr.addSelected()" ng-if="companyAddCtr.tableParams != null">
-			<div class="col-sm-12">
-				<div ng-table-pagination="companyAddCtr.tableParams" 
-					template-url="'app/layout/pager.html'"></div>
-				<div class="table-responsive"
-				position
-				style="margin: 0; overflow: scroll; max-height: 500px; " scrolly="companyAddCtr.scrollyRun(companyAddCtr.tableParams)">
-					<table ng-table="companyAddCtr.tableParams" id="formStart"
-						class="table table-striped companies" show-filter="true">
-						<tr ng-repeat="company in $data" ng-click="company.selected = !company.selected" id="company{{$index}}">
-							<td header="'headerCheckbox.html'">
-								<input type="checkbox" ng-click="company.selected = !company.selected"
-								ng-model="company.selected" />
-							</td>
-							<td title="'Firmenname'" sortable="'companyName'">
-							<a ng-click="companyAddCtr.navigateToCompany(company.id)">{{company.companyName}}</a>
-							</td>
-							<td title="'Arbeitsgattung(en)'" sortable="'workTypes'"><span
-								ng-repeat="workType in company.workTypes | orderBy:'value1'">{{workType.value1}}
-								{{workType.value2}}</br></span>
-							</td>
-							<td title="'PLZ'" sortable="'postCode'">{{company.postCode}}</td>
-							<td title="'Ort'" sortable="'location'">{{company.location}}
-							</td>
-							<td title="'Lehr.f'" sortable="'apprenticeFactor'">{{company.apprenticeFactor |
+  <div class="card-box">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="btn-toolbar  pull-right">
+
+
+        <ul class="dropdown-menu">
+          <li><a href="#"><span class="fa fa-file-pdf-o" aria-hidden="true"></span> Firmenliste komplett</a></li>
+          <li><a href="#"><span class="fa fa-file-excel-o" aria-hidden="true"></span> Liste Winbau</a></li>
+          <li><a href="#"><span class="fa fa-file-excel-o" aria-hidden="true"></span> Liste Arbeitsgattung</a></li>
+          <li><a href="#"><span class="fa fa-file-pdf-o" aria-hidden="true"></span> Firmenliste nach Suchresultat</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <form data-ng-submit="companyAddCtr.addSelected()" ng-if="companyAddCtr.tableParams != null">
+      <div class="col-sm-12">
+        <div ng-table-pagination="companyAddCtr.tableParams" template-url="'app/layout/pager.html'"></div>
+        <div class="table-responsive" position style="margin: 0; overflow: scroll; max-height: 500px; "
+          scrolly="companyAddCtr.scrollyRun(companyAddCtr.tableParams)">
+          <table ng-table="companyAddCtr.tableParams" id="formStart" class="table table-striped companies"
+            show-filter="true">
+            <tr ng-repeat="company in $data" ng-click="company.selected = !company.selected" id="company{{$index}}">
+              <td header="'headerCheckbox.html'">
+                <input type="checkbox" ng-click="company.selected = !company.selected" ng-model="company.selected" />
+              </td>
+              <td title="'Firmenname'" sortable="'companyName'">
+                <a ng-click="companyAddCtr.navigateToCompany(company.id)">{{company.companyName}}</a>
+              </td>
+              <td title="'Arbeitsgattung(en)'" sortable="'workTypes'"><span
+                  ng-repeat="workType in company.workTypes | orderBy:'value1'">{{workType.value1}}
+                  {{workType.value2}}</br></span>
+              </td>
+              <td title="'PLZ'" sortable="'postCode'">{{company.postCode}}</td>
+              <td title="'Ort'" sortable="'location'">{{company.location}}
+              </td>
+              <td title="'Lehr.f'" sortable="'apprenticeFactor'">{{company.apprenticeFactor |
 								number : 3}}</td>
-							<td class="w100" title="'TLP'" sortable="'tlp'"><span ng-if="company.tlp">Ja</span>
-							<span ng-if="company.tlp==null || !company.tlp">Nein</span></td>
-							 <td title="'Nachweisstatus'"sortable="'proofStatus'">
-							<div ng-show="company.proofStatus =='1'">
-								<img alt="Green Flag" src="../../../assets/images/greenFlag.png" /> Alle Nachweise vorhanden
-							</div>
-							<div ng-show="company.proofStatus =='2'">
-								<img alt="Red Flag" src="../../../assets/images/redFlag.png" />  Nachweise nicht mehr aktuell, nicht vollständig, oder nicht vorhanden
-							</div>
-							<div ng-show="company.proofStatus =='3'">
-								<img alt="=Flag Ban" src="../../../assets/images/flagBan.png" /> Rücksprache mit der Fachstelle Beschaffungswesen 
-							</div>
-							<div ng-show="company.proofStatus =='4'">
-								<img alt="Ban" src="../../../assets/images/ban.png" /> Rücksprache mit KAIO ZKB / FaBe
-							</div>
-						</td>
-						</tr>
-					</table>
-				</div>
-				<div class="col-sm-12 ToolbarContainer ">
-					<div role="toolbar">
-						<button type="submit" class="btn btn-primary">Hinzufügen
-						</button>
-					</div>
-				</div>
-			</div>
-		</form>
-	</div>
+              <td class="w100" title="'TLP'" sortable="'tlp'"><span ng-if="company.tlp">Ja</span>
+                <span ng-if="company.tlp==null || !company.tlp">Nein</span></td>
+              <td title="'Nachweisstatus'" sortable="'proofStatus'">
+                <div ng-show="company.proofStatus =='1'">
+                  <img alt="Green Flag" src="../../../assets/images/greenFlag.png" /> Alle Nachweise vorhanden
+                </div>
+                <div ng-show="company.proofStatus =='2'">
+                  <img alt="Red Flag" src="../../../assets/images/redFlag.png" /> Nachweise nicht mehr aktuell, nicht
+                  vollständig, oder nicht vorhanden
+                </div>
+                <div ng-show="company.proofStatus =='3'">
+                  <img alt="=Flag Ban" src="../../../assets/images/flagBan.png" /> Rücksprache mit der Fachstelle
+                  Beschaffungswesen
+                </div>
+                <div ng-show="company.proofStatus =='4'">
+                  <img alt="Ban" src="../../../assets/images/ban.png" /> Rücksprache mit KAIO ZKB / FaBe
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-sm-12 ToolbarContainer ">
+          <div role="toolbar">
+            <button type="submit" class="btn btn-primary">Hinzufügen
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 <script type="text/ng-template" id="headerCheckbox.html">
-    <input type="checkbox" ng-model="companyAddCtr.selectAll"  ng-click="companyAddCtr.checkAll()" />
+  <input type="checkbox" ng-model="companyAddCtr.selectAll"  ng-click="companyAddCtr.checkAll()" />
 </script>

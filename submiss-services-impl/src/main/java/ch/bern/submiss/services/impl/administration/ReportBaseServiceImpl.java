@@ -470,7 +470,7 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
         .from(project).where(project.id.in(reportBaseDTO.getProjects()))
         .orderBy(project.projectName.asc()).fetch();
       String searchedProjects = StringUtils.join(searchedProjectsList, " / ");
-      searchCriteriaMap.put("ProjektName", searchedProjects);
+      searchCriteriaMap.put("Projektname", searchedProjects);
     }
     if (CollectionUtils.isNotEmpty(reportBaseDTO.getWorkTypes())) {
       List<String> workTypeList = new ArrayList<>();

@@ -128,6 +128,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,6 +138,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,6 +146,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 import net.sf.jasperreports.engine.JRPrintPage;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -1145,21 +1148,19 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     // submission
     SubmissionDTO submission = submissionService.getSubmissionById(documentDTO.getFolderId());
 
-    /** Get from User the Tenant */
+    /* Get from User the Tenant */
     TenantDTO tenant = sDTenantService
       .getTenantById(getUser().getAttributeData(USER_ATTRIBUTES.TENANT.getValue()));
 
-    /** Get logo */
+    /* Get logo */
     byte[] logo = getLogo(documentDTO.getFolderId(), placeholders);
-    /** Get logo width per tenant */
+    /* Get logo width per tenant */
     long logoWidth = getLogoWidthForTenant(tenant);
 
-    // indent left : 0.25"
-    String tableIndentLeft = "365";
-    if (!tenant.getIsMain()) {
-      // indent left : 0.3"
-      tableIndentLeft = "432";
-    }
+
+    String tableIndentLeft = (tenant.getIsMain())
+      ? "365" // indent left : 0.25"
+      : "432"; // indent left : 0.3"
 
     // Ausschluss / Absage and Zuschlag docs should be generated with "vertraulich" checked with
     // only one exception: if it is a Freihändig or Freihändig mit Konkurrenz Verfahren under the
@@ -1223,37 +1224,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         }
         break;
       case Template.BEKO_ANTRAG:
-        // Apply security check through allowed templates retrieved from rule.
-        documentDTO.setFilename(documentDTO.getFilename() + setFileExtension(Template.BEKO_ANTRAG));
-        for (MasterListValueHistoryDTO allowedTemplate : allowedTemplates) {
-          if (allowedTemplate.getShortCode().equals(Template.BEKO_ANTRAG)) {
-            ruleService.runProjectTemplateRules(submission, null, null, null, placeholders,
-              Template.BEKO_ANTRAG);
-            createdDocumentIds.add(createDocument(documentDTO,
-              templateService.replacePlaceholdersWordDoc(inputStream,
-                SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
-                logo, logoWidth).toByteArray(),
-              null, null, false));
-            break;
-          }
-        }
-        break;
       case Template.BEKO_BESCHLUSS:
-        documentDTO
-          .setFilename(documentDTO.getFilename() + setFileExtension(Template.BEKO_BESCHLUSS));
-        // Apply security check through allowed templates retrieved from rule.
-        for (MasterListValueHistoryDTO allowedTemplate : allowedTemplates) {
-          if (allowedTemplate.getShortCode().equals(Template.BEKO_BESCHLUSS)) {
-            ruleService.runProjectTemplateRules(submission, null, null, null, placeholders,
-              Template.BEKO_BESCHLUSS);
-            createdDocumentIds.add(createDocument(documentDTO,
-              templateService.replacePlaceholdersWordDoc(inputStream,
-                SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
-                logo, logoWidth).toByteArray(),
-              null, null, false));
-            break;
-          }
-        }
+        generateBekoDocument(documentDTO, inputStream, createdDocumentIds, placeholders, submission,
+          logo, logoWidth, allowedTemplates, offers, template.getShortCode());
         break;
       case Template.VERFAHRENSABBRUCH:
 
@@ -1320,6 +1293,8 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
 
         break;
       case Template.VERFUGUNGEN:
+        // initialize awardInfo if not saved from user
+        initializeAwardInfo(submission);
         attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(),
           submission.getProcess().name());
         attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(), documentDTO.getTemplateId());
@@ -1451,10 +1426,11 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
             }
           }
         }
-        initializeAwardInfo(submission);
         updateSubmissionAwardNoticesStatus(submission);
         break;
       case Template.VERFUGUNGEN_DL_WETTBEWERB:
+        // initialize awardInfo if not saved from user
+        initializeAwardInfo(submission);
         attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(),
           submission.getProcess().name());
         attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(), documentDTO.getTemplateId());
@@ -1524,107 +1500,11 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
             }
           }
         }
-        initializeAwardInfo(submission);
         break;
       case Template.SELEKTIV_1_STUFE:
-        attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(),
-          submission.getProcess().name());
-        attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(), documentDTO.getTemplateId());
-        attributesMap.put(DocumentAttributes.TENANT_ID.name(), documentDTO.getTenantId());
-
-        templateBean.replaceAwardInfoFirstLevelPlaceholders(documentDTO.getFolderId(), submission,
-          placeholders);
-
-        List<OfferDTO> notExcludedApplicants =
-          offerService.retrieveOfferApplicants(documentDTO.getFolderId());
-        templateBean
-          .replaceAwardedApplicantsPlaceholders(notExcludedApplicants, documentDTO, placeholders);
-        // Get first level award info.
-        AwardInfoFirstLevelDTO awardInfoFirstLevel =
-          submissionCloseService.getAwardInfoFirstLevel(submission.getId());
-        for (OfferDTO offer : notExcludedApplicants) {
-
-          templateBean.replaceExcludedPlaceholders(placeholders,
-            offer.getExclusionReasonsFirstLevel());
-          Collections.sort(offer.getOfferCriteria(), ComparatorUtil.offerCriteriaWithWeightings);
-          ruleService.runProjectTemplateRules(submission, offer.getSubmittent().getCompanyId(),
-            null, offer, placeholders, Rule.RU007.name());
-          List<LinkedHashMap<Map<String, String>, Map<String, String>>> eCriteria =
-            templateBean.replaceAwardedApplicantsPlaceholders(offer, documentDTO, placeholders);
-          templateBean.setCompanyNameOrArge(offer, placeholders,
-            DocumentPlaceholders.F_COMPANY_NAME_OR_ARGE.getValue());
-          if ((offer.getqExStatus() != null && offer.getqExStatus())
-            && (offer.getqExExaminationIsFulfilled() == null
-            || !offer.getqExExaminationIsFulfilled())) {
-            attributesMap.put(LookupValues.TYPE, TemplateConstants.REJECTION);
-            documentDTO
-              .setFilename(Template.TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Absage)"
-                + LookupValues.UNDER_SCORE + offer.getSubmittent().getCompanyId().getCompanyName()
-                + setFileExtension(Template.SELEKTIV_1_STUFE));
-          } else if ((offer.getqExStatus() == null || !offer.getqExStatus())
-            && (offer.getqExExaminationIsFulfilled() == null
-            || !offer.getqExExaminationIsFulfilled())) {
-
-            templateBean.setCancelDeadline(placeholders, offer,
-              SelectiveLevel.FIRST_LEVEL.getValue());
-            List<Integer> levels = new ArrayList<>();
-            levels.add(SelectiveLevel.FIRST_LEVEL.getValue());
-            if (offer.getExclusionReasonsFirstLevel() == null
-              || offer.getExclusionReasonsFirstLevel().isEmpty()) {
-              templateBean.replaceLegalHearingPlaceholders(placeholders, offer, levels);
-            }
-            attributesMap.put(LookupValues.TYPE, TemplateConstants.EXCLUSION);
-            documentDTO
-              .setFilename(Template.TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Ausschluss)"
-                + LookupValues.UNDER_SCORE + offer.getSubmittent().getCompanyId().getCompanyName()
-                + setFileExtension(Template.SELEKTIV_1_STUFE));
-          } else if (offer.getExcludedFirstLevel() == null
-            || !offer.getExcludedFirstLevel()) {
-            attributesMap.put(LookupValues.TYPE, TemplateConstants.AWARD);
-            documentDTO
-              .setFilename(Template.TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Zulassung)"
-                + LookupValues.UNDER_SCORE + offer.getSubmittent().getCompanyId().getCompanyName()
-                + setFileExtension(Template.SELEKTIV_1_STUFE));
-          }
-          placeholders.put(DocumentPlaceholders.O_SUM_OF_APPLICANTS.getValue(),
-            String.valueOf(notExcludedApplicants.size()));
-          templateList =
-            documentService.getNodeByAttributes(LookupValues.TEMPLATE_FOLDER_ID, attributesMap);
-          try (InputStream inputStream1 = new ByteArrayInputStream(
-            versionService.getBinContent(templateList.get(0).getId()))) {
-            createdDocumentIds
-              .add(createDocument(documentDTO,
-                templateService.replacePlaceholdersWordDoc(
-                  new ByteArrayInputStream(templateService.replacePlaceholderWithTable(
-                    inputStream1, eCriteria, "e_criterion_name", tableIndentLeft).toByteArray()),
-                  SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
-                  logo, logoWidth).toByteArray(),
-                offer.getSubmittent().getId(), offer.getSubmittent().getCompanyId().getId(),
-                false));
-          } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, TemplateConstants.INPUTSTREAM_ERROR + e.getMessage());
-          }
-          // Check if there is no award info.
-          if (awardInfoFirstLevel == null || awardInfoFirstLevel.getAvailableDate() == null) {
-            // Save the first level award info default values.
-            awardInfoFirstLevel.setAvailableDate(new Date());
-            awardInfoFirstLevel.setObjectNameRead(Boolean.TRUE);
-            awardInfoFirstLevel.setProjectNameRead(Boolean.TRUE);
-            awardInfoFirstLevel.setWorkingClassRead(Boolean.TRUE);
-            awardInfoFirstLevel.setDescriptionRead(Boolean.TRUE);
-            submissionCloseService.saveAwardInfoFirstLevel(awardInfoFirstLevel);
-          }
-        }
-        // Update status (if applicable).
-        if (!compareCurrentVsSpecificStatus(
-          TenderStatus.fromValue(
-            submissionService.getCurrentStatusOfSubmission(documentDTO.getFolderId())),
-          TenderStatus.AWARD_NOTICES_1_LEVEL_CREATED)) {
-          submissionService.updateSubmissionStatus(submission.getId(),
-            TenderStatus.AWARD_NOTICES_1_LEVEL_CREATED.getValue(),
-            AuditMessages.SELEKTIV_1_STUFE_DOC_GENERATED.name(), null,
-            LookupValues.EXTERNAL_LOG);
-        }
+        generateAwardInfoFirstLevelDocuments(documentDTO, createdDocumentIds, attributesMap,
+          placeholders,
+          submission, logo, logoWidth, tableIndentLeft);
         break;
       case Template.SUBMITTENTENLISTE:
         DocumentPropertiesDTO docProperties = new DocumentPropertiesDTO();
@@ -1692,27 +1572,8 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           && (template.getShortCode().equals(Template.OFFERRTOFFNUNGSPROTOKOLL)
           || template.getShortCode().equals(Template.A_OFFERRTOFFNUNGSPROTOKOLL))) {
 
-          attributesMap.put(DocumentAttributes.TENANT_ID.name(), documentDTO.getTenantId());
-          attributesMap.put("NAME", TemplateConstants.OFFERRTOFFNUNGSPROTOKOLL_NO_OFFERS);
-          templateList =
-            documentService.getNodeByAttributes(LookupValues.TEMPLATE_FOLDER_ID, attributesMap);
-          try (InputStream inputStream1 =
-            new ByteArrayInputStream(versionService.getBinContent(templateList.get(0).getId()))) {
-            templateBean.getOfferrtoffnungsprotokollTitle(placeholders, template.getShortCode());
-            ruleService.runProjectTemplateRules(submission, null, null, null, placeholders,
-              template.getShortCode());
-            createdDocumentIds
-              .add(
-                createDocument(documentDTO,
-                  submissPrintService.convertToPDF(templateService
-                    .replacePlaceholdersWordDoc(inputStream1,
-                      SubmissConverter
-                        .replaceSpecialCharactersInPlaceholders(placeholders))
-                    .toByteArray()),
-                  null, null, false));
-          } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, TemplateConstants.INPUTSTREAM_ERROR + e.getMessage());
-          }
+          createOffertoeffnungsDocNoOffers(documentDTO, template, createdDocumentIds, attributesMap,
+            placeholders, submission);
         } else {
           /*
            * Create 2 variables header and content that are coming filled from function
@@ -1738,7 +1599,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           ruleService.runProjectTemplateRules(submission, null, null, null, placeholders,
             template.getShortCode());
           placeholders.put(DocumentPlaceholders.S_SUM_OFFERS.getValue(),
-            String.valueOf(submissionOffers.size()));
+            String.valueOf(submissionOffers.stream().filter(offer ->  !offer.getIsEmptyOffer()).count()));
 
           // Repeat table header on every page.
           tableProperties2.put(REPEAT_HEADER, Boolean.TRUE.toString());
@@ -1918,126 +1779,8 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         }
         break;
       case Template.SUBMISSIONSUBERSICHT:
-        documentDTO
-          .setFilename(documentDTO.getFilename() + setFileExtension(Template.SUBMISSIONSUBERSICHT));
-
-        List<SubmittentDTO> submittentsList = submissionService
-          .getSubmittentsBySubmission(submission.getId());
-
-        // Retrieve also empty offers
-        submittentsList.addAll(submissionService.retrieveEmptyOffers(submission));
-        for (SubmittentOfferDTO submittentOfferDTO : offers) {
-          for (SubmittentDTO submittentDTO : submittentsList) {
-            if (submittentOfferDTO.getSubmittent().getId().equals(submittentDTO.getId())) {
-              submittentOfferDTO.setSubmittent(submittentDTO);
-            }
-          }
-        }
-
-        // Clear Submittent list when Selektiv process and status is not greater than
-        // OFFER_OPENING_STARTED.
-        if (submission.getProcess().equals(Process.SELECTIVE)
-          && (!compareCurrentVsSpecificStatus(submission.getCurrentState(),
-          TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)
-          || submission.getStatus()
-          .equals(TenderStatus.SUITABILITY_AUDIT_COMPLETED_S.getValue()))) {
-          submittentsList = submissionService.getApplicantsForFormalAudit(submission.getId());
-          offers.clear();
-          offers.addAll(submissionService.getApplicantsBySubmission(submission.getId()));
-          for (SubmittentOfferDTO submittentOfferDTO : offers) {
-            for (SubmittentDTO submittentDTO : submittentsList) {
-              if (submittentOfferDTO.getSubmittent().getId().equals(submittentDTO.getId())) {
-                submittentOfferDTO.setSubmittent(submittentDTO);
-              }
-            }
-          }
-        }
-
-        List<SubmissionOverviewDTO> submissionOverviewList = new ArrayList<>();
-        for (SubmittentOfferDTO submittentOffer : offers) {
-          SubmissionOverviewDTO submissionOverview = new SubmissionOverviewDTO();
-          submissionOverview.setOffer(submittentOffer.getOffer());
-          submissionOverview.setSubmittent(submittentOffer.getSubmittent());
-          submissionOverview
-            .setOfferAmount(templateBean.setCurrencyFormat(submittentOffer.getOffer().getAmount()));
-          submissionOverview.setOperatingOfferAmount(
-            templateBean.setCurrencyFormat(submittentOffer.getOffer().getOperatingCostsAmount()));
-          submissionOverview
-            .setOperatingCostNotes(submittentOffer.getOffer().getOperatingCostNotes());
-          submissionOverview.setPricePercentage(
-            templateBean.calculateOfferPricePercentage(submittentOffer, offers));
-          StringBuilder argeSubcontractors = new StringBuilder();
-          argeSubcontractors
-            .append(templateBean.getSubmittentArgeSubContractorNames(submittentOffer));
-          submissionOverview.setSubmittentARGESubContractors(argeSubcontractors.toString());
-          submissionOverview.setAllCompanies(
-            templateBean
-              .getAllCompaniesOverView(submittentOffer.getSubmittent(), submissionOverview));
-          submissionOverview.setStatusOfCompanies(
-            templateBean.getAllCompaniesOverViewStatus(submissionOverview.getAllCompanies()));
-          if (!submissionOverview.isHasPartners()) {
-            StringBuilder sbRemarks = new StringBuilder();
-            templateBean
-              .getCompanyRemarks(submittentOffer.getSubmittent().getCompanyId(), sbRemarks);
-            submissionOverview.setCompanyRemarks(sbRemarks.toString());
-
-            StringBuilder sbProofs = new StringBuilder();
-            List<CompanyProofDTO> companyProofs = companyService
-              .getProofByCompanyId(submittentOffer.getSubmittent().getCompanyId().getId());
-            Collections.reverse(companyProofs);
-            List<String> proofs = templateBean.getCompanyListOfProofs(companyProofs, sbProofs);
-            submissionOverview.setAllProofStatuses(StringUtils.join(proofs, " / "));
-
-            if (submittentOffer.getSubmittent().getCompanyId().getIsProofProvided() != null
-              && submittentOffer.getSubmittent().getCompanyId().getIsProofProvided()) {
-              submissionOverview.setStatusOfCompanies(TemplateConstants.ALL_PROOF_STATUS_AVAILABLE);
-            } else {
-              submissionOverview.setStatusOfCompanies(TemplateConstants.PROOF_STATUS_NOT_ACTIVE);
-            }
-          }
-          submissionOverviewList.add(submissionOverview);
-        }
-
-        // sort results according to status of submission
-        templateBean.setCompaniesRank(submission, submissionOverviewList);
-
-        try {
-          Map<String, Object> parameters = new HashMap<>();
-          StringBuilder readValues = templateBean.readTemplatesValues(submission);
-          parameters.put("READ_VALUES", readValues.toString());
-          parameters.put(TemplateConstants.DATASOURCE,
-            new JRBeanCollectionDataSource(submissionOverviewList));
-          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-          JasperCompileManager.compileReportToStream(inputStream, byteArrayOutputStream);
-          InputStream stream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-          JasperReport jasperReport = (JasperReport) JRLoader.loadObject(stream);
-          JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
-            new JRBeanCollectionDataSource(submissionOverviewList));
-
-          // check if template generates extra blank page at the end of document
-          // If extra page is generated that means that the page has only 3 elements (header - submission info values - paging)
-          // so we check if there are only 3 values and remove that page 
-          // then we fix page numbering
-          for (Iterator<JRPrintPage> i = jasperPrint.getPages().iterator(); i.hasNext(); ) {
-            JRPrintPage page = i.next();
-            if (page.getElements().size() == 3) {
-              i.remove();
-              templateBean.fixTemplatePaging(jasperPrint);
-            }
-          }
-
-          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          JRPdfExporter exporter = new JRPdfExporter();
-          SimplePdfExporterConfiguration configuration = new SimplePdfExporterConfiguration();
-          exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-          exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-          exporter.setConfiguration(configuration);
-          exporter.exportReport();
-          createdDocumentIds
-            .add(createDocument(documentDTO, outputStream.toByteArray(), null, null, false));
-        } catch (Exception e) {
-          LOGGER.log(Level.SEVERE, e.getMessage());
-        }
+        generateSubmissionsubersicht(documentDTO, inputStream, createdDocumentIds, submission,
+          offers);
         break;
       case Template.EIGNUNGSPRUFUNG:
         documentDTO
@@ -2184,6 +1927,406 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
   }
 
   /**
+   * Generate Award Info (Verfugungen) 1st level documents.
+   *
+   * @param documentDTO        the documentDTO
+   * @param createdDocumentIds the createdDocumentIds
+   * @param attributesMap      the attributesMap
+   * @param placeholders       the placeholders
+   * @param submission         the submission
+   * @param logo               the logo
+   * @param logoWidth          the logoWidth
+   * @param tableIndentLeft    the tableIndentLeft
+   */
+  private void generateAwardInfoFirstLevelDocuments(DocumentDTO documentDTO,
+    List<String> createdDocumentIds, HashMap<String, String> attributesMap,
+    HashMap<String, String> placeholders, SubmissionDTO submission, byte[] logo, long logoWidth,
+    String tableIndentLeft) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method generateAwardInfoFirstLevelDocuments, Parameters: documentDTO: {0}, "
+        + "createdDocumentIds: {1}, attributesMap: {2}, placeholders: {3}, submission: {4}, "
+        + "logo: {5}, logoWidth: {6}, tableIndentLeft: {7}",
+      new Object[]{documentDTO, createdDocumentIds, attributesMap, placeholders, submission,
+        logo, logoWidth, tableIndentLeft});
+
+    // initialize awardInfo if not saved from user
+    initializeAwardInfoFirstLevel(submission.getId());
+    attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(),
+      submission.getProcess().name());
+    attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(), documentDTO.getTemplateId());
+    attributesMap.put(DocumentAttributes.TENANT_ID.name(), documentDTO.getTenantId());
+    templateBean.replaceAwardInfoFirstLevelPlaceholders(documentDTO.getFolderId(), submission,
+      placeholders);
+    // Get the awarded applicants
+    List<OfferDTO> notExcludedApplicants =
+      offerService.retrieveOfferApplicants(documentDTO.getFolderId());
+    notExcludedApplicants.sort(Comparator.comparing(OfferDTO::getqExTotalGrade).reversed());
+    // Get the awarded applicants table
+    List<LinkedHashMap<Map<String, String>, Map<String, String>>> awardedApplicants = templateBean
+      .replaceAwardedApplicantsPlaceholdersWithNames(notExcludedApplicants);
+
+    for (OfferDTO offer : notExcludedApplicants) {
+      templateBean.replaceExcludedPlaceholders(placeholders,
+        offer.getExclusionReasonsFirstLevel());
+      Collections.sort(offer.getOfferCriteria(), ComparatorUtil.offerCriteriaWithWeightings);
+      ruleService.runProjectTemplateRules(submission, offer.getSubmittent().getCompanyId(),
+        null, offer, placeholders, Rule.RU007.name());
+      List<LinkedHashMap<Map<String, String>, Map<String, String>>> eCriteria =
+        templateBean.replaceAwardedApplicantsPlaceholders(offer, documentDTO, placeholders);
+      templateBean.setCompanyNameOrArge(offer, placeholders,
+        DocumentPlaceholders.F_COMPANY_NAME_OR_ARGE.getValue());
+      // Absage
+      if ((offer.getqExStatus() != null && offer.getqExStatus())
+        && (offer.getqExExaminationIsFulfilled() == null
+        || !offer.getqExExaminationIsFulfilled())) {
+        attributesMap.put(LookupValues.TYPE, TemplateConstants.REJECTION);
+        documentDTO
+          .setFilename(TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Absage)"
+            + LookupValues.UNDER_SCORE + offer.getSubmittent().getCompanyId().getCompanyName()
+            + setFileExtension(Template.SELEKTIV_1_STUFE));
+      }
+      // Ausschluss
+      else if ((offer.getqExStatus() == null || !offer.getqExStatus())
+        && (offer.getqExExaminationIsFulfilled() == null
+        || !offer.getqExExaminationIsFulfilled())) {
+
+        templateBean.setCancelDeadline(placeholders, offer,
+          SelectiveLevel.FIRST_LEVEL.getValue());
+        List<Integer> levels = new ArrayList<>(SelectiveLevel.FIRST_LEVEL.getValue());
+        if (offer.getExclusionReasonsFirstLevel() == null
+          || offer.getExclusionReasonsFirstLevel().isEmpty()) {
+          templateBean.replaceLegalHearingPlaceholders(placeholders, offer, levels);
+        }
+        attributesMap.put(LookupValues.TYPE, TemplateConstants.EXCLUSION);
+        documentDTO
+          .setFilename(TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Ausschluss)"
+            + LookupValues.UNDER_SCORE + offer.getSubmittent().getCompanyId().getCompanyName()
+            + setFileExtension(Template.SELEKTIV_1_STUFE));
+      }
+      // Zulassung
+      else if (offer.getExcludedFirstLevel() == null
+        || !offer.getExcludedFirstLevel()) {
+        attributesMap.put(LookupValues.TYPE, TemplateConstants.AWARD);
+        documentDTO
+          .setFilename(TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Zulassung)"
+            + LookupValues.UNDER_SCORE + offer.getSubmittent().getCompanyId().getCompanyName()
+            + setFileExtension(Template.SELEKTIV_1_STUFE));
+      }
+      placeholders.put(DocumentPlaceholders.O_SUM_OF_APPLICANTS.getValue(),
+        String.valueOf(notExcludedApplicants.size()));
+      List<NodeDTO> templateList =
+        documentService.getNodeByAttributes(LookupValues.TEMPLATE_FOLDER_ID, attributesMap);
+      // Map the placeholder with its table
+      HashMap placeholdersWithTables = new HashMap<String, List<LinkedHashMap<Map<String, String>, Map<String, String>>>>();
+      placeholdersWithTables.put(DocumentPlaceholders.AWARDED_COMPANY_NAME.getValue(), awardedApplicants);
+      placeholdersWithTables.put(DocumentPlaceholders.E_CRITERION_NAME.getValue(), eCriteria);
+      // create the document
+      try (InputStream inputStream1 = new ByteArrayInputStream(
+        versionService.getBinContent(templateList.get(0).getId()))) {
+        createdDocumentIds
+          .add(createDocument(documentDTO,
+            templateService.replacePlaceholdersWordDoc(
+              new ByteArrayInputStream(templateService
+                .replacePlaceholdersWithTables(inputStream1, placeholdersWithTables,
+                  tableIndentLeft).toByteArray()),
+              SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
+              logo, logoWidth).toByteArray(),
+            offer.getSubmittent().getId(), offer.getSubmittent().getCompanyId().getId(),
+            false));
+      } catch (IOException e) {
+        LOGGER.log(Level.SEVERE, TemplateConstants.INPUTSTREAM_ERROR + e.getMessage());
+      }
+    }
+    // Update status (if applicable).
+    if (!compareCurrentVsSpecificStatus(
+      TenderStatus.fromValue(
+        submissionService.getCurrentStatusOfSubmission(documentDTO.getFolderId())),
+      TenderStatus.AWARD_NOTICES_1_LEVEL_CREATED)) {
+      submissionService.updateSubmissionStatus(submission.getId(),
+        TenderStatus.AWARD_NOTICES_1_LEVEL_CREATED.getValue(),
+        AuditMessages.SELEKTIV_1_STUFE_DOC_GENERATED.name(), null,
+        LookupValues.EXTERNAL_LOG);
+    }
+  }
+
+  /**
+   * Initialize award info first level.
+   *
+   * @param submissionId the submissionId
+   */
+  private void initializeAwardInfoFirstLevel(String submissionId) {
+
+    LOGGER.log(Level.CONFIG, "Executing method initializeAwardInfoFirstLevel, Parameters: submissionId: {0}",
+      submissionId);
+
+    // Save award info default values.
+    AwardInfoFirstLevelDTO awardInfoFirstLevel =
+      submissionCloseService.getAwardInfoFirstLevel(submissionId);
+    if (awardInfoFirstLevel == null || awardInfoFirstLevel.getAvailableDate() == null) {
+      // Save the first level award info default values.
+      if (awardInfoFirstLevel == null) {
+        awardInfoFirstLevel = new AwardInfoFirstLevelDTO();
+      }
+      awardInfoFirstLevel.setAvailableDate(new Date());
+      awardInfoFirstLevel.setObjectNameRead(Boolean.TRUE);
+      awardInfoFirstLevel.setProjectNameRead(Boolean.TRUE);
+      awardInfoFirstLevel.setWorkingClassRead(Boolean.TRUE);
+      awardInfoFirstLevel.setDescriptionRead(Boolean.TRUE);
+      submissionCloseService.createAwardInfoFirstLevel(awardInfoFirstLevel);
+    } else {
+      // we need to update the award in case of reopening statuses and adding new Submittents
+      submissionCloseService.updateAwardInfoFirstLevel(awardInfoFirstLevel);
+    }
+  }
+
+  /**
+   * Generate Beko document.
+   *
+   * @param documentDTO        the documentDTO
+   * @param inputStream        the inputStream
+   * @param createdDocumentIds the createdDocumentIds
+   * @param placeholders       the placeholders
+   * @param submission         the submission
+   * @param logo               the logo
+   * @param logoWidth          the logoWidth
+   * @param allowedTemplates   the allowedTemplates
+   * @param offers             the offers
+   * @param title              the title
+   */
+  private void generateBekoDocument(DocumentDTO documentDTO, InputStream inputStream,
+    List<String> createdDocumentIds, HashMap<String, String> placeholders,
+    SubmissionDTO submission, byte[] logo, long logoWidth,
+    List<MasterListValueHistoryDTO> allowedTemplates, List<SubmittentOfferDTO> offers,
+    String title) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method generateBekoDocument, Parameters: documentDTO: {0}, "
+        + "inputStream: {1}, createdDocumentIds: {2}, placeholders: {3}, submission: {4}, "
+        + "logo: {5}, logoWidth: {6}, allowedTemplates: {7}, offers: {8}, title: {9}",
+      new Object[]{documentDTO, inputStream, createdDocumentIds, placeholders, submission,
+        logo, logoWidth, allowedTemplates, offers, title});
+
+    documentDTO.setFilename(documentDTO.getFilename() + setFileExtension(title));
+    // Security check if template exists in template list
+    Optional<MasterListValueHistoryDTO> isTemplateAllowed = allowedTemplates.stream()
+      .filter(allowedTemplate -> allowedTemplate.getShortCode().equals(title)).findFirst();
+    if (isTemplateAllowed.isPresent()) {
+      createBekoDocument(documentDTO, inputStream, createdDocumentIds, placeholders, submission,
+        logo, logoWidth, offers, title);
+    }
+  }
+
+  /**
+   * Creating the Beko document.
+   *
+   * @param documentDTO        the documentDTO
+   * @param inputStream        the inputStream
+   * @param createdDocumentIds the createdDocumentIds
+   * @param placeholders       the placeholders
+   * @param submission         the submission
+   * @param logo               the logo
+   * @param logoWidth          the logoWidth
+   * @param offers             the offers
+   * @param title              the title
+   */
+  private void createBekoDocument(DocumentDTO documentDTO, InputStream inputStream,
+    List<String> createdDocumentIds, HashMap<String, String> placeholders,
+    SubmissionDTO submission, byte[] logo, long logoWidth, List<SubmittentOfferDTO> offers,
+    String title) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method createBekoDocument, Parameters: documentDTO: {0}, "
+        + "inputStream: {1}, createdDocumentIds: {2}, placeholders: {3}, submission: {4}, "
+        + "logo: {5}, logoWidth: {6}, offers: {7}, title: {8}",
+      new Object[]{documentDTO, inputStream, createdDocumentIds, placeholders, submission,
+        logo, logoWidth, offers, title});
+
+    ruleService.runProjectTemplateRules(submission, null, null,
+      null, placeholders, title);
+    List<LinkedHashMap<Map<String, String>, Map<String, String>>> tableList =
+      templateBean.replaceBekoAwardedCompanies(offers);
+    createdDocumentIds.add(createDocument(documentDTO,
+      templateService.replacePlaceholdersWordDoc(new ByteArrayInputStream(
+          templateService.replacePlaceholderWithTable(inputStream,
+            tableList, "ba_award_table", "0").toByteArray()),
+        SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
+        logo, logoWidth).toByteArray(), null, null, false));
+  }
+
+  /**
+   * Generate Submissionsubersicht document.
+   *
+   * @param documentDTO        the documentDTO
+   * @param inputStream        the inputStream
+   * @param createdDocumentIds the createdDocumentIds
+   * @param submission         the submission
+   * @param offers             the offers
+   */
+  private void generateSubmissionsubersicht(DocumentDTO documentDTO, InputStream inputStream,
+    List<String> createdDocumentIds, SubmissionDTO submission, List<SubmittentOfferDTO> offers) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method generateSubmissionsubersicht, Parameters: documentDTO: {0}, "
+        + "inputStream: {1}, createdDocumentIds: {2}, submission: {3}, offers: {4}",
+      new Object[]{documentDTO, inputStream, createdDocumentIds, submission, offers});
+
+    documentDTO
+      .setFilename(documentDTO.getFilename() + setFileExtension(Template.SUBMISSIONSUBERSICHT));
+
+    List<SubmittentDTO> submittentsList = submissionService
+      .getSubmittentsBySubmission(submission.getId());
+
+    // Retrieve also empty offers
+    submittentsList.addAll(submissionService.retrieveEmptyOffers(submission));
+    for (SubmittentOfferDTO submittentOfferDTO : offers) {
+      for (SubmittentDTO submittentDTO : submittentsList) {
+        if (submittentOfferDTO.getSubmittent().getId().equals(submittentDTO.getId())) {
+          submittentOfferDTO.setSubmittent(submittentDTO);
+        }
+      }
+    }
+
+    // Clear Submittent list when Selektiv process and status is not greater than
+    // OFFER_OPENING_STARTED.
+    if (submission.getProcess().equals(Process.SELECTIVE)
+      && (!compareCurrentVsSpecificStatus(submission.getCurrentState(),
+      TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)
+      || submission.getStatus()
+      .equals(TenderStatus.SUITABILITY_AUDIT_COMPLETED_S.getValue()))) {
+      submittentsList = submissionService.getApplicantsForFormalAudit(submission.getId());
+      offers.clear();
+      offers.addAll(submissionService.getApplicantsBySubmission(submission.getId()));
+      for (SubmittentOfferDTO submittentOfferDTO : offers) {
+        for (SubmittentDTO submittentDTO : submittentsList) {
+          if (submittentOfferDTO.getSubmittent().getId().equals(submittentDTO.getId())) {
+            submittentOfferDTO.setSubmittent(submittentDTO);
+          }
+        }
+      }
+    }
+
+    List<SubmissionOverviewDTO> submissionOverviewList = new ArrayList<>();
+    for (SubmittentOfferDTO submittentOffer : offers) {
+      SubmissionOverviewDTO submissionOverview = new SubmissionOverviewDTO();
+      submissionOverview.setOffer(submittentOffer.getOffer());
+      submissionOverview.setSubmittent(submittentOffer.getSubmittent());
+      submissionOverview
+        .setOfferAmount(templateBean.setCurrencyFormat(submittentOffer.getOffer().getAmount()));
+      submissionOverview.setOperatingOfferAmount(
+        templateBean.setCurrencyFormat(submittentOffer.getOffer().getOperatingCostsAmount()));
+      submissionOverview
+        .setOperatingCostNotes(submittentOffer.getOffer().getOperatingCostNotes());
+      submissionOverview.setSubmittentARGESubContractors(
+        templateBean.getSubmittentArgeSubContractorNames(submittentOffer));
+      submissionOverview.setAllCompanies(
+        templateBean
+          .getAllCompaniesOverView(submittentOffer.getSubmittent(), submissionOverview));
+      if (submissionOverview.isHasPartners()) {
+        submissionOverview.setStatusOfCompanies(
+          templateBean.getAllCompaniesOverViewStatus(submissionOverview.getAllCompanies()));
+      } else {
+        StringBuilder sbRemarks = new StringBuilder();
+        templateBean
+          .getCompanyRemarks(submittentOffer.getSubmittent().getCompanyId(), sbRemarks);
+        submissionOverview.setCompanyRemarks(sbRemarks.toString());
+
+        StringBuilder sbProofs = new StringBuilder();
+        List<CompanyProofDTO> companyProofs = companyService
+          .getProofByCompanyId(submittentOffer.getSubmittent().getCompanyId().getId());
+        Collections.reverse(companyProofs);
+        List<String> proofs = templateBean.getCompanyListOfProofs(companyProofs, sbProofs);
+        submissionOverview.setAllProofStatuses(StringUtils.join(proofs, " / "));
+
+        submissionOverview.setStatusOfCompanies(templateBean
+          .getCompanyOverviewProofStatus(submittentOffer.getSubmittent().getCompanyId()));
+      }
+      submissionOverviewList.add(submissionOverview);
+    }
+
+    // sort results according to status of submission
+    templateBean.setCompaniesRank(submission, submissionOverviewList);
+    // calculate the price percentage for every submittent
+    templateBean.calculateOfferPricePercentage(submission, submissionOverviewList);
+
+    try {
+      Map<String, Object> parameters = new HashMap<>();
+      StringBuilder readValues = templateBean.readTemplatesValues(submission);
+      parameters.put("READ_VALUES", readValues.toString());
+      parameters.put(TemplateConstants.DATASOURCE,
+        new JRBeanCollectionDataSource(submissionOverviewList));
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      JasperCompileManager.compileReportToStream(inputStream, byteArrayOutputStream);
+      InputStream stream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+      JasperReport jasperReport = (JasperReport) JRLoader.loadObject(stream);
+      JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters,
+        new JRBeanCollectionDataSource(submissionOverviewList));
+
+      /*
+       * check if template generates extra blank page at the end of document
+       * If extra page is generated that means that the page has only 3 elements (header - submission info values - paging)
+       * so we check if there are only 3 values and remove that page
+       * then we fix page numbering
+       */
+      for (Iterator<JRPrintPage> i = jasperPrint.getPages().iterator(); i.hasNext(); ) {
+        JRPrintPage page = i.next();
+        if (page.getElements().size() == 3) {
+          i.remove();
+          templateBean.fixTemplatePaging(jasperPrint);
+        }
+      }
+
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      JRPdfExporter exporter = new JRPdfExporter();
+      SimplePdfExporterConfiguration configuration = new SimplePdfExporterConfiguration();
+      exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+      exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
+      exporter.setConfiguration(configuration);
+      exporter.exportReport();
+      createdDocumentIds
+        .add(createDocument(documentDTO, outputStream.toByteArray(), null, null, false));
+    } catch (Exception e) {
+      LOGGER.log(Level.SEVERE, e.getMessage());
+    }
+  }
+
+  private void createOffertoeffnungsDocNoOffers(DocumentDTO documentDTO,
+    MasterListValueHistoryEntity template, List<String> createdDocumentIds,
+    HashMap<String, String> attributesMap, HashMap<String, String> placeholders,
+    SubmissionDTO submission) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method createOffertoeffnungsDocNoOffers, Parameters: documentDTO: {0}, "
+        + "template: {1}, createdDocumentIds: {2}, attributesMap: {3}, placeholders: {4}, "
+        + "submission: {5}",
+      new Object[]{documentDTO, template, createdDocumentIds, attributesMap, placeholders,
+        submission});
+
+    List<NodeDTO> templateList;
+    attributesMap.put(DocumentAttributes.TENANT_ID.name(), documentDTO.getTenantId());
+    attributesMap.put("NAME", TemplateConstants.OFFERRTOFFNUNGSPROTOKOLL_NO_OFFERS);
+    templateList =
+      documentService.getNodeByAttributes(LookupValues.TEMPLATE_FOLDER_ID, attributesMap);
+    try (InputStream inputStream1 =
+      new ByteArrayInputStream(versionService.getBinContent(templateList.get(0).getId()))) {
+      templateBean.getOfferrtoffnungsprotokollTitle(placeholders, template.getShortCode());
+      ruleService.runProjectTemplateRules(submission, null, null, null, placeholders,
+        template.getShortCode());
+      createdDocumentIds
+        .add(
+          createDocument(documentDTO,
+            submissPrintService.convertToPDF(templateService
+              .replacePlaceholdersWordDoc(inputStream1,
+                SubmissConverter
+                  .replaceSpecialCharactersInPlaceholders(placeholders))
+              .toByteArray()),
+            null, null, false));
+    } catch (Exception e) {
+      LOGGER.log(Level.SEVERE, TemplateConstants.INPUTSTREAM_ERROR + e.getMessage());
+    }
+  }
+
+  /**
    * Handles the submittent proof status fabe calculation in case of SUBMITTENTENLISTE document
    * creation.
    *
@@ -2254,17 +2397,25 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
    * @param submission the submission
    */
   private void initializeAwardInfo(SubmissionDTO submission) {
+
+    LOGGER.log(Level.CONFIG, "Executing method initializeAwardInfo, Parameters: submission: {0}",
+      submission);
+
     // Save award info default values.
     AwardInfoDTO award = submissionCloseService.getAwardInfo(submission.getId());
     if (award == null || award.getAvailableDate() == null) {
-      AwardInfoDTO awardInfo = new AwardInfoDTO();
-      awardInfo.setSubmission(submission);
-      awardInfo.setAvailableDate(new Date());
-      awardInfo.setObjectNameRead(Boolean.TRUE);
-      awardInfo.setProjectNameRead(Boolean.TRUE);
-      awardInfo.setWorkingClassRead(Boolean.TRUE);
-      awardInfo.setDescriptionRead(Boolean.TRUE);
-      submissionCloseService.saveAwardInfo(awardInfo);
+      if (award == null) {
+        award = new AwardInfoDTO();
+      }
+      award.setAvailableDate(new Date());
+      award.setObjectNameRead(Boolean.TRUE);
+      award.setProjectNameRead(Boolean.TRUE);
+      award.setWorkingClassRead(Boolean.TRUE);
+      award.setDescriptionRead(Boolean.TRUE);
+      submissionCloseService.createAwardInfo(award);
+    } else {
+      // we need to update the award in case of reopening statuses and adding new Submittents
+      submissionCloseService.updateAwardInfo(award);
     }
   }
 
@@ -2286,9 +2437,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           em.find(LegalHearingExclusionEntity.class, legal.getId());
         entity.setFirstLevelExclusionDate(submission.getFirstLevelExclusionDate());
         String userId = getUserId();
-        Date now = new Date();
         entity.setUpdatedBy(userId);
-        entity.setUpdatedOn(now);
         em.merge(entity);
       }
       legal.setExclusionDeadline(submission.getFirstLevelExclusionDate());
@@ -2298,9 +2447,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           em.find(LegalHearingExclusionEntity.class, legal.getId());
         entity.setExclusionDeadline(submission.getExclusionDeadline());
         String userId = getUserId();
-        Date now = new Date();
         entity.setUpdatedBy(userId);
-        entity.setUpdatedOn(now);
         em.merge(entity);
       }
       legal.setExclusionDeadline(submission.getExclusionDeadline());
@@ -3626,6 +3773,12 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     VersionDTO versionDTO = getVersionById(document.getId());
     if (versionDTO != null && versionDTO.getNodeId() != null
       && versionDTO.getAttributes() != null) {
+
+      // Check for OptimisticLockException
+      if (document.getLastModifiedOn().before(new Date(versionDTO.getLastModifiedOn()))) {
+        throw new OptimisticLockException();
+      }
+
       versionDTO.getAttributes().put(DocumentAttributes.TITLE.name(), document.getTitle());
 
       versionService.updateAttributes(versionDTO.getNodeId(), versionDTO.getAttributes(),
@@ -4315,32 +4468,12 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         documentDTO.setTenantId(template.getTenant().getId());
 
         companyProofDTOs = companyService.getProofByCompanyId(documentDTO.getFolderId());
+        addGermanFrenchProofText(placeholders, companyProofDTOs);
 
-        // Replace company proof placeholders.
-        StringBuilder germanProofs = new StringBuilder();
-        StringBuilder frenchProofs = new StringBuilder();
-        for (CompanyProofDTO companyProof : companyProofDTOs) {
-          if (companyProof.getRequired()) {
-            germanProofs.append(companyProof.getProof().getDescription());
-            germanProofs.append(TemplateConstants.NEW_LINE_STRING);
-            frenchProofs.append(companyProof.getProof().getDescriptionFr());
-            frenchProofs.append(TemplateConstants.NEW_LINE_STRING);
-          }
-        }
         placeholders.put(DocumentPlaceholders.F_COMPANY_LOCATION.getValue(), company.getLocation());
         placeholders.put(DocumentPlaceholders.F_COMPANY_ADDRESS.getValue(), company.getAddress1());
         placeholders.put(DocumentPlaceholders.F_COMPANY_ADDRESS2.getValue(), company.getAddress2());
-        if (germanProofs.length() > 1 && frenchProofs.length() > 1) {
-          placeholders.put(DocumentPlaceholders.F_GERMAN_PROOFS.getValue(),
-            germanProofs.substring(0, germanProofs.length() - 1));
-          placeholders.put(DocumentPlaceholders.F_FRENCH_PROOFS.getValue(),
-            frenchProofs.substring(0, frenchProofs.length() - 1));
-        } else {
-          placeholders.put(DocumentPlaceholders.F_GERMAN_PROOFS.getValue(),
-            TemplateConstants.EMPTY_STRING);
-          placeholders.put(DocumentPlaceholders.F_FRENCH_PROOFS.getValue(),
-            TemplateConstants.EMPTY_STRING);
-        }
+
         initReferenceData(Template.ZERTIFIKAT, placeholders, documentDTO);
 
         ruleService.runProjectTemplateRules(null, company, documentDTO, null, placeholders,
@@ -4363,9 +4496,12 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         List<String> bulletList = new ArrayList<>();
         bulletList.add(DocumentPlaceholders.F_GERMAN_PROOFS.getValue());
         bulletList.add(DocumentPlaceholders.F_FRENCH_PROOFS.getValue());
+        // Add the bullet list properties
+        Map<String, String> bulletListProperties = getBulletListProperties();
+
         return templateService.replacePlaceholdersWordDoc(inputStream,
           SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
-          documentDTO.getDeptAmountAction(), bulletList, logo, logoWidth).toByteArray();
+          documentDTO.getDeptAmountAction(), bulletList, bulletListProperties).toByteArray();
 
       case Template.LISTE_ARBEITSGATTUNG:
         String fileExtension = setFileExtension(Template.LISTE_ARBEITSGATTUNG);
@@ -4509,7 +4645,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           count++;
           if ((count % 2) == 0) {
             if (companyProof != null) {
-              proofs3.append(companyProof.getProof().getProofName());
+              proofs3.append(companyProof.getProof().getName());
               proofs3.append(TemplateConstants.NEW_LINE_STRING);
               if (companyProof.getProofDate() != null) {
                 proofs4.append(SubmissConverter.convertToSwissDate(companyProof.getProofDate()));
@@ -4521,7 +4657,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
             }
           } else {
             if (companyProof != null) {
-              proofs1.append(companyProof.getProof().getProofName());
+              proofs1.append(companyProof.getProof().getName());
               proofs1.append(TemplateConstants.NEW_LINE_STRING);
               if (companyProof.getProofDate() != null) {
                 proofs2.append(SubmissConverter.convertToSwissDate(companyProof.getProofDate()));
@@ -4640,6 +4776,64 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       default:
         return new byte[0];
     }
+  }
+
+  /**
+   * Adds the German/French proofs and text.
+   *
+   * @param placeholders the placeholders
+   * @param companyProofDTOs the companyProofDTOs
+   */
+  private void addGermanFrenchProofText(HashMap<String, String> placeholders,
+    List<CompanyProofDTO> companyProofDTOs) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method addGermanFrenchProofText, Parameters: placeholders: {0}, "
+        + "companyProofDTOs: {1}",
+      new Object[]{placeholders, companyProofDTOs});
+
+    // Replace company proof placeholders.
+    StringBuilder germanProofs = new StringBuilder();
+    StringBuilder frenchProofs = new StringBuilder();
+    for (CompanyProofDTO companyProof : companyProofDTOs) {
+      if (companyProof.getRequired()) {
+        germanProofs.append(companyProof.getProof().getDescription());
+        germanProofs.append(TemplateConstants.NEW_LINE_STRING);
+        frenchProofs.append(companyProof.getProof().getDescriptionFr());
+        frenchProofs.append(TemplateConstants.NEW_LINE_STRING);
+      }
+    }
+    // Add also the german and french text to displayed before the proofs in the bullet list
+    germanProofs.append(TemplateConstants.GERMAN_TEXT_ZERTIFIKAT);
+    frenchProofs.append(TemplateConstants.FRENCH_TEXT_ZERTIFIKAT);
+    if (germanProofs.length() > 1 && frenchProofs.length() > 1) {
+      placeholders.put(DocumentPlaceholders.F_GERMAN_PROOFS.getValue(),
+        germanProofs.substring(0, germanProofs.length() - 1));
+      placeholders.put(DocumentPlaceholders.F_FRENCH_PROOFS.getValue(),
+        frenchProofs.substring(0, frenchProofs.length() - 1));
+    } else {
+      placeholders.put(DocumentPlaceholders.F_GERMAN_PROOFS.getValue(),
+        TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.F_FRENCH_PROOFS.getValue(),
+        TemplateConstants.EMPTY_STRING);
+    }
+  }
+
+  /**
+   * Gets the bullet list properties.
+   *
+   * @return the bulletListProperties
+   */
+  private Map<String, String> getBulletListProperties() {
+
+    LOGGER.log(Level.CONFIG, "Executing method getBulletListProperties");
+
+    Map<String, String> bulletListProperties = new HashMap<>();
+    bulletListProperties.put("fontSize", "18"); // in docx4j: font size = (word doc font size) * 2
+    bulletListProperties.put("bulletMargin", "30"); // the left margin of the bullet
+    bulletListProperties.put("line", "240"); // single line spacing
+    bulletListProperties.put("lineRule", "auto"); // line spacing: auto
+    return bulletListProperties;
   }
 
   @Override
@@ -5524,7 +5718,8 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
 
     LOGGER.log(Level.CONFIG,
       "Executing method documentExists, Parameters: submissionId: {0}, "
-        + "templateShortCode: {1}", new Object[]{submissionId, templateShortCode});
+        + "templateShortCode: {1}",
+      new Object[]{submissionId, templateShortCode});
 
     Map<String, String> map = new HashMap<>();
     String tenantId = usersService.getTenant().getId();
@@ -5532,6 +5727,25 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     map.put(DocumentAttributes.TEMPLATE_ID.name(), templateId);
     List<NodeDTO> nodeDTOs = documentService.getNodeByAttributes(submissionId, map);
     return !nodeDTOs.isEmpty();
+  }
+
+  @Override
+  public boolean legalHearingTerminateDocumentExists(String submissionId,
+    String templateShortCode) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method legalHearingTerminateDocumentExists, Parameters: submissionId: {0}, "
+        + "templateShortCode: {1}",
+      new Object[]{submissionId, templateShortCode});
+
+    Map<String, String> map = new HashMap<>();
+    String tenantId = usersService.getTenant().getId();
+    String templateId = sDService.getTemplateIdByShortCode(templateShortCode, tenantId);
+    map.put(DocumentAttributes.TEMPLATE_ID.name(), templateId);
+    List<NodeDTO> nodeDTOs = documentService.getNodeByAttributes(submissionId, map);
+    return nodeDTOs
+      .stream()
+      .anyMatch(nodeDTO -> nodeDTO.getName().contains(TEMPLATE_NAMES.RECHTLICHES_GEHOR_AB.getValue()));
   }
 
   /**
@@ -5625,21 +5839,26 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
    * @param submission the submission
    */
   private void retrieveRechtlichesDate(SubmissionDTO submission) {
-    // Retrieve all created documents of this submission
-    Set<NodeDTO> documents = documentService.getFolderByID(submission.getId(), false, false)
-      .getChildren();
 
-    // Check if Rechtliches Gehör (Abbruch) has been generated
-    for (NodeDTO document : documents) {
+    LOGGER.log(Level.CONFIG,
+      "Executing method retrieveRechtlichesDate, Parameters: submission: {0}, ",
+      submission);
+
+    if (submission != null) {
+      // Retrieve all created documents of this submission
+      Set<NodeDTO> documents = documentService.getFolderByID(submission.getId(), false, false)
+        .getChildren();
+
       /*
        * The placeholder r_date should contain the last_modified_on date
        * of the Rechtliches Gehör (Abbruch) document
        */
-      if (document.getName().startsWith(TEMPLATE_NAMES.RECHTLICHES_GEHOR_AB.getValue())) {
-        Date r_date = new Timestamp(document.getLastModifiedOn());
-        submission.getLegalHearingTerminate().get(0).setLastModifiedOn(r_date);
-        break;
-      }
+      documents.stream()
+        .filter(document ->
+          document.getName().contains(TEMPLATE_NAMES.RECHTLICHES_GEHOR_AB.getValue()))
+        .forEach(document ->
+          submission.getLegalHearingTerminate().get(0)
+            .setUpdatedOn(new Timestamp(document.getLastModifiedOn())));
     }
   }
 }

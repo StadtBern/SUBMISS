@@ -14,6 +14,7 @@
 package ch.bern.submiss.web.resources;
 
 import ch.bern.submiss.services.api.administration.SDDirectorateService;
+import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.constants.TextType;
 import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
 import ch.bern.submiss.services.api.util.ValidationMessages;
@@ -57,6 +58,10 @@ public class SDDirectorateResource {
   @Inject
   private SDDirectorateService sDDirectorateService;
 
+  @OsgiService
+  @Inject
+  private SDService sDService;
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<DirectorateHistoryDTO> getPermittedDirectories() {
@@ -91,54 +96,84 @@ public class SDDirectorateResource {
    * Save department entry.
    *
    * @param directorateHistoryForm the department history form
+   * @param isNameChanged the isNameChanged
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/saveDirectorateEntry")
-  public Response saveDirectorateEntry(@Valid DirectorateHistoryForm directorateHistoryForm) {
-    Set<ValidationError> errors;
-    errors = validateDirectorate(directorateHistoryForm);
+  @Path("/saveDirectorateEntry/{isNameChanged}")
+  public Response saveDirectorateEntry(@Valid DirectorateHistoryForm directorateHistoryForm,
+    @PathParam("isNameChanged") boolean isNameChanged) {
+    sDService.sdSecurityCheck();
+    Set<ValidationError> errors = validateDirectorate(directorateHistoryForm, isNameChanged);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
     // If there are no errors proceed with saving/updating the directorate history entry.
-    sDDirectorateService.saveDirectorateEntry(
+    Set<ValidationError> optimisticLockErrors = sDDirectorateService.saveDirectorateEntry(
         DirectorateMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistoryForm));
-    return Response.ok().build();
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /** Function to validate the department */
-  private Set<ValidationError> validateDirectorate(DirectorateHistoryForm directorateHistoryForm) {
+  private Set<ValidationError> validateDirectorate(DirectorateHistoryForm directorateHistoryForm,
+    boolean isNameChanged) {
     // Using regex. The regex code accepts a telephone/fax number. The characters can be numbers,
     // parentheses(), hyphens, periods & may contain the plus sign (+) in the beginning and can
     // contain whitespaces in between.
     String phoneRegex = "^\\+?[0-9. ()-]{0,50}$";
     Pattern phonePattern = Pattern.compile(phoneRegex);
-
-    // Using regex to check if a given email is valid (contains @).
-    String emailRegex = "^(.+)@(.+)$";
-    Pattern emailPattern = Pattern.compile(emailRegex);
-
     Set<ValidationError> errors = new HashSet<>();
     // Check if the mandatory fields are filled out.
+    validateDirectorateMandatory(directorateHistoryForm, errors);
+    // Check the name.
+    validateDirectorateName(directorateHistoryForm, errors, isNameChanged);
+    // Check the short name length.
+    validateDirectorateShortName(directorateHistoryForm, errors);
+    // Check the address length.
+    validateDirectorateAddress(directorateHistoryForm, errors);
+    // Check the post code length.
+    validateDirectoratePostCode(directorateHistoryForm, errors);
+    // Check the location length.
+    validateDirectorateLocation(directorateHistoryForm, errors);
+    // Check the telephone number.
+    validateDirectorateTelephone(directorateHistoryForm, phonePattern, errors);
+    // Check the fax number.
+    validateDirectorateFax(directorateHistoryForm, phonePattern, errors);
+    // Check the email.
+    validateDirectorateEmail(directorateHistoryForm, errors);
+    // Check the website address length.
+    validateDirectorateWebsite(directorateHistoryForm, errors);
+    return errors;
+  }
+
+  /**
+   * Mandatory directorate validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectorateMandatory(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isBlank(directorateHistoryForm.getName())
-        || StringUtils.isBlank(directorateHistoryForm.getShortName())
-        || StringUtils.isBlank(directorateHistoryForm.getAddress())
-        || StringUtils.isBlank(directorateHistoryForm.getPostCode())
-        || StringUtils.isBlank(directorateHistoryForm.getLocation())
-        || StringUtils.isBlank(directorateHistoryForm.getTelephone())
-        || StringUtils.isBlank(directorateHistoryForm.getEmail())
-        || StringUtils.isBlank(directorateHistoryForm.getWebsite())) {
+      || StringUtils.isBlank(directorateHistoryForm.getShortName())
+      || StringUtils.isBlank(directorateHistoryForm.getAddress())
+      || StringUtils.isBlank(directorateHistoryForm.getPostCode())
+      || StringUtils.isBlank(directorateHistoryForm.getLocation())
+      || StringUtils.isBlank(directorateHistoryForm.getTelephone())
+      || StringUtils.isBlank(directorateHistoryForm.getEmail())
+      || StringUtils.isBlank(directorateHistoryForm.getWebsite())) {
       errors.add(
-          new ValidationError("emptyMandatoryField", ValidationMessages.MANDATORY_ERROR_MESSAGE));
+        new ValidationError("emptyMandatoryField", ValidationMessages.MANDATORY_ERROR_MESSAGE));
       if (StringUtils.isBlank(directorateHistoryForm.getName())) {
         errors.add(new ValidationError(INPUT_NAME, ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
       if (StringUtils.isBlank(directorateHistoryForm.getShortName())) {
         errors
-            .add(new ValidationError("inputShortName", ValidationMessages.MANDATORY_ERROR_MESSAGE));
+          .add(new ValidationError("inputShortName", ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
       if (StringUtils.isBlank(directorateHistoryForm.getAddress())) {
         errors.add(new ValidationError("inputAddress", ValidationMessages.MANDATORY_ERROR_MESSAGE));
@@ -159,69 +194,141 @@ public class SDDirectorateResource {
         errors.add(new ValidationError("website", ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
     }
-    // Check the name.
+  }
+
+  /**
+   * Directorate name validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   * @param isNameChanged the isNameChanged
+   */
+  private void validateDirectorateName(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors, boolean isNameChanged) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getName())) {
       // Check the name length.
       if (directorateHistoryForm.getName().length() > TextType.MIDDLE_TEXT.getValue()) {
         errors
-            .add(new ValidationError(INPUT_NAME, ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
+          .add(new ValidationError(INPUT_NAME, ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
         errors.add(new ValidationError("descriptionErrorField",
-            ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
+          ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
       }
       // Check if the name is unique.
-      if (!sDDirectorateService.isNameUnique(directorateHistoryForm.getName(),
-          directorateHistoryForm.getId())) {
+      boolean validationCheck = (StringUtils.isBlank(directorateHistoryForm.getId()))
+        // validation check for creating a directorate
+        ? !sDDirectorateService.isNameUnique(directorateHistoryForm.getName(),
+        directorateHistoryForm.getId())
+        // validation check for editing a directorate
+        : isNameChanged && !sDDirectorateService.isNameUnique(directorateHistoryForm.getName(),
+          directorateHistoryForm.getId()) && directorateHistoryForm.getVersion() == 0;
+      if (validationCheck) {
         errors.add(new ValidationError(INPUT_NAME, ValidationMessages.SAME_DESCRIPTION));
         errors
-            .add(new ValidationError("descriptionErrorField", ValidationMessages.SAME_DESCRIPTION));
+          .add(new ValidationError("descriptionErrorField", ValidationMessages.SAME_DESCRIPTION));
       }
     }
-    // Check the short name length.
+  }
+
+  /**
+   * Directorate short name validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectorateShortName(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getShortName())
-        && directorateHistoryForm.getShortName().length() > TextType.SHORT_TEXT.getValue()) {
+      && directorateHistoryForm.getShortName().length() > TextType.SHORT_TEXT.getValue()) {
       errors.add(
-          new ValidationError("inputShortName", ValidationMessages.SHORT_NAME_MAX_SIZE_MESSAGE));
+        new ValidationError("inputShortName", ValidationMessages.SHORT_NAME_MAX_SIZE_MESSAGE));
       errors.add(new ValidationError("shortNameErrorField",
-          ValidationMessages.SHORT_NAME_MAX_SIZE_MESSAGE));
+        ValidationMessages.SHORT_NAME_MAX_SIZE_MESSAGE));
     }
-    // Check the address length.
+  }
+
+  /**
+   * Directorate address validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectorateAddress(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getAddress())
-        && directorateHistoryForm.getAddress().length() > TextType.MIDDLE_TEXT.getValue()) {
+      && directorateHistoryForm.getAddress().length() > TextType.MIDDLE_TEXT.getValue()) {
       errors.add(new ValidationError("inputAddress", ValidationMessages.ADDRESS_MAX_SIZE_MESSAGE));
       errors.add(
-          new ValidationError("addressErrorField", ValidationMessages.ADDRESS_MAX_SIZE_MESSAGE));
+        new ValidationError("addressErrorField", ValidationMessages.ADDRESS_MAX_SIZE_MESSAGE));
     }
-    // Check the post code length.
+  }
+
+  /**
+   * Directorate post code validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectoratePostCode(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getPostCode())
-        && directorateHistoryForm.getPostCode().length() > 10) {
+      && directorateHistoryForm.getPostCode().length() > 10) {
       errors.add(new ValidationError("postCode", ValidationMessages.POST_CODE_MAX_SIZE_MESSAGE));
       errors.add(
-          new ValidationError("postCodeErrorField", ValidationMessages.POST_CODE_MAX_SIZE_MESSAGE));
+        new ValidationError("postCodeErrorField", ValidationMessages.POST_CODE_MAX_SIZE_MESSAGE));
     }
-    // Check the location length.
+  }
+
+  /**
+   * Directorate location validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectorateLocation(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getLocation())
-        && directorateHistoryForm.getLocation().length() > TextType.SHORT_TEXT.getValue()) {
+      && directorateHistoryForm.getLocation().length() > TextType.SHORT_TEXT.getValue()) {
       errors.add(new ValidationError("location", ValidationMessages.LOCATION_MAX_SIZE_MESSAGE));
       errors.add(
-          new ValidationError("locationErrorField", ValidationMessages.LOCATION_MAX_SIZE_MESSAGE));
+        new ValidationError("locationErrorField", ValidationMessages.LOCATION_MAX_SIZE_MESSAGE));
     }
-    // Check the telephone number.
+  }
+
+  /**
+   * Directorate telephone validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param phonePattern the phonePattern
+   * @param errors the errors
+   */
+  private void validateDirectorateTelephone(DirectorateHistoryForm directorateHistoryForm,
+    Pattern phonePattern, Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getTelephone())) {
       // Check the telephone number length.
       if (directorateHistoryForm.getTelephone().length() > 20) {
         errors.add(new ValidationError(TELEPHONE, ValidationMessages.TELEPHONE_MAX_SIZE_MESSAGE));
         errors.add(new ValidationError("telephoneErrorField",
-            ValidationMessages.TELEPHONE_MAX_SIZE_MESSAGE));
+          ValidationMessages.TELEPHONE_MAX_SIZE_MESSAGE));
       }
       Matcher matcher = phonePattern.matcher(directorateHistoryForm.getTelephone());
       // Check if the telephone number is valid.
       if (!matcher.matches()) {
         errors.add(new ValidationError(TELEPHONE, ValidationMessages.TELEPHONE_INVALID_MESSAGE));
         errors.add(new ValidationError("telephoneErrorField",
-            ValidationMessages.TELEPHONE_INVALID_MESSAGE));
+          ValidationMessages.TELEPHONE_INVALID_MESSAGE));
       }
     }
-    // Check the fax number.
+  }
+
+  /**
+   * Directorate fax validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param phonePattern the phonePattern
+   * @param errors the errors
+   */
+  private void validateDirectorateFax(DirectorateHistoryForm directorateHistoryForm,
+    Pattern phonePattern, Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getFax())) {
       // Check the fax number length.
       if (directorateHistoryForm.getFax().length() > 20) {
@@ -235,32 +342,52 @@ public class SDDirectorateResource {
         errors.add(new ValidationError("faxErrorField", ValidationMessages.FAX_INVALID_MESSAGE));
       }
     }
-    // Check the email.
+  }
+
+  /**
+   * Directorate email validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectorateEmail(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
+    // Using regex to check if a given email is valid (contains @).
+    String emailRegex = "^(.+)@(.+)$";
+    Pattern emailPattern = Pattern.compile(emailRegex);
     if (StringUtils.isNotBlank(directorateHistoryForm.getEmail())) {
       // Check the email length.
       if (directorateHistoryForm.getEmail().length() > TextType.MIDDLE_TEXT.getValue()) {
         errors.add(new ValidationError(EMAIL, ValidationMessages.EMAIL_MAX_SIZE_ERROR_MESSAGE));
         errors.add(new ValidationError("emailErrorField",
-            ValidationMessages.EMAIL_MAX_SIZE_ERROR_MESSAGE));
+          ValidationMessages.EMAIL_MAX_SIZE_ERROR_MESSAGE));
       }
       Matcher matcher = emailPattern.matcher(directorateHistoryForm.getEmail());
       // Check if the email is valid.
       if (!matcher.matches()) {
         errors.add(new ValidationError(EMAIL, ValidationMessages.EMAIL_FORMAT_ERROR_MESSAGE));
         errors.add(
-            new ValidationError("emailErrorField", ValidationMessages.EMAIL_FORMAT_ERROR_MESSAGE));
+          new ValidationError("emailErrorField", ValidationMessages.EMAIL_FORMAT_ERROR_MESSAGE));
       }
     }
-    // Check the website address length.
+  }
+
+  /**
+   * Directorate website validation.
+   *
+   * @param directorateHistoryForm the directorateHistoryForm
+   * @param errors the errors
+   */
+  private void validateDirectorateWebsite(DirectorateHistoryForm directorateHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(directorateHistoryForm.getWebsite())
         && directorateHistoryForm.getWebsite().length() > TextType.MIDDLE_TEXT.getValue()) {
       errors.add(new ValidationError("website", ValidationMessages.WEBSITE_MAX_SIZE_MESSAGE));
       errors.add(
           new ValidationError("websiteErrorField", ValidationMessages.WEBSITE_MAX_SIZE_MESSAGE));
     }
-    return errors;
   }
-  
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/getAllDirectoratesByUserTenant/")

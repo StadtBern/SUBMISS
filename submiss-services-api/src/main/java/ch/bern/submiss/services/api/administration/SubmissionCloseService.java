@@ -13,11 +13,13 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.sql.Timestamp;
-import java.util.List;
 import ch.bern.submiss.services.api.dto.AwardInfoDTO;
 import ch.bern.submiss.services.api.dto.AwardInfoFirstLevelDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The Interface SubmissionCloseService.
@@ -69,11 +71,20 @@ public interface SubmissionCloseService {
   AwardInfoDTO getAwardInfo(String submissionId);
 
   /**
-   * Saves the award info
+   * Creates the award info entry.
    *
    * @param awardInfoDTO the award Info DTO
+   * @return the error
    */
-  void saveAwardInfo(AwardInfoDTO awardInfoDTO);
+  Set<ValidationError> createAwardInfo(AwardInfoDTO awardInfoDTO);
+
+  /**
+   * Updates the award info entry.
+   *
+   * @param awardInfoDTO the award Info DTO
+   * @return the error
+   */
+  Set<ValidationError> updateAwardInfo(AwardInfoDTO awardInfoDTO);
   
   /**
    * Gets the award info first level given a submission id.
@@ -84,11 +95,20 @@ public interface SubmissionCloseService {
   AwardInfoFirstLevelDTO getAwardInfoFirstLevel(String submissionId);
 
   /**
-   * Saves the award info first level
+   * Creates the award info first level entry.
    *
    * @param awardInfoDTO the award Info first level DTO
+   * @return the error
    */
-  void saveAwardInfoFirstLevel(AwardInfoFirstLevelDTO awardInfoDTO);
+  Set<ValidationError> createAwardInfoFirstLevel(AwardInfoFirstLevelDTO awardInfoDTO);
+
+  /**
+   * Updates the award info first level.
+   *
+   * @param awardInfoDTO the award Info first level DTO
+   * @return the error
+   */
+  Set<ValidationError> updateAwardInfoFirstLevel(AwardInfoFirstLevelDTO awardInfoDTO);
   
   /**
    * Finds all submissions with 

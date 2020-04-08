@@ -13,13 +13,12 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.util.List;
-
 import ch.bern.submiss.services.api.constants.EmailTemplate;
 import ch.bern.submiss.services.api.dto.EmailDTO;
 import ch.bern.submiss.services.api.dto.EmailTemplateTenantDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
+import java.util.List;
 
 /**
  * The Interface EmailService.
@@ -116,4 +115,9 @@ public interface EmailService {
       EmailTemplate.AVAILABLE_PART availablePart);
   
   String openUserEmailTemplate(Boolean acceptUser, String userId);
+
+  /**
+   * Security check for Emails.
+   */
+  void emailSecurityCheck();
 }

@@ -13,31 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
-import com.eurodyn.qlack2.fuse.cm.api.VersionService;
-import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
-import com.eurodyn.qlack2.fuse.cm.api.dto.VersionDTO;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import ch.bern.submiss.services.api.administration.ProcedureService;
 import ch.bern.submiss.services.api.administration.SubmissionCloseService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
@@ -56,6 +31,7 @@ import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SubmittentDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.SubmissConverter;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.AwardInfoDTOMapper;
 import ch.bern.submiss.services.impl.mappers.AwardInfoFirstLevelDTOMapper;
 import ch.bern.submiss.services.impl.mappers.AwardInfoOfferDTOMapper;
@@ -81,6 +57,35 @@ import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.SubmittentEntity;
 import ch.bern.submiss.services.impl.model.TenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
+import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.fuse.cm.api.VersionService;
+import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
+import com.eurodyn.qlack2.fuse.cm.api.dto.VersionDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
+import javax.transaction.Transactional;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class SubmissionCloseServiceImpl.
@@ -442,6 +447,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
             awardInfoOfferDTO.setMustCriteriaFulfilled(isFulfilled);
 
             // construnct the exclusion reason only in case of create
+            // or if a company is added later in the process and has Nachweise erbracht no
             if (caseCreate) {
               String exclusionReason = null;
 
@@ -502,6 +508,46 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
                   exclusionReason =
                     exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
                 }
+              }
+              awardInfoOfferDTO.setExclusionReason(exclusionReason);
+            }
+            // else if submittent added later and Nachweise erbracht is No then construct a text
+            else if (!awardInfoOfferDTO.getFormalExaminationFulfilled() && awardInfoOfferDTO.getExclusionReason() == null) {
+              String exclusionReason = LookupValues.EXCLUSION_REASON;
+              exclusionReason = exclusionReason.replace("&1",
+                offerEntity.getSubmittent().getCompanyId().getCompanyName());
+              exclusionReason = exclusionReason.replace("&2",
+                convertToSwissDateIfNotNull(offerEntity.getOfferDate()));
+
+              // two of the informations needed are taken from the Nachweisbrief document created
+              // for the submittent
+              HashMap<String, String> attributesMap = new HashMap<>();
+              // Retrieve Nachweisbrief templateId.
+              MasterListValueHistoryEntity templateId = new JPAQueryFactory(em)
+                .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+                .where(qMasterListValueHistoryEntity.shortCode.eq(Template.NACHWEISBRIEF_PT)
+                  .and(qMasterListValueHistoryEntity.tenant.id
+                    .eq(usersService.getUserById(getUserId()).getTenant().getId())))
+                .fetchOne();
+              attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(),
+                templateId.getMasterListValueId().getId());
+              attributesMap.put(DocumentAttributes.TENDER_ID.name(),
+                offerEntity.getSubmittent().getId());
+              List<NodeDTO> nodes =
+                documentService.getNodeByAttributes(submissionId, attributesMap);
+              // for each node (actually only one must exist)
+              for (NodeDTO node : nodes) {
+                VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
+                // get the creation date of the document
+                exclusionReason = exclusionReason.replace("&3", SubmissConverter
+                  .convertToSwissDate(new Date(latestVersionDTO.getCreatedOn())));
+                // the deadline is stored in another table per version id
+                Date deadline = new JPAQueryFactory(em).select(qDocumentDeadlineEntity.deadline)
+                  .from(qDocumentDeadlineEntity)
+                  .where(qDocumentDeadlineEntity.versionId.eq(latestVersionDTO.getId()))
+                  .fetchOne();
+                exclusionReason =
+                  exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
               }
               awardInfoOfferDTO.setExclusionReason(exclusionReason);
             }
@@ -582,48 +628,104 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
     return name.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionCloseService#saveAwardInfo(ch.bern.
-   * submiss.services.api.dto.AwardInfoDTO)
-   */
   @Override
-  public void saveAwardInfo(AwardInfoDTO awardInfoDTO) {
+  public Set<ValidationError> createAwardInfo(AwardInfoDTO awardInfoDTO) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method saveAwardInfo, Parameters: awardInfoDTO: {0}",
+      "Executing method createAwardInfo, Parameters: awardInfoDTO: {0}", awardInfoDTO);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // Check if another user has already created a new entry
+    if (submissionAwardInfoEntryExists(awardInfoDTO.getSubmission().getId(), 2)) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    try {
+      // If not, create the new entry
+      SubmissionAwardInfoEntity submissionAwardInfoEntity =
+        createSubmissionAwardInfoEntity(awardInfoDTO);
+      em.persist(submissionAwardInfoEntity);
+      // Update the offers with the needed data
+      updateAwardInfoOffers(awardInfoDTO);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Check if submissionAwardInfo entry already exists in database.
+   *
+   * @param submissionId the submissionId
+   * @return true if entry exists
+   */
+  private boolean submissionAwardInfoEntryExists(String submissionId, int level) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method submissionAwardInfoEntryExists, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em).selectFrom(qSubmissionAwardInfoEntity).where(
+      qSubmissionAwardInfoEntity.submission.id.eq(submissionId)
+        .and(qSubmissionAwardInfoEntity.level.eq(level)))
+      .fetchCount() > 0;
+  }
+
+  /**
+   * Create a SubmissionAwardInfoEntity.
+   *
+   * @param awardInfoDTO the awardInfoDTO
+   * @return the new SubmissionAwardInfoEntity
+   */
+  private SubmissionAwardInfoEntity createSubmissionAwardInfoEntity(AwardInfoDTO awardInfoDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method createSubmissionAwardInfoEntity, Parameters: awardInfoDTO: {0}",
       awardInfoDTO);
 
-    SubmissionAwardInfoEntity submissionAwardInfoEntity;
-    boolean caseCreate = false;
-    if (awardInfoDTO.getId() != null) { // case update
-      submissionAwardInfoEntity = em.find(SubmissionAwardInfoEntity.class, awardInfoDTO.getId());
-    } else { // case create
-      submissionAwardInfoEntity = new SubmissionAwardInfoEntity();
-      SubmissionEntity submissionEntity = new SubmissionEntity();
-      submissionEntity.setId(awardInfoDTO.getSubmission().getId());
-      submissionAwardInfoEntity.setSubmission(submissionEntity);
-      submissionAwardInfoEntity.setLevel(LookupValues.Level.SECOND.getValue());
-      caseCreate = true;
-    }
-
+    SubmissionAwardInfoEntity submissionAwardInfoEntity = new SubmissionAwardInfoEntity();
+    submissionAwardInfoEntity.setSubmission(em.find(SubmissionEntity.class,
+      awardInfoDTO.getSubmission().getId()));
+    submissionAwardInfoEntity.setLevel(LookupValues.Level.SECOND.getValue());
     submissionAwardInfoEntity.setAvailableDate(awardInfoDTO.getAvailableDate());
     submissionAwardInfoEntity.setObjectNameRead(awardInfoDTO.getObjectNameRead());
     submissionAwardInfoEntity.setProjectNameRead(awardInfoDTO.getProjectNameRead());
     submissionAwardInfoEntity.setWorkingClassRead(awardInfoDTO.getWorkingClassRead());
     submissionAwardInfoEntity.setDescriptionRead(awardInfoDTO.getDescriptionRead());
+    submissionAwardInfoEntity.setCreatedBy(getUserId());
+    submissionAwardInfoEntity.setFreezeCloseSubmission(awardInfoDTO.getFreezeCloseSubmission());
+    return submissionAwardInfoEntity;
+  }
 
-    String userId = getUserId();
-    Date now = new Date();
-    submissionAwardInfoEntity.setUpdatedBy(userId);
-    submissionAwardInfoEntity.setUpdatedOn(now);
-    if (caseCreate) { // case create
-      submissionAwardInfoEntity.setCreatedBy(userId);
-      submissionAwardInfoEntity.setCreatedOn(now);
-      submissionAwardInfoEntity.setFreezeCloseSubmission(awardInfoDTO.getFreezeCloseSubmission());
-      em.persist(submissionAwardInfoEntity);
-    } else { // case update
+  @Override
+  public Set<ValidationError> updateAwardInfo(AwardInfoDTO awardInfoDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method saveAwardInfo, Parameters: awardInfoDTO: {0}",
+      awardInfoDTO);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionAwardInfoEntity submissionAwardInfoEntity=
+      em.find(SubmissionAwardInfoEntity.class, awardInfoDTO.getId());
+    // Check fot optimistic lock errors
+    if (!submissionAwardInfoEntity.getVersion().equals(awardInfoDTO.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    try {
+      submissionAwardInfoEntity.setAvailableDate(awardInfoDTO.getAvailableDate());
+      submissionAwardInfoEntity.setObjectNameRead(awardInfoDTO.getObjectNameRead());
+      submissionAwardInfoEntity.setProjectNameRead(awardInfoDTO.getProjectNameRead());
+      submissionAwardInfoEntity.setWorkingClassRead(awardInfoDTO.getWorkingClassRead());
+      submissionAwardInfoEntity.setDescriptionRead(awardInfoDTO.getDescriptionRead());
+      submissionAwardInfoEntity.setUpdatedBy(getUserId());
       // in order to check if the timer for the automatic closure of the submission needs to be
       // updated, we need to check the value of the freeze flag before the update
       // if the freeze flag was false before and now true, then set the timer to null
@@ -640,7 +742,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
         && submissionAwardInfoEntity.getFreezeCloseSubmission()
         && (awardInfoDTO.getFreezeCloseSubmission() == null
         || !awardInfoDTO.getFreezeCloseSubmission())) {
-        submissionAwardInfoEntity.setCloseCountdownStart(now);
+        submissionAwardInfoEntity.setCloseCountdownStart(new Date());
       } else {
         // otherwise keep the value that has been set before
         submissionAwardInfoEntity
@@ -648,14 +750,32 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
       }
       submissionAwardInfoEntity.setFreezeCloseSubmission(awardInfoDTO.getFreezeCloseSubmission());
       em.merge(submissionAwardInfoEntity);
+      // update the offers with the needed data
+      updateAwardInfoOffers(awardInfoDTO);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
     }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Update the offers when saving the award info.
+   *
+   * @param awardInfoDTO the awardInfoDTO
+   */
+  private void updateAwardInfoOffers(AwardInfoDTO awardInfoDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateAwardInfoOffers, Parameters: awardInfoDTO: {0}",
+      awardInfoDTO);
 
     // iterate the offers in order to update the needed data
     if (awardInfoDTO.getOffers() != null) {
       for (AwardInfoOfferDTO awardInfoOfferDTO : awardInfoDTO.getOffers()) {
         // get the offer entity
         OfferEntity offerEntity = em.find(OfferEntity.class, awardInfoOfferDTO.getId());
-
         // set the updated fields
         offerEntity.setManualAmount(awardInfoOfferDTO.getManualAmount());
         offerEntity.setExclusionReason(awardInfoOfferDTO.getExclusionReason());
@@ -721,7 +841,8 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
     // get the excluded offers of the submission.
     List<OfferEntity> offerEntities = new JPAQueryFactory(em).selectDistinct(qOfferEntity)
       .from(qOfferEntity).where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
-        .and(qOfferEntity.qExStatus.isFalse()))
+        .and(qOfferEntity.qExStatus.isFalse())
+        .and(qOfferEntity.excludedFirstLevel.isTrue()))
       .fetch();
 
     List<AwardInfoOfferFirstLevelDTO> awardInfoOfferDTOs = new ArrayList<>();
@@ -772,6 +893,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
       awardInfoOfferDTO.setSubmittentName(getSubmittentName(offerEntity.getSubmittent()));
 
       // construnct the exclusion reason only in case of create
+      // or if a company is added later in the process and has Nachweise erbracht no
       if (caseCreate) {
         String exclusionReason = null;
 
@@ -825,6 +947,36 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
         }
         awardInfoOfferDTO.setExclusionReasonFirstLevel(exclusionReason);
       }
+      // else if submittent added later and Nachweise erbracht is No then construct a text
+      else if (!awardInfoOfferDTO.getFormalExaminationFulfilled() && awardInfoOfferDTO.getExclusionReasonFirstLevel() == null) {
+        String exclusionReason = LookupValues.EXCLUSION_REASON;
+        exclusionReason = exclusionReason.replace("&1",
+          offerEntity.getSubmittent().getCompanyId().getCompanyName());
+        exclusionReason = exclusionReason.replace("&2",
+          convertToSwissDateIfNotNull(offerEntity.getApplicationDate()));
+
+        // two of the informations needed are taken from the Nachweisbrief document created for
+        // the submittent
+        HashMap<String, String> attributesMap = new HashMap<>();
+        attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(),
+          templateId.getMasterListValueId().getId());
+        attributesMap.put(DocumentAttributes.TENDER_ID.name(),
+          offerEntity.getSubmittent().getId());
+        List<NodeDTO> nodes = documentService.getNodeByAttributes(submissionId, attributesMap);
+        // for each node (actually only one must exist)
+        for (NodeDTO node : nodes) {
+          VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
+          // get the creation date of the document
+          exclusionReason = exclusionReason.replace("&3",
+            convertToSwissDateIfNotNull(new Date(latestVersionDTO.getCreatedOn())));
+          // the deadline is stored in another table per version id
+          Date deadline = new JPAQueryFactory(em).select(qDocumentDeadlineEntity.deadline)
+            .from(qDocumentDeadlineEntity)
+            .where(qDocumentDeadlineEntity.versionId.eq(latestVersionDTO.getId())).fetchOne();
+          exclusionReason = exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
+        }
+        awardInfoOfferDTO.setExclusionReasonFirstLevel(exclusionReason);
+      }
 
       // add to the list of offers
       awardInfoOfferDTOs.add(awardInfoOfferDTO);
@@ -836,58 +988,52 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
     return awardInfoDTO;
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionCloseService#saveAwardInfoFirstLevel(ch.
-   * bern.submiss.services.api.dto.AwardInfoFirstLevelDTO)
-   */
   @Override
-  public void saveAwardInfoFirstLevel(AwardInfoFirstLevelDTO awardInfoDTO) {
+  public Set<ValidationError> createAwardInfoFirstLevel(AwardInfoFirstLevelDTO awardInfoDTO) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method saveAwardInfoFirstLevel, Parameters: awardInfoDTO: {0}",
+      "Executing method createAwardInfoFirstLevel, Parameters: awardInfoDTO: {0}",
       awardInfoDTO);
 
-    SubmissionAwardInfoEntity submissionAwardInfoEntity;
-    boolean caseCreate = false;
-    if (awardInfoDTO.getId() != null) { // case update
-      submissionAwardInfoEntity = em.find(SubmissionAwardInfoEntity.class, awardInfoDTO.getId());
-    } else { // case create
-      submissionAwardInfoEntity = new SubmissionAwardInfoEntity();
-      SubmissionEntity submissionEntity = new SubmissionEntity();
-      submissionEntity.setId(awardInfoDTO.getSubmission().getId());
-      submissionAwardInfoEntity.setSubmission(submissionEntity);
-      submissionAwardInfoEntity.setLevel(LookupValues.Level.FIRST.getValue());
-      caseCreate = true;
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // Check if another user has already created a new entry
+    if (submissionAwardInfoEntryExists(awardInfoDTO.getSubmission().getId(), 1)) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
     }
-
-    submissionAwardInfoEntity.setAvailableDate(awardInfoDTO.getAvailableDate());
-    submissionAwardInfoEntity.setObjectNameRead(awardInfoDTO.getObjectNameRead());
-    submissionAwardInfoEntity.setProjectNameRead(awardInfoDTO.getProjectNameRead());
-    submissionAwardInfoEntity.setWorkingClassRead(awardInfoDTO.getWorkingClassRead());
-    submissionAwardInfoEntity.setDescriptionRead(awardInfoDTO.getDescriptionRead());
-    submissionAwardInfoEntity.setReason(awardInfoDTO.getReason());
-
-    String userId = getUserId();
-    Date now = new Date();
-    submissionAwardInfoEntity.setUpdatedBy(userId);
-    submissionAwardInfoEntity.setUpdatedOn(now);
-    if (caseCreate) { // case create
-      submissionAwardInfoEntity.setCreatedBy(userId);
-      submissionAwardInfoEntity.setCreatedOn(now);
+    try {
+      // If not, create the new entry
+      SubmissionAwardInfoEntity submissionAwardInfoEntity =
+        createSubmissionAwardInfoFirstLevelEntity(awardInfoDTO);
       em.persist(submissionAwardInfoEntity);
-    } else { // case update
-      em.merge(submissionAwardInfoEntity);
+      // Update the offers with the needed data
+      updateAwardInfoFirstLevelOffers(awardInfoDTO);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
     }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Update the offers when saving the award info first level.
+   *
+   * @param awardInfoDTO the awardInfoDTO
+   */
+  private void updateAwardInfoFirstLevelOffers(AwardInfoFirstLevelDTO awardInfoDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateAwardInfoFirstLevelOffers, Parameters: awardInfoDTO: {0}",
+      awardInfoDTO);
 
     // iterate the offers in order to update the needed data
     for (AwardInfoOfferFirstLevelDTO awardInfoOfferDTO : awardInfoDTO.getOffers()) {
       // get the offer entity
       OfferEntity offerEntity = em.find(OfferEntity.class, awardInfoOfferDTO.getId());
-
       // set the updated fields
       offerEntity.setExclusionReasonFirstLevel(awardInfoOfferDTO.getExclusionReasonFirstLevel());
       Set<MasterListValueEntity> set =
@@ -898,6 +1044,69 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
       }
       em.merge(offerEntity);
     }
+  }
+
+  /**
+   * Create a SubmissionAwardInfoFirstLevelEntity.
+   *
+   * @param awardInfoDTO the awardInfoDTO
+   * @return the new SubmissionAwardInfoFirstLevelEntity
+   */
+  private SubmissionAwardInfoEntity createSubmissionAwardInfoFirstLevelEntity(
+    AwardInfoFirstLevelDTO awardInfoDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method createSubmissionAwardInfoFirstLevelEntity, Parameters: awardInfoDTO: {0}",
+      awardInfoDTO);
+
+    SubmissionAwardInfoEntity submissionAwardInfoEntity = new SubmissionAwardInfoEntity();
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, awardInfoDTO.getSubmission().getId());
+    submissionEntity.setId(awardInfoDTO.getSubmission().getId());
+    submissionAwardInfoEntity.setSubmission(submissionEntity);
+    submissionAwardInfoEntity.setLevel(LookupValues.Level.FIRST.getValue());
+    submissionAwardInfoEntity.setAvailableDate(awardInfoDTO.getAvailableDate());
+    submissionAwardInfoEntity.setObjectNameRead(awardInfoDTO.getObjectNameRead());
+    submissionAwardInfoEntity.setProjectNameRead(awardInfoDTO.getProjectNameRead());
+    submissionAwardInfoEntity.setWorkingClassRead(awardInfoDTO.getWorkingClassRead());
+    submissionAwardInfoEntity.setDescriptionRead(awardInfoDTO.getDescriptionRead());
+    submissionAwardInfoEntity.setReason(awardInfoDTO.getReason());
+    submissionAwardInfoEntity.setCreatedBy(getUserId());
+    return submissionAwardInfoEntity;
+  }
+
+  @Override
+  public Set<ValidationError> updateAwardInfoFirstLevel(AwardInfoFirstLevelDTO awardInfoDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method saveAwardInfoFirstLevel, Parameters: awardInfoDTO: {0}",
+      awardInfoDTO);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionAwardInfoEntity submissionAwardInfoEntity =
+      em.find(SubmissionAwardInfoEntity.class, awardInfoDTO.getId());
+    if (!submissionAwardInfoEntity.getVersion().equals(awardInfoDTO.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    try {
+      submissionAwardInfoEntity.setAvailableDate(awardInfoDTO.getAvailableDate());
+      submissionAwardInfoEntity.setObjectNameRead(awardInfoDTO.getObjectNameRead());
+      submissionAwardInfoEntity.setProjectNameRead(awardInfoDTO.getProjectNameRead());
+      submissionAwardInfoEntity.setWorkingClassRead(awardInfoDTO.getWorkingClassRead());
+      submissionAwardInfoEntity.setDescriptionRead(awardInfoDTO.getDescriptionRead());
+      submissionAwardInfoEntity.setReason(awardInfoDTO.getReason());
+      submissionAwardInfoEntity.setUpdatedBy(getUserId());
+      em.merge(submissionAwardInfoEntity);
+      // update the offers with the needed data
+      updateAwardInfoFirstLevelOffers(awardInfoDTO);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
   }
 
   /**

@@ -19,7 +19,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "SUB_MASTER_LIST")
-public class MasterListEntity extends AbstractEntity {
+public class MasterListEntity extends AbstractStammdatenEntity {
 
   /** The editable. */
   @Column(name = "IS_EDITABLE")

@@ -126,6 +126,7 @@
         EXAMINATION_CLOSE: "ExaminationClose",
         ADD_OPERATING_COST_AWARD_CRITERION: "AddOperatingCostAwardCriterion",
         AWARD_EVALUATION_EDIT: "AwardEvaluationEdit",
+        AWARD_EVALUATION_VIEW: "AwardEvaluationView",
         SUITABILITY_EXECUTE: "SuitabilityExecute",
         AWARD_EVALUATION_CLOSE: "AwardEvaluationClose",
         TENDER_MOVE: "TenderMove",
@@ -341,6 +342,7 @@
 
       HTTP_RESPONSES: {
         BAD_REQUEST: 400,
+        CONFLICT: 409,
         NO_CONTENT: 204
       },
 
@@ -348,12 +350,13 @@
 
       UNDEFINED: "undefined",
       IMPORT_ERROR: "Import Fehlermeldung",
-      REOPEN_MESSAGE_START: "Wiederaufnahme zum ",
+      REOPEN_MESSAGE_START: "Wiederaufnahme am ",
       AND: " und ",
       REOPEN_MESSAGE_END_CANCEL: " nach Verfahrensabbruch",
       REOPEN_MESSAGE_END_CLOSE: " nach Verfahrensabschluss",
 
       CANCELLED_MESSAGE_START: "Verfahren abgebrochen am ",
+      CANCELLED_MESSAGE_INFO: "Verfahrensabbruch am ",
 
       EXCLUSION_REASON_B: "Lit. b",
       EXCLUSION_REASON_C: "Lit. c",

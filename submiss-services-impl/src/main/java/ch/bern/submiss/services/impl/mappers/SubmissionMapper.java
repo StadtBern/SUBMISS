@@ -153,8 +153,12 @@ public abstract class SubmissionMapper {
     submissionEntity.setExaminationLockedTime(dto.getExaminationLockedTime());
     submissionEntity.setAwardLockedBy(dto.getAwardLockedBy());
     submissionEntity.setAwardLockedTime(dto.getAwardLockedTime());
-//    
+
     submissionEntity.setIsGekoEntryByManualAward(dto.getIsGekoEntryByManualAward());
+    submissionEntity.setSubmittentListCheckedBy(dto.getSubmittentListCheckedBy());
+    submissionEntity.setSubmittentListCheckedOn(dto.getSubmittentListCheckedOn());
+    submissionEntity.setVersion(dto.getVersion());
+    submissionEntity.setUpdatedOn(dto.getUpdatedOn());
 
     return submissionEntity;
   }

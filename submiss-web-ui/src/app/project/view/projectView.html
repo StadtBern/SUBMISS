@@ -13,53 +13,69 @@
 
 <div class="row">
   <div class="col-sm-12">
-    <h2 class="page-title">{{projectViewCtr.data.project.projectName}},<small>&nbsp;{{projectViewCtr.getObjectInfo(projectViewCtr.data.project.objectName)}}</small> </h2>
+    <h2 class="page-title">
+      {{projectViewCtr.data.project.projectName}},<small>&nbsp;{{projectViewCtr.getObjectInfo(projectViewCtr.data.project.objectName)}}</small>
+    </h2>
   </div>
 </div>
 <div class="row">
   <div class="card-box">
     <div class="col-sm-12 ToolbarContainer">
       <div class="btn-toolbar pull-right" role="toolbar">
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-ng-click="projectViewCtr.createSubmission()"
-        data-ng-disabled="!projectViewCtr.secTenderCreate || !projectViewCtr.data.project.constructionPermit || !projectViewCtr.data.project.loanApproval || projectViewCtr.data.project.gattWto ==null"><span class="fa fa-plus" aria-hidden="true"></span> Submission eröffnen</button>
+        <button type="button" class="btn btn-primary" data-toggle="modal"
+          data-ng-click="projectViewCtr.createSubmission()"
+          data-ng-disabled="!projectViewCtr.secTenderCreate || !projectViewCtr.data.project.constructionPermit || !projectViewCtr.data.project.loanApproval || projectViewCtr.data.project.gattWto ==null"><span
+            class="fa fa-plus" aria-hidden="true"></span> Submission eröffnen</button>
       </div>
     </div>
     <div class="col-sm-12">
-          <div class="alert alert-info" ng-if="!projectViewCtr.data.project.constructionPermit || !projectViewCtr.data.project.loanApproval || projectViewCtr.data.project.gattWto ==null" role="alert" translate>
-       		  project_mandatory_for_submission_create_message
-            </div>
-            </div>
-            <div class="col-sm-12">
-            <form name="projectViewCtr.projectForm" id="projectForm" shows-validation-errors>
-		<div class="col-sm-12">
+      <div class="alert alert-info"
+        ng-if="!projectViewCtr.data.project.constructionPermit || !projectViewCtr.data.project.loanApproval || projectViewCtr.data.project.gattWto ==null"
+        role="alert" translate>
+        project_mandatory_for_submission_create_message
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <form name="projectViewCtr.projectForm" id="projectForm" shows-validation-errors>
+        <div class="col-sm-12">
           <div class="alert alert-danger" ng-if="projectViewCtr.projectForm.$invalid" role="alert">
-       		 <field-error form-element-name="projectHasSubmissionErrorField" translate name="error"></field-error>
-          </div> 
+            <field-error form-element-name="projectHasSubmissionErrorField" translate name="error"></field-error>
+            <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
+          </div>
           <input name="projectHasSubmissionErrorField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd"></input>
         </div>
-        </form>
-        </div>
+      </form>
+    </div>
     <div class="col-sm-12">
       <!-- Nav tabs -->
       <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#projektdetails" aria-controls="Projektdetails" role="tab" data-toggle="tab">Projektdetails</a></li>
-        <li role="presentation" ng-show="projectViewCtr.secTenderListView"><a aria-controls="Submissionen" role="tab" data-toggle="tab" ng-click="projectViewCtr.navigateToProjectSubmissions(projectViewCtr.data.project.id, projectViewCtr.data.project.projectName)">Submissionen</a></li>
+        <li role="presentation" class="active"><a aria-controls="Projektdetails" role="tab"
+            data-toggle="tab">Projektdetails</a></li>
+        <li role="presentation" ng-show="projectViewCtr.secTenderListView"><a aria-controls="Submissionen" role="tab"
+            data-toggle="tab"
+            ng-click="projectViewCtr.navigateToProjectSubmissions(projectViewCtr.data.project.id, projectViewCtr.data.project.projectName)">Submissionen</a>
+        </li>
       </ul>
       <!-- Tab panes -->
       <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="projektdetails">
           <div class="col-sm-12 ToolbarContainer">
             <div class="btn-toolbar pull-right" role="toolbar">
-              <button type="button" class="btn btn-primary" data-ng-disabled="!projectViewCtr.secProjectEdit" data-ng-click="projectViewCtr.editProject()"><span class="fa fa-pencil" aria-hidden="true"></span> Projekt bearbeiten</button>
-              <button type="button" data-ng-disabled="!projectViewCtr.secProjectDelete" data-ng-click="projectViewCtr.deleteModal()" class="btn btn-primary"><span class="fa fa-trash-o" aria-hidden="true"></span> Projekt löschen</button>
+              <button type="button" class="btn btn-primary" data-ng-disabled="!projectViewCtr.secProjectEdit"
+                data-ng-click="projectViewCtr.editProject()"><span class="fa fa-pencil" aria-hidden="true"></span>
+                Projekt bearbeiten</button>
+              <button type="button" data-ng-disabled="!projectViewCtr.secProjectDelete"
+                data-ng-click="projectViewCtr.deleteModal()" class="btn btn-primary"><span class="fa fa-trash-o"
+                  aria-hidden="true"></span> Projekt löschen</button>
             </div>
           </div>
           <div class="col-sm-6">
             <dl class="dl-horizontal">
               <dt>Objektname </dt>
               <dd>{{projectViewCtr.data.project.objectName.value1}}<span
-				ng-if="projectViewCtr.data.project.objectName.value2 != null">,
-					{{projectViewCtr.data.project.objectName.value2}}</span></dd>
+                  ng-if="projectViewCtr.data.project.objectName.value2 != null">,
+                  {{projectViewCtr.data.project.objectName.value2}}</span></dd>
               <dt>Projektname</dt>
               <dd>{{projectViewCtr.data.project.projectName}}</dd>
               <dt>Verfahrensleitung</dt>
@@ -73,9 +89,9 @@
               <dt>intern/extern</dt>
               <dd>{{projectViewCtr.data.project.department.internalString}}</dd>
               <br>
-              <dt >Projektbemerkung</dt>
+              <dt>Projektbemerkung</dt>
               <dd class="preline">{{projectViewCtr.data.project.notes}}</dd>
-          
+
             </dl>
           </div>
           <div class="col-sm-6">
@@ -85,20 +101,24 @@
               <dt>Projekt/Kredit-Nummer</dt>
               <dd>{{projectViewCtr.data.project.projectNumber}}</dd>
               <dt>Baubewilligung</dt>
-              <dd ng-if="projectViewCtr.data.project.constructionPermit" translate>{{projectViewCtr.data.project.constructionPermit}}</dd>
+              <dd ng-if="projectViewCtr.data.project.constructionPermit" translate>
+                {{projectViewCtr.data.project.constructionPermit}}</dd>
               <dd ng-if="!projectViewCtr.data.project.constructionPermit"></dd>
               <dt>Kreditbewilligung</dt>
-              <dd ng-if="projectViewCtr.data.project.loanApproval" translate>{{projectViewCtr.data.project.loanApproval}}</dd>
+              <dd ng-if="projectViewCtr.data.project.loanApproval" translate>
+                {{projectViewCtr.data.project.loanApproval}}</dd>
               <dd ng-if="!projectViewCtr.data.project.loanApproval"></dd>
               <dt>GATT / WTO</dt>
-              <dd ng-if="projectViewCtr.data.project.gattWto == true" translate>{{projectViewCtr.data.project.gattWto}}</dd>
-              <dd ng-if="projectViewCtr.data.project.gattWto == false" translate>{{projectViewCtr.data.project.gattWto}}</dd>
+              <dd ng-if="projectViewCtr.data.project.gattWto == true" translate>{{projectViewCtr.data.project.gattWto}}
+              </dd>
+              <dd ng-if="projectViewCtr.data.project.gattWto == false" translate>{{projectViewCtr.data.project.gattWto}}
+              </dd>
               <dd ng-if="projectViewCtr.data.project.gattWto == null"></dd>
 
             </dl>
-             
-           </div>
+
           </div>
+        </div>
       </div>
     </div>
   </div>

@@ -13,7 +13,7 @@
 
 package ch.bern.submiss.web.forms;
 
-public class MasterListForm extends AbstractForm {
+public class MasterListForm extends AbstractStammdatenForm {
 
   private boolean editable;
 

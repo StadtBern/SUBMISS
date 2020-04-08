@@ -275,6 +275,14 @@
   <div class="card-box">
     <div class="col-sm-12 ToolbarContainer">
     </div>
+    <form name="projectSearchCtr.searchResultsForm" id="searchResultsForm" shows-validation-errors>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="projectSearchCtr.searchResultsForm.$invalid" role="alert">
+          <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
+        </div>
+        <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+    </form>
     <div class="col-sm-12">
       <div>
         <div ng-table-pagination="projectSearchCtr.tableParams" id="fromStart" template-url="'app/layout/pager.html'">

@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * The Class SearchDTO.
  */
-public class SearchDTO extends AbstractDTO {
+public class SearchDTO extends AbstractStammdatenDTO {
 
   /** The object id. */
   private String objectId;

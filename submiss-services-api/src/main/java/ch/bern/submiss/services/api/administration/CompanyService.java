@@ -55,9 +55,10 @@ public interface CompanyService {
    *
    * @param column the column to search in
    * @param query the query to search for
+   * @param archived the archived value
    * @return a distinct list of the column values
    */
-  List<String> fullTextSearch(String column, String query);
+  List<String> fullTextSearch(String column, String query, boolean archived);
 
   /**
    * Creates the company.
@@ -206,4 +207,39 @@ public interface CompanyService {
    * @return the int
    */
   int retrieveCompanyProofStatus(String companyId);
+
+  /**
+   * Security check for Company Create.
+   */
+  void companyCreateSecurityCheck();
+
+  /**
+   * Security check for Company Offers.
+   */
+  void companyOffersSecurityCheck();
+
+  /**
+   * Security check for Company Proofs.
+   */
+  void companyProofsSecurityCheck();
+
+  /**
+   * Security check for Company Delete.
+   */
+  void companyDeleteSecurityCheck();
+
+  /**
+   * Security check for Company Update.
+   */
+  void companyUpdateSecurityCheck();
+
+  /**
+   * Security check for Company View.
+   */
+  void companyViewSecurityCheck();
+
+  /**
+   * Security check for Company Search.
+   */
+  void companySearchSecurityCheck();
 }

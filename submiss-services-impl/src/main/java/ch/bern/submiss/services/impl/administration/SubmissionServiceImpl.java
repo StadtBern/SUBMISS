@@ -20,6 +20,7 @@ import ch.bern.submiss.services.api.administration.ProcedureService;
 import ch.bern.submiss.services.api.administration.SDProofService;
 import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.administration.SubDocumentService;
+import ch.bern.submiss.services.api.administration.SubmissAuditService;
 import ch.bern.submiss.services.api.administration.SubmissTaskService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.administration.TenderStatusHistoryService;
@@ -41,6 +42,7 @@ import ch.bern.submiss.services.api.constants.TaskTypes;
 import ch.bern.submiss.services.api.constants.Template;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.AwardDTO;
+import ch.bern.submiss.services.api.dto.CommissionProcurementDecisionDTO;
 import ch.bern.submiss.services.api.dto.CompanyDTO;
 import ch.bern.submiss.services.api.dto.CompanyProofDTO;
 import ch.bern.submiss.services.api.dto.CriterionDTO;
@@ -55,6 +57,7 @@ import ch.bern.submiss.services.api.dto.ProofProvidedMapDTO;
 import ch.bern.submiss.services.api.dto.SignatureProcessTypeDTO;
 import ch.bern.submiss.services.api.dto.SubcriterionDTO;
 import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
+import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SubmittentDTO;
 import ch.bern.submiss.services.api.dto.SubmittentOfferDTO;
@@ -78,7 +81,7 @@ import ch.bern.submiss.services.impl.model.FormalAuditEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.OfferCriterionEntity;
 import ch.bern.submiss.services.impl.model.OfferEntity;
-import ch.bern.submiss.services.impl.model.OfferSubriterionEntity;
+import ch.bern.submiss.services.impl.model.OfferSubcriterionEntity;
 import ch.bern.submiss.services.impl.model.ProjectEntity;
 import ch.bern.submiss.services.impl.model.QCompanyEntity;
 import ch.bern.submiss.services.impl.model.QCompanyProofEntity;
@@ -88,7 +91,7 @@ import ch.bern.submiss.services.impl.model.QFormalAuditEntity;
 import ch.bern.submiss.services.impl.model.QMasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.QOfferCriterionEntity;
 import ch.bern.submiss.services.impl.model.QOfferEntity;
-import ch.bern.submiss.services.impl.model.QOfferSubriterionEntity;
+import ch.bern.submiss.services.impl.model.QOfferSubcriterionEntity;
 import ch.bern.submiss.services.impl.model.QProjectEntity;
 import ch.bern.submiss.services.impl.model.QProofHistoryEntity;
 import ch.bern.submiss.services.impl.model.QSubmissTasksEntity;
@@ -105,9 +108,11 @@ import ch.bern.submiss.services.impl.model.SubmittentProofProvidedEntity;
 import ch.bern.submiss.services.impl.model.TenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.eurodyn.qlack2.fuse.auditing.api.dto.AuditLogDTO;
 import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
 import com.eurodyn.qlack2.fuse.cm.api.dto.FolderDTO;
 import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
@@ -119,6 +124,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -130,6 +136,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
 import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
@@ -169,10 +177,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   private static final String NULL_EXCLUSION_REASONS_NEGOTIATED =
     "negotiated_procedure_formal_audit_empty_field";
   /**
-   * The Constant DOCUMENT_SHOULD_BE_CREATED.
-   */
-  private static final String DOCUMENT_SHOULD_BE_CREATED = "document_should_be_created";
-  /**
    * The Constant NULL_MIN_GRADE_MAX_GRADE.
    */
   private static final String NULL_MIN_GRADE_MAX_GRADE = "null_min_grade_max_grade";
@@ -185,6 +189,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    */
   private static final String PROOF_INCONSISTENCIES = "proofInconsistencies";
   /**
+   * The Constant SUBMITTENTLIST_CHECK.
+   */
+  private static final String SUBMITTENTLIST_CHECK = "SUBMITTENTLIST_CHECK";
+  /**
    * The sub document service.
    */
   @Inject
@@ -194,6 +202,11 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    */
   @Inject
   protected UserAdministrationService usersService;
+  /**
+   * The submission service.
+   */
+  @Inject
+  protected SubmissionService submissionService;
   /**
    * The q department entity.
    */
@@ -226,7 +239,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * The q offer subriterion.
    */
-  QOfferSubriterionEntity qOfferSubriterion = QOfferSubriterionEntity.offerSubriterionEntity;
+  QOfferSubcriterionEntity qOfferSubriterion = QOfferSubcriterionEntity.offerSubcriterionEntity;
   /**
    * The q offer entity.
    */
@@ -334,6 +347,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   @Inject
   private SDProofService sDProofService;
 
+  /**
+   * The sd proof service.
+   */
+  @Inject
+  private SubmissAuditService submissAuditService;
+
   /*
    * (non-Javadoc)
    *
@@ -413,6 +432,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     LOGGER.log(Level.CONFIG,
       "Executing method getSubmissionsByProject, Parameters: projectId: {0}",
       projectId);
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_LIST_VIEW.getValue(), projectId);
 
     JPAQuery<SubmissionEntity> query = new JPAQuery<>(em);
     QSubmissionEntity entity = QSubmissionEntity.submissionEntity;
@@ -502,6 +524,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     LOGGER.log(Level.CONFIG, "Executing method deleteSubmission, Parameters: id: {0}",
       id);
 
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_DELETE.getValue(), id);
+
     List<OfferEntity> offerList = new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
       .where(qOfferEntity.submittent.submissionId.id.eq(id)).fetch();
     for (OfferEntity offer : offerList) {
@@ -567,9 +592,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       "Executing method getSubmissionById, Parameters: id: {0}",
       id);
 
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_VIEW.getValue(), id);
+
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, id);
     SubmissionDTO submissionDTO = SubmissionDTOMBasicMapper.INSTANCE
-      .toBasicSubmissionDTO(em.find(SubmissionEntity.class, id));
+      .toBasicSubmissionDTO(submissionEntity);
     if (submissionEntity != null) {
       Timestamp statusDate = getDateOfCompletedOrCanceledStatus(submissionEntity.getId());
       Timestamp creationDate = getDateOfCreationStatusOfSubmission(submissionEntity.getId());
@@ -640,23 +668,38 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         submissionDTO.setOperatingCostFormula(operatingCostFormulaDTO);
       }
 
+      /*
+       * if status is SUBMITTENTLIST_CHECK and user is PL
+       * pass SUBMITTENTLIST_CHECK info to DTO
+       */
+      if (getCurrentStatusOfSubmission(submissionDTO.getId())
+        .equals(TenderStatus.SUBMITTENTLIST_CHECK.getValue())
+        && getGroupName(getUser()).equals(Group.PL.getValue())
+        && submissionEntity.getSubmittentListCheckedBy() != null
+        && submissionEntity.getSubmittentListCheckedOn() != null) {
+        SubmissUserDTO user = usersService
+          .getSpecificUser(submissionEntity.getSubmittentListCheckedBy());
+        String userName = user.getFirstName() + LookupValues.SPACE + user.getLastName();
+        submissionDTO.setSubmittentListCheckedBy(userName);
+        submissionDTO.setSubmittentListCheckedOn(submissionEntity.getSubmittentListCheckedOn());
+      }
     }
     return submissionDTO;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#updateSubmission(ch.bern.submiss.
-   * services.api.dto.SubmissionDTO)
-   */
   @Override
-  public void updateSubmission(SubmissionDTO submission) {
+  public Set<ValidationError> updateSubmission(SubmissionDTO submission) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSubmission, Parameters: submission: {0}",
       submission);
+
+    // Check for Optimistic Locking if project is deleted by another user
+    Set<ValidationError> optimisticLockErrors = optimisticLockDeleteCheck(submission.getId());
+
+    if (!optimisticLockErrors.isEmpty()) {
+      return optimisticLockErrors;
+    }
 
     SubmissionEntity submissionEntity = SubmissionMapper.INSTANCE.toSubmission(submission);
     if (submission.getPmExternal() != null) {
@@ -697,15 +740,30 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       }
     }
     em.merge(submissionEntity);
+    return optimisticLockErrors;
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Check if project is deleted by another user.
    *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#setCompanyToSubmission(java.lang.
-   * String, java.lang.String)
+   * @param id the project id
+   * @return the error
    */
+  private Set<ValidationError> optimisticLockDeleteCheck(String id) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method optimisticLockDeleteCheck, Parameters: id: {0}", id);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, id);
+    if (submissionEntity == null) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField",
+          ValidationMessages.OPTIMISTIC_LOCK_DELETE));
+    }
+    return optimisticLockErrors;
+  }
+
   @Override
   public String setCompanyToSubmission(String submissionId, List<String> companyIds) {
 
@@ -813,6 +871,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     LOGGER.log(Level.CONFIG,
       "Executing method getCompaniesBySubmission, Parameters: id: {0}",
       id);
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_VIEW.getValue(), id);
 
     // Get process type of submission.
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, id);
@@ -1049,7 +1110,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   }
 
   private void retrieveFormalAuditSavedValues(Process processType, String status,
-      List<SubmittentDTO> submittentDTOs) {
+    List<SubmittentDTO> submittentDTOs) {
     if (((processType.equals(Process.OPEN) || processType.equals(Process.INVITATION))
       && compareCurrentVsSpecificStatus(TenderStatus.fromValue(status),
       TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED))
@@ -1103,45 +1164,68 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         // Set existsExclusionReasons to submittent DTO.
         submittentDTO.setExistsExclusionReasons(submittentEntity.getExistsExclusionReasons());
         // Set isProofProvided to company of submittent.
-        submittentDTO.getCompanyId().setIsProofProvided(
-          submittentIdsToProofMappers.get(submittentDTO.getId())
-            .get(submittentDTO.getCompanyId().getId()).getIsProvided());
-        for (CompanyDTO jointVenture : submittentDTO.getJointVentures()) {
-          // Set isProofProvided to joint venture.
-          jointVenture.setIsProofProvided(
-            submittentIdsToProofMappers.get(submittentDTO.getId()).get(jointVenture.getId())
-              .getIsProvided());
-        }
-        for (CompanyDTO subcontractor : submittentDTO.getSubcontractors()) {
-          // Set isProofProvided to subcontractor.
-          subcontractor.setIsProofProvided(
-            submittentIdsToProofMappers.get(submittentDTO.getId()).get(subcontractor.getId())
-              .getIsProvided());
+        if (!submittentIdsToProofMappers.isEmpty()) {
+          submittentDTO.getCompanyId().setIsProofProvided(
+            submittentIdsToProofMappers.get(submittentDTO.getId())
+              .get(submittentDTO.getCompanyId().getId()).getIsProvided());
+          for (CompanyDTO jointVenture : submittentDTO.getJointVentures()) {
+            // Set isProofProvided to joint venture.
+            jointVenture.setIsProofProvided(
+              submittentIdsToProofMappers.get(submittentDTO.getId()).get(jointVenture.getId())
+                .getIsProvided());
+          }
+          for (CompanyDTO subcontractor : submittentDTO.getSubcontractors()) {
+            // Set isProofProvided to subcontractor.
+            subcontractor.setIsProofProvided(
+              submittentIdsToProofMappers.get(submittentDTO.getId()).get(subcontractor.getId())
+                .getIsProvided());
+          }
         }
       }
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#updateFormalAuditExamination(java
-   * .util.List)
-   */
   @Override
-  public void updateFormalAuditExamination(List<SubmittentDTO> submittentDTOs) {
+  public Set<ValidationError> updateFormalAuditExamination(List<SubmittentDTO> submittentDTOs) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateFormalAuditExamination, Parameters: submittentDTOs: {0}",
       submittentDTOs);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    Long submissionDbVersion = new JPAQueryFactory(em).select(qSubmissionEntity.version)
+      .from(qSubmissionEntity)
+      .where(qSubmissionEntity.id.eq(submittentDTOs.get(0).getSubmissionId().getId())).fetchOne();
+
+    if (!submissionDbVersion.equals(submittentDTOs.get(0).getSubmissionId().getVersion())) {
+      optimisticLockErrors
+        .add(
+          new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+            ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+
     // Getting the process from the first submittent.
     Process process = submittentDTOs.get(0).getSubmissionId().getProcess();
     // List of submittent ids, whose existsExclusionReasons property has been changed.
     List<String> changedSubmittentIds = new ArrayList<>();
+
     for (SubmittentDTO s : submittentDTOs) {
       SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, s.getId());
       if (submittentEntity != null) {
+        /*
+         * Check dto and entity version.
+         * If these 2 are not equal, another user has already saved the form.
+         * Return an optimisticLockErrorField.
+         */
+        if (!submittentEntity.getVersion().equals(s.getVersion())) {
+          optimisticLockErrors
+            .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+              ValidationMessages.OPTIMISTIC_LOCK));
+          return optimisticLockErrors;
+        }
+
         if (submittentEntity.getExistsExclusionReasons() != s.getExistsExclusionReasons()) {
           submittentEntity.setExistsExclusionReasons(s.getExistsExclusionReasons());
           changedSubmittentIds.add(s.getId());
@@ -1174,6 +1258,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         em.merge(offerEntity);
       }
     }
+    return optimisticLockErrors;
   }
 
   /**
@@ -1182,8 +1267,8 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Eignungsprüfung abgeschlossen.
    *
    * @param submittentEntity the submittent entity
-   * @param level the level
-   * @param s the s
+   * @param level            the level
+   * @param s                the s
    */
   private void setSubmittentProofProvided(SubmittentEntity submittentEntity, SelectiveLevel level,
     SubmittentDTO s) {
@@ -1234,9 +1319,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Inits the submittent proof provided.
    *
    * @param submittentEntity the submittent entity
-   * @param companyEntity the company entity
-   * @param level the level
-   * @param proofProvided the proof provided
+   * @param companyEntity    the company entity
+   * @param level            the level
+   * @param proofProvided    the proof provided
    */
   private void initSubmittentProofProvided(SubmittentEntity submittentEntity,
     CompanyEntity companyEntity, SelectiveLevel level, Boolean proofProvided) {
@@ -1252,8 +1337,8 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Sets the company proof provided values.
    *
    * @param subProofProvidedEntities the submittent proof provided entities
-   * @param level the level
-   * @param submittentDTO the submittent DTO
+   * @param level                    the level
+   * @param submittentDTO            the submittent DTO
    */
   private void setProofProvidedValues(List<SubmittentProofProvidedEntity> subProofProvidedEntities,
     SelectiveLevel level, SubmittentDTO submittentDTO) {
@@ -1300,73 +1385,106 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#updateSelectiveFormalAudit(java.
-   * util.List)
-   */
   @Override
-  public void updateSelectiveFormalAudit(List<SubmittentDTO> submittentDTOs) {
+  public Set<ValidationError> updateSelectiveFormalAudit(List<SubmittentDTO> submittentDTOs) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSelectiveFormalAudit, Parameters: submittentDTOs: {0}",
       submittentDTOs);
 
-    if (submittentDTOs != null && !submittentDTOs.isEmpty()) {
-      // If there are submittents present, get their submission id from the first submittent.
-      String submissionId = submittentDTOs.get(0).getSubmissionId().getId();
-      // Get the formal audit entities connected to the submission.
-      List<FormalAuditEntity> formalAuditEntities =
-        new JPAQueryFactory(em).selectFrom(qFormalAuditEntity)
-          .where(qFormalAuditEntity.submittent.submissionId.id.eq(submissionId)).fetch();
-      // List of submittent ids, whose existsExclusionReasons property has been changed.
-      List<String> changedSubmittentIds = new ArrayList<>();
-      for (SubmittentDTO submittentDTO : submittentDTOs) {
-        boolean formatAuditFound = false;
-        for (FormalAuditEntity formalAuditEntity : formalAuditEntities) {
-          // Check if the formal audit entity is connected to the current submittent.
-          if (formalAuditEntity.getSubmittent().getId().equals(submittentDTO.getId())) {
-            formatAuditFound = true;
-            // Update the formal audit values.
-            if (formalAuditEntity.getExistsExclusionReasons() != submittentDTO
-              .getExistsExclusionReasons()) {
-              formalAuditEntity
-                .setExistsExclusionReasons(submittentDTO.getExistsExclusionReasons());
-              changedSubmittentIds.add(submittentDTO.getId());
-
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      if (submittentDTOs != null && !submittentDTOs.isEmpty()) {
+        // If there are submittents present, get their submission id from the first submittent.
+        String submissionId = submittentDTOs.get(0).getSubmissionId().getId();
+        // Get the formal audit entities connected to the submission.
+        List<FormalAuditEntity> formalAuditEntities =
+          new JPAQueryFactory(em).selectFrom(qFormalAuditEntity)
+            .where(qFormalAuditEntity.submittent.submissionId.id.eq(submissionId)).fetch();
+        // Check if the form is already saved by another user
+        if (checkSelectiveFormalAuditOptimisticLock(submittentDTOs, formalAuditEntities)) {
+          optimisticLockErrors
+            .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+              ValidationMessages.OPTIMISTIC_LOCK));
+          return optimisticLockErrors;
+        }
+        // List of submittent ids, whose existsExclusionReasons property has been changed.
+        List<String> changedSubmittentIds = new ArrayList<>();
+        for (SubmittentDTO submittentDTO : submittentDTOs) {
+          boolean formatAuditFound = false;
+          for (FormalAuditEntity formalAuditEntity : formalAuditEntities) {
+            // Check if the formal audit entity is connected to the current submittent.
+            if (formalAuditEntity.getSubmittent().getId().equals(submittentDTO.getId())) {
+              formatAuditFound = true;
+              // Update the formal audit values.
+              if (formalAuditEntity.getExistsExclusionReasons() != submittentDTO
+                .getExistsExclusionReasons()) {
+                formalAuditEntity
+                  .setExistsExclusionReasons(submittentDTO.getExistsExclusionReasons());
+                changedSubmittentIds.add(submittentDTO.getId());
+              }
+              if (submittentDTO.getFormalExaminationFulfilled() != null) {
+                formalAuditEntity
+                  .setFormalExaminationFulfilled(submittentDTO.getFormalExaminationFulfilled());
+              }
+              em.merge(formalAuditEntity);
+              break;
             }
-            if (submittentDTO.getFormalExaminationFulfilled() != null) {
-              formalAuditEntity
-                .setFormalExaminationFulfilled(submittentDTO.getFormalExaminationFulfilled());
-
-            }
-            em.merge(formalAuditEntity);
-            break;
           }
+          // If there is no formal audit entity connected to the submittent, create one.
+          if (!formatAuditFound) {
+            FormalAuditEntity formalAuditEntity = new FormalAuditEntity();
+            formalAuditEntity
+              .setSubmittent(SubmittentDTOMapper.INSTANCE.toSubmittent(submittentDTO));
+            formalAuditEntity.setExistsExclusionReasons(submittentDTO.getExistsExclusionReasons());
+            formalAuditEntity
+              .setFormalExaminationFulfilled(submittentDTO.getFormalExaminationFulfilled());
+            em.merge(formalAuditEntity);
+          }
+          setSubmittentProofProvided(SubmittentDTOMapper.INSTANCE.toSubmittent(submittentDTO),
+            SelectiveLevel.FIRST_LEVEL, submittentDTO);
         }
-        // If there is no formal audit entity connected to the submittent, create one.
-        if (!formatAuditFound) {
-          FormalAuditEntity formalAuditEntity = new FormalAuditEntity();
-          formalAuditEntity.setSubmittent(SubmittentDTOMapper.INSTANCE.toSubmittent(submittentDTO));
-          formalAuditEntity.setExistsExclusionReasons(submittentDTO.getExistsExclusionReasons());
-          formalAuditEntity
-            .setFormalExaminationFulfilled(submittentDTO.getFormalExaminationFulfilled());
-          em.merge(formalAuditEntity);
+        // For the submittents whose existsExclusionReasons property has been changed, their
+        // qExExaminationIsFulfilled offer property needs to be reset to null.
+        List<OfferEntity> offerEntities = new JPAQueryFactory(em).selectFrom(qOfferEntity)
+          .where(qOfferEntity.submittent.id.in(changedSubmittentIds)).fetch();
+        for (OfferEntity offerEntity : offerEntities) {
+          offerEntity.setqExExaminationIsFulfilled(null);
+          em.merge(offerEntity);
         }
-        setSubmittentProofProvided(SubmittentDTOMapper.INSTANCE.toSubmittent(submittentDTO),
-          SelectiveLevel.FIRST_LEVEL, submittentDTO);
       }
-      // For the submittents whose existsExclusionReasons property has been changed, their
-      // qExExaminationIsFulfilled offer property needs to be reset to null.
-      List<OfferEntity> offerEntities = new JPAQueryFactory(em).selectFrom(qOfferEntity)
-        .where(qOfferEntity.submittent.id.in(changedSubmittentIds)).fetch();
-      for (OfferEntity offerEntity : offerEntities) {
-        offerEntity.setqExExaminationIsFulfilled(null);
-        em.merge(offerEntity);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Checks if the selective formal audit form is already updated by another user.
+   *
+   * @param submittentDTOs      the submittentDTOs
+   * @param formalAuditEntities the formalAuditEntities
+   * @return true/false
+   */
+  private boolean checkSelectiveFormalAuditOptimisticLock(List<SubmittentDTO> submittentDTOs,
+    List<FormalAuditEntity> formalAuditEntities) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method checkSelectiveFormalAuditOptimisticLock, Parameters: submittentDTOs: {0}, "
+        + "formalAuditEntities: {1}",
+      new Object[]{submittentDTOs, formalAuditEntities});
+
+    for (SubmittentDTO submittentDTO : submittentDTOs) {
+      for (FormalAuditEntity formalAuditEntity : formalAuditEntities) {
+        if (formalAuditEntity.getSubmittent().getId().equals(submittentDTO.getId())
+          && !formalAuditEntity.getVersion().equals(submittentDTO.getFormalAuditVersion())) {
+          return true;
+        }
       }
     }
+    return false;
   }
 
   /**
@@ -1440,11 +1558,11 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Update submission status.
    *
    * @param submissionEntity the submission entity
-   * @param status the status
+   * @param status           the status
    * @param auditDescription the audit description
-   * @param reopenReason the reopen reason
-   * @param internalValue the internal value
-   * @param userId the user id
+   * @param reopenReason     the reopen reason
+   * @param internalValue    the internal value
+   * @param userId           the user id
    */
   private void updateSubmissionStatus(SubmissionEntity submissionEntity, String status,
     String auditDescription, String reopenReason, String internalValue, String userId) {
@@ -1467,6 +1585,13 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
      * Update status at tender table
      */
     submissionEntity.setStatus(status);
+    /*
+     * set SubmittentListChecked info at tender table
+     */
+    if (status.equals(TenderStatus.SUBMITTENTLIST_CHECK.getValue())) {
+      submissionEntity.setSubmittentListCheckedBy(userId);
+      submissionEntity.setSubmittentListCheckedOn(new Date().getTime());
+    }
     em.merge(submissionEntity);
     /*
      * check if an update in the security resources of the submission (for Eingereichte Offerte
@@ -1523,6 +1648,29 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       getUserId());
   }
 
+  @Override
+  public Set<ValidationError> updateSubmissionStatus(String submissionId, Long version,
+    String status, String description,
+    String reopenReason, String internalValue) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateSubmissionStatus, Parameters: submissionId: {0}, status: {1}, "
+        + "description: {2}, reopenReason: {3}, "
+        + "internalValue: {4}",
+      new Object[]{submissionId, status, description, reopenReason, internalValue});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
+    if (!version.equals(submissionEntity.getVersion())) {
+      optimisticLockErrors.add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+        ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    updateSubmissionStatus(submissionEntity, status, description, reopenReason, internalValue,
+      getUserId());
+    return optimisticLockErrors;
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -1541,7 +1689,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     List<OfferEntity> offerEntities =
       new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
         .where(qOfferEntity.submittent.submissionId.id.eq(id)
-          .and(qOfferEntity.isEmptyOffer.isFalse().or(qOfferEntity.isEmptyOffer.isNull())))
+          .and(qOfferEntity.isEmptyOffer.isFalse().or(qOfferEntity.isEmptyOffer.isNull()))
+          .and(
+            qOfferEntity.excludedFirstLevel.isFalse().or(qOfferEntity.excludedFirstLevel.isNull())))
         .fetch();
 
     for (OfferEntity offer : offerEntities) {
@@ -1561,7 +1711,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
 
       // Check if Rechtliches Gehor document has been generated for 2nd level selective process.
       if (checkLegalHearingDocumentFormalAudit(submissionEntity, offer)) {
-        messages.add(DOCUMENT_SHOULD_BE_CREATED);
+        messages.add(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED);
         break;
       }
     }
@@ -1593,7 +1743,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
               }
             }
             // If offer is excluded, set award offer sub-criteria score and grade to null.
-            for (OfferSubriterionEntity offerSubcriterionEntity : offerEntity
+            for (OfferSubcriterionEntity offerSubcriterionEntity : offerEntity
               .getOfferSubcriteria()) {
               if (offerSubcriterionEntity.getSubcriterion().getCriterion().getCriterionType()
                 .equals(LookupValues.AWARD_CRITERION_TYPE)) {
@@ -1607,10 +1757,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         }
       } else {
         if ((submissionEntity.getProcess().equals(Process.NEGOTIATED_PROCEDURE) || submissionEntity
-            .getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))) {
+          .getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))) {
           for (OfferEntity offerEntity : offerEntities) {
             if (offerEntity.getSubmittent().getExistsExclusionReasons() != null
-                && offerEntity.getSubmittent().getExistsExclusionReasons()) {
+              && offerEntity.getSubmittent().getExistsExclusionReasons()) {
               offerEntity.setIsExcludedFromProcess(Boolean.TRUE);
             } else {
               offerEntity.setIsExcludedFromProcess(Boolean.FALSE);
@@ -1631,7 +1781,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Check legal hearing document formal audit.
    *
    * @param submissionEntity the submission entity
-   * @param offer the offer
+   * @param offer            the offer
    * @return true, if successful
    */
   private boolean checkLegalHearingDocumentFormalAudit(SubmissionEntity submissionEntity,
@@ -1707,24 +1857,24 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
             && (submittent.getIsApplicant() != null && submittent.getIsApplicant())
             && isLegalHearingDocumentRequired(submittent, submissionEntity)) {
             existsExclusionReasons = true;
-            results.add(DOCUMENT_SHOULD_BE_CREATED);
+            results.add(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED);
             break;
           }
         } else {
           if (!submittent.getOffer().getIsEmptyOffer()
             && isLegalHearingDocumentRequired(submittent, submissionEntity)) {
             existsExclusionReasons = true;
-            results.add(DOCUMENT_SHOULD_BE_CREATED);
+            results.add(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED);
             break;
           }
         }
       }
     }
 
-    if (!existsExclusionReasons) {
-      existsExclusionReasons =
-        generateProofDocuments(submissionId, existsExclusionReasons, results, submissionEntity);
-    }
+    // If generateProofDocuments returns false then we shouldn't change existsExclusionReasons to false in case it is true.
+    existsExclusionReasons |= generateProofDocuments(submissionId, existsExclusionReasons, results,
+      submissionEntity);
+
     List<CriterionDTO> criterionDTOs =
       criterionService.readSubmissionEvaluatedCriteria(submissionId);
     double criterionWeightingSum = 0;
@@ -1899,9 +2049,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * Proceed with close examination.
    *
-   * @param submissionId the submission id
+   * @param submissionId     the submission id
    * @param submissionEntity the submission entity
-   * @param offerDTOs the offer DT os
+   * @param offerDTOs        the offer DT os
    */
   private void proceedWithCloseExamination(String submissionId, SubmissionEntity submissionEntity,
     List<OfferDTO> offerDTOs) {
@@ -1985,10 +2135,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * Generate proof documents.
    *
-   * @param id the id
+   * @param id                     the id
    * @param existsExclusionReasons the exists exclusion reasons
-   * @param results the results
-   * @param submissionEntity the submission entity
+   * @param results                the results
+   * @param submissionEntity       the submission entity
    * @return true, if successful
    */
   private boolean generateProofDocuments(String id, boolean existsExclusionReasons,
@@ -2001,7 +2151,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     List<SubmittentEntity> submittents = new JPAQueryFactory(em).selectFrom(qSubmittentEntity)
       .leftJoin(qSubmittentEntity.jointVentures, qCompanyEntityjointVentures)
       .leftJoin(qSubmittentEntity.subcontractors, qCompanyEntitySubcontractors)
-      .where((qSubmittentEntity.submissionId.id.eq(id)))
+      .where((qSubmittentEntity.submissionId.id.eq(id))
+        .and(qSubmittentEntity.offer.excludedFirstLevel.isFalse()
+          .or(qSubmittentEntity.offer.excludedFirstLevel.isNull())))
       .groupBy(qSubmittentEntity.companyId, qCompanyEntitySubcontractors,
         qCompanyEntityjointVentures).fetch();
     Set<SubmittentEntity> submittentSet = new HashSet<>(submittents);
@@ -2027,18 +2179,18 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       if (submittent.getOffer().getIsEmptyOffer() == null
         || !submittent.getOffer().getIsEmptyOffer()) {
         if (submissionEntity.getProcess().equals(Process.SELECTIVE)
-            && !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submissionEntity.getStatus()),
-                TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
+          && !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submissionEntity.getStatus()),
+          TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
           if ((submittent.getIsApplicant() != null && submittent.getIsApplicant())
             && isProofDocumentRequired(submittent, submissionEntity, template, templateSub)) {
             existsExclusionReasons = true;
-            results.add(DOCUMENT_SHOULD_BE_CREATED);
+            results.add(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED);
             break;
           }
         } else {
           if (isProofDocumentRequired(submittent, submissionEntity, template, templateSub)) {
             existsExclusionReasons = true;
-            results.add(DOCUMENT_SHOULD_BE_CREATED);
+            results.add(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED);
             break;
           }
         }
@@ -2096,11 +2248,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
           offerCriterionEntity.setGrade(null);
           offerCriterionEntity.setScore(null);
           // If offer is excluded, set award offer sub-criteria score and grade to null.
-          for (OfferSubriterionEntity offerSubriterionEntity : offerEntity.getOfferSubcriteria()) {
-            if (offerSubriterionEntity.getSubcriterion().getCriterion().getId()
+          for (OfferSubcriterionEntity offerSubcriterionEntity : offerEntity
+            .getOfferSubcriteria()) {
+            if (offerSubcriterionEntity.getSubcriterion().getCriterion().getId()
               .equals(offerCriterionEntity.getCriterion().getId())) {
-              offerSubriterionEntity.setGrade(null);
-              offerSubriterionEntity.setScore(null);
+              offerSubcriterionEntity.setGrade(null);
+              offerSubcriterionEntity.setScore(null);
             }
           }
         }
@@ -2130,12 +2283,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionService#reopenFormalAudit(java.lang.
-   * String, java.lang.String)
-   */
   @Override
   public void reopenFormalAudit(String reopenReason, String submissionId) {
 
@@ -2144,12 +2291,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         + "submissionId: {1}",
       new Object[]{reopenReason, submissionId});
 
-    String currentStatus = getCurrentStatusOfSubmission(submissionId);
-    if (Integer.parseInt(
-      currentStatus) >= (Integer.parseInt(TenderStatus.FORMAL_AUDIT_COMPLETED.getValue()))) {
-      updateSubmissionStatus(submissionId, TenderStatus.FORMAL_EXAMINATION_STARTED.getValue(),
-        AuditMessages.FORMAL_AUDIT_REOPEN.name(), reopenReason, LookupValues.EXTERNAL_LOG);
-    }
+    updateSubmissionStatus(submissionId,
+      TenderStatus.FORMAL_EXAMINATION_STARTED.getValue(),
+      AuditMessages.FORMAL_AUDIT_REOPEN.name(), reopenReason, LookupValues.EXTERNAL_LOG);
+
     /*
      * Set isExcludedFromProcess value of submission offers back to false (UC 175).
      */
@@ -2163,12 +2308,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionService#reopenExamination(java.lang.
-   * String, java.lang.String)
-   */
   @Override
   public void reopenExamination(String reopenReason, String id) {
 
@@ -2179,16 +2318,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
 
     Process process = new JPAQueryFactory(em).select(qSubmissionEntity.process)
       .from(qSubmissionEntity).where(qSubmissionEntity.id.eq(id)).fetchFirst();
-    String currentStatus = getCurrentStatusOfSubmission(id);
-    if (process != Process.SELECTIVE && currentStatus.compareTo(
-      TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue()) >= 0) {
+    if (process != Process.SELECTIVE) {
       // Change the submission status and create log.
       updateSubmissionStatus(id,
         TenderStatus.FORMAL_EXAMINATION_AND_QUALIFICATION_STARTED.getValue(),
         AuditMessages.FORMAL_EXAMINATION_REOPEN.name(), reopenReason, LookupValues.EXTERNAL_LOG);
-    }
-    if (process == Process.SELECTIVE && compareCurrentVsSpecificStatus(
-      TenderStatus.fromValue(currentStatus), TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
+    } else {
       // Change the submission status and create log.
       updateSubmissionStatus(id,
         TenderStatus.FORMAL_EXAMINATION_SUITABILITY_AUDIT_STARTED.getValue(),
@@ -2218,15 +2353,11 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       new Object[]{submissionId, reopenReason});
 
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
-    if ((submissionEntity.getProcess() == Process.NEGOTIATED_PROCEDURE)
-      || (submissionEntity.getProcess() == Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
-      updateSubmissionStatus(submissionId, TenderStatus.FORMAL_AUDIT_COMPLETED.getValue(),
-        AuditMessages.MANUAL_AWARD_REOPEN.name(), reopenReason, LookupValues.EXTERNAL_LOG);
-    } else {
-      updateSubmissionStatus(submissionId,
-        TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue(),
-        AuditMessages.MANUAL_AWARD_REOPEN.name(), reopenReason, LookupValues.EXTERNAL_LOG);
-    }
+
+    updateSubmissionStatus(submissionId,
+      getManualAwardReopenStatus(submissionEntity.getProcess(),
+        submissionEntity.getIsServiceTender()),
+      AuditMessages.MANUAL_AWARD_REOPEN.name(), reopenReason, LookupValues.EXTERNAL_LOG);
 
     // remove the award
     removeAward(submissionId);
@@ -2240,17 +2371,35 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         submissionEntity.setIsGekoEntryByManualAward(false);
         submissionEntity.setIsGekoEntry(false);
       }
-      em.merge(submissionEntity);
     }
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Get the reopen status
    *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#reopenManualAwardCleanup(java.
-   * lang.String, ch.bern.submiss.services.api.dto.SubmissionDTO)
+   * @param process the process
+   * @param isServiceTender the isServiceTender
+   * @return the reopen status
    */
+  private String getManualAwardReopenStatus(Process process, Boolean isServiceTender) {
+    String status;
+    // if process is freihandig/freihandig MK change status to 150
+    if ((process == Process.NEGOTIATED_PROCEDURE)
+      || (process == Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
+      status = TenderStatus.FORMAL_AUDIT_COMPLETED.getValue();
+    }
+    // if process is selektiv DL WW change status to 190
+    else if (process == Process.SELECTIVE
+      && Boolean.TRUE.equals(isServiceTender)) {
+      status = TenderStatus.FORMAL_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue();
+    }
+    // else change status to 180
+    else {
+      status = TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue();
+    }
+    return status;
+  }
+
   @Override
   public void removeAward(String submissionId) {
 
@@ -2289,7 +2438,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     for (OfferEntity offerEntity : offerEntities) {
       if (offerEntity != null && offerEntity.getIsAwarded() != null && offerEntity.getIsAwarded()) {
         offerEntity.setIsAwarded(false);
-        em.persist(offerEntity);
       }
     }
     /* Setting status of submission according to its process */
@@ -2337,17 +2485,17 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * Update the submission status to commission procurement proposal started.
    *
-   * @param submissionDTO the submission DTO
+   * @param submissionId the submission id
    */
   @Override
-  public void startCommissionProcurementProposal(SubmissionDTO submissionDTO) {
+  public void startCommissionProcurementProposal(String submissionId) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method startCommissionProcurementProposal, Parameters: "
-        + "submissionDTO: {0}",
-      submissionDTO);
+        + "submissionId: {0}",
+      submissionId);
 
-    SubmissionEntity submissionEntity = SubmissionMapper.INSTANCE.toSubmission(submissionDTO);
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
     updateSubmissionStatus(submissionEntity,
       TenderStatus.COMMISSION_PROCUREMENT_PROPOSAL_STARTED.getValue(), null, null,
       LookupValues.INTERNAL_LOG, getUserId());
@@ -2404,6 +2552,15 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     return offerOpeningClosedBefore;
   }
 
+  @Override
+  public boolean isOfferOpeningFirstTimeClosed(String submissionId) {
+    List<TenderStatusHistoryDTO> allRecentStatuses =
+      tenderStatusHistoryService.getSubmissionStatuses(submissionId);
+    return allRecentStatuses.stream()
+      .filter(tenderStatusHistoryDTO -> tenderStatusHistoryDTO.getStatusId()
+        .equals(TenderStatus.OFFER_OPENING_CLOSED.getValue())).count() == 1;
+  }
+
   /**
    * Check if commission procurement proposal document exists.
    *
@@ -2445,7 +2602,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     // Initialize submission values for the commission procurement decision.
     SubmissionDTO submissionDTO = getSubmissionById(submissionId);
     submissionDTO.setCommissionProcurementDecisionRecommendation(
-      "Die Städtische Beschaffungskommission empfiehlt der Direktion "
+      "Die Städtische Beschaffungskommission empfiehlt der "
         + submissionDTO.getProject().getDepartment().getDirectorate().getName()
         + " einstimmig, den Auftrag antragsgemäss zu vergeben.");
     SubmissionEntity submissionEntity = SubmissionMapper.INSTANCE.toSubmission(submissionDTO);
@@ -2524,7 +2681,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       submissionEntity);
 
     String reservation = submissionEntity.getCommissionProcurementProposalReservation();
-    // Check if the reservation value is one of the predefined values. 
+    // Check if the reservation value is one of the predefined values.
     if (StringUtils.isNotBlank(reservation) && (reservation
       .equals(CommissionProcurementProposalReservation.RESERVATION_CONSTRUCTION.getValue())
       || reservation.equals(CommissionProcurementProposalReservation.RESERVATION_LOAN.getValue())
@@ -2578,12 +2735,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     return !nodeDTOs.isEmpty();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionService#
-   * closeCommissionProcurementDecision(java.lang.String)
-   */
   @Override
   public void closeCommissionProcurementDecision(String submissionId) {
 
@@ -2698,10 +2849,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * This method checks if Nachweisbrief document should be generated before the close of the
    * examination procedure.
    *
-   * @param submittent the submittent
+   * @param submittent       the submittent
    * @param submissionEntity the submission entity
-   * @param template the template
-   * @param templateSub the template sub
+   * @param template         the template
+   * @param templateSub      the template sub
    * @return true, if is proof document required
    */
   private boolean isProofDocumentRequired(SubmittentEntity submittent,
@@ -2743,10 +2894,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * This method set a boolean value to true if the Nachweisbrief document should be created.
    *
    * @param companyEntity the company entity
-   * @param submittentId the submittent id
-   * @param template the template
-   * @param submissionId the submission id
-   * @param deadline the deadline
+   * @param submittentId  the submittent id
+   * @param template      the template
+   * @param submissionId  the submission id
+   * @param deadline      the deadline
    * @return true, if successful
    */
   private boolean setDocumentShouldBeCreated(CompanyEntity companyEntity, String submittentId,
@@ -2772,7 +2923,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       && documentService.getNodeByAttributes(submissionId, attributesMap).isEmpty()) {
       documentShoulBeCreated = true;
     }
-
     return documentShoulBeCreated;
   }
 
@@ -2832,7 +2982,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     }
     List<SubmittentDTO> submittentDTOs =
       calculateSubmittentValues(submissionEntity.getSubmittents(),
-          deadline, submissionEntity.getProcess(), level);
+        deadline, submissionEntity.getProcess(), level);
     for (SubmittentDTO submittentDTO : submittentDTOs) {
       SubmittentEntity submittentEntity = SubmittentDTOMapper.INSTANCE.toSubmittent(submittentDTO);
       submittentEntity.setFormalExaminationFulfilled(submittentDTO.getFormalExaminationFulfilled());
@@ -2932,7 +3082,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Delete criteria by type.
    *
    * @param submissionEntity the submission entity
-   * @param criterionType the criterion type
+   * @param criterionType    the criterion type
    */
   private void deleteCriteriaByType(SubmissionEntity submissionEntity, String criterionType) {
 
@@ -3413,7 +3563,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * Checks if is legal hearing document required.
    *
-   * @param submittent the offer criterion entity
+   * @param submittent       the offer criterion entity
    * @param submissionEntity the submission id
    * @return true, if is legal hearing document required
    */
@@ -3633,7 +3783,8 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         .where(qSubmittentEntity.submissionId.id.eq(submissionId)
           .and(qSubmittentEntity.isApplicant.eq(Boolean.TRUE)))
         .orderBy(qSubmittentEntity.sortOrder.asc()).fetch();
-    List<SubmittentDTO> submittentDTOs =SubmittentDTOMapper.INSTANCE.toSubmittentDTO(submittentEntities);
+    List<SubmittentDTO> submittentDTOs = SubmittentDTOMapper.INSTANCE
+      .toSubmittentDTO(submittentEntities);
     // Get process of submission.
     Process processType = submittentDTOs.get(0).getSubmissionId().getProcess();
     // Get deadline.
@@ -3646,6 +3797,8 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       for (FormalAuditEntity formalAuditEntity : formalAuditEntities) {
         // Check if the formal audit entity is connected to the current submittent.
         if (formalAuditEntity.getSubmittent().getId().equals(submittentDTO.getId())) {
+          // Get the version of formalAuditEntity
+          submittentDTO.setFormalAuditVersion(formalAuditEntity.getVersion());
           // Get the values existsExclusionReasons and formalExaminationFulfilled from the formal
           // audit entity and set them to the submittent.
           if (formalAuditEntity.getExistsExclusionReasons() != null) {
@@ -3653,13 +3806,13 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
           }
           if (formalAuditEntity.getFormalExaminationFulfilled() != null) {
             submittentDTO
-                .setFormalExaminationFulfilled(formalAuditEntity.getFormalExaminationFulfilled());
+              .setFormalExaminationFulfilled(formalAuditEntity.getFormalExaminationFulfilled());
           }
           break;
         }
       }
       projectBean.calculateSubmittentValues(
-          submittentDTO, deadline, processType);
+        submittentDTO, deadline, processType);
     }
     /*if (deadline != null) {
       projectBean.calculateSubmittentValues(
@@ -3740,8 +3893,8 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Function to calculate submittent values for the formal audit.
    *
    * @param submittentEntities the submittent entities
-   * @param deadline the deadline
-   * @param processType the process type
+   * @param deadline           the deadline
+   * @param processType        the process type
    * @return the list
    */
   private List<SubmittentDTO> calculateSubmittentValues(List<SubmittentEntity> submittentEntities,
@@ -3876,11 +4029,11 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
        * 2.NEGOTIATED_PROCEDURE_WITH_COMPETITION
        */
       if (submittentDTO.getFormalExaminationFulfilled() != null
-          && !submittentDTO.getFormalExaminationFulfilled()
-          && !processType.equals(Process.NEGOTIATED_PROCEDURE)
-          && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)
-          && !(processType.equals(Process.SELECTIVE)
-              && level.equals(SelectiveLevel.SECOND_LEVEL))) {
+        && !submittentDTO.getFormalExaminationFulfilled()
+        && !processType.equals(Process.NEGOTIATED_PROCEDURE)
+        && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)
+        && !(processType.equals(Process.SELECTIVE)
+        && level.equals(SelectiveLevel.SECOND_LEVEL))) {
         submittentDTO.setExistsExclusionReasons(Boolean.TRUE);
       }
 
@@ -3966,7 +4119,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * Creates the task.
    *
    * @param submissionDTO the submission DTO
-   * @param taskType the task type
+   * @param taskType      the task type
    */
   private void createTask(SubmissionDTO submissionDTO, TaskTypes taskType) {
 
@@ -4065,24 +4218,48 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   }
 
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#moveProjectData(java.lang.String,
-   * java.lang.String)
-   */
-  public void moveProjectData(String submissionId, String projectId) {
+  @Override
+  public Set<ValidationError> moveProjectData(String submissionId, Long submissionVersion,
+    String projectId, Long projectVersion) {
 
     LOGGER.log(Level.CONFIG, "Executing method moveProjectData, Parameters: submissionId: {0}, "
-        + "projectId: {1}",
-      new Object[]{submissionId, projectId});
+        + "submissionVersion: {1}, projectId: {2}, projectVersion: {3}",
+      new Object[]{submissionId, submissionVersion, projectId, projectVersion});
 
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
     ProjectEntity projectEntity = em.find(ProjectEntity.class, projectId);
-    submissionEntity.setProject(projectEntity);
 
-    em.merge(submissionEntity);
+    // Check for optimistic lock errors
+    Set<ValidationError> optimisticLockErrors =
+      moveProjectDataOptimisticLock(submissionEntity, submissionVersion, projectEntity,
+        projectVersion);
+
+    if (!optimisticLockErrors.isEmpty()) {
+      return optimisticLockErrors;
+    }
+
+    try {
+      submissionEntity.setProject(projectEntity);
+      em.merge(submissionEntity);
+      auditLogMoveProjectData(submissionEntity);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Create audit log for moveProjectData.
+   *
+   * @param submissionEntity the submissionEntity
+   */
+  private void auditLogMoveProjectData(SubmissionEntity submissionEntity) {
+
+    LOGGER.log(Level.CONFIG, "Executing method auditLogMoveProjectData, Parameters: "
+      + "submissionEntity: {0}", submissionEntity);
 
     MasterListValueHistoryEntity workType = new JPAQueryFactory(em)
       .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
@@ -4099,26 +4276,47 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       .fetchOne();
 
     String workTypeValue2 = (StringUtils.isEmpty(workType.getValue2())) ? StringUtils.EMPTY
-      : " " + workType.getValue2();
+      : LookupValues.SPACE + workType.getValue2();
 
     StringBuilder additionalInfo =
       new StringBuilder(submissionEntity.getProject().getProjectName()).append("[#]")
-        .append(objectEntity.getValue1()).append("[#]")
-        .append(workType.getValue1() + workTypeValue2).append("[#]")
+        .append(objectEntity.getValue1()).append("[#]").append(workType.getValue1())
+        .append(workTypeValue2).append("[#]")
         .append(getUser().getAttributeData(LookupValues.USER_ATTRIBUTES.TENANT.getValue()))
         .append("[#]");
 
-    audit.createLogAudit(AuditLevel.PROJECT_LEVEL.name(), AuditEvent.DATA_MOVED.name(),
-      AuditGroupName.SUBMISSION.name(), AuditMessages.SUMBISSION_DATA_MOVED.name(),
-      getUser().getId(), submissionId, null, additionalInfo.toString(), LookupValues.EXTERNAL_LOG);
+    auditLog(AuditEvent.DATA_MOVED.name(), AuditMessages.SUMBISSION_DATA_MOVED.name(),
+      submissionEntity.getId(), additionalInfo.toString());
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Check for optimistic lock errors when moving project data.
    *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#automaticallyCloseSubmissions()
+   * @param submissionEntity  the submissionEntity
+   * @param submissionVersion the submissionVersion
+   * @param projectEntity     the projectEntity
+   * @param projectVersion    the projectVersion
+   * @return the error
    */
+  private Set<ValidationError> moveProjectDataOptimisticLock(SubmissionEntity submissionEntity,
+    Long submissionVersion, ProjectEntity projectEntity, Long projectVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method moveProjectDataOptimisticLock, Parameters: submissionEntity: {0}, "
+        + "submissionVersion: {1}, projectEntity: {2}, projectVersion: {3}",
+      new Object[]{submissionEntity, submissionVersion, projectEntity, projectVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    if (submissionEntity == null || projectEntity == null
+      || !submissionEntity.getVersion().equals(submissionVersion)
+      || !projectEntity.getVersion().equals(projectVersion)) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
   @Override
   public void automaticallyCloseSubmissions() {
 
@@ -4318,10 +4516,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * Audit log.
    *
-   * @param event the event
+   * @param event        the event
    * @param auditMessage the audit message
    * @param submissionId the submission id
-   * @param projectVars the project vars
+   * @param projectVars  the project vars
    */
   private void auditLog(String event, String auditMessage, String submissionId,
     String projectVars) {
@@ -4621,12 +4819,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   @Override
   public List<SubmittentDTO> retrieveEmptyOffers(SubmissionDTO submission) {
     List<SubmittentEntity> submittents =
-        new JPAQueryFactory(em)
-            .select(qOfferEntity.submittent).from(qOfferEntity).where(qOfferEntity.isEmptyOffer
-                .isTrue().and(qOfferEntity.submittent.submissionId.id.eq(submission.getId())))
-            .fetch();
+      new JPAQueryFactory(em)
+        .select(qOfferEntity.submittent).from(qOfferEntity).where(qOfferEntity.isEmptyOffer
+        .isTrue().and(qOfferEntity.submittent.submissionId.id.eq(submission.getId())))
+        .fetch();
     List<SubmittentDTO> submittentDTOs = calculateSubmittentValues(submittents,
-        submission.getSecondDeadline(), submission.getProcess(), SelectiveLevel.ZERO_LEVEL);
+      submission.getSecondDeadline(), submission.getProcess(), SelectiveLevel.ZERO_LEVEL);
     retrieveFormalAuditSavedValues(submission.getProcess(), submission.getStatus(), submittentDTOs);
     return submittentDTOs;
   }
@@ -4634,10 +4832,135 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   @Override
   public List<SubmittentDTO> getSubmittentsForNegotiatedProcedure(List<String> submittentIds) {
     List<SubmittentEntity> submittentEntities = new JPAQueryFactory(em)
-        .selectFrom(qSubmittentEntity).where(qSubmittentEntity.id.in(submittentIds)).fetch();
+      .selectFrom(qSubmittentEntity).where(qSubmittentEntity.id.in(submittentIds)).fetch();
     Date deadline = submittentEntities.get(0).getSubmissionId().getSecondDeadline();
 
     return calculateSubmittentValues(submittentEntities, deadline,
-        submittentEntities.get(0).getSubmissionId().getProcess(), SelectiveLevel.ZERO_LEVEL);
+      submittentEntities.get(0).getSubmissionId().getProcess(), SelectiveLevel.ZERO_LEVEL);
+  }
+
+  @Override
+  public boolean submissionExists(String submissionId) {
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
+    return submissionEntity != null;
+  }
+
+  @Override
+  public boolean isStatusChanged(String id, String status) {
+
+    int submissionStatus = Integer.parseInt(getCurrentStatusOfSubmission(id));
+    int currentStatus = Integer.parseInt(status);
+    boolean result = false;
+
+    if (currentStatus != submissionStatus
+      && isStatusChangedByAnotherUser(currentStatus, submissionStatus,
+      Integer.parseInt(TenderStatus.OFFER_OPENING_CLOSED.getValue()))) {
+      result = true;
+    }
+
+    return result;
+  }
+
+  private boolean isStatusChangedByAnotherUser(int currentStatus, int submissionStatus,
+    int specificStatus) {
+    return
+      // check if status is closed by another user
+      (currentStatus < specificStatus && submissionStatus >= specificStatus)
+        // check if status is reopened by another user
+        || (currentStatus >= specificStatus && submissionStatus < specificStatus);
+  }
+
+  @Override
+  public Set<ValidationError> updateCommissionProcurementDecision(
+    CommissionProcurementDecisionDTO commissionProcurementDecisionDTO,
+    String submissionId, Long submissionVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateCommissionProcurementDecision, Parameters: "
+        + "commissionProcurementDecisionDTO: {0}, submissionId: {1}, submissionVersion: {2}",
+      new Object[]{commissionProcurementDecisionDTO, submissionId, submissionVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissionDTO submissionDTO = getSubmissionById(submissionId);
+    // Check for optimistic locking errors
+    if (!submissionVersion.equals(submissionDTO.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    try {
+      // Updating values of submission.
+      submissionDTO.setCommissionProcurementDecisionRecommendation(
+        commissionProcurementDecisionDTO.getRecommendation());
+      updateSubmission(submissionDTO);
+      // Set submission status to commission procurement decision started if not already set.
+      if (!getCurrentStatusOfSubmission(submissionId)
+        .equals(TenderStatus.COMMISSION_PROCUREMENT_DECISION_STARTED.getValue())) {
+        updateSubmissionStatus(submissionId,
+          TenderStatus.COMMISSION_PROCUREMENT_DECISION_STARTED.getValue(), null, null,
+          LookupValues.INTERNAL_LOG);
+      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  @Override
+  public void checkOptimisticLockSubmission(String submissionId, Long submissionVersion) {
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
+    if (!submissionVersion.equals(submissionEntity.getVersion())) {
+      throw new OptimisticLockException();
+    }
+  }
+
+  @Override
+  public void submissionCreateSecurityCheck() {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_CREATE.getValue(), null);
+  }
+
+  @Override
+  public void submissionDocumentAreaSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PROJECT_DOCUMENT_VIEW.getValue(), submissionId);
+  }
+
+  @Override
+  public void formalAuditSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      submissionService.getSubmissionProcess(submissionId).getValue() + LookupValues.DOT +
+        SecurityOperation.FORMAL_AUDIT_VIEW.getValue(), submissionId);
+  }
+
+  @Override
+  public void suitabilityAuditSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.SUITABILITY_EXECUTE.getValue(), submissionId);
+  }
+
+  @Override
+  public void applicantsSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      submissionService.getSubmissionProcess(submissionId).getValue() + LookupValues.DOT +
+        SecurityOperation.APPLICANTS_VIEW.getValue(), submissionId);
+  }
+
+  @Override
+  public void submissionViewSecurityCheck(String submissionId) {
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_VIEW.getValue(), submissionId);
+  }
+
+  @Override
+  public SubmissionDTO getSubmissionByResourceId(String resourceID) {
+    return SubmissionMapper.INSTANCE.toSubmissionDTO(
+      new JPAQuery<>(em).select(qSubmissionEntity).from(qSubmissionEntity)
+        .where(qSubmissionEntity.id.eq(resourceID).or(qSubmissionEntity.project.id.eq(resourceID))
+          .or(qSubmissionEntity.project.tenant.id.eq(resourceID)))
+        .fetchFirst());
   }
 }

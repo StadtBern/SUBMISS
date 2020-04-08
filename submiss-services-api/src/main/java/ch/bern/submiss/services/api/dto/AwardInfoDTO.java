@@ -19,52 +19,47 @@ import java.util.List;
 /**
  * The Class AwardInfoDTO.
  */
-public class AwardInfoDTO {
+public class AwardInfoDTO extends AbstractDTO {
 
-  /** The id. */
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   private SubmissionDTO submission;
 
-  /** The available date. */
+  /**
+   * The available date.
+   */
   private Date availableDate;
 
-  /** The freeze close submission. */
+  /**
+   * The freeze close submission.
+   */
   private Boolean freezeCloseSubmission;
 
-  /** The object name read. */
+  /**
+   * The object name read.
+   */
   private Boolean objectNameRead;
 
-  /** The project name read. */
+  /**
+   * The project name read.
+   */
   private Boolean projectNameRead;
 
-  /** The working class read. */
+  /**
+   * The working class read.
+   */
   private Boolean workingClassRead;
 
-  /** The description read. */
+  /**
+   * The description read.
+   */
   private Boolean descriptionRead;
 
-  /** The offers. */
+  /**
+   * The offers.
+   */
   private List<AwardInfoOfferDTO> offers;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -212,15 +207,15 @@ public class AwardInfoDTO {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "AwardInfoDTO [id=" + id + ", availableDate=" + availableDate
-        + ", freezeCloseSubmission=" + freezeCloseSubmission + ", objectNameRead=" + objectNameRead
-        + ", projectNameRead=" + projectNameRead + ", workingClassRead=" + workingClassRead
-        + ", descriptionRead=" + descriptionRead + "]";
+    return "AwardInfoDTO [id=" + super.getId() + ", availableDate=" + availableDate
+      + ", freezeCloseSubmission=" + freezeCloseSubmission + ", objectNameRead=" + objectNameRead
+      + ", projectNameRead=" + projectNameRead + ", workingClassRead=" + workingClassRead
+      + ", descriptionRead=" + descriptionRead + "]";
   }
 
 

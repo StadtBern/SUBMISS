@@ -1,138 +1,166 @@
-		<!--
-  ~  Submiss, eProcurement system for managing tenders
-  ~  Copyright (C) 2019 Stadt Bern
-  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
-  ~  You may not use this work except in compliance with the Licence.
-  ~  You may obtain a copy of the Licence at:
-  ~  https://joinup.ec.europa.eu/collection/eupl
-  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
-  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-  ~  express or implied. See the Licence for the specific language governing permissions and limitations
-  ~  under the Licence.
-  -->
+<!--
+~  Submiss, eProcurement system for managing tenders
+~  Copyright (C) 2019 Stadt Bern
+~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+~  You may not use this work except in compliance with the Licence.
+~  You may obtain a copy of the Licence at:
+~  https://joinup.ec.europa.eu/collection/eupl
+~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+~  express or implied. See the Licence for the specific language governing permissions and limitations
+~  under the Licence.
+-->
 
 <div class="row">
-					<div class="col-sm-12">
-						<h2 class="page-title">{{companyOffersCtr.data.company.companyName}},<small>&nbsp;{{companyOffersCtr.data.company.address1}}</small></h2>
-					</div>
-				</div>
-				<div class="row">
-					<div class="card-box">
-						<div class="col-sm-12 ToolbarContainer">    
-							<div class="col-sm-6 pull-left">
-								<div class="">				 
-								  <label>Nachweisstatus:</label>
-								  <span>
-								  
-								  	<text ng-if="companyOffersCtr.data.company.proofStatus === 1"><img src="../../../assets/images/greenFlag.png" alt="Alle Nachweise" /> Alle Nachweise vorhanden</text>
-								  	<text ng-if="companyOffersCtr.data.company.proofStatus === 2"><img src="../../../assets/images/redFlag.png" alt="nicht aktuell"/> Nachweise nicht mehr aktuell, nicht vollständig, oder nicht vorhanden</text>
-								    <text ng-if="companyOffersCtr.data.company.proofStatus === 3"><img src="../../../assets/images/flagBan.png" alt="Fachstelle" /> Rücksprache mit der Fachstelle Beschaffungswesen</text>
-								    <text ng-if="companyOffersCtr.data.company.proofStatus === 4"><img src="../../../assets/images/ban.png" alt="KAIO" /> Rücksprache mit KAIO ZKB / FaBe</text>
-								    </span>
-							    </div>
-								<div class=""
-									ng-if="companyOffersCtr.data.company.proofDocModOn!=null">
-									<label>
-										Nachweise bestellt durch {{companyOffersCtr.data.company.proofDocModBy.name}} am {{companyOffersCtr.data.company.proofDocModOn | date:"dd.MM.yyyy"}}
-									</label>
-								</div>
-								<div class=""
-									ng-if="companyOffersCtr.data.company.proofDocSubmitDate!=null 
+  <div class="col-sm-12">
+    <h2 class="page-title">
+      {{companyOffersCtr.data.company.companyName}},<small>&nbsp;{{companyOffersCtr.data.company.address1}}</small>
+    </h2>
+  </div>
+</div>
+<div class="row">
+  <div class="card-box">
+    <div class="col-sm-12 ToolbarContainer">
+      <div class="col-sm-8 pull-left">
+        <div class="">
+          <label>Nachweisstatus:</label>
+          <span>
+            <text ng-if="companyOffersCtr.data.company.proofStatus === 1"><img
+                src="../../../assets/images/greenFlag.png" alt="Alle Nachweise" /> Alle Nachweise vorhanden</text>
+            <text ng-if="companyOffersCtr.data.company.proofStatus === 2"><img src="../../../assets/images/redFlag.png"
+                alt="nicht aktuell" /> Nachweise nicht mehr aktuell, nicht
+              vollständig, oder nicht vorhanden</text>
+            <text ng-if="companyOffersCtr.data.company.proofStatus === 3"><img src="../../../assets/images/flagBan.png"
+                alt="Fachstelle" /> Rücksprache mit der Fachstelle
+              Beschaffungswesen</text>
+            <text ng-if="companyOffersCtr.data.company.proofStatus === 4"><img src="../../../assets/images/ban.png"
+                alt="KAIO" /> Rücksprache mit KAIO ZKB / FaBe</text>
+          </span>
+        </div>
+        <div class=""
+          ng-if="companyOffersCtr.data.companyTask.createdOn!=null && companyOffersCtr.data.companyTask.createdBy!=null">
+          <label>
+            Pendenz an FaBe zur Nachweisaufforderung erfolgt am
+            {{companyOffersCtr.data.companyTask.createdOn | date:"dd.MM.yyyy"}} durch
+            {{companyOffersCtr.data.companyTask.createdBy}}
+          </label>
+        </div>
+        <div class="" ng-if="companyOffersCtr.data.company.proofDocModOn!=null">
+          <label>
+            Nachweise bestellt durch {{companyOffersCtr.data.company.proofDocModBy.name}} am
+            {{companyOffersCtr.data.company.proofDocModOn | date:"dd.MM.yyyy"}}
+          </label>
+        </div>
+        <div class="" ng-if="companyOffersCtr.data.company.proofDocSubmitDate!=null
 									&& companyOffersCtr.data.company.proofDocModBy.name != 'Kanton Bern'">
-									<label>
-										Einreichefrist der Nachweise am {{companyOffersCtr.data.company.proofDocSubmitDate | date:"dd.MM.yyyy"}}
-									</label>
-								</div>
-							    
-							    <div
-									ng-if="companyOffersCtr.data.company.certificateDate!=null">
-								  <label>Firma zertifiziert am {{companyOffersCtr.data.company.certificateDate | date:"dd.MM.yyyy"}}, gültig bis {{companyOffersCtr.data.company.certDocExpirationDate | date:"dd.MM.yyyy"}}</label>
-								</div>
-								<div class="" ng-hide = "companyOffersCtr.data.company.modificationDate==null" >				 
-								   <label ng-show="companyOffersCtr.data.company.modUserName!=null || companyOffersCtr.data.company.modUserName==''">Firma bearbeitet am {{companyOffersCtr.data.company.modifiedOn | date:"dd.MM.yyyy"}} durch {{companyOffersCtr.data.company.modUserName}} {{companyOffersCtr.data.company.modUserLastName}}/{{companyOffersCtr.data.company.modUserTenant}}</label>
-							    </div>
-							</div>
-							<div class="col-sm-6 pull-left">
-								<div class="btn-toolbar pull-right" role="toolbar">
-								 <button ng-click="companyOffersCtr.requestProofs()"
-								 	ng-disabled="companyOffersCtr.data.company.proofStatus === 1"
-								 	ng-show="companyOffersCtr.secProofVerificationRequest == true;" type="submit" class="btn btn-primary">Nachweisaufforderung gewünscht</button>
-							  </div>
-						  </div>
-					    </div>
-                         						
-					</div>	
-				</div>
-				<div class="row">
-					<div class="card-box">
-						<div class="col-sm-12">		
-						<!-- Nav tabs -->
-						  <ul class="nav nav-tabs" role="tablist">
-						  	<li role="presentation"><a ui-sref="company.view({id: companyOffersCtr.data.company.id})" aria-controls="Firmendetails" role="tab" data-toggle="tab">Firmendetails</a></li>
-							<li role="presentation" ng-show="companyOffersCtr.secCompanyProofsView == true;"><a ui-sref="company.proofs({id: companyOffersCtr.data.company.id})" aria-controls="CompanyProofs" role="tab" data-toggle="tab">Nachweise</a></li>
-							<li role="presentation" ng-show="companyOffersCtr.secCompanyOffersView" class="active"><a ui-sref="company.offers({id: companyOffersCtr.data.company.id})" aria-controls="eingereichte" role="tab" data-toggle="tab">Eingereichte Offerten</a></li>
-						    <li role="presentation"><a ui-sref="company.companyDocumentArea({id: companyOffersCtr.data.company.id})" aria-controls="documents" role="tab" data-toggle="tab">Dokumentenbereich</a></li>
-						  </ul>
-		<div class="row" id="results">
-		 <div class="col-sm-12">
-		  <div>
-			<div ng-table-pagination="companyOffersCtr.tableParams"
-				template-url="'app/layout/pager.html'"></div>
-			<div class="table-responsive">
-				<table ng-table="companyOffersCtr.tableParams" class="table table-striped" >
-					<tr ng-repeat="offer in $data">
+          <label>
+            Einreichefrist der Nachweise am {{companyOffersCtr.data.company.proofDocSubmitDate |
+            date:"dd.MM.yyyy"}}
+          </label>
+        </div>
+        <div ng-if="companyOffersCtr.data.company.certificateDate!=null">
+          <label>Firma zertifiziert am {{companyOffersCtr.data.company.certificateDate |
+            date:"dd.MM.yyyy"}}, gültig
+            bis {{companyOffersCtr.data.company.certDocExpirationDate | date:"dd.MM.yyyy"}}</label>
+        </div>
+        <div class="" ng-hide="companyOffersCtr.data.company.modificationDate==null">
+          <label
+            ng-show="companyOffersCtr.data.company.modUserName!=null || companyOffersCtr.data.company.modUserName==''">Firma
+            bearbeitet am {{companyOffersCtr.data.company.modifiedOn | date:"dd.MM.yyyy"}} durch
+            {{companyOffersCtr.data.company.modUserName}}
+            {{companyOffersCtr.data.company.modUserLastName}}/{{companyOffersCtr.data.company.modUserTenant}}</label>
+        </div>
+      </div>
+      <div class="col-sm-4 pull-left">
+        <div class="btn-toolbar pull-right" role="toolbar">
+          <button ng-click="companyOffersCtr.requestProofs()"
+            ng-disabled="companyOffersCtr.data.company.proofStatus === 1 || companyOffersCtr.data.company.kaioFabeActive"
+            ng-show="companyOffersCtr.secProofVerificationRequest == true;" type="submit"
+            class="btn btn-primary">Nachweisaufforderung gewünscht
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-						<td title="'Objektname'" filter="{ 'objectName' : 'text'}"
-							sortable="'objectName'"> {{offer.objectName}}</td>
-						<td title="'Projektname'" filter="{ 'projectName' : 'text'}"
-							sortable="'projectName'">
-							<a ng-click="companyOffersCtr.navigateToProject(offer.projectId, offer.projectName)" ng-if="offer.isViewPermitted">{{offer.projectName}}</a>
-							<span ng-if="!offer.isViewPermitted">{{offer.projectName}} </span></td>
-						<td title="'Arbeitsgattung'" filter="{ 'workType' : 'text'}"
-							sortable="'workType'">
-							<a ng-show="companyOffersCtr.secTenderView" ng-click="companyOffersCtr.navigateToSubmission(offer.submissionId)"><span ng-if="offer.isViewPermitted">{{offer.workType}}</span></a>
-							<span ng-if="!offer.isViewPermitted">{{offer.workType}} </span></td>
-						<td title="'Betrag'" filter="{ 'description' : 'text'}"
-							sortable="'ammount'">{{companyOffersCtr.customRoundNumber(offer.ammount)}}</td>
-						<td title="'Rang'" filter="{ 'Rank' : 'text'}"
-							sortable="'rank'">{{offer.rank}}</td>
-						<td title="'Z'" filter="{ 'isAwarded' : 'text'}"
-							sortable="'isAwarded'" translate><span ng-if="offer.isAwarded">✔</span></td>
-						<td title="'A'" filter="{ 'isExcludedFromProcess' : 'text'}"
-							sortable="'isExcludedFromProcess'" translate><span ng-if="offer.isExcludedFromProcess">✔</span></td>
-							<td title="'Jahr'" filter="{ 'deadline2' : 'text'}"
-							sortable="'deadline2'">
-							{{offer.deadline2 | date: 'yyyy'}}</td>
-						<td title="'Verfahrensart'" filter="{ 'proccess' : 'text'}"
-							sortable="'process'" translate>
-							<span ng-if="offer.process != null && !offer.fromMigration" translate>{{offer.process}}</span>
-							<span ng-if="offer.fromMigration" translate>{{offer.procedureName}}</span></td>
-						<td title="'Auftragsart'" filter="{ 'proccessType' : 'text'}"
-							sortable="'processType'">{{offer.processType}}</td>
-						<td title="'ARGE'" filter="{ 'ARGE' : 'text'}"
-							sortable="'jointVentures'">
-							<span ng-repeat="jointVenture in offer.jointVentures">{{jointVenture.companyName}}<br></span></td>
-						<td title="'Subunternehmung '" filter="{ 'subcontractor'  : 'text'}"
-							sortable="'subcontractors'">
-							<span ng-repeat="subcontractor in offer.subcontractors">{{subcontractor.companyName}}<br></span></td>
-							<td title="'F '"
-							sortable="'F'">
-							<span ng-if="(offer.subcontractors.length != 0 ||  offer.jointVentures.length != 0) 
-							&& (offer.subcontractors != null || offer.jointVentures != null) && offer.leading">✔</span></td>
-						<td title="'Abteilung'"
-							filter="{ 'Department': 'text'}"
-							sortable="'departmentName'">{{offer.departmentName}}</td>
-						<td title="'Projektleitung der Abt.'"
-							filter="{ 'PMDepartmentAdmin': 'text'}"
-							sortable="'pmDepartmentName'">{{offer.pmDepartmentName}}</td>
-							
-					</tr>
-				</table>
-			</div>
-			</div>
-			</div>
-			</div>
-			 <p class="help-block">*F = Federführend &nbsp; *Z = Zuschlag &nbsp;  *A = Ausschluss</p>
-			 </div>
-			 </div>
-			 </div>
+<div class="row">
+  <div class="card-box">
+    <div class="col-sm-12">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation"><a ui-sref="company.view({id: companyOffersCtr.data.company.id})"
+            aria-controls="Firmendetails" role="tab" data-toggle="tab">Firmendetails</a>
+        </li>
+        <li role="presentation" ng-show="companyOffersCtr.secCompanyProofsView == true;"><a
+            ui-sref="company.proofs({id: companyOffersCtr.data.company.id})" aria-controls="CompanyProofs" role="tab"
+            data-toggle="tab">Nachweise</a></li>
+        <li role="presentation" ng-show="companyOffersCtr.secCompanyOffersView" class="active"><a
+            ui-sref="company.offers({id: companyOffersCtr.data.company.id})" aria-controls="eingereichte" role="tab"
+            data-toggle="tab">Eingereichte Offerten</a></li>
+        <li role="presentation"><a ui-sref="company.companyDocumentArea({id: companyOffersCtr.data.company.id})"
+            aria-controls="documents" role="tab" data-toggle="tab">Dokumentenbereich</a></li>
+      </ul>
+      <div class="row" id="results">
+        <div class="col-sm-12">
+          <div>
+            <div ng-table-pagination="companyOffersCtr.tableParams" template-url="'app/layout/pager.html'"></div>
+            <div class="table-responsive">
+              <table ng-table="companyOffersCtr.tableParams" class="table table-striped">
+                <tr ng-repeat="offer in $data">
+                  <td title="'Objektname'" filter="{ 'objectName' : 'text'}" sortable="'objectName'">
+                    {{offer.objectName}}
+                  </td>
+                  <td title="'Projektname'" filter="{ 'projectName' : 'text'}" sortable="'projectName'">
+                    <a ng-click="companyOffersCtr.navigateToProject(offer.projectId, offer.projectName)"
+                      ng-if="offer.isViewPermitted">{{offer.projectName}}</a>
+                    <span ng-if="!offer.isViewPermitted">{{offer.projectName}} </span></td>
+                  <td title="'Arbeitsgattung'" filter="{ 'workType' : 'text'}" sortable="'workType'">
+                    <a ng-show="companyOffersCtr.secTenderView"
+                      ng-click="companyOffersCtr.navigateToSubmission(offer.submissionId)"><span
+                        ng-if="offer.isViewPermitted">{{offer.workType}}</span></a>
+                    <span ng-if="!offer.isViewPermitted">{{offer.workType}} </span></td>
+                  <td title="'Betrag'" filter="{ 'description' : 'text'}" sortable="'ammount'">
+                    {{companyOffersCtr.customRoundNumber(offer.ammount)}}
+                  </td>
+                  <td title="'Rang'" filter="{ 'Rank' : 'text'}" sortable="'rank'">{{offer.rank}}
+                  </td>
+                  <td title="'Z'" filter="{ 'isAwarded' : 'text'}" sortable="'isAwarded'" translate><span
+                      ng-if="offer.isAwarded">✔</span></td>
+                  <td title="'A'" filter="{ 'isExcludedFromProcess' : 'text'}" sortable="'isExcludedFromProcess'"
+                    translate><span ng-if="offer.isExcludedFromProcess">✔</span></td>
+                  <td title="'Jahr'" filter="{ 'deadline2' : 'text'}" sortable="'deadline2'">
+                    {{offer.deadline2 | date: 'yyyy'}}
+                  </td>
+                  <td title="'Verfahrensart'" filter="{ 'proccess' : 'text'}" sortable="'process'" translate>
+                    <span ng-if="offer.process != null && !offer.fromMigration" translate>{{offer.process}}</span>
+                    <span ng-if="offer.fromMigration" translate>{{offer.procedureName}}</span></td>
+                  <td title="'Auftragsart'" filter="{ 'proccessType' : 'text'}" sortable="'processType'">
+                    {{offer.processType}}
+                  </td>
+                  <td title="'ARGE'" filter="{ 'ARGE' : 'text'}" sortable="'jointVentures'">
+                    <span ng-repeat="jointVenture in offer.jointVentures">{{jointVenture.companyName}}<br></span>
+                  </td>
+                  <td title="'Subunternehmung '" filter="{ 'subcontractor'  : 'text'}" sortable="'subcontractors'">
+                    <span ng-repeat="subcontractor in offer.subcontractors">{{subcontractor.companyName}}<br></span>
+                  </td>
+                  <td title="'F '" sortable="'F'">
+                    <span ng-if="(offer.subcontractors.length != 0 ||  offer.jointVentures.length != 0)
+							&& (offer.subcontractors != null || offer.jointVentures != null) && offer.leading">✔</span>
+                  </td>
+                  <td title="'Abteilung'" filter="{ 'Department': 'text'}" sortable="'departmentName'">
+                    {{offer.departmentName}}
+                  </td>
+                  <td title="'Projektleitung der Abt.'" filter="{ 'PMDepartmentAdmin': 'text'}"
+                    sortable="'pmDepartmentName'">{{offer.pmDepartmentName}}
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="help-block">*F = Federführend &nbsp; *Z = Zuschlag &nbsp; *A = Ausschluss</p>
+    </div>
+  </div>
+</div>

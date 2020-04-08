@@ -13,48 +13,53 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
  * The Class CriterionDTO.
  */
-public class CriterionDTO {
+public class CriterionDTO extends AbstractDTO {
 
-  /** The id. */
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   private String submission;
 
-  /** The criterion text. */
+  /**
+   * The criterion text.
+   */
   private String criterionText;
 
-  /** The weighting. */
+  /**
+   * The weighting.
+   */
   private Double weighting;
 
-  /** The criterion type. */
+  /**
+   * The criterion type.
+   */
   private String criterionType;
 
-  /** The subcriterion. */
+  /**
+   * The subcriterion.
+   */
   private List<SubcriterionDTO> subcriterion;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The created on.
    */
-  public String getId() {
-    return id;
-  }
+  private Timestamp createdOn;
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The updated on.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  private Timestamp updatedOn;
+
+  /**
+   * The pageRequestedOn.
+   */
+  private Timestamp pageRequestedOn;
 
   /**
    * Gets the submission.
@@ -146,15 +151,67 @@ public class CriterionDTO {
     this.subcriterion = subcriterion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the created on.
+   *
+   * @return the createdOn
    */
-  @Override
-  public String toString() {
-    return "CriterionDTO [id=" + id + ", submission=" + submission + ", criterionText="
-        + criterionText + ", weighting=" + weighting + ", criterionType=" + criterionType + "]";
+  public Timestamp getCreatedOn() {
+    return createdOn;
   }
 
+  /**
+   * Sets the created on.
+   *
+   * @param createdOn the createdOn
+   */
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  /**
+   * Gets the pageRequestedOn.
+   *
+   * @return the pageRequestedOn
+   */
+  public Timestamp getPageRequestedOn() {
+    return pageRequestedOn;
+  }
+
+  /**
+   * Sets the pageRequestedOn.
+   *
+   * @param pageRequestedOn the pageRequestedOn
+   */
+  public void setPageRequestedOn(Timestamp pageRequestedOn) {
+    this.pageRequestedOn = pageRequestedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "CriterionDTO [id=" + super.getId() + ", version=" + super.getVersion() + ", submission="
+      + submission + ", criterionText="
+      + criterionText + ", weighting=" + weighting + ", criterionType=" + criterionType
+      + ", subcriterion=" + subcriterion
+      + ", createdOn=" + createdOn + ", updatedOn="
+      + updatedOn + ", pageRequestedOn=" + pageRequestedOn + "]";
+  }
 }

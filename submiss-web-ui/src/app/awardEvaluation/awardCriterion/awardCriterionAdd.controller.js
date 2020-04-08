@@ -25,7 +25,8 @@
 
   /** @ngInject */
   function AwardCriterionAddController($rootScope, $scope, $state, $stateParams, $uibModalInstance,
-    submission, $uibModal, QFormJSRValidation, ExaminationService, isOperatingCost, AppConstants) {
+    submission, submissionVersion, pageRequestedOn, $uibModal, QFormJSRValidation, ExaminationService,
+    isOperatingCost, AppConstants, AppService) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -40,6 +41,7 @@
      * Exported functions.
      **********************************************************************/
     vm.criterionSave = criterionSave;
+    vm.closeModal = closeModal;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -54,12 +56,27 @@
      * Functions.
      **********************************************************************/
     function criterionSave() {
+      ExaminationService.awardLockedByAnotherUser($stateParams.id)
+        .success(function (data) {
+          proceedWithSaving();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            vm.errorFieldsVisible = true;
+            QFormJSRValidation.markErrors($scope,
+              $scope.awardCriterionAddCtrl.criterionForm, response);
+          }
+        });
+    }
+
+    function proceedWithSaving() {
       if (vm.isOperatingCost) {
         vm.criterion.criterionType = AppConstants.CRITERION_TYPE.OPERATING_COST_AWARD_CRITERION_TYPE;
       } else {
         vm.criterion.criterionType = AppConstants.CRITERION_TYPE.AWARD_CRITERION_TYPE;
       }
       vm.criterion.submission = submission;
+      vm.criterion.pageRequestedOn = pageRequestedOn;
+      vm.criterion.submissionVersion = submissionVersion;
       ExaminationService.addCriterionToSubmission(vm.criterion)
         .success(function (data) {
           $uibModalInstance.close();
@@ -70,10 +87,27 @@
           });
         }).error(function (response, status) {
           if (status === 400) { // Validation errors.
+            vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.awardCriterionAddCtrl.criterionForm, response);
           }
         });
+    }
+
+    function closeModal() {
+      if (vm.dirtyFlag || vm.errorFieldsVisible) {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $uibModalInstance.close();
+            $state.go('award.view', {}, {
+              reload: true
+            });
+          }
+        });
+      } else {
+        $uibModalInstance.close();
+      }
     }
   }
 })();

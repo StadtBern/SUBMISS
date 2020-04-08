@@ -13,12 +13,13 @@
 
 package ch.bern.submiss.services.api.administration;
 
+import ch.bern.submiss.services.api.dto.OfferDTO;
+import ch.bern.submiss.services.api.dto.SubmittentDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-
-import ch.bern.submiss.services.api.dto.OfferDTO;
-import ch.bern.submiss.services.api.dto.SubmittentDTO;
+import java.util.Set;
 
 /**
  * The Interface OfferService.
@@ -57,11 +58,21 @@ public interface OfferService {
   Boolean findIfSubmittentHasSubcontractors(String id);
 
   /**
+   * Close offer validation.
+   *
+   * @param submissionId the submission (tender) id
+   * @return the error
+   */
+  Set<ValidationError> closeOfferValidation(String submissionId);
+
+  /**
    * Close offer.
    * 
    * @param submissionId the submission (tender) id
+   * @param submissionVersion the submissionVersion
+   * @return the error
    */
-  List<String> closeOffer(String submissionId);
+  Set<ValidationError> closeOffer(String submissionId, Long submissionVersion);
 
   /**
    * Get offer by id.
@@ -88,19 +99,20 @@ public interface OfferService {
  
   /**
    * Reset offer. Resets the offer to default values except the Offer Date
-   *
-   * @param offerId the offer id
+   *  @param offerId the offer id
    * @param offerDate the offer date
+   * @param notes
    */
-  String resetOffer(String offerId, Date offerDate);
+  String resetOffer(String offerId, Date offerDate, String notes);
   
   /**
    * Delete sub-contractor.
    *
    * @param submittentId the submittent id
    * @param subcontractorId the sub-contractor id
+   * @return the error
    */
-  void deleteSubcontractor(String submittentId, String subcontractorId);
+  Set<ValidationError> deleteSubcontractor(String submittentId, String subcontractorId);
 
   /**
    * Add joint venture to submittent.
@@ -114,8 +126,9 @@ public interface OfferService {
    * 
    * @param submittentId the submittent id
    * @param jointVentureId the joint venture id
+   * @return the error
    */
-  void deleteJointVenture(String submittentId, String jointVentureId);
+  Set<ValidationError> deleteJointVenture(String submittentId, String jointVentureId);
   
   /**
    * Read active submittents by submission.
@@ -127,9 +140,8 @@ public interface OfferService {
 
   /**
    * Update offer awards.
-   *
-   * @param checkedOffersIds the checked offers ids
-   * @param submissionId 
+   *  @param checkedOffersIds the checked offers ids
+   * @param submissionId the submissionId
    */
   void updateOfferAwards(List<String> checkedOffersIds, String submissionId);
   
@@ -178,8 +190,12 @@ public interface OfferService {
    * @param applicationId the application id
    * @param applicationDate the application date
    * @param applicationInformation the application information
+   * @param applicationVersion the applicationVersion
+   * @param submissionVerion the submissionVerion
+   * @return the error
    */
-  void updateApplication(String applicationId, Date applicationDate, String applicationInformation);
+  Set<ValidationError> updateApplication(String applicationId, Date applicationDate,
+    String applicationInformation, Long applicationVersion, Long submissionVerion);
   
   /**
    * Find if applicant has application.
@@ -291,4 +307,34 @@ public interface OfferService {
 	 * @return the big decimal
 	 */
 	BigDecimal calculateCHFMWSTValue(OfferDTO offerDTO);
+
+  /**
+   * Checks if offer exists.
+   *
+   * @param offerId the offer id
+   * @return true if offer exists
+   */
+	boolean offerExists(String offerId);
+
+  /**
+   * Checks if submittent exists.
+   *
+   * @param submittentId the submittent id
+   * @return true if submittent exists
+   */
+	boolean submittentExists(String submittentId);
+
+  /**
+   * Optimistic Lock check when trying to delete an application.
+   *
+   * @param applicationId the applicationId
+   * @param applicationVersion the applicationVersion
+   * @return the error
+   */
+  Set<ValidationError> deleteApplicationOptimisticLock(String applicationId, Long applicationVersion);
+
+  /**
+   * Security check for Offer List.
+   */
+  void offerListSecurityCheck(String submissionId);
 }

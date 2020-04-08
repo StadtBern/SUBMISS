@@ -19,52 +19,47 @@ import java.util.List;
 /**
  * The Class AwardInfoFirstLevelDTO.
  */
-public class AwardInfoFirstLevelDTO {
+public class AwardInfoFirstLevelDTO extends AbstractDTO {
 
-  /** The id. */
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   private SubmissionDTO submission;
 
-  /** The available date. */
+  /**
+   * The available date.
+   */
   private Date availableDate;
 
-  /** The object name read. */
+  /**
+   * The object name read.
+   */
   private Boolean objectNameRead;
 
-  /** The project name read. */
+  /**
+   * The project name read.
+   */
   private Boolean projectNameRead;
 
-  /** The working class read. */
+  /**
+   * The working class read.
+   */
   private Boolean workingClassRead;
 
-  /** The description read. */
+  /**
+   * The description read.
+   */
   private Boolean descriptionRead;
 
-  /** The reason. */
+  /**
+   * The reason.
+   */
   private String reason;
 
-  /** The offers. */
+  /**
+   * The offers.
+   */
   private List<AwardInfoOfferFirstLevelDTO> offers;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -212,16 +207,14 @@ public class AwardInfoFirstLevelDTO {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "AwardInfoFirstLevelDTO [id=" + id + ",  availableDate=" + availableDate
-        + ", objectNameRead=" + objectNameRead + ", projectNameRead=" + projectNameRead
-        + ", workingClassRead=" + workingClassRead + ", descriptionRead=" + descriptionRead
-        + ", reason=" + reason + "]";
+    return "AwardInfoFirstLevelDTO [id=" + super.getId() + ",  availableDate=" + availableDate
+      + ", objectNameRead=" + objectNameRead + ", projectNameRead=" + projectNameRead
+      + ", workingClassRead=" + workingClassRead + ", descriptionRead=" + descriptionRead
+      + ", reason=" + reason + "]";
   }
-
-
 }

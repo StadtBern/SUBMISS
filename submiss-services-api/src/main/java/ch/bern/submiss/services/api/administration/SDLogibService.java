@@ -13,10 +13,11 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.util.List;
-
 import ch.bern.submiss.services.api.dto.LogibHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.util.List;
+import java.util.Set;
 
 public interface SDLogibService {
 
@@ -43,6 +44,7 @@ public interface SDLogibService {
    * Save the logib history entry.
    *
    * @param logibHistoryDTO the logib history DTO
+   * @return the error
    */
-  void saveLogibEntry(LogibHistoryDTO logibHistoryDTO);
+  Set<ValidationError> saveLogibEntry(LogibHistoryDTO logibHistoryDTO);
 }

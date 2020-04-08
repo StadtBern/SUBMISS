@@ -27,10 +27,12 @@ import ch.bern.submiss.services.api.dto.LegalHearingExclusionDTO;
 import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.LegalHearingExclusionDTOMapper;
 import ch.bern.submiss.services.impl.mappers.LegalHearingTerminateDTOMapper;
 import ch.bern.submiss.services.impl.mappers.MasterListValueHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.MasterListValueMapper;
+import ch.bern.submiss.services.impl.mappers.SubmissionMapper;
 import ch.bern.submiss.services.impl.mappers.SubmittentDTOMapper;
 import ch.bern.submiss.services.impl.model.FormalAuditEntity;
 import ch.bern.submiss.services.impl.model.LegalHearingExclusionEntity;
@@ -50,6 +52,7 @@ import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.SubmittentEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -64,6 +67,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
 import javax.transaction.Transactional;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
@@ -128,45 +133,96 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
   @Inject
   private CacheBean cacheBean;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.LegalHearingService#updateLegalHearingTermination(
-   * ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO, java.lang.String)
-   */
   @Override
-  public void updateLegalHearingTermination(LegalHearingTerminateDTO legalHearingTerminate,
-    String submissionId) {
+  public Set<ValidationError> createLegalHearingTermination(
+    LegalHearingTerminateDTO legalHearingTerminateDTO, String submissionId) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method updateLegalHearingTermination, Parameters: legalHearingTerminate: {0}, "
-        + "submissionId: {1}",
-      new Object[]{legalHearingTerminate, submissionId});
+      "Executing method createLegalHearingTermination, Parameters: "
+        + "legalHearingTerminateDTO: {0}, submissionId: {1}",
+      new Object[]{legalHearingTerminateDTO, submissionId});
 
-    LegalHearingTerminateEntity legalHearingTerminateEntity =
-      LegalHearingTerminateDTOMapper.INSTANCE
-        .toLegalHearingTerminateEntity(legalHearingTerminate);
-    String userId = getUserId();
-    Date now = new Date();
-    legalHearingTerminateEntity.setUpdatedBy(userId);
-    legalHearingTerminateEntity.setUpdatedOn(now);
-    legalHearingTerminateEntity.setSubmission(em.find(SubmissionEntity.class, submissionId));
-    if (legalHearingTerminateEntity.getId() == null) { // case create
-      legalHearingTerminateEntity.setCreatedBy(userId);
-      legalHearingTerminateEntity.setCreatedOn(now);
-      em.persist(legalHearingTerminateEntity);
-    } else { // case update
-      em.merge(legalHearingTerminateEntity);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
+    // Check if entry already exists in database
+    if (legalHearingTerminateEntryExists(submissionId)) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
     }
+
+    try {
+      // Create a legalHearingTerminate entry
+      LegalHearingTerminateEntity legalHearingTerminateEntity =
+        LegalHearingTerminateDTOMapper.INSTANCE
+          .toLegalHearingTerminateEntity(legalHearingTerminateDTO);
+      legalHearingTerminateEntity.setSubmission(em.find(SubmissionEntity.class, submissionId));
+      legalHearingTerminateEntity.setCreatedBy(getUserId());
+      em.persist(legalHearingTerminateEntity);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Check if legalHearingTerminate entry already exists in database.
    *
-   * @see ch.bern.submiss.services.api.administration.LegalHearingService#
-   * getSubmissionLegalHearingTermination(java.lang.String)
+   * @param submissionId the submissionId
+   * @return true if entry exists
    */
+  private boolean legalHearingTerminateEntryExists(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method createLegalHearingTermination, Parameters: "
+        + "submissionId: {1}", submissionId);
+
+    return new JPAQueryFactory(em)
+      .selectFrom(qLegalHearingTerminateEntity)
+      .where(qLegalHearingTerminateEntity.submission.id.eq(submissionId))
+      .fetchCount() > 0;
+  }
+
+  @Override
+  public Set<ValidationError> updateLegalHearingTermination(
+    LegalHearingTerminateDTO legalHearingTerminateDTO, String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateLegalHearingTermination, Parameters: legalHearingTerminateDTO: {0}",
+      legalHearingTerminateDTO);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    LegalHearingTerminateEntity legalHearingTerminateEntity =
+      em.find(LegalHearingTerminateEntity.class, legalHearingTerminateDTO.getId());
+
+    // Check fot optimistic lock errors
+    if (!legalHearingTerminateDTO.getVersion()
+      .equals(legalHearingTerminateEntity.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+    
+    try {
+      // Update legalHearingTerminateEntity
+      legalHearingTerminateEntity.setUpdatedBy(getUserId());
+      legalHearingTerminateEntity.setDeadline(legalHearingTerminateDTO.getDeadline());
+      legalHearingTerminateEntity.setReason(legalHearingTerminateDTO.getReason());
+      legalHearingTerminateEntity.setTerminationReason(SubmissionMapper.INSTANCE
+        .masterListValueDTOSetToMasterListValueEntitySet(
+          legalHearingTerminateDTO.getTerminationReason()));
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
   @Override
   public LegalHearingTerminateDTO getSubmissionLegalHearingTermination(String submissionId) {
 
@@ -359,7 +415,7 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
       if (l.getProofsProvided() != null) {
         dto.getSubmittent().setFormalExaminationFulfilled(l.getProofsProvided());
       }
-      if (l.getUpdatedOn() != null) {
+      if (l.getUpdatedOn() != null && l.getUpdatedBy() != null) {
         // Add submittents only if Rechtliches Gehor (Ausschluss) document has been generated.
         // Do not add submittents that have only been saved in Rechtliches Gehor (Ausschluss) mask.
         calculateUpdatedExcludedSubmittents(l, dto, dtos, exclusionReasonsDTOs);
@@ -783,11 +839,7 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
       new Object[]{submittentEntity, legalHearingExclusionEntity});
 
     legalHearingExclusionEntity.setSubmittent(submittentEntity);
-
-    String userId = getUserId();
-    Date now = new Date();
-    legalHearingExclusionEntity.setCreatedBy(userId);
-    legalHearingExclusionEntity.setCreatedOn(now);
+    legalHearingExclusionEntity.setCreatedBy(getUserId());
 
     updateExcludedSubmittentMustCriteriaValue(legalHearingExclusionEntity);
     // Initialize exclusion reasons.
@@ -810,17 +862,23 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
    * util.List, java.util.Date, java.lang.String, java.util.Date)
    */
   @Override
-  public void updateExcludedSubmittent(List<LegalHearingExclusionDTO> legalHearingExclusionDTO,
-    Date exclusionDate, String submissionId, Date firstLevelExclusionDate) {
+  public Set<ValidationError> updateExcludedSubmittent(List<LegalHearingExclusionDTO> legalHearingExclusionDTO,
+    Date exclusionDate, String submissionId, Long submissionVersion, Date firstLevelExclusionDate) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateExcludedSubmittent, Parameters:  legalHearingExclusionDTO: {0},"
         + "exclusionDate: {1}, submissionId: {2}, firstLevelExclusionDate: {3}",
       new Object[]{legalHearingExclusionDTO, exclusionDate, submissionId, firstLevelExclusionDate});
 
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
     List<MasterListValueHistoryEntity> exclusionReasonEntities = getAllExclusionReasons();
     if (submissionId != null) {
       SubmissionEntity submission = em.find(SubmissionEntity.class, submissionId);
+      if (!submission.getVersion().equals(submissionVersion)) {
+        optimisticLockErrors
+          .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD, ValidationMessages.OPTIMISTIC_LOCK));
+        return optimisticLockErrors;
+      }
       if (exclusionDate != null) {
         submission.setExclusionDeadline(exclusionDate);
       }
@@ -831,11 +889,15 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
     }
     for (LegalHearingExclusionDTO l : legalHearingExclusionDTO) {
       if (l.getId() != null) {
-        updateAddedExlcudedSubmittent(l, exclusionReasonEntities);
+        optimisticLockErrors = updateAddedExlcudedSubmittent(l, exclusionReasonEntities);
       } else {
         updateExistedExcludedSubmittents(l, exclusionReasonEntities);
       }
+      if (!optimisticLockErrors.isEmpty()) {
+        break;
+      }
     }
+    return optimisticLockErrors;
   }
 
   /**
@@ -871,10 +933,7 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
     legalHearingExclusionEntity.setExclusionReason(l.getExclusionReason());
     legalHearingExclusionEntity.setExclusionDeadline(l.getExclusionDeadline());
 
-    String userId = getUserId();
-    Date now = new Date();
-    legalHearingExclusionEntity.setUpdatedBy(userId);
-    legalHearingExclusionEntity.setUpdatedOn(now);
+    legalHearingExclusionEntity.setUpdatedBy(getUserId());
 
     updateExcludedSubmittentMustCriteriaValue(legalHearingExclusionEntity);
 
@@ -916,7 +975,7 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
    * @param l the LegalHearingExclusionDTO
    * @param exclusionReasonEntities the exclusion reason entities
    */
-  private void updateAddedExlcudedSubmittent(LegalHearingExclusionDTO l,
+  private Set<ValidationError> updateAddedExlcudedSubmittent(LegalHearingExclusionDTO l,
     List<MasterListValueHistoryEntity> exclusionReasonEntities) {
 
     LOGGER.log(Level.CONFIG,
@@ -924,15 +983,22 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
         + "exclusionReasonEntities: {1}",
       new Object[]{l, exclusionReasonEntities});
 
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+
     // Update excluded submittents that user has added and already exists in DB.
     LegalHearingExclusionEntity legalHearingExclusionEntity =
       em.find(LegalHearingExclusionEntity.class, l.getId());
+
+    if (!legalHearingExclusionEntity.getVersion().equals(l.getVersion())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+      return optimisticLockErrors;
+    }
+
     legalHearingExclusionEntity
       .setSubmittent(SubmittentDTOMapper.INSTANCE.toSubmittent(l.getSubmittent()));
-    String userId = getUserId();
-    Date now = new Date();
-    legalHearingExclusionEntity.setUpdatedBy(userId);
-    legalHearingExclusionEntity.setUpdatedOn(now);
+    legalHearingExclusionEntity.setUpdatedBy(getUserId());
     legalHearingExclusionEntity.setExclusionReason(l.getExclusionReason());
     legalHearingExclusionEntity.setExclusionDeadline(l.getExclusionDeadline());
     updateExcludedSubmittentMustCriteriaValue(legalHearingExclusionEntity);
@@ -967,6 +1033,7 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
       }
     }
     em.merge(legalHearingExclusionEntity);
+    return optimisticLockErrors;
   }
 
   /**

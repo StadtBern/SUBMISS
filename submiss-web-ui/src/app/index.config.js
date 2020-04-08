@@ -98,12 +98,13 @@
     // Interceptor to handle the case in which the SSO Cookie exists
     // but the SSO Session is terminated
     $httpProvider.interceptors.push(
-      ["$window", "$cookies", "AppConstants", "$q",
-        function ($window, $cookies, AppConstants, $q) {
+      ["$window", "$cookies", "AppConstants", "$q", "$location",
+        function ($window, $cookies, AppConstants, $q, $location) {
           return {
             "response": function (response) {
               if (response && angular.isString(response.data) &&
                 response.data.indexOf('SAMLRequest') >= 0) {
+                console.log("SAMLREquest");
                 $cookies.remove(AppConstants.SECURITY.SSO_COOKIE_NAME);
                 $cookies.remove('RelayState');
                 $cookies.put(AppConstants.SECURITY.REDIRECT_TO_COOKIE_NAME,
@@ -112,6 +113,16 @@
                 return $q.reject();
               } else {
                 return response;
+              }
+
+            },
+            'responseError': function (rejection) {
+              // do something on error
+              if (rejection.status === 403) {
+                $location.path('forbidden');
+                return rejection;
+              } else {
+                throw rejection;
               }
             }
           };

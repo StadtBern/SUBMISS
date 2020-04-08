@@ -13,11 +13,13 @@
 
 package ch.bern.submiss.services.api.administration;
 
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.Date;
 import java.util.List;
 import ch.bern.submiss.services.api.constants.TaskTypes;
 import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
+import java.util.Set;
 
 /**
  * The Interface SubmissTaskService.
@@ -32,12 +34,19 @@ public interface SubmissTaskService {
    * @return the all tasks
    */
   List<SubmissTaskDTO> getAllTasks(boolean showUserTasks);
+
+  /**
+   * Get the company task.
+   *
+   * @param companyId the companyId
+   * @return the task
+   */
+  SubmissTaskDTO getCompanyTask(String companyId);
   
   /**
    * Deletes a specific task and creates an audit entry 
    * 
-   * @param taskId
-   * @param isControllingTask
+   * @param taskId the taskId
    */
   void settleTask(String taskId);
   
@@ -106,4 +115,12 @@ public interface SubmissTaskService {
    * @param submissionDTO the submission DTO
    */
   void createLogForSettledProofRequestTasks(SubmissionDTO submissionDTO);
+
+  /**
+   * Checks if task is already settled by another user.
+   *
+   * @param taskId the taskId
+   * @return the error
+   */
+  Set<ValidationError> settleTaskOptimisticLock(String taskId);
 }

@@ -13,19 +13,22 @@
 
 package ch.bern.submiss.services.impl.mappers;
 
+import ch.bern.submiss.services.api.constants.TaskTypes;
+import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
+import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
+import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
+import ch.bern.submiss.services.impl.model.SubmissTasksEntity;
+import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
-import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
-import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
-import ch.bern.submiss.services.api.util.LookupValues;
-import ch.bern.submiss.services.impl.model.SubmissTasksEntity;
 
 @Mapper(uses = {SubmissionMapper.class, CompanyMapper.class})
 public abstract class SubmissTaskDTOMapper {
@@ -38,45 +41,61 @@ public abstract class SubmissTaskDTOMapper {
 
 
   public abstract List<SubmissTaskDTO> tasksToTasksDTO(List<SubmissTasksEntity> entity,
-      @Context Map<String, MasterListValueHistoryDTO> activeSD,
-      @Context Map<String, UserDTO> users);
+    @Context Map<String, MasterListValueHistoryDTO> activeSD,
+    @Context Map<String, UserDTO> users);
 
-  @Mapping(source = "company.companyName", target = "companyName")
-  @Mapping(source = "submission.project.projectName", target = "projectName")
+  @Mapping(source = "company.companyName", target = "companyName", defaultValue = "")
+  @Mapping(source = "submission.project.projectName", target = "projectName", defaultValue = "")
   public abstract SubmissTaskDTO tasksToTasksDTO(SubmissTasksEntity entity,
-      @Context Map<String, MasterListValueHistoryDTO> activeSD,
-      @Context Map<String, UserDTO> users);
+    @Context Map<String, MasterListValueHistoryDTO> activeSD,
+    @Context Map<String, UserDTO> users);
 
   @AfterMapping
   public void setSD(SubmissTasksEntity taskEntity, @MappingTarget SubmissTaskDTO taskDTO,
-      @Context Map<String, MasterListValueHistoryDTO> activeSD,
-      @Context Map<String, UserDTO> users) {
+    @Context Map<String, MasterListValueHistoryDTO> activeSD,
+    @Context Map<String, UserDTO> users) {
     if (taskEntity.getSubmission() != null) {
       taskDTO.getSubmission().getProject().setObjectName(
-          activeSD.get(taskEntity.getSubmission().getProject().getObjectName().getId()));
+        activeSD.get(taskEntity.getSubmission().getProject().getObjectName().getId()));
 
       taskDTO.setObjectName(taskDTO.getSubmission().getProject().getObjectName().getValue1());
 
       taskDTO.getSubmission()
-          .setWorkType(activeSD.get(taskEntity.getSubmission().getWorkType().getId()));
+        .setWorkType(activeSD.get(taskEntity.getSubmission().getWorkType().getId()));
 
-      taskDTO.setWorkType(taskDTO.getSubmission().getWorkType().getValue1() + ' '
-          + taskDTO.getSubmission().getWorkType().getValue2());
+      taskDTO.setWorkType(taskDTO.getSubmission().getWorkType().getValue1() + LookupValues.SPACE
+        + taskDTO.getSubmission().getWorkType().getValue2());
 
     }
     if (taskEntity.getUserAssigned() != null && users.get(taskEntity.getUserAssigned()) != null) {
       UserDTO user = users.get(taskEntity.getUserAssigned());
       taskDTO.setUserAssigned(
-          user.getAttribute(LookupValues.USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() + " "
-              + user.getAttribute(LookupValues.USER_ATTRIBUTES.LASTNAME.getValue()).getData());
+        user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() +
+          LookupValues.SPACE + user.getAttribute(USER_ATTRIBUTES.LASTNAME.getValue())
+          .getData());
+    } else {
+      taskDTO.setUserAssigned(StringUtils.EMPTY);
     }
 
     if (taskEntity.getUserAutoAssigned() != null
-        && users.get(taskEntity.getUserAutoAssigned()) != null) {
+      && users.get(taskEntity.getUserAutoAssigned()) != null) {
       taskDTO.setUserAutoAssigned(users.get(taskEntity.getUserAutoAssigned())
-          .getAttribute(LookupValues.USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() + " "
-          + users.get(taskEntity.getUserAutoAssigned())
-              .getAttribute(LookupValues.USER_ATTRIBUTES.LASTNAME.getValue()).getData());
+        .getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() +
+        LookupValues.SPACE + users.get(taskEntity.getUserAutoAssigned())
+        .getAttribute(USER_ATTRIBUTES.LASTNAME.getValue()).getData());
+    }
+
+    if (taskEntity.getCreatedBy() != null && users != null
+      && users.get(taskEntity.getCreatedBy()) != null
+      && (taskEntity.getDescription().equals(TaskTypes.CHECK_TENDERLIST)
+      || taskEntity.getDescription().equals(TaskTypes.PROOF_REQUEST)
+      || taskEntity.getDescription().equals(TaskTypes.ILLEGAL_THRESHOLD))) {
+      taskDTO.setFirstName(LookupValues.LEFT_PARENTHESIS +
+        users.get(taskEntity.getCreatedBy()).getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue())
+          .getData());
+      taskDTO.setLastName(
+        users.get(taskEntity.getCreatedBy()).getAttribute(USER_ATTRIBUTES.LASTNAME.getValue())
+          .getData() + LookupValues.RIGHT_PARENTHESIS);
     }
   }
 }

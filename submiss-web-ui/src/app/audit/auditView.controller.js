@@ -70,7 +70,14 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.getAuditLogs();
+      AuditService.loadAuditLogs()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.getAuditLogs();
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.

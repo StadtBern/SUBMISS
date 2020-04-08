@@ -14,6 +14,7 @@
 package ch.bern.submiss.web.forms;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
@@ -55,6 +56,11 @@ public class AwardForm {
 
   /** The offers. */
   private List<OfferForm> offers;
+
+  /**
+   * The pageRequestedOn timestamp.
+   */
+  private Timestamp pageRequestedOn;
 
   /**
    * Gets the submission id.
@@ -252,5 +258,23 @@ public class AwardForm {
    */
   public void setOffers(List<OfferForm> offers) {
     this.offers = offers;
+  }
+
+  /**
+   * Gets the pageRequestedOn.
+   *
+   * @return the pageRequestedOn
+   */
+  public Timestamp getPageRequestedOn() {
+    return pageRequestedOn;
+  }
+
+  /**
+   * Sets pageRequestedOn as the timestamp of the GET request.
+   *
+   * @param pageRequestedOn the pageRequestedOn
+   */
+  public void setPageRequestedOn(Timestamp pageRequestedOn) {
+    this.pageRequestedOn = pageRequestedOn;
   }
 }

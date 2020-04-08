@@ -152,7 +152,6 @@
         } else {
           return false;
         }
-        return null;
       });
     }
     /**Create a function to delete a JointVenture */
@@ -168,7 +167,7 @@
           function (response, status) {
             if (status === 400) { // Validation errors.
               QFormJSRValidation.markErrors($scope,
-                $scope.offerListViewCtrl.offerForm,
+                $scope.jointVentureDetailsCtrl.jointVentureForm,
                 response);
             }
           });

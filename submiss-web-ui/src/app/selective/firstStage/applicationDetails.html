@@ -12,69 +12,72 @@
   -->
 
 <div class="tab-content col-sm-12">
-	<div role="tabpanel" class="tab-pane active" id="bewDetails">
-		<form name="applicationForm" shows-validation-errors>
-		<fieldset ng-disabled="applicationDetailsCtrl.isFormDisabled()">
-			<div class="col-sm-12">
-				<div class="alert alert-danger"
-					ng-if="applicationForm.applicationDate.$invalid || applicationForm.applicationInformation.$invalid" role="alert">
-					<field-error ng-if="applicationForm.applicationDate.$invalid && (applicationDetailsCtrl.nullApplicationDate
-							|| (!applicationDetailsCtrl.nullApplicationDate && !applicationDetailsCtrl.undefinedApplicationDate))" form-element-name="applicationDateErrorField" translate
-						name="error"></field-error>
-					<div ng-if="applicationForm.applicationDate.$invalid && applicationDetailsCtrl.undefinedApplicationDate" translate>
-						invalid_date_error_message
-					</div>
-					<field-error ng-if="applicationForm.applicationInformation.$invalid" form-element-name="applicationInformationErrorField" translate
-						name="error"></field-error>
-				</div>
-				<input name="applicationDateErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="applicationInformationErrorField" ng-hide="true" data-ng-model="fd"></input>
-			</div>
-			<div class="col-sm-6">
-				<div class="row">
-					<div class="col-sm-12 col-md-6">													
-						<div class="form-group" data-ng-mouseleave="applicationDetailsCtrl.openApplicationDate.opened = false"> 
-							<label for="applicationDate">Bewerbungsdatum<span class="mandatory">*</span></label>
-							<div class="input-group">											 
-								<input class="form-control datepicker" name="applicationDate"
-									uib-datepicker-popup="dd.MM.yyyy" type="text" autofocus
-									is-open="applicationDetailsCtrl.openApplicationDate.opened"
-									data-ng-model="applicationDetailsCtrl.application.applicationDate"
-									ng-change="applicationDetailsCtrl.checkApplicationDateValue()"
-									ng-click="applicationDetailsCtrl.openApplicationDate()">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-										data-ng-click="applicationDetailsCtrl.openApplicationDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-						</div>
-					</div>	
-				</div>
-			</div>
-			<div class="col-sm-6">
-				<div class="row">
-					<div class="col-sm-12 col-md-12">
-						<div class="form-group"> 
-							<label for="applicationInformation">Bewerbungsinformationen</label>
-							<textarea name="applicationInformation" 
-								class="form-control" ng-model="applicationDetailsCtrl.application.applicationInformation"></textarea>
-						</div>
-					</div>	
-				</div>		
-			</div>
-			<div class="col-sm-12 col-md-12 btn-bar">
-				<button type="submit" class="btn btn-primary" ng-click="applicationDetailsCtrl.save()">Speichern</button>
-				<button type="button" class="btn btn-default" ng-click="applicationDetailsCtrl.cancelButton(applicationForm.$dirty)">Abbrechen</button>
-				<div ng-if="applicationForm.$dirty">
-					<input ng-hide="true"
-						data-ng-model="applicationDetailsCtrl.dirtyFlag"
-						ng-init="applicationDetailsCtrl.dirtyFlag=true"
-						ng-value = "appCtrl.setDirtyFlag(true)">
-				</div>
-			</div>
-		</fieldset>
-		</form>
-	</div>
+  <div role="tabpanel" class="tab-pane active" id="bewDetails">
+    <form name="applicationForm" shows-validation-errors>
+      <fieldset ng-disabled="applicationDetailsCtrl.isFormDisabled()">
+        <div class="col-sm-12">
+          <div class="alert alert-danger"
+            ng-if="applicationForm.applicationDate.$invalid || applicationForm.applicationInformation.$invalid || applicationForm.optimisticLockErrorField.$invalid"
+            role="alert">
+            <field-error ng-if="applicationForm.applicationDate.$invalid && (applicationDetailsCtrl.nullApplicationDate
+							|| (!applicationDetailsCtrl.nullApplicationDate && !applicationDetailsCtrl.undefinedApplicationDate))"
+              form-element-name="applicationDateErrorField" translate name="error"></field-error>
+            <div ng-if="applicationForm.applicationDate.$invalid && applicationDetailsCtrl.undefinedApplicationDate"
+              translate>
+              invalid_date_error_message
+            </div>
+            <field-error ng-if="applicationForm.applicationInformation.$invalid"
+              form-element-name="applicationInformationErrorField" translate name="error"></field-error>
+              <field-error ng-if="applicationForm.optimisticLockErrorField.$invalid"
+              form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+          </div>
+          <input name="applicationDateErrorField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="applicationInformationErrorField" ng-hide="true" data-ng-model="fd"></input>
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+        </div>
+        <div class="col-sm-6">
+          <div class="row">
+            <div class="col-sm-12 col-md-6">
+              <div class="form-group" data-ng-mouseleave="applicationDetailsCtrl.openApplicationDate.opened = false">
+                <label for="applicationDate">Bewerbungsdatum<span class="mandatory">*</span></label>
+                <div class="input-group">
+                  <input class="form-control datepicker" name="applicationDate" uib-datepicker-popup="dd.MM.yyyy"
+                    type="text" autofocus is-open="applicationDetailsCtrl.openApplicationDate.opened"
+                    data-ng-model="applicationDetailsCtrl.application.applicationDate"
+                    ng-change="applicationDetailsCtrl.checkApplicationDateValue()"
+                    ng-click="applicationDetailsCtrl.openApplicationDate()">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"
+                      data-ng-click="applicationDetailsCtrl.openApplicationDate()">
+                      <span class="fa fa-calendar"></span>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="row">
+            <div class="col-sm-12 col-md-12">
+              <div class="form-group">
+                <label for="applicationInformation">Bewerbungsinformationen</label>
+                <textarea name="applicationInformation" class="form-control"
+                  ng-model="applicationDetailsCtrl.application.applicationInformation"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-12 col-md-12 btn-bar">
+          <button type="submit" class="btn btn-primary" ng-click="applicationDetailsCtrl.save()">Speichern</button>
+          <button type="button" class="btn btn-default"
+            ng-click="applicationDetailsCtrl.cancelButton(applicationForm.$dirty)">Abbrechen</button>
+          <div ng-if="applicationForm.$dirty">
+            <input ng-hide="true" data-ng-model="applicationDetailsCtrl.dirtyFlag"
+              ng-init="applicationDetailsCtrl.dirtyFlag=true" ng-value="appCtrl.setDirtyFlag(true)">
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
 </div>

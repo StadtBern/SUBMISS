@@ -13,123 +13,130 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class SubmissionCancelEntity.
  */
 @Entity
 @Table(name = "SUB_TENDER_CANCEL")
-public class SubmissionCancelEntity {
+public class SubmissionCancelEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDER")
   private SubmissionEntity submission;
 
-  /** The available date. */
+  /**
+   * The available date.
+   */
   @Column(name = "AVAILABLE_DATE")
   private Date availableDate;
-  
-  /** The freeze close submission. 
-   *  Shows if the automatic closure of the submission needs to be freezed or not.
+
+  /**
+   * The freeze close submission. Shows if the automatic closure of the submission needs to be
+   * freezed or not.
    */
   @Column(name = "FREEZE_CLOSE_TENDER")
   private Boolean freezeCloseSubmission;
-  
-  /** The object name read. */
+
+  /**
+   * The object name read.
+   */
   @Column(name = "OBJECT_NAME_READ")
   private Boolean objectNameRead;
-  
-  /** The project name read. */
+
+  /**
+   * The project name read.
+   */
   @Column(name = "PROJECT_NAME_READ")
   private Boolean projectNameRead;
-  
-  /** The working class read. */
+
+  /**
+   * The working class read.
+   */
   @Column(name = "WORKING_CLASS_READ")
   private Boolean workingClassRead;
-  
-  /** The description read. */
+
+  /**
+   * The description read.
+   */
   @Column(name = "DESCRIPTION_READ")
   private Boolean descriptionRead;
-  
-  /** The reason. */
+
+  /**
+   * The reason.
+   */
   @Column(name = "REASON")
   private String reason;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
-  
-  /** The created on. */
+
+  /**
+   * The created on.
+   */
+  @CreationTimestamp
   @Column(name = "CREATED_ON")
-  private Date createdOn;
-  
-  /** The updated by. */
+  private Timestamp createdOn;
+
+  /**
+   * The updated by.
+   */
   @Column(name = "UPDATED_BY")
   private String updatedBy;
-  
-  /** The updated on. */
-  @Column(name = "UPDATED_ON")
-  private Date updatedOn;
-  
-  /** The cancelled by. */
+
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
+
+  /**
+   * The cancelled by.
+   */
   @Column(name = "CANCELLED_BY")
   private String cancelledBy;
-  
-  /** The cancelled on. */
+
+  /**
+   * The cancelled on.
+   */
   @Column(name = "CANCELLED_ON")
   private Date cancelledOn;
 
-  /** The work types. */
-  @ManyToMany
-  @JoinTable(name = "SUB_TENDER_CANCEL_REASON", joinColumns = {@JoinColumn(name = "FK_TENDER_CANCEL")},
-      inverseJoinColumns = {@JoinColumn(name = "FK_CANCEL_REASON")})
-  private Set<MasterListValueEntity> workTypes;
-  
   /**
-   * The close count down start.
-   * This field has a value if the freeze flag was set to true, so the automatic closure of the submission 
-   * was freezed and then was set to false. At this moment a timer needs to be initiated that counts 40 days 
-   * until the automatic closure of the submission.
+   * The work types.
+   */
+  @ManyToMany
+  @JoinTable(name = "SUB_TENDER_CANCEL_REASON", joinColumns = {
+    @JoinColumn(name = "FK_TENDER_CANCEL")},
+    inverseJoinColumns = {@JoinColumn(name = "FK_CANCEL_REASON")})
+  private Set<MasterListValueEntity> workTypes;
+
+  /**
+   * The close count down start. This field has a value if the freeze flag was set to true, so the
+   * automatic closure of the submission was freezed and then was set to false. At this moment a
+   * timer needs to be initiated that counts 40 days until the automatic closure of the submission.
    */
   @Column(name = "CLOSE_COUNTDOWN_START")
   private Date closeCountdownStart;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -298,7 +305,7 @@ public class SubmissionCancelEntity {
    *
    * @return the created on
    */
-  public Date getCreatedOn() {
+  public Timestamp getCreatedOn() {
     return createdOn;
   }
 
@@ -307,7 +314,7 @@ public class SubmissionCancelEntity {
    *
    * @param createdOn the new created on
    */
-  public void setCreatedOn(Date createdOn) {
+  public void setCreatedOn(Timestamp createdOn) {
     this.createdOn = createdOn;
   }
 
@@ -334,7 +341,7 @@ public class SubmissionCancelEntity {
    *
    * @return the updated on
    */
-  public Date getUpdatedOn() {
+  public Timestamp getUpdatedOn() {
     return updatedOn;
   }
 
@@ -343,7 +350,7 @@ public class SubmissionCancelEntity {
    *
    * @param updatedOn the new updated on
    */
-  public void setUpdatedOn(Date updatedOn) {
+  public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
   }
 

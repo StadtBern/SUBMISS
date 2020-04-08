@@ -75,10 +75,18 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadDepartments();
-      vm.loadTenants();
-      vm.loadRoles();
-      vm.getUser();
+      UsersService.loadUserSearch()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            $uibModalInstance.close();
+            return;
+          } else {
+            vm.loadDepartments();
+            vm.loadTenants();
+            vm.loadRoles();
+            vm.getUser();
+          }
+        });
     }
 
     /***********************************************************************
@@ -130,7 +138,11 @@
           vm.user.register = false;
         }
         UsersService.editUser(vm.user)
-          .success(function (data) {
+          .success(function (data, status) {
+            if (status === 403) { // Security checks.
+              $uibModalInstance.close();
+              return;
+            }
             if (vm.user.register) {
               window.location.href = data.id;
               $state.go($state.current, {}, {
@@ -149,7 +161,7 @@
             }
           })
           .error(function (response, status) {
-            if (status === 400) { // Validation errors.
+            if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
               QFormJSRValidation.markErrors($scope,
                 $scope.userEditCtr.userForm, response);
             }
@@ -211,7 +223,7 @@
               });
             })
             .error(function (response, status) {
-              if (status === 400) { // Validation errors.
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
                 QFormJSRValidation.markErrors($scope,
                   $scope.userEditCtr.userForm, response);
               }

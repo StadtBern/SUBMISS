@@ -13,25 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import ch.bern.submiss.services.api.administration.SDDepartmentService;
 import ch.bern.submiss.services.api.administration.SDDirectorateService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
@@ -45,6 +26,7 @@ import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.DepartmentHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.DepartmentToTypeDataMapper;
 import ch.bern.submiss.services.impl.mappers.TenantMapper;
@@ -55,6 +37,24 @@ import ch.bern.submiss.services.impl.model.QDirectorateEntity;
 import ch.bern.submiss.services.impl.model.QDirectorateHistoryEntity;
 import ch.bern.submiss.services.impl.model.SignatureEntity;
 import ch.bern.submiss.services.impl.model.SignatureProcessTypeEntity;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class SDDepartmentServiceImpl.
@@ -141,14 +141,15 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       directoratesIDs);
 
     JPAQuery<DepartmentHistoryEntity> query = new JPAQuery<>(em);
-    List<String> directorateEntityIds = query.select(directorateHistoryEntity.directorateId.id)
+    List<String> directorateEntityIds = query.select(directorateHistoryEntity.directorateId.id).distinct()
       .where(directorateHistoryEntity.id.in(directoratesIDs)).from(directorateHistoryEntity)
       .fetch();
-    List<DepartmentHistoryEntity> departmentHistoryEntities = query.select(departmentHistoryEntity)
+    List<DepartmentHistoryEntity> departmentHistoryEntities = query.select(departmentHistoryEntity).distinct()
       .where(departmentHistoryEntity.directorateEnity.id.in(directorateEntityIds)
         .and(departmentHistoryEntity.departmentId.id
-          .in(security.getPermittedDepartments(getUser()))))
-      .from(departmentHistoryEntity).fetch();
+          .in(security.getPermittedDepartments(getUser())))
+        .and(departmentHistoryEntity.toDate.isNull()))
+      .from(departmentHistoryEntity).orderBy(departmentHistoryEntity.name.asc()).fetch();
 
     return DepartmentHistoryMapper.INSTANCE
       .toDepartmentHistoryDTO(departmentHistoryEntities, cacheBean.getActiveDirectorateHistorySD());
@@ -351,12 +352,6 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       .fetch(), cacheBean.getActiveDirectorateHistorySD());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDDepartmentService#
-   * getActiveDepartmentsByUserTenant()
-   */
   @Override
   public List<DepartmentHistoryDTO> getActiveDepartmentsByUserTenant() {
 
@@ -375,13 +370,6 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
           .fetch(), cacheBean.getActiveDirectorateHistorySD());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDepartmentService#isNameUnique(java.lang.String,
-   * java.lang.String)
-   */
   @Override
   public boolean isNameAndShortNameUnique(String name, String shortName, String id) {
 
@@ -403,23 +391,20 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       .fetchCount() == 0);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDepartmentService#saveDepartmentEntry(ch.bern.
-   * submiss.services.api.dto.DepartmentHistoryDTO)
-   */
   @Override
-  public void saveDepartmentEntry(DepartmentHistoryDTO departmentHistoryDTO) {
+  public Set<ValidationError> saveDepartmentEntry(DepartmentHistoryDTO departmentHistoryDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveDepartmentEntry, Parameters: departmentHistoryDTO: {0}",
       departmentHistoryDTO);
 
+    Set<ValidationError> error = new HashSet<>();
     DepartmentHistoryEntity departmentHistEntity;
     // Check if an old entry is updated or a new entry is created.
     if (StringUtils.isBlank(departmentHistoryDTO.getId())) {
+      // Creating a new department entity.
+      DepartmentEntity departmentEntity = new DepartmentEntity();
+      em.persist(departmentEntity);
       // Creating a new entry.
       departmentHistEntity =
         DepartmentHistoryMapper.INSTANCE.toDepartmentHistory(departmentHistoryDTO);
@@ -428,9 +413,6 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       // Set tenant.
       departmentHistEntity.setTenant(
         TenantMapper.INSTANCE.toTenant(usersService.getUserById(getUser().getId()).getTenant()));
-      // Creating a new department entity.
-      DepartmentEntity departmentEntity = new DepartmentEntity();
-      em.persist(departmentEntity);
       // Assign the department entity to the department history entity.
       departmentHistEntity.setDepartmentId(departmentEntity);
 
@@ -439,6 +421,11 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       // In case of updating an old entry, find the entry and set the current date to the toDate
       // property.
       departmentHistEntity = em.find(DepartmentHistoryEntity.class, departmentHistoryDTO.getId());
+      // If the current version is 1, then return an optimisticLockErrorField
+      if (departmentHistEntity.getVersion() == 1) {
+        error.add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+        return error;
+      }
       departmentHistEntity.setToDate(new Timestamp(new Date().getTime()));
       em.merge(departmentHistEntity);
       // Now that the old entry is added to the history, create its new instance.
@@ -484,15 +471,9 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
         em.persist(sTe);
       }
     }
+    return error;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDepartmentService#departmentHistoryQueryAll(java.
-   * lang.String)
-   */
   @Override
   public List<DepartmentHistoryDTO> departmentHistoryQueryAll(String tenantId) {
 

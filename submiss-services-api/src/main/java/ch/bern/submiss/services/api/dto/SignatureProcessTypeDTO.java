@@ -13,28 +13,44 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import java.util.List;
 import ch.bern.submiss.services.api.constants.Process;
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * The Class SignatureProcessTypeDTO.
  */
 public class SignatureProcessTypeDTO {
 
-  /** The id. */
+  /**
+   * The id.
+   */
   private String id;
 
-  /** The process. */
+  /**
+   * The process.
+   */
   private Process process;
 
-  /** The signature. */
+  /**
+   * The signature.
+   */
   private SignatureDTO signature;
 
-  /** The signature copies. */
+  /**
+   * The signature copies.
+   */
   private List<SignatureCopyDTO> signatureCopies;
 
-  /** The signature process type entitled. */
+  /**
+   * The signature process type entitled.
+   */
   private List<SignatureProcessTypeEntitledDTO> signatureProcessTypeEntitled;
+
+  /**
+   * The requestedOn.
+   */
+  private Timestamp requestedOn;
 
   /**
    * Gets the id.
@@ -105,7 +121,7 @@ public class SignatureProcessTypeDTO {
    * @param signatureProcessTypeEntitled the new signature process type entitled
    */
   public void setSignatureProcessTypeEntitled(
-      List<SignatureProcessTypeEntitledDTO> signatureProcessTypeEntitled) {
+    List<SignatureProcessTypeEntitledDTO> signatureProcessTypeEntitled) {
     this.signatureProcessTypeEntitled = signatureProcessTypeEntitled;
   }
 
@@ -127,14 +143,26 @@ public class SignatureProcessTypeDTO {
     this.signature = signature;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the requested on.
+   *
+   * @return the requestedOn
    */
+  public Timestamp getRequestedOn() {
+    return requestedOn;
+  }
+
+  /**
+   * Sets the requested on.
+   *
+   * @param requestedOn the requestedOn
+   */
+  public void setRequestedOn(Timestamp requestedOn) {
+    this.requestedOn = requestedOn;
+  }
+
   @Override
   public String toString() {
     return "SignatureProcessTypeDTO [id=" + id + ", process=" + process + "]";
   }
-
 }

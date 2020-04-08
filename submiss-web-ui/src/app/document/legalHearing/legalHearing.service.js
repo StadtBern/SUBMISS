@@ -26,6 +26,9 @@
   /** @ngInject */
   function LegalHearingService($http, AppConstants) {
     return {
+      createLegalHearingTerminate: function (terminate, submissionId) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/legal/hearing/terminate/' + submissionId, terminate);
+      },
       updateLegalHearingTerminate: function (terminate, submissionId) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/legal/hearing/terminate/' + submissionId, terminate);
       },

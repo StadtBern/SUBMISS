@@ -13,28 +13,16 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import ch.bern.submiss.services.api.administration.LegalHearingService;
 import ch.bern.submiss.services.api.administration.SubmissionCancelService;
+import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
 import ch.bern.submiss.services.api.constants.DocumentAttributes;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.Template;
 import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
 import ch.bern.submiss.services.api.dto.SubmissionCancelDTO;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.SubmissionCancelDTOMapper;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.QMasterListValueHistoryEntity;
@@ -42,6 +30,23 @@ import ch.bern.submiss.services.impl.model.QSubmissionCancelEntity;
 import ch.bern.submiss.services.impl.model.SubmissionCancelEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.SubmittentEntity;
+import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
+import javax.transaction.Transactional;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class SubmissionCancelServiceImpl.
@@ -61,6 +66,11 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
    */
   @Inject
   protected UserAdministrationService usersService;
+  /**
+   * The submission service.
+   */
+  @Inject
+  protected SubmissionService submissionService;
   /**
    * The q submission cancel entity.
    */
@@ -105,8 +115,7 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
         SubmissionCancelDTOMapper.INSTANCE.toSubmissionCancelDTO(submissionCancelEntity);
     } else {
       submissionCancelDTO = new SubmissionCancelDTO();
-
-      // case create, take values from Rechtliches Gehör
+      // case create, take values from Rechtliches Gehörlist
       LegalHearingTerminateDTO legalHearingTerminateDTO =
         legalHearingService.getSubmissionLegalHearingTermination(submissionId);
 
@@ -119,37 +128,76 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
     return submissionCancelDTO;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionCancelService#set(ch.bern.submiss.
-   * services.api.dto.SubmissionCancelDTO)
-   */
   @Override
-  public String set(SubmissionCancelDTO submissionCancel) {
+  public Set<ValidationError> createSubmissionCancel(SubmissionCancelDTO submissionCancel) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method set, Parameters: submissionCancel: {0}",
+      "Executing method createSubmissionCancel, Parameters: submissionCancel: {0}",
       submissionCancel);
 
-    SubmissionCancelEntity submissionCancelEntity =
-      SubmissionCancelDTOMapper.INSTANCE.toSubmissionCancel(submissionCancel);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      SubmissionCancelEntity submissionCancelEntity =
+        SubmissionCancelDTOMapper.INSTANCE.toSubmissionCancel(submissionCancel);
 
-    String userId = getUserId();
-    Date now = new Date();
-    submissionCancelEntity.setUpdatedBy(userId);
-    submissionCancelEntity.setUpdatedOn(now);
-    if (submissionCancelEntity.getId() == null) { // case create
-      submissionCancelEntity.setCreatedBy(userId);
-      submissionCancelEntity.setCreatedOn(now);
+      // Check if entry already exists in database
+      if (submissionCancelEntryExists(submissionCancel.getSubmission().getId())) {
+        optimisticLockErrors
+          .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+            ValidationMessages.OPTIMISTIC_LOCK));
+        return optimisticLockErrors;
+      }
+      submissionCancelEntity.setCreatedBy(getUserId());
+      submissionCancelEntity
+        .setSubmission(em.find(SubmissionEntity.class, submissionCancel.getSubmission().getId()));
       em.persist(submissionCancelEntity);
-    } else { // case update
-      // in order to check if the timer for the automatic closure of the submission needs
-      // to be updated we need to perform a query in the database to check the value of the
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  private boolean submissionCancelEntryExists(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method submissionCancelEntryExists, Parameters: submissionId: {0}",
+      submissionId);
+
+    return new JPAQueryFactory(em)
+      .selectFrom(qSubmissionCancelEntity)
+      .where(qSubmissionCancelEntity.submission.id.eq(submissionId))
+      .fetchCount() > 0;
+  }
+
+  @Override
+  public Set<ValidationError> updateSubmissionCancel(SubmissionCancelDTO submissionCancel) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateSubmissionCancel, Parameters: submissionCancel: {0}",
+      submissionCancel);
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      SubmissionCancelEntity submissionCancelEntity =
+        SubmissionCancelDTOMapper.INSTANCE.toSubmissionCancel(submissionCancel);
+      submissionCancelEntity.setUpdatedBy(getUserId());
+
+      // in order to check
+      // 1) for optimistic locking errors
+      // 2) if the timer for the automatic closure of the submission needs to be updated
+      // we need to perform a query in the database to check the value of the
       // freeze flag before the update.
       SubmissionCancelEntity submissionCancelEntityBefore =
-        new JPAQueryFactory(em).select(qSubmissionCancelEntity).from(qSubmissionCancelEntity)
-          .where(qSubmissionCancelEntity.id.eq(submissionCancel.getId())).fetchOne();
+        em.find(SubmissionCancelEntity.class, submissionCancel.getId());
+
+      if (!submissionCancel.getVersion().equals(submissionCancelEntityBefore.getVersion())) {
+        optimisticLockErrors
+          .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+            ValidationMessages.OPTIMISTIC_LOCK));
+        return optimisticLockErrors;
+      }
 
       // if the freeze flag was false before and now true, then set the timer to null
       // if the freeze flag was false before and now false, then leave the timer as is
@@ -165,23 +213,21 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
         && submissionCancelEntityBefore.getFreezeCloseSubmission())
         && (submissionCancel.getFreezeCloseSubmission() == null
         || !submissionCancel.getFreezeCloseSubmission())) {
-        submissionCancelEntity.setCloseCountdownStart(now);
+        submissionCancelEntity.setCloseCountdownStart(new Date());
       } else {
         // otherwise keep the value that has been set before
         submissionCancelEntity
           .setCloseCountdownStart(submissionCancelEntityBefore.getCloseCountdownStart());
       }
       em.merge(submissionCancelEntity);
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
     }
-    return null;
+    return optimisticLockErrors;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionCancelService#
-   * getAvailableDateBySubmissionId(java.lang.String)
-   */
   @Override
   public Date getAvailableDateBySubmissionId(String submissionId) {
 
@@ -194,13 +240,6 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
       .fetchOne();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionCancelService#cancellationDocumentCreated
-   * (java.lang.String)
-   */
   @Override
   public boolean cancellationDocumentCreated(String submissionId) {
 
@@ -240,5 +279,37 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
     return new JPAQueryFactory(em).select(qSubmissionCancelEntity.submission.id)
       .from(qSubmissionCancelEntity)
       .where(qSubmissionCancelEntity.workTypes.any().id.in(cancellationReasonIds)).fetch();
+  }
+
+  @Override
+  public Set<ValidationError> cancellingSubmission(String submissionCancelId, Long submissionCancelVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method cancellingSubmission, Parameters: submissionCancelId: {0}, "
+        + "submissionCancelVersion: {1}",
+      new Object[]{submissionCancelId, submissionCancelVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      SubmissionCancelEntity submissionCancelEntity =
+        em.find(SubmissionCancelEntity.class, submissionCancelId);
+
+      if (submissionCancelEntity != null) {
+        if (!submissionCancelVersion.equals(submissionCancelEntity.getVersion())) {
+          optimisticLockErrors
+            .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+              ValidationMessages.OPTIMISTIC_LOCK));
+          return optimisticLockErrors;
+        }
+        submissionCancelEntity.setCancelledBy(getUserId());
+        submissionCancelEntity.setCancelledOn(new Timestamp(new Date().getTime()));
+        em.merge(submissionCancelEntity);
+      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
   }
 }

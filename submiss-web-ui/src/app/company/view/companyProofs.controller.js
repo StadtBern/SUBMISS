@@ -27,7 +27,7 @@
   function CompanyProofsController($rootScope, $scope, $state, $stateParams,
     $locale,
     CompanyService, QFormJSRValidation, TasksService, $uibModal, NgTableParams,
-    $filter, $location, $anchorScroll, AppService, AppConstants) {
+    $filter, $location, $anchorScroll, AppService, AppConstants, $transitions) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -42,6 +42,13 @@
     vm.proofs = [];
     openProofDate.opened = [];
     vm.companyProofForm = {};
+    vm.secCompanyProofsView = false;
+    vm.secProofVerificationRequest = false;
+    vm.secCompanyOffersView = false;
+    vm.invalidDate = false;
+    vm.showMessage = false;
+    vm.showBoth = false;
+    vm.taskCreateForm = {};
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
@@ -49,26 +56,28 @@
     vm.openProofDate = openProofDate;
     vm.resetPage = resetPage;
     vm.save = save;
-    vm.secCompanyProofsView = false;
-    vm.secProofVerificationRequest = false;
-    vm.secCompanyOffersView = false;
     vm.requestProofs = requestProofs;
-    vm.taskCreateForm = {};
-    vm.invalidDate = false;
-    vm.showMessage = false;
-    vm.showBoth = false;
+    vm.getCompanyTask = getCompanyTask;
     // Activating the controller.
     activate();
     /***********************************************************************
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.getProofs();
-      readCompany($stateParams.id);
-      vm.secProofVerificationRequest = AppService.isOperationPermitted(
-        AppConstants.OPERATION.PROOF_VERIFICATION_REQUEST, null);
-      vm.secCompanyOffersView = AppService.isOperationPermitted(
-        AppConstants.OPERATION.COMPANY_OFFERS_VIEW, null);
+      CompanyService.loadCompanyProofs()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.getProofs();
+            readCompany($stateParams.id);
+            vm.secProofVerificationRequest = AppService.isOperationPermitted(
+              AppConstants.OPERATION.PROOF_VERIFICATION_REQUEST, null);
+            vm.secCompanyOffersView = AppService.isOperationPermitted(
+              AppConstants.OPERATION.COMPANY_OFFERS_VIEW, null);
+            vm.getCompanyTask($stateParams.id);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.y
@@ -83,11 +92,37 @@
         $rootScope.previousState = from;
       });
 
+    /** Check for unsaved changes when trying to transition to different state */
+    $transitions.onBefore({}, function (transition) {
+      if (transition.to() !== transition.from() && vm.dirtyFlag) {
+        var transitionModal = AppService.transitionModal();
+        return transitionModal.result
+          .then(function (response) {
+            if (response) {
+              vm.dirtyFlag = false;
+              return true;
+            }
+            return false;
+          });
+      }
+      return null;
+    });
+
     function readCompany(id) {
       CompanyService.readCompany(id).success(function (data) {
         vm.data.company = data;
         vm.secCompanyProofsView = AppService.isOperationPermitted(
           AppConstants.OPERATION.COMPANY_PROOFS_VIEW, null);
+      }).error(function (response, status) {});
+    }
+
+    function getCompanyTask(companyId) {
+      TasksService.getCompanyTask(companyId).success(function (data) {
+        var name = (data.firstName != null && data.lastName != null) ? data.firstName + ' ' + data.lastName : null;
+        vm.data.companyTask = {
+          createdOn: data.createdOn,
+          createdBy: name
+        };
       }).error(function (response, status) {});
     }
 
@@ -132,7 +167,10 @@
       }
       if (!vm.invalidDate && !vm.invalidDateAfter) {
         CompanyService.updateProofs(vm.proofs)
-          .success(function (data) {
+          .success(function (data, status) {
+            if (status === 403) { // Security checks.
+              return;
+            }
             $state.go('company.proofs', {}, {
               reload: true
             });
@@ -153,13 +191,25 @@
       vm.invalidBoth = false;
     }
 
-    // Function that reset the fields for create company
-    function resetPage(dirtyflag) {
-      if (!dirtyflag) {
+    // Function that reset the fields of the form
+    function resetPage() {
+      if (!vm.dirtyFlag) {
         $state.go('company.proofs', {}, {
           reload: true
         });
+      } else {
+        var cancelModal = AppService.cancelModal();
+        return cancelModal.result.then(function (response) {
+          if (response) {
+            $state.reload();
+            vm.dirtyFlag = false;
+            return true;
+          } else {
+            return false;
+          }
+        });
       }
+      return null;
     }
 
     // Create dateOptions to exclude all the future dates after today

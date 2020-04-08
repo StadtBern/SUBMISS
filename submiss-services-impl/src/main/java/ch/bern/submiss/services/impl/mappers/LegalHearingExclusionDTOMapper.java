@@ -31,10 +31,10 @@ import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 @Mapper(uses = {SubmittentDTOMapper.class, MasterListValueMapper.class})
 public abstract class LegalHearingExclusionDTOMapper {
   public static final LegalHearingExclusionDTOMapper INSTANCE =
-      Mappers.getMapper(LegalHearingExclusionDTOMapper.class);
+    Mappers.getMapper(LegalHearingExclusionDTOMapper.class);
 
   private final SubmittentDTOMapper submittentDTOMapper =
-      Mappers.getMapper(SubmittentDTOMapper.class);
+    Mappers.getMapper(SubmittentDTOMapper.class);
 
   public LegalHearingExclusionDTO toLegalHearingExclusionDTO(LegalHearingExclusionEntity entity) {
     if (entity == null) {
@@ -44,8 +44,9 @@ public abstract class LegalHearingExclusionDTOMapper {
     LegalHearingExclusionDTO legalHearingExclusionDTO = new LegalHearingExclusionDTO();
 
     legalHearingExclusionDTO.setId(entity.getId());
+    legalHearingExclusionDTO.setVersion(entity.getVersion());
     legalHearingExclusionDTO
-        .setSubmittent(submittentDTOMapper.toSubmittentDTO(entity.getSubmittent()));
+      .setSubmittent(submittentDTOMapper.toSubmittentDTO(entity.getSubmittent()));
     legalHearingExclusionDTO.setExclusionDeadline(entity.getExclusionDeadline());
     legalHearingExclusionDTO.setProofsProvided(entity.getProofsProvided());
     legalHearingExclusionDTO.setExistsExlReasons(entity.getExistsExlReasons());
@@ -59,26 +60,26 @@ public abstract class LegalHearingExclusionDTOMapper {
     legalHearingExclusionDTO.setLevel(entity.getLevel());
     legalHearingExclusionDTO.setFirstLevelExclusionDate(entity.getFirstLevelExclusionDate());
     legalHearingExclusionDTO.setExclusionReasons(
-        masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasons()));
+      masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasons()));
     return legalHearingExclusionDTO;
   }
 
   protected Set<ExclusionReasonDTO> masterListValueEntitySetToMasterListValueDTOSet(
-      Set<MasterListValueEntity> set) {
+    Set<MasterListValueEntity> set) {
     if (set == null) {
       return Collections.emptySet();
     }
     Set<ExclusionReasonDTO> mset = new HashSet<>();
     for (MasterListValueEntity masterListValueEntity : set) {
       mset.addAll(masterListValueHistoryEntitySetToMasterListValueHistoryDTOSet(
-          masterListValueEntity.getMasterListValueHistory()));
+        masterListValueEntity.getMasterListValueHistory()));
     }
 
     return mset;
   }
 
   protected Set<ExclusionReasonDTO> masterListValueHistoryEntitySetToMasterListValueHistoryDTOSet(
-      Set<MasterListValueHistoryEntity> set) {
+    Set<MasterListValueHistoryEntity> set) {
     if (set == null) {
       return Collections.emptySet();
     }
@@ -87,7 +88,7 @@ public abstract class LegalHearingExclusionDTOMapper {
     for (MasterListValueHistoryEntity masterListValueEntity : set) {
       ExclusionReasonDTO exclusionRreasonDTO = new ExclusionReasonDTO();
       exclusionRreasonDTO.setExclusionReason(
-          MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(masterListValueEntity));
+        MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(masterListValueEntity));
       mset.add(exclusionRreasonDTO);
     }
 
@@ -95,9 +96,9 @@ public abstract class LegalHearingExclusionDTOMapper {
   }
 
 
-  
+
   public List<LegalHearingExclusionDTO> toLegalHearingExclusionDTO(
-      List<LegalHearingExclusionEntity> entityList) {
+    List<LegalHearingExclusionEntity> entityList) {
     if (entityList == null) {
       return Collections.emptyList();
     }
@@ -118,8 +119,9 @@ public abstract class LegalHearingExclusionDTOMapper {
     LegalHearingExclusionEntity legalHearingExclusionEntity = new LegalHearingExclusionEntity();
 
     legalHearingExclusionEntity.setId(dto.getId());
+    legalHearingExclusionEntity.setVersion(dto.getVersion());
     legalHearingExclusionEntity
-        .setSubmittent(submittentDTOMapper.toSubmittent(dto.getSubmittent()));
+      .setSubmittent(submittentDTOMapper.toSubmittent(dto.getSubmittent()));
     legalHearingExclusionEntity.setExclusionDeadline(dto.getExclusionDeadline());
     legalHearingExclusionEntity.setProofsProvided(dto.getProofsProvided());
     legalHearingExclusionEntity.setExistsExlReasons(dto.getExistsExlReasons());
@@ -143,13 +145,13 @@ public abstract class LegalHearingExclusionDTOMapper {
     Set<MasterListValueEntity> exclusionReasonEntities = new HashSet<>();
     for (ExclusionReasonDTO exclusionReasonDTO : dto.getExclusionReasons()) {
       exclusionReasonEntities.add(MasterListValueMapper.INSTANCE
-          .toMasterListValue(exclusionReasonDTO.getExclusionReason().getMasterListValueId()));
+        .toMasterListValue(exclusionReasonDTO.getExclusionReason().getMasterListValueId()));
     }
     return exclusionReasonEntities;
   }
 
   public List<LegalHearingExclusionEntity> toLegalHearingExclusionEntity(
-      List<LegalHearingExclusionDTO> dtoList) {
+    List<LegalHearingExclusionDTO> dtoList) {
     if (dtoList == null) {
       return Collections.emptyList();
     }

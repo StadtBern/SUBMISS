@@ -25,6 +25,7 @@ import ch.bern.submiss.services.api.constants.AuditMessages;
 import ch.bern.submiss.services.api.constants.CategorySD;
 import ch.bern.submiss.services.api.constants.Group;
 import ch.bern.submiss.services.api.constants.ProofStatus;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.TaskTypes;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.SubmissTaskDTO;
@@ -32,6 +33,7 @@ import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.SubmissTaskDTOMapper;
 import ch.bern.submiss.services.impl.mappers.SubmissionMapper;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
@@ -42,6 +44,7 @@ import ch.bern.submiss.services.impl.model.QSubmissTasksEntity;
 import ch.bern.submiss.services.impl.model.SubmissTasksEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -49,9 +52,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -126,6 +131,9 @@ public class SubmissTaskServiceImpl extends BaseService implements SubmissTaskSe
     LOGGER.log(Level.CONFIG,
       "Executing method getAllTasks, Parameters: showUserTasks: {0}",
       showUserTasks);
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.PENDING.getValue(), null);
 
     QProjectEntity qProject = QProjectEntity.projectEntity;
     SubmissUserDTO currentUser = usersService.getUserById(getUser().getId());
@@ -219,6 +227,32 @@ public class SubmissTaskServiceImpl extends BaseService implements SubmissTaskSe
       }
     }
     return submissTaskDTOList;
+  }
+
+  @Override
+  public SubmissTaskDTO getCompanyTask(String companyId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getCompanyTask, Parameters: companyId: {0}",
+      companyId);
+
+    SubmissTasksEntity submissTaskEntity =
+      new JPAQueryFactory(em).select(qSubmissTask).from(qSubmissTask)
+        .where(qSubmissTask.company.id.eq(companyId)
+          .and(qSubmissTask.description.eq(TaskTypes.PROOF_REQUEST))
+          .and(qSubmissTask.submission.isNull())).fetchOne();
+
+    SubmissTaskDTO submissTaskDTO = new SubmissTaskDTO();
+
+    if (submissTaskEntity != null) {
+      submissTaskDTO = SubmissTaskDTOMapper.INSTANCE.tasksToTasksDTO(submissTaskEntity, null, null);
+      // Set user's first and last name in submissTaskDTO
+      SubmissUserDTO user = usersService.getSpecificUser(submissTaskDTO.getCreatedBy());
+      submissTaskDTO.setFirstName(user.getFirstName());
+      submissTaskDTO.setLastName(user.getLastName());
+    }
+
+    return submissTaskDTO;
   }
 
   @Override
@@ -766,5 +800,20 @@ public class SubmissTaskServiceImpl extends BaseService implements SubmissTaskSe
     auditBean.createLogAudit(auditLevel, auditEvent, auditGroupName,
       message, getUser().getId(), referenceId, null, additionalInfo,
       LookupValues.EXTERNAL_LOG);
+  }
+
+  @Override
+  public Set<ValidationError> settleTaskOptimisticLock(String taskId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method settleTaskOptimisticLock, Parameters: taskId: {0}", taskId);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    SubmissTasksEntity taskEntity = em.find(SubmissTasksEntity.class, taskId);
+    if (taskEntity == null) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.TASK_COMPLETED_ERROR_FIELD,
+          ValidationMessages.TASK_COMPLETED));
+    }
+    return optimisticLockErrors;
   }
 }

@@ -16,107 +16,108 @@ package ch.bern.submiss.services.impl.model;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class SubmissionAwardInfoEntity.
  */
 @Entity
 @Table(name = "SUB_TENDER_AWARD_INFO")
-public class SubmissionAwardInfoEntity {
+public class SubmissionAwardInfoEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDER")
   private SubmissionEntity submission;
 
-  /** The available date. */
+  /**
+   * The available date.
+   */
   @Column(name = "AVAILABLE_DATE")
   private Date availableDate;
-  
-  /** The freeze close submission. 
-   *  Shows if the automatic closure of the submission needs to be freezed or not.
+
+  /**
+   * The freeze close submission. Shows if the automatic closure of the submission needs to be
+   * freezed or not.
    */
   @Column(name = "FREEZE_CLOSE_TENDER")
   private Boolean freezeCloseSubmission;
-  
-  /** The object name read. */
+
+  /**
+   * The object name read.
+   */
   @Column(name = "OBJECT_NAME_READ")
   private Boolean objectNameRead;
-  
-  /** The project name read. */
+
+  /**
+   * The project name read.
+   */
   @Column(name = "PROJECT_NAME_READ")
   private Boolean projectNameRead;
-  
-  /** The working class read. */
+
+  /**
+   * The working class read.
+   */
   @Column(name = "WORKING_CLASS_READ")
   private Boolean workingClassRead;
-  
-  /** The description read. */
+
+  /**
+   * The description read.
+   */
   @Column(name = "DESCRIPTION_READ")
   private Boolean descriptionRead;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
-  
-  /** The created on. */
+
+  /**
+   * The created on.
+   */
+  @CreationTimestamp
   @Column(name = "CREATED_ON")
   private Date createdOn;
-  
-  /** The updated by. */
+
+  /**
+   * The updated by.
+   */
   @Column(name = "UPDATED_BY")
   private String updatedBy;
-  
-  /** The updated on. */
-  @Column(name = "UPDATED_ON")
+
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
   private Date updatedOn;
 
-  /** The level. */
+  /**
+   * The level.
+   */
   @Column(name = "LEVEL")
   private int level;
 
-  /** The reason. */
+  /**
+   * The reason.
+   */
   @Column(name = "REASON")
   private String reason;
-  
+
   /**
-   * The close count down start.
-   * This field has a value if the freeze flag was set to true, so the automatic closure of the submission 
-   * was freezed and then was set to false. At this moment a timer needs to be initiated that counts 40 days 
-   * until the automatic closure of the submission.
+   * The close count down start. This field has a value if the freeze flag was set to true, so the
+   * automatic closure of the submission was freezed and then was set to false. At this moment a
+   * timer needs to be initiated that counts 40 days until the automatic closure of the submission.
    */
   @Column(name = "CLOSE_COUNTDOWN_START")
   private Date closeCountdownStart;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.

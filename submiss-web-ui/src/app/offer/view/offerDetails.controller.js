@@ -204,7 +204,8 @@
             });
           $("#offerDate").focus();
         }).error(function (response, status) {
-
+          QFormJSRValidation.markErrors($scope,
+            $scope.offerDetailsCtrl.offerDetailsForm, response);
         });
     }
 
@@ -274,6 +275,18 @@
     }
 
     function save() {
+      SubmissionService.isStatusChanged($stateParams.offer.submittent.submissionId.id, vm.currentStatus)
+        .success(function (data) {
+          proceedWithSave();
+        }).error(function (response, status) {
+          if (status === 400) { // Validation errors.
+            QFormJSRValidation.markErrors($scope,
+              $scope.offerDetailsCtrl.offerDetailsForm, response);
+          }
+        });
+    }
+
+    function proceedWithSave() {
       vm.tempVat = String(vm.tempVat);
       vm.dirtyFlag = false;
       /**All default values must be set to 0 */

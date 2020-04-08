@@ -109,26 +109,26 @@
       getTypeDataEntryById: function (entryId, type) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/getTypeDataEntryById/' + entryId + "/" + type);
       },
-      saveDepartmentEntry: function (entry) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/department/saveDepartmentEntry', entry);
+      saveDepartmentEntry: function (entry, isNameOrShortNameChanged) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/department/saveDepartmentEntry/' + isNameOrShortNameChanged, entry);
       },
-      saveDirectorateEntry: function (entry) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/directorate/saveDirectorateEntry', entry);
+      saveDirectorateEntry: function (entry, saveDirectorateEntry) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/directorate/saveDirectorateEntry/' + saveDirectorateEntry, entry);
       },
-      saveCountryEntry: function (entry) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/country/saveCountryEntry', entry);
+      saveCountryEntry: function (entry, isNameChanged) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/country/saveCountryEntry/' + isNameChanged, entry);
       },
       saveLogibEntry: function (entry) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/logib/saveLogibEntry', entry);
       },
-      saveProofsEntry: function (entry) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/proof/saveProofsEntry', entry);
+      saveProofsEntry: function (entry, isNameOrCountryChanged) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/proof/saveProofsEntry/' + isNameOrCountryChanged, entry);
       },
       saveEmailTemplateEntry: function (entry) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/email/saveEmailTemplateEntry', entry);
       },
-      saveSDEntry: function (entry, type) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/saveSDEntry/' + type, entry);
+      saveSDEntry: function (entry, type, isValueChanged) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/saveSDEntry/' + type + '/' + isValueChanged, entry);
       },
       getSignaturesByDirectorateId: function (directorateId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/getSignaturesByDirectorateId/' + directorateId);
@@ -143,7 +143,7 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/getProccessDataEntryById/' + entryId);
       },
       updateProcedureValue: function (procedure) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/updateProcedureValue/', procedure);
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/updateProcedureValue', procedure);
       },
       getSignatureCopiesById: function (signatureId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/getSignaturesCopiesBySignatureId/' + signatureId);
@@ -183,6 +183,9 @@
       },
       getCurrentMLVHEntriesForSubmission: function (submissionId, typeName) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/getCurrentMLVHEntriesForSubmission/' + submissionId + '/' + typeName);
+      },
+      loadSD: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/loadSD');
       }
     };
   }

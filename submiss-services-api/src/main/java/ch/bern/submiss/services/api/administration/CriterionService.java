@@ -13,12 +13,6 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
-
 import ch.bern.submiss.services.api.dto.AwardAssessDTO;
 import ch.bern.submiss.services.api.dto.AwardDTO;
 import ch.bern.submiss.services.api.dto.CriterionDTO;
@@ -26,6 +20,11 @@ import ch.bern.submiss.services.api.dto.ExaminationDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.SubcriterionDTO;
 import ch.bern.submiss.services.api.dto.SuitabilityDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 public interface CriterionService {
 
@@ -33,8 +32,10 @@ public interface CriterionService {
    * Delete criterion.
    * 
    * @param id the criterion id
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the error
    */
-  void deleteCriterion(String id);
+  Set<ValidationError> deleteCriterion(String id, Timestamp pageRequestedOn);
 
   /**
    * Add criterion to submission (tender).
@@ -70,9 +71,11 @@ public interface CriterionService {
   /**
    * Delete sub-criterion.
    * 
-   * @param id the criterion id
+   * @param id the sub criterion id
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the error
    */
-  void deleteSubcriterion(String id);
+  Set<ValidationError> deleteSubcriterion(String id, Timestamp pageRequestedOn);
 
   /**
    * Add sub-criterion to criterion.
@@ -160,7 +163,7 @@ public interface CriterionService {
    * Update the list of offers with criteria
    * @param The list of the offers with criteria to be updated.
    */
-  void updateOfferCriteria(List<SuitabilityDTO> suitabilityDTO);
+  Set<ValidationError> updateOfferCriteria(List<SuitabilityDTO> suitabilityDTO);
   
   /**
    * Update the list of offer criteria for the award process
@@ -273,4 +276,95 @@ public interface CriterionService {
    * @param submissionId the submission id
    */
   void deleteOperatingCostCriterion(String submissionId);
+
+  /**
+   * Checks for changes by other users before adding or updating a criterion or sub criterion.
+   *
+   * @param submissionId the submissionId
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the error
+   */
+  Set<ValidationError> checkForChangesByOtherUsers(String submissionId, Timestamp pageRequestedOn);
+
+  /**
+   * Checks if criterion exists.
+   *
+   * @param criterionId the criterion id
+   * @return true if criterion exists
+   */
+  boolean criterionExists(String criterionId);
+
+  /**
+   * Checks if subCriterion exists.
+   *
+   * @param subCriterionId the subCriterion id
+   * @return true if subCriterion exists
+   */
+  boolean subCriterionExists(String subCriterionId);
+
+  /**
+   * Checks if offerCriterion exists.
+   *
+   * @param offerCriterionId the offerCriterion id
+   * @return true if offerCriterion exists
+   */
+  boolean offerCriterionExists(String offerCriterionId);
+
+  /**
+   * Checks for changes by other users before saving the Eignungsprüfungstabelle.
+   *
+   * @param submissionId    the submissionId
+   * @param pageRequestedOn the pageRequestedOn
+   * @param suitabilityDTOs the suitabilityDTOs
+   * @return the error
+   */
+  Set<ValidationError> suitabilityCheckForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn, List<SuitabilityDTO> suitabilityDTOs);
+
+  /**
+   * Checks if examination is already locked by another user.
+   *
+   * @param submissionId the submissionId
+   * @return the error
+   */
+  Set<ValidationError> examinationLockedByAnotherUser(String submissionId);
+
+  /**
+   * Checks if award is already locked by another user.
+   *
+   * @param submissionId the submissionId
+   * @return the error
+   */
+  Set<ValidationError> awardLockedByAnotherUser(String submissionId);
+
+  /**
+   * Checks for changes by other users before saving the Zuschlagsbewertung form.
+   *
+   * @param submissionId    the submissionId
+   * @param pageRequestedOn the pageRequestedOn
+   * @return the error
+   */
+  Set<ValidationError> awardCheckForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn);
+
+  /**
+   * Checks for changes by other users before saving the Formelle/Eignungsprüfung form.
+   *
+   * @param submissionId    the submissionId
+   * @param pageRequestedOn the pageRequestedOn
+   * @param submissionVersion the submissionVersion
+   * @return the error
+   */
+  Set<ValidationError> examinationCheckForChangesByOtherUsers(String submissionId,
+    Timestamp pageRequestedOn, Long submissionVersion);
+
+  /**
+   * Security check for Zuschlagsbewertung view.
+   */
+  void awardEvaluationViewSecurityCheck(String submissionId);
+
+  /**
+   * Security check for Zuschlagsbewertung edit.
+   */
+  void awardEvaluationEditSecurityCheck(String submissionId);
 }

@@ -15,19 +15,13 @@ package ch.bern.submiss.web.forms;
 
 import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.util.List;
 
 /**
  * The Class UserForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserForm {
-
-  /**
-   * The id.
-   */
-  private String id;
+public class UserForm extends AbstractForm {
 
   /**
    * The username.
@@ -64,10 +58,14 @@ public class UserForm {
    */
   private Boolean register;
 
-  /** If the user is registered to the system {0,1}. */
+  /**
+   * If the user is registered to the system {0,1}.
+   */
   private String registered;
 
-  /** The registered date. */
+  /**
+   * The registered date.
+   */
   private String registeredDate;
 
   /**
@@ -75,8 +73,15 @@ public class UserForm {
    */
   private DepartmentHistoryForm mainDepartment;
 
-  /** List of secondary departments. */
+  /**
+   * List of secondary departments.
+   */
   private List<DepartmentHistoryForm> secondaryDepartments;
+
+  /**
+   * The secondary departments version.
+   */
+  private Long secondaryDepartmentsVersion;
 
   /**
    * The tenant.
@@ -88,35 +93,32 @@ public class UserForm {
    */
   private GroupDTO userGroup;
 
-  /** flag indicating whether group is changed or not, in order to update the security resources. */
+  /**
+   * flag indicating whether group is changed or not, in order to update the security resources.
+   */
   private Boolean groupChanged;
 
-  /** flag indicating whether userAdminRight is changed or not, in order to update the security resources. */
+  /**
+   * flag indicating whether userAdminRight is changed or not, in order to update the security
+   * resources.
+   */
   private Boolean userAdminRightChanged;
 
-  /** flag indicating whether secondary Departments are changed or not, in order to update the security resources. */
+  /**
+   * flag indicating whether secondary Departments are changed or not, in order to update the
+   * security resources.
+   */
   private Boolean secDeptsChanged;
-  
-  /** The function. */
+
+  /**
+   * The function.
+   */
   private String function;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The function version from user attributes.
    */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
+  private Long functionVersion;
 
   /**
    * Gets the username.
@@ -400,7 +402,8 @@ public class UserForm {
   /**
    * Sets the flag indicating whether secondary Departments are changed or not.
    *
-   * @param secDeptsChanged the new flag indicating whether secondary Departments are changed or not
+   * @param secDeptsChanged the new flag indicating whether secondary Departments are changed or
+   *                        not
    */
   public void setSecDeptsChanged(Boolean secDeptsChanged) {
     this.secDeptsChanged = secDeptsChanged;
@@ -423,5 +426,20 @@ public class UserForm {
   public void setFunction(String function) {
     this.function = function;
   }
-  
+
+  public Long getFunctionVersion() {
+    return functionVersion;
+  }
+
+  public void setFunctionVersion(Long functionVersion) {
+    this.functionVersion = functionVersion;
+  }
+
+  public Long getSecondaryDepartmentsVersion() {
+    return secondaryDepartmentsVersion;
+  }
+
+  public void setSecondaryDepartmentsVersion(Long secondaryDepartmentsVersion) {
+    this.secondaryDepartmentsVersion = secondaryDepartmentsVersion;
+  }
 }

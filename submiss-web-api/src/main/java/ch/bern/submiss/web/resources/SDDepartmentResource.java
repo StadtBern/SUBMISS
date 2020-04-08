@@ -14,6 +14,7 @@
 package ch.bern.submiss.web.resources;
 
 import ch.bern.submiss.services.api.administration.SDDepartmentService;
+import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.constants.TextType;
 import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
 import ch.bern.submiss.services.api.util.ValidationMessages;
@@ -59,6 +60,10 @@ public class SDDepartmentResource {
   @OsgiService
   @Inject
   private SDDepartmentService sDDepartmentService;
+
+  @OsgiService
+  @Inject
+  private SDService sDService;
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -108,56 +113,94 @@ public class SDDepartmentResource {
    * Save department entry.
    *
    * @param departmentHistoryForm the department history form
+   * @param isNameOrShortNameChanged the isNameOrShortNameChanged
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/saveDepartmentEntry")
-  public Response saveDepartmentEntry(@Valid DepartmentHistoryForm departmentHistoryForm) {
-    Set<ValidationError> errors;
-    errors = validateDepartment(departmentHistoryForm);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+  @Path("/saveDepartmentEntry/{isNameOrShortNameChanged}")
+  public Response saveDepartmentEntry(@Valid DepartmentHistoryForm departmentHistoryForm,
+    @PathParam("isNameOrShortNameChanged") boolean isNameOrShortNameChanged) {
+    sDService.sdSecurityCheck();
+    Set<ValidationError> validationErrors = validateDepartment(departmentHistoryForm, isNameOrShortNameChanged);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
-    // If there are no errors, proceed with saving/updating the department history entry.
-    sDDepartmentService.saveDepartmentEntry(
-        DepartmentHistoryFormMapper.INSTANCE.toDepartmentHistoryDTO(departmentHistoryForm));
-    return Response.ok().build();
+    // If there are no validation errors, proceed with saving/updating the department history entry.
+    Set<ValidationError> optimisticLockErrors = sDDepartmentService.saveDepartmentEntry(
+      DepartmentHistoryFormMapper.INSTANCE.toDepartmentHistoryDTO(departmentHistoryForm));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
-  /** Function to validate the department */
-  private Set<ValidationError> validateDepartment(DepartmentHistoryForm departmentHistoryForm) {
+  /**
+   * Department create/update validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param isNameOrShortNameChanged the isNameOrShortNameChanged
+   * @return the validation errors
+   */
+  private Set<ValidationError> validateDepartment(DepartmentHistoryForm departmentHistoryForm,
+    boolean isNameOrShortNameChanged) {
     // Using regex. The regex code accepts a telephone/fax number. The characters can be numbers,
     // parentheses(), hyphens, periods & may contain the plus sign (+) in the beginning and can
     // contain whitespaces in between.
     String phoneRegex = "^\\+?[0-9. ()-]{0,50}$";
     Pattern phonePattern = Pattern.compile(phoneRegex);
-    
-    // Using regex to check if a given email is valid (contains @).
-    String emailRegex = "^(.+)@(.+)$";
-    Pattern emailPattern = Pattern.compile(emailRegex);
-    
     Set<ValidationError> errors = new HashSet<>();
     // Check if the mandatory fields are filled out.
+    validateDepartmentMandatory(departmentHistoryForm, errors);
+    // Check the name length.
+    validateDepartmentName(departmentHistoryForm, errors);
+    // Check the short name length.
+    validateDepartmentShortName(departmentHistoryForm, errors);
+    // Check if the name and short name combination is unique.
+    validateDepartmentNameShortName(departmentHistoryForm, errors, isNameOrShortNameChanged);
+    // Check the address length.
+    validateDepartmentAddress(departmentHistoryForm, errors);
+    // Check the post code length.
+    validateDepartmentPostCode(departmentHistoryForm, errors);
+    // Check the location length.
+    validateDepartmentLocation(departmentHistoryForm, errors);
+    // Check the telephone number.
+    validateDepartmentTelephone(departmentHistoryForm, phonePattern, errors);
+    // Check the fax number.
+    validateDepartmentFax(departmentHistoryForm, phonePattern, errors);
+    // Check the email.
+    validateDepartmentEmail(departmentHistoryForm, errors);
+    // Check the website address length.
+    validateDepartmentWebsite(departmentHistoryForm, errors);
+    return errors;
+  }
+
+  /**
+   * Mandatory department validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentMandatory(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isBlank(departmentHistoryForm.getName())
-        || StringUtils.isBlank(departmentHistoryForm.getShortName())
-        || departmentHistoryForm.getDirectorate() == null
-        || departmentHistoryForm.getBooleanInternalValue() == null
-        || StringUtils.isBlank(departmentHistoryForm.getAddress())
-        || StringUtils.isBlank(departmentHistoryForm.getPostCode())
-        || StringUtils.isBlank(departmentHistoryForm.getLocation())
-        || StringUtils.isBlank(departmentHistoryForm.getTelephone())
-        || StringUtils.isBlank(departmentHistoryForm.getEmail())
-        || StringUtils.isBlank(departmentHistoryForm.getWebsite())) {
+      || StringUtils.isBlank(departmentHistoryForm.getShortName())
+      || departmentHistoryForm.getDirectorate() == null
+      || departmentHistoryForm.getBooleanInternalValue() == null
+      || StringUtils.isBlank(departmentHistoryForm.getAddress())
+      || StringUtils.isBlank(departmentHistoryForm.getPostCode())
+      || StringUtils.isBlank(departmentHistoryForm.getLocation())
+      || StringUtils.isBlank(departmentHistoryForm.getTelephone())
+      || StringUtils.isBlank(departmentHistoryForm.getEmail())
+      || StringUtils.isBlank(departmentHistoryForm.getWebsite())) {
       errors.add(
-          new ValidationError("emptyMandatoryField", ValidationMessages.MANDATORY_ERROR_MESSAGE));
+        new ValidationError("emptyMandatoryField", ValidationMessages.MANDATORY_ERROR_MESSAGE));
       if (StringUtils.isBlank(departmentHistoryForm.getName())) {
         errors.add(new ValidationError(INPUT_NAME, ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
       if (StringUtils.isBlank(departmentHistoryForm.getShortName())) {
         errors
-            .add(new ValidationError(INPUT_SHORT_NAME, ValidationMessages.MANDATORY_ERROR_MESSAGE));
+          .add(new ValidationError(INPUT_SHORT_NAME, ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
       if (departmentHistoryForm.getDirectorate() == null) {
         errors.add(new ValidationError("directorate", ValidationMessages.MANDATORY_ERROR_MESSAGE));
@@ -184,14 +227,32 @@ public class SDDepartmentResource {
         errors.add(new ValidationError("website", ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
     }
-    // Check the name length.
+  }
+
+  /**
+   * Department name validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentName(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getName())
         && departmentHistoryForm.getName().length() > TextType.MIDDLE_TEXT.getValue()) {
       errors.add(new ValidationError(INPUT_NAME, ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
       errors.add(new ValidationError("descriptionErrorField",
           ValidationMessages.DESCRIPTION_MAX_SIZE_MESSAGE));
     }
-    // Check the short name length.
+  }
+
+  /**
+   * Department short name validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentShortName(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getShortName())
         && departmentHistoryForm.getShortName().length() > TextType.SHORT_TEXT.getValue()) {
       errors.add(
@@ -199,39 +260,96 @@ public class SDDepartmentResource {
       errors.add(new ValidationError("shortNameErrorField",
           ValidationMessages.SHORT_NAME_MAX_SIZE_MESSAGE));
     }
-    // Check if the name and short name combination is unique.
-    if (StringUtils.isNotBlank(departmentHistoryForm.getName())
+  }
+
+  /**
+   * Validate if the combination name - short name is unique.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   * @param isNameOrShortNameChanged isNameOrShortNameChanged
+   */
+  private void validateDepartmentNameShortName(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors, boolean isNameOrShortNameChanged) {
+    boolean validationCheck = (StringUtils.isBlank(departmentHistoryForm.getId()))
+      // validation check for creating a department
+      ? (StringUtils.isNotBlank(departmentHistoryForm.getName())
+      && StringUtils.isNotBlank(departmentHistoryForm.getShortName())
+      && !sDDepartmentService.isNameAndShortNameUnique(departmentHistoryForm.getName(),
+      departmentHistoryForm.getShortName(), departmentHistoryForm.getId()))
+      // validation check for editing a department
+      : isNameOrShortNameChanged && (StringUtils.isNotBlank(departmentHistoryForm.getName())
         && StringUtils.isNotBlank(departmentHistoryForm.getShortName())
         && !sDDepartmentService.isNameAndShortNameUnique(departmentHistoryForm.getName(),
-            departmentHistoryForm.getShortName(), departmentHistoryForm.getId())) {
+        departmentHistoryForm.getShortName(), departmentHistoryForm.getId())
+        && departmentHistoryForm.getVersion() == 0);
+    if (validationCheck) {
       errors.add(new ValidationError(INPUT_NAME, ValidationMessages.UNIQUE_NAME_AND_SHORT_NAME));
       errors.add(
-          new ValidationError(INPUT_SHORT_NAME, ValidationMessages.UNIQUE_NAME_AND_SHORT_NAME));
+        new ValidationError(INPUT_SHORT_NAME, ValidationMessages.UNIQUE_NAME_AND_SHORT_NAME));
       errors.add(
-          new ValidationError("nameAndShortNameField", ValidationMessages.UNIQUE_NAME_AND_SHORT_NAME));
+        new ValidationError("nameAndShortNameField",
+          ValidationMessages.UNIQUE_NAME_AND_SHORT_NAME));
     }
-    // Check the address length.
+  }
+
+  /**
+   * Department address validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentAddress(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getAddress())
         && departmentHistoryForm.getAddress().length() > TextType.MIDDLE_TEXT.getValue()) {
       errors.add(new ValidationError("inputAddress", ValidationMessages.ADDRESS_MAX_SIZE_MESSAGE));
       errors.add(
           new ValidationError("addressErrorField", ValidationMessages.ADDRESS_MAX_SIZE_MESSAGE));
     }
-    // Check the post code length.
+  }
+
+  /**
+   * Department post code validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentPostCode(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getPostCode())
         && departmentHistoryForm.getPostCode().length() > 10) {
       errors.add(new ValidationError("postCode", ValidationMessages.POST_CODE_MAX_SIZE_MESSAGE));
       errors.add(
           new ValidationError("postCodeErrorField", ValidationMessages.POST_CODE_MAX_SIZE_MESSAGE));
     }
-    // Check the location length.
+  }
+
+  /**
+   * Department location validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentLocation(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getLocation())
         && departmentHistoryForm.getLocation().length() > TextType.SHORT_TEXT.getValue()) {
       errors.add(new ValidationError("location", ValidationMessages.LOCATION_MAX_SIZE_MESSAGE));
       errors.add(
           new ValidationError("locationErrorField", ValidationMessages.LOCATION_MAX_SIZE_MESSAGE));
     }
-    // Check the telephone number.
+  }
+
+  /**
+   * Department telephone validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param phonePattern the phonePattern
+   * @param errors the errors
+   */
+  private void validateDepartmentTelephone(DepartmentHistoryForm departmentHistoryForm,
+    Pattern phonePattern, Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getTelephone())) {
       // Check the telephone number length.
       if (departmentHistoryForm.getTelephone().length() > 20) {
@@ -247,7 +365,17 @@ public class SDDepartmentResource {
             ValidationMessages.TELEPHONE_INVALID_MESSAGE));
       }
     }
-    // Check the fax number.
+  }
+
+  /**
+   * Department fax validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param phonePattern the phonePattern
+   * @param errors the errors
+   */
+  private void validateDepartmentFax(DepartmentHistoryForm departmentHistoryForm,
+    Pattern phonePattern, Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getFax())) {
       // Check the fax number length.
       if (departmentHistoryForm.getFax().length() > 20) {
@@ -261,7 +389,16 @@ public class SDDepartmentResource {
         errors.add(new ValidationError("faxErrorField", ValidationMessages.FAX_INVALID_MESSAGE));
       }
     }
-    // Check the email.
+  }
+
+  /**
+   * Department email validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentEmail(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getEmail())) {
       // Check the email length.
       if (departmentHistoryForm.getEmail().length() > TextType.MIDDLE_TEXT.getValue()) {
@@ -269,6 +406,9 @@ public class SDDepartmentResource {
         errors.add(new ValidationError("emailErrorField",
             ValidationMessages.EMAIL_MAX_SIZE_ERROR_MESSAGE));
       }
+      // Using regex to check if a given email is valid (contains @).
+      String emailRegex = "^(.+)@(.+)$";
+      Pattern emailPattern = Pattern.compile(emailRegex);
       Matcher matcher = emailPattern.matcher(departmentHistoryForm.getEmail());
       // Check if the email is valid.
       if (!matcher.matches()) {
@@ -277,17 +417,25 @@ public class SDDepartmentResource {
             new ValidationError("emailErrorField", ValidationMessages.EMAIL_FORMAT_ERROR_MESSAGE));
       }
     }
-    // Check the website address length.
+  }
+
+  /**
+   * Department website validation.
+   *
+   * @param departmentHistoryForm the departmentHistoryForm
+   * @param errors the errors
+   */
+  private void validateDepartmentWebsite(DepartmentHistoryForm departmentHistoryForm,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(departmentHistoryForm.getWebsite())
         && departmentHistoryForm.getWebsite().length() > TextType.MIDDLE_TEXT.getValue()) {
       errors.add(new ValidationError("website", ValidationMessages.WEBSITE_MAX_SIZE_MESSAGE));
       errors.add(
           new ValidationError("websiteErrorField", ValidationMessages.WEBSITE_MAX_SIZE_MESSAGE));
     }
-    return errors;
   }
-  
-	@GET
+
+  @GET
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/getAllActiveDepartemntsByUserTenant")

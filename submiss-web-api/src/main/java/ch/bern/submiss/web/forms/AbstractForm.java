@@ -13,11 +13,10 @@
 
 package ch.bern.submiss.web.forms;
 
-public class AbstractForm {
+public abstract class AbstractForm {
 
   private String id;
-
-  private String name;
+  private Long version;
 
   public String getId() {
     return id;
@@ -27,12 +26,11 @@ public class AbstractForm {
     this.id = id;
   }
 
-  public String getName() {
-    return name;
+  public Long getVersion() {
+    return version;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setVersion(Long version) {
+    this.version = version;
   }
-
 }

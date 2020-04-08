@@ -13,23 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import ch.bern.submiss.services.api.administration.SDDirectorateService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
 import ch.bern.submiss.services.api.constants.AuditEvent;
@@ -38,6 +21,7 @@ import ch.bern.submiss.services.api.constants.AuditLevel;
 import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.DirectorateHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.DirectorateToTypeDataMapper;
 import ch.bern.submiss.services.impl.mappers.TenantMapper;
@@ -47,6 +31,22 @@ import ch.bern.submiss.services.impl.model.ProjectEntity;
 import ch.bern.submiss.services.impl.model.QDepartmentHistoryEntity;
 import ch.bern.submiss.services.impl.model.QDirectorateEntity;
 import ch.bern.submiss.services.impl.model.QDirectorateHistoryEntity;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class SDDirectorateServiceImpl.
@@ -77,12 +77,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
   QDirectorateEntity directorateEntity =
 	      QDirectorateEntity.directorateEntity;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#getAllPermittedDirectorates()
-   */
   @Override
   public List<DirectorateHistoryDTO> getAllPermittedDirectorates() {
 
@@ -101,13 +95,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
     return DirectorateHistoryMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistoryEntities);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#getDirectoratesByDepartmentIds
-   * (java.util.List)
-   */
   @Override
   public List<DirectorateHistoryDTO> getDirectoratesByDepartmentIds(List<String> departmentIDs) {
 
@@ -123,26 +110,21 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
       QDirectorateEntity.directorateEntity;
 
     List<String> directorateIds =
-      query.select(directorateEntity.id)
+      query.select(directorateEntity.id).from(directorateEntity, departmentHistoryEntity)
         .where(departmentHistoryEntity.id.in(departmentIDs),
-          departmentHistoryEntity.directorateEnity.id.eq(directorateEntity.id))
-        .from(directorateEntity, departmentHistoryEntity).fetch();
+          departmentHistoryEntity.directorateEnity.id.eq(directorateEntity.id),
+          departmentHistoryEntity.toDate.isNull())
+        .fetch();
 
     List<DirectorateHistoryEntity> directorateHistoryEntities = new JPAQueryFactory(em)
       .select(directorateHistoryEntity).from(directorateHistoryEntity)
-      .where(directorateHistoryEntity.directorateId.id.in(directorateIds))
+      .where(directorateHistoryEntity.directorateId.id.in(directorateIds),
+        (directorateHistoryEntity.toDate.isNull())).orderBy(directorateHistoryEntity.name.asc())
       .fetch();
 
     return DirectorateHistoryMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistoryEntities);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#getDirectoratesByIds(java.util
-   * .List)
-   */
   @Override
   public List<DirectorateHistoryDTO> getDirectoratesByIds(List<String> directoratesIDs) {
 
@@ -162,13 +144,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
     return DirectorateHistoryMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistoryEntities);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#getDirectoratesByTenantId(java
-   * .lang.String)
-   */
   @Override
   public List<DirectorateHistoryDTO> getDirectoratesByTenantId(String tenantId) {
 
@@ -184,11 +159,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
     return DirectorateHistoryMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistoryEntities);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see ch.bern.submiss.services.api.administration.SDDirectorateService#directorateToTypeData()
-   */
   @Override
   public List<MasterListTypeDataDTO> directorateToTypeData() {
 
@@ -207,13 +177,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
     return typeDTOs;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#getDirectorateEntryById(java.
-   * lang.String)
-   */
   @Override
   public DirectorateHistoryDTO getDirectorateEntryById(String entryId) {
 
@@ -226,13 +189,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
         .where(directorateHistoryEntity.id.eq(entryId)).fetchOne());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#directorateHistoryQuery(java.
-   * lang.String)
-   */
   @Override
   public List<DirectorateHistoryDTO> directorateHistoryQuery(String tenantId) {
 
@@ -252,13 +208,6 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
         .where(whereClause, directorateHistoryEntity.toDate.isNull()).fetch());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#isNameUnique(java.lang.String,
-   * java.lang.String)
-   */
   @Override
   public boolean isNameUnique(String name, String id) {
 
@@ -279,23 +228,20 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
       .fetchCount() == 0);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#saveDirectorateEntry(ch.bern.
-   * submiss.services.api.dto.DirectorateHistoryDTO)
-   */
   @Override
-  public void saveDirectorateEntry(DirectorateHistoryDTO directorateHistoryDTO) {
+  public Set<ValidationError> saveDirectorateEntry(DirectorateHistoryDTO directorateHistoryDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveDirectorateEntry, Parameters: directorateHistoryDTO: {0}",
       directorateHistoryDTO);
 
+    Set<ValidationError> error = new HashSet<>();
     DirectorateHistoryEntity directorateHistEntity;
     // Check if an old entry is being updated or a new entry is created.
     if (StringUtils.isBlank(directorateHistoryDTO.getId())) {
+      // Creating a new directorate entity.
+      DirectorateEntity directorate = new DirectorateEntity();
+      em.persist(directorate);
       // Creating a new entry.
       directorateHistEntity =
         DirectorateHistoryMapper.INSTANCE.toDirectorateHistory(directorateHistoryDTO);
@@ -304,18 +250,20 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
       // Set tenant.
       directorateHistEntity.setTenant(
         TenantMapper.INSTANCE.toTenant(usersService.getUserById(getUser().getId()).getTenant()));
-      // Creating a new directorate entity.
-      DirectorateEntity directorateEntity = new DirectorateEntity();
-      em.persist(directorateEntity);
       // Assign the directorate entity to the directorate history entity.
-      directorateHistEntity.setDirectorateId(directorateEntity);
+      directorateHistEntity.setDirectorateId(directorate);
 
-      auditLog(directorateEntity.getId(), AuditEvent.CREATE.name(), null);
+      auditLog(directorate.getId(), AuditEvent.CREATE.name(), null);
     } else {
       // In case of updating an old entry, find the entry and set the current date to the toDate
       // property.
       directorateHistEntity =
         em.find(DirectorateHistoryEntity.class, directorateHistoryDTO.getId());
+      // If the current version is 1, then return an optimisticLockErrorField
+      if (directorateHistEntity.getVersion() == 1) {
+        error.add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+        return error;
+      }
       directorateHistEntity.setToDate(new Timestamp(new Date().getTime()));
       em.merge(directorateHistEntity);
       // Now that the old entry is added to the history, create its new instance.
@@ -336,15 +284,9 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
       DirectorateHistoryMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistEntity));
     cacheBean.updateHistoryDirectoratesList(
       DirectorateHistoryMapper.INSTANCE.toDirectorateHistoryDTO(directorateHistEntity));
+    return error;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * ch.bern.submiss.services.api.administration.SDDirectorateService#getAllDirectoratesByUserTenant
-   * ()
-   */
   @Override
   public List<DirectorateHistoryDTO> getAllDirectoratesByUserTenant() {
 
@@ -365,7 +307,7 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
   public List<DirectorateHistoryDTO> directorateHistoryQueryAll(String tenantId) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method directorateHistoryQuery, Parameters: tenantId: {0}",
+      "Executing method directorateHistoryQueryAll, Parameters: tenantId: {0}",
       tenantId);
 
     JPAQuery<ProjectEntity> query = new JPAQuery<>(em);
@@ -392,6 +334,4 @@ public class SDDirectorateServiceImpl extends BaseService implements SDDirectora
         AuditGroupName.REFERENCE_DATA.name(), message, getUser().getId(),
         id, null, null, LookupValues.INTERNAL_LOG);
   }
-
-
 }

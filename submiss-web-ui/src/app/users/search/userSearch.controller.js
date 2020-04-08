@@ -73,9 +73,16 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadTenants();
-      vm.loadRoles();
-      vm.loadDirectorates();
+      UsersService.loadUserSearch()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.loadTenants();
+            vm.loadRoles();
+            vm.loadDirectorates();
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -86,7 +93,10 @@
      **********************************************************************/
     function search() {
       UsersService.search(vm.searchForm)
-        .success(function (data) {
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          }
           vm.users = data;
           vm.tableParams = new NgTableParams({
             page: 1,

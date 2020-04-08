@@ -13,39 +13,10 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiService;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
-import com.eurodyn.qlack2.fuse.cm.api.VersionService;
-import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
-import com.google.common.collect.Table;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import ch.bern.submiss.services.api.administration.OfferService;
 import ch.bern.submiss.services.api.administration.ReportService;
 import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.CompanyDTO;
 import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
@@ -75,6 +46,32 @@ import ch.bern.submiss.services.impl.model.QSubmissionEntity;
 import ch.bern.submiss.services.impl.model.QSubmittentEntity;
 import ch.bern.submiss.services.impl.model.QTenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
+import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.fuse.cm.api.VersionService;
+import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
+import com.google.common.collect.Table;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -86,6 +83,10 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiService;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class ReportServiceImpl.
@@ -252,6 +253,8 @@ public class ReportServiceImpl extends BaseService implements ReportService {
     LOGGER.log(Level.CONFIG,
       "Executing method generateReport, Parameters: reportResults: {0}",
       reportResults);
+
+    reportSecurityCheck();
 
     byte[] report = null;
     try {
@@ -1268,6 +1271,8 @@ public class ReportServiceImpl extends BaseService implements ReportService {
       "Executing method getNumberOfResultsByReport, Parameters: reportDTO: {0}",
       reportDTO);
 
+    reportSecurityCheck();
+
     JPAQuery<SubmissionEntity> query = createQuery(reportDTO);
     return query.fetchCount();
   }
@@ -1335,5 +1340,14 @@ public class ReportServiceImpl extends BaseService implements ReportService {
      * The pdf.
      */
     PDF
+  }
+
+  @Override
+  public void reportSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method reportSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.GENERATE_REPORT.getValue(), null);
   }
 }

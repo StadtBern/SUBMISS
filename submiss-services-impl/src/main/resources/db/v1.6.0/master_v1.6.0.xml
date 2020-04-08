@@ -1,0 +1,31 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <!-- Structure -->
+  <include file="structure\submiss_structure_v1.6.0.0001.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0002.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0003.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0004.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0005.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0006.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0007.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0008.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0009.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0010.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0011.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0012.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0013.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0014.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0015.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0016.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0017.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0018.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0019.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0020.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0021.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0022.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0023.xml" relativeToChangelogFile="true"/>
+  <include file="structure\submiss_structure_v1.6.0.0024.xml" relativeToChangelogFile="true"/>
+  <!-- Content -->
+</databaseChangeLog>

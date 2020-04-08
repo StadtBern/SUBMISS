@@ -26,8 +26,8 @@
   /** @ngInject */
   function CommissionProcurementProposalService($http, AppConstants) {
     return {
-      updateCommissionProcurementProposal: function (commissionProcurementForm, submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/updateCommissionProcurementProposal/' + submissionId, commissionProcurementForm);
+      updateCommissionProcurementProposal: function (commissionProcurementForm, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/updateCommissionProcurementProposal/' + submissionId + '/' + submissionVersion, commissionProcurementForm);
       },
       getOffersBySubmission: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/submissionOffers/' + submissionId);
@@ -41,24 +41,24 @@
       closeProposalNoErrors: function (submissionId) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/closeProposalNoErrors/' + submissionId);
       },
-      closeCommissionProcurementProposal: function (submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/closeCommissionProcurementProposal/' + submissionId);
+      closeCommissionProcurementProposal: function (submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/closeCommissionProcurementProposal/' + submissionId + '/' + submissionVersion);
       },
-      reopenCommissionProcurementProposal: function (reopen, submissionId) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/reopen/commissionProcurementProposal/' + submissionId, reopen);
+      reopenCommissionProcurementProposal: function (reopen, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/reopen/commissionProcurementProposal/' + submissionId + '/' + submissionVersion, reopen);
       },
-      updateCommissionProcurementDecision: function (commissionProcurementDecisionForm, submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/updateCommissionProcurementDecision/' +
-          submissionId, commissionProcurementDecisionForm);
+      updateCommissionProcurementDecision: function (commissionProcurementDecisionForm, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/updateCommissionProcurementDecision/' +
+          submissionId + '/' + submissionVersion, commissionProcurementDecisionForm);
       },
       closeDecisionNoErrors: function (submissionId) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/closeDecisionNoErrors/' + submissionId);
       },
-      closeCommissionProcurementDecision: function (submissionId) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/closeCommissionProcurementDecision/' + submissionId);
+      closeCommissionProcurementDecision: function (submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/closeCommissionProcurementDecision/' + submissionId + '/' + submissionVersion);
       },
-      reopenCommissionProcurementDecision: function (reopen, submissionId) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/reopen/commissionProcurementDecision/' + submissionId, reopen);
+      reopenCommissionProcurementDecision: function (reopen, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/commissionProcurement/reopen/commissionProcurementDecision/' + submissionId + '/' + submissionVersion, reopen);
       }
     };
   }

@@ -73,6 +73,24 @@
       },
       updateProject: function (project) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/project/update', project);
+      },
+      projectExists: function (projectId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/exists/' + projectId);
+      },
+      loadProjectCreate: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectCreate');
+      },
+      loadProjectEdit: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectEdit');
+      },
+      loadProjectDetails: function (projectId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectDetails/' + projectId);
+      },
+      loadSubmissionList: function (projectId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadSubmissionList/' + projectId);
+      },
+      loadProjectSearch: function () {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectSearch');
       }
     };
   }

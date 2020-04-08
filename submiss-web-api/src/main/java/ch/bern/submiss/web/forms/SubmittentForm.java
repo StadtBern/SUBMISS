@@ -13,69 +13,83 @@
 
 package ch.bern.submiss.web.forms;
 
+import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import java.sql.Timestamp;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class SubmittentForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubmittentForm {
+public class SubmittentForm extends AbstractForm {
 
-  /** The id. */
-  private String id;
-
-  /** The company id. */
+  /**
+   * The company id.
+   */
   private CompanyForm companyId;
 
-  /** The submission id. */
+  /**
+   * The submission id.
+   */
   private SubmissionForm submissionId;
 
-  /** The subcontractors. */
+  /**
+   * The subcontractors.
+   */
   private Set<CompanyForm> subcontractors;
 
-  /** The joint ventures. */
+  /**
+   * The joint ventures.
+   */
   private Set<CompanyForm> jointVentures;
 
-  /** The exists exclusion reasons. */
+  /**
+   * The exists exclusion reasons.
+   */
   private Boolean existsExclusionReasons;
 
-  /** The formal examination fulfilled. */
+  /**
+   * The formal examination fulfilled.
+   */
   private Boolean formalExaminationFulfilled;
 
-  /** The proof doc pending. */
+  /**
+   * The proof doc pending.
+   */
   private Boolean proofDocPending;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   private Timestamp createdOn;
 
-  /** The created by. */
+  /**
+   * The updated on.
+   */
+  private Timestamp updatedOn;
+
+  /**
+   * The created by.
+   */
   private String createdBy;
-  
-  /** The is applicant. */
+
+  /**
+   * The is applicant.
+   */
   private Boolean isApplicant;
-  
-  /** The formal audit notes. */
+
+  /**
+   * The formal audit notes.
+   */
   private String formalAuditNotes;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The formal audit version.
    */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @JsonView(View.Public.class)
+  private Long formalAuditVersion;
 
   /**
    * Gets the company id.
@@ -274,5 +288,30 @@ public class SubmittentForm {
   public void setFormalAuditNotes(String formalAuditNotes) {
     this.formalAuditNotes = formalAuditNotes;
   }
-  
+
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  public Long getFormalAuditVersion() {
+    return formalAuditVersion;
+  }
+
+  public void setFormalAuditVersion(Long formalAuditVersion) {
+    this.formalAuditVersion = formalAuditVersion;
+  }
 }

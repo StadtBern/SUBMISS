@@ -13,42 +13,67 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import java.util.Date;
 import ch.bern.submiss.services.api.constants.Process;
+import java.util.Date;
 
 /**
  * The Class TenderDTO.
  */
-public class TenderDTO extends AbstractDTO {
+public class TenderDTO extends AbstractStammdatenDTO {
 
-  /** The object name. */
+  /**
+   * The object name.
+   */
   private String objectName;
 
-  /** The project id. */
+  /**
+   * The project id.
+   */
   private String projectId;
 
-  /** The project name. */
+  /**
+   * The project version.
+   */
+  private Long projectVersion;
+
+  /**
+   * The project name.
+   */
   private String projectName;
 
-  /** The description. */
+  /**
+   * The description.
+   */
   private String description;
 
-  /** The work type. */
+  /**
+   * The work type.
+   */
   private String workType;
 
-  /** The proccess. */
+  /**
+   * The proccess.
+   */
   private Process proccess;
 
-  /** The proccess type. */
+  /**
+   * The proccess type.
+   */
   private String proccessType;
 
-  /** The submission deadline. */
+  /**
+   * The submission deadline.
+   */
   private Date submissionDeadline;
 
-  /** The man dep. */
+  /**
+   * The man dep.
+   */
   private String manDep;
 
-  /** The project manager of dep. */
+  /**
+   * The project manager of dep.
+   */
   private String projectManagerOfDep;
 
   /**
@@ -231,17 +256,29 @@ public class TenderDTO extends AbstractDTO {
     this.projectManagerOfDep = projectManagerOfDep;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the project version.
+   *
+   * @return the projectVersion
    */
+  public Long getProjectVersion() {
+    return projectVersion;
+  }
+
+  /**
+   * Sets the project version.
+   *
+   * @param projectVersion the projectVersion
+   */
+  public void setProjectVersion(Long projectVersion) {
+    this.projectVersion = projectVersion;
+  }
+
   @Override
   public String toString() {
     return "TenderDTO [objectName=" + objectName + ", projectId=" + projectId + ", projectName="
-        + projectName + ", description=" + description + ", workType=" + workType + ", proccess="
-        + proccess + ", proccessType=" + proccessType + ", submissionDeadline=" + submissionDeadline
-        + ", manDep=" + manDep + ", projectManagerOfDep=" + projectManagerOfDep + "]";
+      + projectName + ", description=" + description + ", workType=" + workType + ", proccess="
+      + proccess + ", proccessType=" + proccessType + ", submissionDeadline=" + submissionDeadline
+      + ", manDep=" + manDep + ", projectManagerOfDep=" + projectManagerOfDep + "]";
   }
-
 }

@@ -30,8 +30,10 @@ import ch.bern.submiss.services.api.constants.CommissionProcurementProposalReaso
 import ch.bern.submiss.services.api.constants.CommissionProcurementProposalReservation;
 import ch.bern.submiss.services.api.constants.ConstructionPermit;
 import ch.bern.submiss.services.api.constants.DocumentAttributes;
+import ch.bern.submiss.services.api.constants.Group;
 import ch.bern.submiss.services.api.constants.LoanApproval;
 import ch.bern.submiss.services.api.constants.Process;
+import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.Template;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.CompanyDTO;
@@ -40,6 +42,7 @@ import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.ProcedureHistoryDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SubmittentDTO;
+import ch.bern.submiss.services.api.exceptions.AuthorisationException;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.OfferDTOMapper;
@@ -51,7 +54,7 @@ import ch.bern.submiss.services.impl.model.CriterionEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.OfferCriterionEntity;
 import ch.bern.submiss.services.impl.model.OfferEntity;
-import ch.bern.submiss.services.impl.model.OfferSubriterionEntity;
+import ch.bern.submiss.services.impl.model.OfferSubcriterionEntity;
 import ch.bern.submiss.services.impl.model.QCompanyEntity;
 import ch.bern.submiss.services.impl.model.QCriterionEntity;
 import ch.bern.submiss.services.impl.model.QFormalAuditEntity;
@@ -65,12 +68,12 @@ import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.SubmittentEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,6 +84,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.RollbackException;
 import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
@@ -192,6 +197,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
 
     SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, id);
     SubmissionEntity submissionEntity = submittentEntity.getSubmissionId();
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDERER_REMOVE.getValue(),
+      submittentEntity.getSubmissionId().getId());
+
     List<OfferEntity> offerEntityList = new JPAQueryFactory(em).select(qOfferEntity)
       .from(qOfferEntity).where(qOfferEntity.submittent.id.eq(id)).fetch();
     for (OfferEntity offer : offerEntityList) {
@@ -243,13 +253,6 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     em.remove(submittentEntity);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#findIfSubmittentHasOffer(java.lang.
-   * String)
-   */
   public Boolean findIfSubmittentHasOffer(String id) {
 
     LOGGER.log(Level.CONFIG,
@@ -262,13 +265,6 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return (!offerEntity.isEmpty());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#findIfSubmittentHasSubcontractors(java
-   * .lang.String)
-   */
   public Boolean findIfSubmittentHasSubcontractors(String id) {
 
     LOGGER.log(Level.CONFIG,
@@ -283,11 +279,6 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return (!subconstractorJointVentureEntityList.isEmpty());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.OfferService#deleteOffer(java.lang.String)
-   */
   @Override
   public String deleteOffer(String id) {
 
@@ -296,6 +287,10 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       id);
 
     OfferEntity offerEntity = em.find(OfferEntity.class, id);
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.OFFER_DELETE.getValue(),
+      offerEntity.getSubmittent().getSubmissionId().getId());
 
     if (offerEntity != null) {
       SubmittentEntity submittentEntity = offerEntity.getSubmittent();
@@ -311,7 +306,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         }
       }
 
-      /** If all offers have the default values, set tender status to SUBMITTENT_LIST_CREATED_ID */
+      /* If all offers have the default values, set tender status to SUBMITTENT_LIST_CREATED_ID */
       long offers =
         new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
           .where(qOfferEntity.submittent.submissionId
@@ -328,21 +323,15 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.OfferService#resetOffer(java.lang.String,
-   * java.util.Date)
-   */
   @Override
-  public String resetOffer(String offerId, Date offerDate) {
+  public String resetOffer(String offerId, Date offerDate, String notes) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method resetOffer, Parameters: offerId: {0}, offerDate: {1}",
       new Object[]{offerId, offerDate});
 
     OfferEntity offerEntity = em.find(OfferEntity.class, offerId);
-    Date tempOfferDate = offerDate;
+
     SubmittentEntity submittentEntity = offerEntity.getSubmittent();
     if (submittentEntity != null) {
       if (submittentEntity.getIsApplicant() == null || !submittentEntity.getIsApplicant()) {
@@ -351,8 +340,9 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       } else {
         offerEntity = projectBean.createDefaultOfferForApplicant(offerEntity);
       }
-      /** Reseting all default values except the Offer Date and the Empty Offer checkbox */
-      offerEntity.setOfferDate(tempOfferDate);
+      /* Reseting all default values except the Offer Date and the Empty Offer checkbox */
+      offerEntity.setOfferDate(offerDate);
+      offerEntity.setNotes(notes);
       offerEntity.setIsEmptyOffer(Boolean.TRUE);
       offerEntity.setIsDefaultOffer(Boolean.FALSE);
 
@@ -372,61 +362,98 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.OfferService#closeOffer(java.lang.String)
-   */
   @Override
-  public List<String> closeOffer(String submissionId) {
+  public Set<ValidationError> closeOfferValidation(String submissionId) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method closeOffer, Parameters: submissionId: {0}",
+      "Executing method closeOfferValidation, Parameters: submissionId: {0}",
       submissionId);
 
-    List<String> messages = new ArrayList<>();
-    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
-    if ((submissionEntity.getProcess().equals(Process.INVITATION)
-      || submissionEntity.getProcess().equals(Process.OPEN)
-      || submissionEntity.getProcess().equals(Process.SELECTIVE))
-      && (submissionEntity.getIsServiceTender() == null || !submissionEntity.getIsServiceTender())
-      && requiredDocumentExists(submissionEntity.getId(), Template.OFFERRTOFFNUNGSPROTOKOLL)) {
-      messages.add(ValidationMessages.MANDATORY_OFFER_PROTOCOL_DOCUMENT_MESSAGE);
+    Set<ValidationError> validationErrors = new HashSet<>();
+    SubmissionDTO submissionDTO =
+      SubmissionMapper.INSTANCE.toSubmissionDTO(em.find(SubmissionEntity.class, submissionId));
+
+    if ((submissionDTO.getProcess().equals(Process.INVITATION)
+      || submissionDTO.getProcess().equals(Process.OPEN)
+      || submissionDTO.getProcess().equals(Process.SELECTIVE))
+      && (submissionDTO.getIsServiceTender() == null || !submissionDTO.getIsServiceTender())
+      && requiredDocumentExists(submissionDTO.getId(), Template.OFFERRTOFFNUNGSPROTOKOLL)) {
+      validationErrors.add(new ValidationError(ValidationMessages.OFFER_PROTOCOL_ERROR_FIELD,
+        ValidationMessages.MANDATORY_OFFER_PROTOCOL_DOCUMENT_MESSAGE));
     }
-    if ((submissionEntity.getProcess().equals(Process.OPEN)
-      || submissionEntity.getProcess().equals(Process.SELECTIVE))
-      && (submissionEntity.getIsServiceTender() != null && submissionEntity.getIsServiceTender())
-      && requiredDocumentExists(submissionEntity.getId(),
+    if ((submissionDTO.getProcess().equals(Process.OPEN)
+      || submissionDTO.getProcess().equals(Process.SELECTIVE))
+      && (submissionDTO.getIsServiceTender() != null && submissionDTO.getIsServiceTender())
+      && requiredDocumentExists(submissionDTO.getId(),
       Template.OFFERRTOFFNUNGSPROTOKOLL_DL_WW)) {
-      messages.add(ValidationMessages.MANDATORY_OFFER_PROTOCOL_DL_DOCUMENT_MESSAGE);
+      validationErrors.add(new ValidationError(ValidationMessages.OFFER_PROTOCOL_ERROR_FIELD,
+        ValidationMessages.MANDATORY_OFFER_PROTOCOL_DL_DOCUMENT_MESSAGE));
     }
-    if ((submissionEntity.getProcess().equals(Process.INVITATION)
-      || submissionEntity.getProcess().equals(Process.NEGOTIATED_PROCEDURE)
-      || submissionEntity.getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))
+    if ((submissionDTO.getProcess().equals(Process.INVITATION)
+      || submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE)
+      || submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))
       && submissionService.hasSubmissionStatus(submissionId,
       TenderStatus.SUBMITTENTLIST_CHECKED.getValue())
-      && requiredDocumentExists(submissionEntity.getId(), Template.SUBMITTENTENLISTE)) {
-      messages.add(ValidationMessages.MANDATORY_SUBMITTENTLISTE_DOCUMENT_MESSAGE);
+      && requiredDocumentExists(submissionDTO.getId(), Template.SUBMITTENTENLISTE)) {
+      validationErrors.add(new ValidationError(ValidationMessages.SUBMITTENTLISTE_ERROR_FIELD,
+        ValidationMessages.MANDATORY_SUBMITTENTLISTE_DOCUMENT_MESSAGE));
     }
     List<OfferDTO> offerDTOs = getOffersBySubmission(submissionId);
     for (OfferDTO offerDTO : offerDTOs) {
       // Check if there are offers without a date.
       if (offerDTO.getOfferDate() == null) {
-        messages.add(ValidationMessages.OFFERS_NO_DATE_ERROR);
+        validationErrors.add(new ValidationError(ValidationMessages.OFFERS_NO_DATE_ERROR_FIELD,
+          ValidationMessages.OFFERS_NO_DATE_ERROR));
         break;
       }
     }
-    if (messages.isEmpty()) {
-      closeOfferStatus(submissionEntity);
-    }
-    return messages;
+    return validationErrors;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.OfferService#getOfferById(java.lang.String)
-   */
+  @Override
+  public Set<ValidationError> closeOffer(String submissionId, Long submissionVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method closeOffer, Parameters: submissionId: {0}",
+      submissionId);
+
+    security.isPermittedOperationForUser(getUserId(),
+      submissionService.getSubmissionProcess(submissionId).getValue() + LookupValues.DOT
+        + SecurityOperation.OFFER_OPENING_CLOSE.getValue(),
+      submissionId);
+
+    // Update submission status and also check for optimistic lock errors
+    Set<ValidationError> optimisticLockErrors = submissionService
+      .updateSubmissionStatus(submissionId, submissionVersion,
+        TenderStatus.OFFER_OPENING_CLOSED.getValue(), AuditMessages.CLOSE_OFFER.name(), null,
+        LookupValues.EXTERNAL_LOG);
+
+    if (!optimisticLockErrors.isEmpty()) {
+      return optimisticLockErrors;
+    }
+
+    // Set minGrade and maxGrade values if the offer opening is closed for the first time.
+    if (submissionService.isOfferOpeningFirstTimeClosed(submissionId)) {
+      SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
+      submissionEntity.setMinGrade(BigDecimal.valueOf(0));
+      submissionEntity.setMaxGrade(BigDecimal.valueOf(5));
+    }
+
+    /* Update offer sort order. */
+    if (!submissionService.getSubmissionProcess(submissionId).equals(Process.SELECTIVE)) {
+      Integer sortOrder = 1;
+      List<OfferEntity> offerEntities =
+        new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
+          .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)).fetch();
+      Collections.sort(offerEntities, ComparatorUtil.sortOfferEntities);
+      for (OfferEntity o : offerEntities) {
+        o.getSubmittent().setSortOrder(sortOrder);
+        sortOrder++;
+      }
+    }
+    return optimisticLockErrors;
+  }
+
   @Override
   public OfferDTO getOfferById(String id) {
 
@@ -435,6 +462,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       id);
 
     OfferEntity offer = em.find(OfferEntity.class, id);
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.TENDER_VIEW.getValue(),
+      offer.getSubmittent().getSubmissionId().getId());
+
     OfferDTO offerDTO = OfferDTOMapper.INSTANCE.toOfferDTO(offer);
     MasterListValueHistoryDTO settlementDTO =
       cacheBean.getValue(CategorySD.SETTLEMENT_TYPE.getValue(), offer.getSettlement().getId(),
@@ -470,6 +502,10 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       submittent);
 
     SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittent.getId());
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.OFFER_DETAILS_EDIT.getValue(),
+      submittentEntity.getSubmissionId().getId());
     if (submittentEntity != null) {
       Set<CompanyEntity> companyEntities = new HashSet<>();
       for (CompanyDTO company : submittent.getSubcontractors()) {
@@ -529,58 +565,76 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    * @param subcontractorId the subcontractor id
    */
   @Override
-  public void deleteSubcontractor(String submittentId, String subcontractorId) {
+  public Set<ValidationError> deleteSubcontractor(String submittentId, String subcontractorId) {
 
     LOGGER.log(Level.CONFIG, "Executing method deleteSubcontractor, Parameters: "
         + "submittentId: {0}, subcontractorId: {1}",
       new Object[]{submittentId, subcontractorId});
 
-    SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittentId);
-    CompanyEntity subcontractor = em.find(CompanyEntity.class, subcontractorId);
-    submittentEntity.getSubcontractors().remove(subcontractor);
-    // Delete the submittent proof provided entries of the subcontractor.
-    sDProofService.deleteSubmittentProofProvidedEntries(
-      SubmittentDTOMapper.INSTANCE.toSubmittentDTO(submittentEntity), subcontractorId, false);
-    em.merge(submittentEntity);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
 
-    // Create log entry if the submittentenliste has been examined (geprüft) AND/OR Status
-    // "Offertöffnung abgeschlossen" has been set
-    if (!tenderStatusHistoryService
-      .retrieveSubmissionSpecificStatuses(submittentEntity.getSubmissionId().getId(),
-        TenderStatus.SUBMITTENTLIST_CHECKED.getValue())
-      .isEmpty()
-      || !tenderStatusHistoryService
-      .retrieveSubmissionSpecificStatuses(submittentEntity.getSubmissionId().getId(),
-        TenderStatus.OFFER_OPENING_CLOSED.getValue())
-      .isEmpty()) {
+    try {
+      SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittentId);
+      security.isPermittedOperationForUser(getUserId(),
+        SecurityOperation.OFFER_DETAILS_EDIT.getValue(),
+        submittentEntity.getSubmissionId().getId());
 
-      MasterListValueHistoryEntity workType = new JPAQueryFactory(em)
-        .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-        .where(qMasterListValueHistoryEntity.masterListValueId
-          .eq(submittentEntity.getSubmissionId().getWorkType())
-          .and(qMasterListValueHistoryEntity.toDate.isNull()))
-        .fetchOne();
+      CompanyEntity subcontractor = em.find(CompanyEntity.class, subcontractorId);
+      if (!submittentEntity.getSubcontractors().contains(subcontractor)) {
+        optimisticLockErrors.add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.SUBCONTRACTOR_DELETED));
+        return optimisticLockErrors;
+      }
+      submittentEntity.getSubcontractors().remove(subcontractor);
+      // Delete the submittent proof provided entries of the subcontractor.
+      sDProofService.deleteSubmittentProofProvidedEntries(
+        SubmittentDTOMapper.INSTANCE.toSubmittentDTO(submittentEntity), subcontractorId, false);
+      em.merge(submittentEntity);
 
-      MasterListValueHistoryEntity objectEntity = new JPAQueryFactory(em)
-        .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-        .where(qMasterListValueHistoryEntity.masterListValueId
-          .eq(submittentEntity.getSubmissionId().getProject().getObjectName())
-          .and(qMasterListValueHistoryEntity.toDate.isNull()))
-        .fetchOne();
+      // Create log entry if the submittentenliste has been examined (geprüft) AND/OR Status
+      // "Offertöffnung abgeschlossen" has been set
+      if (!tenderStatusHistoryService
+        .retrieveSubmissionSpecificStatuses(submittentEntity.getSubmissionId().getId(),
+          TenderStatus.SUBMITTENTLIST_CHECKED.getValue())
+        .isEmpty()
+        || !tenderStatusHistoryService
+        .retrieveSubmissionSpecificStatuses(submittentEntity.getSubmissionId().getId(),
+          TenderStatus.OFFER_OPENING_CLOSED.getValue())
+        .isEmpty()) {
 
-      String workTypeValue2 = (StringUtils.isEmpty(workType.getValue2())) ? StringUtils.EMPTY
-        : " " + workType.getValue2();
+        MasterListValueHistoryEntity workType = new JPAQueryFactory(em)
+          .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+          .where(qMasterListValueHistoryEntity.masterListValueId
+            .eq(submittentEntity.getSubmissionId().getWorkType())
+            .and(qMasterListValueHistoryEntity.toDate.isNull()))
+          .fetchOne();
 
-      StringBuilder submissionVars =
-        new StringBuilder(submittentEntity.getSubmissionId().getProject().getProjectName())
-          .append("[#]")
-          .append(objectEntity.getValue1()).append("[#]")
-          .append(workType.getValue1() + workTypeValue2).append("[#]")
-          .append(usersService.getUserById(getUser().getId()).getTenant().getId()).append("[#]");
+        MasterListValueHistoryEntity objectEntity = new JPAQueryFactory(em)
+          .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+          .where(qMasterListValueHistoryEntity.masterListValueId
+            .eq(submittentEntity.getSubmissionId().getProject().getObjectName())
+            .and(qMasterListValueHistoryEntity.toDate.isNull()))
+          .fetchOne();
 
-      auditLog(AuditEvent.REMOVE.name(), AuditMessages.SUBCONTRACTOR_REMOVED.name(),
-        submittentEntity.getSubmissionId().getId(), submissionVars.toString());
+        String workTypeValue2 = (StringUtils.isEmpty(workType.getValue2())) ? StringUtils.EMPTY
+          : " " + workType.getValue2();
+
+        StringBuilder submissionVars =
+          new StringBuilder(submittentEntity.getSubmissionId().getProject().getProjectName())
+            .append("[#]")
+            .append(objectEntity.getValue1()).append("[#]")
+            .append(workType.getValue1() + workTypeValue2).append("[#]")
+            .append(usersService.getUserById(getUser().getId()).getTenant().getId()).append("[#]");
+
+        auditLog(AuditEvent.REMOVE.name(), AuditMessages.SUBCONTRACTOR_REMOVED.name(),
+          submittentEntity.getSubmissionId().getId(), submissionVars.toString());
+      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors.add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+        ValidationMessages.SUBCONTRACTOR_DELETED));
     }
+
+    return optimisticLockErrors;
   }
 
   /**
@@ -596,6 +650,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       submittent);
 
     SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittent.getId());
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.OFFER_DETAILS_EDIT.getValue(),
+      submittentEntity.getSubmissionId().getId());
+
     if (submittentEntity != null) {
       Set<CompanyEntity> companyEntities = new HashSet<>();
       for (CompanyDTO company : submittent.getJointVentures()) {
@@ -650,54 +709,73 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    * @param jointVentureId the joint venture id
    */
   @Override
-  public void deleteJointVenture(String submittentId, String jointVentureId) {
+  public Set<ValidationError> deleteJointVenture(String submittentId, String jointVentureId) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method deleteJointVenture, Parameters: submittentId: {0}, "
         + "jointVentureId: {1}",
       new Object[]{submittentId, jointVentureId});
 
-    SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittentId);
-    CompanyEntity jointVenture = em.find(CompanyEntity.class, jointVentureId);
-    submittentEntity.getJointVentures().remove(jointVenture);
-    // Delete the submittent proof provided entries of the joint venture.
-    sDProofService.deleteSubmittentProofProvidedEntries(
-      SubmittentDTOMapper.INSTANCE.toSubmittentDTO(submittentEntity), jointVentureId, false);
-    em.merge(submittentEntity);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
 
-    // Create log entry if the submittentenliste has been examined (geprüft).
-    if (!tenderStatusHistoryService
-      .retrieveSubmissionSpecificStatuses(submittentEntity.getSubmissionId().getId(),
-        TenderStatus.SUBMITTENTLIST_CHECKED.getValue())
-      .isEmpty()) {
+    try {
+      SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittentId);
 
-      MasterListValueHistoryEntity workType = new JPAQueryFactory(em)
-        .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-        .where(qMasterListValueHistoryEntity.masterListValueId
-          .eq(submittentEntity.getSubmissionId().getWorkType())
-          .and(qMasterListValueHistoryEntity.toDate.isNull()))
-        .fetchOne();
+      security.isPermittedOperationForUser(getUserId(),
+        SecurityOperation.OFFER_DETAILS_EDIT.getValue(),
+        submittentEntity.getSubmissionId().getId());
 
-      MasterListValueHistoryEntity objectEntity = new JPAQueryFactory(em)
-        .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-        .where(qMasterListValueHistoryEntity.masterListValueId
-          .eq(submittentEntity.getSubmissionId().getProject().getObjectName())
-          .and(qMasterListValueHistoryEntity.toDate.isNull()))
-        .fetchOne();
+      CompanyEntity jointVenture = em.find(CompanyEntity.class, jointVentureId);
+      if (!submittentEntity.getJointVentures().contains(jointVenture)) {
+        optimisticLockErrors.add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.ARGE_DELETED));
+        return optimisticLockErrors;
+      }
+      submittentEntity.getJointVentures().remove(jointVenture);
+      // Delete the submittent proof provided entries of the joint venture.
+      sDProofService.deleteSubmittentProofProvidedEntries(
+        SubmittentDTOMapper.INSTANCE.toSubmittentDTO(submittentEntity), jointVentureId, false);
+      em.merge(submittentEntity);
 
-      String workTypeValue2 = (StringUtils.isEmpty(workType.getValue2())) ? StringUtils.EMPTY
-        : " " + workType.getValue2();
+      // Create log entry if the submittentenliste has been examined (geprüft).
+      if (!tenderStatusHistoryService
+        .retrieveSubmissionSpecificStatuses(submittentEntity.getSubmissionId().getId(),
+          TenderStatus.SUBMITTENTLIST_CHECKED.getValue())
+        .isEmpty()) {
 
-      StringBuilder submissionVars =
-        new StringBuilder(submittentEntity.getSubmissionId().getProject().getProjectName())
-          .append("[#]")
-          .append(objectEntity.getValue1()).append("[#]")
-          .append(workType.getValue1() + workTypeValue2).append("[#]")
-          .append(usersService.getUserById(getUser().getId()).getTenant().getId()).append("[#]");
+        MasterListValueHistoryEntity workType = new JPAQueryFactory(em)
+          .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+          .where(qMasterListValueHistoryEntity.masterListValueId
+            .eq(submittentEntity.getSubmissionId().getWorkType())
+            .and(qMasterListValueHistoryEntity.toDate.isNull()))
+          .fetchOne();
 
-      auditLog(AuditEvent.REMOVE.name(), AuditMessages.ARGE_REMOVED.name(),
-        submittentEntity.getSubmissionId().getId(), submissionVars.toString());
+        MasterListValueHistoryEntity objectEntity = new JPAQueryFactory(em)
+          .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+          .where(qMasterListValueHistoryEntity.masterListValueId
+            .eq(submittentEntity.getSubmissionId().getProject().getObjectName())
+            .and(qMasterListValueHistoryEntity.toDate.isNull()))
+          .fetchOne();
+
+        String workTypeValue2 = (StringUtils.isEmpty(workType.getValue2())) ? StringUtils.EMPTY
+          : " " + workType.getValue2();
+
+        StringBuilder submissionVars =
+          new StringBuilder(submittentEntity.getSubmissionId().getProject().getProjectName())
+            .append("[#]")
+            .append(objectEntity.getValue1()).append("[#]")
+            .append(workType.getValue1() + workTypeValue2).append("[#]")
+            .append(usersService.getUserById(getUser().getId()).getTenant().getId()).append("[#]");
+
+        auditLog(AuditEvent.REMOVE.name(), AuditMessages.ARGE_REMOVED.name(),
+          submittentEntity.getSubmissionId().getId(), submissionVars.toString());
+      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors.add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+        ValidationMessages.ARGE_DELETED));
     }
+
+    return optimisticLockErrors;
   }
 
   /*
@@ -715,6 +793,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       offerDTO);
 
     OfferEntity offerEntity = em.find(OfferEntity.class, offerDTO.getId());
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.OFFER_DETAILS_EDIT.getValue(),
+      offerEntity.getSubmittent().getSubmissionId().getId());
+
     if (offerEntity != null) {
       SubmissionEntity submissionEntity =
         em.find(SubmissionEntity.class, offerEntity.getSubmittent().getSubmissionId().getId());
@@ -781,7 +864,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         .fetch();
     if (!subcriterionEntities.isEmpty()) {
       for (SubcriterionEntity subcriterion : subcriterionEntities) {
-        OfferSubriterionEntity offerCriterionEntity = new OfferSubriterionEntity();
+        OfferSubcriterionEntity offerCriterionEntity = new OfferSubcriterionEntity();
         offerCriterionEntity.setOffer(offer);
         offerCriterionEntity.setSubriterion(subcriterion);
         em.persist(offerCriterionEntity);
@@ -832,35 +915,68 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         .fetch();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.OfferService#updateOfferAwards(java.util.List,
-   * java.lang.String)
-   */
   @Override
   public void updateOfferAwards(List<String> checkedOffersIds, String submissionId) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method updateOfferAwards, Parameters: submissionId: {0}",
-      submissionId);
+      "Executing method updateOfferAwards, Parameters: checkedOffersIds: {0}, "
+        + "submissionId: {1}",
+      new Object[]{checkedOffersIds, submissionId});
+
+    // Check for optimistic lock exception
+    checkOfferAwardsOptimisticLock(submissionId);
 
     // Get offers by their offer ids.
     List<OfferEntity> offerEntities = new JPAQueryFactory(em).selectFrom(qOfferEntity)
       .where(qOfferEntity.id.in(checkedOffersIds)).fetch();
     // Set above threshold on submission.
-    updateAndGetThreshold(submissionId, offerEntities);
+
     for (OfferEntity offer : offerEntities) {
-      /** update offer to take the award */
+      /* update offer to take the award */
       offer.setIsAwarded(true);
       em.merge(offer);
     }
+
     // Initialize the commission procurement proposal values.
-    initializeCommissionProcurementProposalValues(submissionId);
+    SubmissionEntity submissionEntity = initializeCommissionProcurementProposalValues(
+      submissionId);
+    updateTresholdAndGeko(submissionEntity, offerEntities);
+    em.merge(submissionEntity);
     // Use submission id from offers to update submission status.
     submissionService.updateSubmissionStatus(submissionId,
       TenderStatus.MANUAL_AWARD_COMPLETED.getValue(), AuditMessages.MANUAL_AWARD_COMPLETED.name(),
       null, LookupValues.EXTERNAL_LOG);
+  }
+
+  /**
+   * Checks for Optimistic Lock Exception.
+   * If there is an Optimistic Lock Exception throws a custom
+   * response with message from OptimisticLockExceptionMapper.
+   *
+   * @param submissionId the submissionId
+   */
+  private void checkOfferAwardsOptimisticLock(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method checkOfferAwardsOptimisticLock, Parameters: submissionId: {0}",
+      submissionId);
+
+    String submissionStatus = submissionService.getCurrentStatusOfSubmission(submissionId);
+    Process submissionProcess = submissionService.getSubmissionProcess(submissionId);
+
+    if (TenderStatus.MANUAL_AWARD_COMPLETED.getValue().equals(submissionStatus)
+      || (!TenderStatus.FORMAL_AUDIT_COMPLETED.getValue().equals(submissionStatus) && (
+      Process.NEGOTIATED_PROCEDURE.equals(submissionProcess)
+        || Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION.equals(submissionProcess)))
+      || (!TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue()
+      .equals(submissionStatus) && (
+      Process.OPEN.equals(submissionProcess)))
+      || (!TenderStatus.FORMAL_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue()
+      .equals(submissionStatus) && (
+      Process.SELECTIVE.equals(submissionProcess))
+    )) {
+      throw new OptimisticLockException();
+    }
   }
 
   /**
@@ -884,7 +1000,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       em.merge(offer);
     }
     // Initialize the commission procurement proposal values.
-    initializeCommissionProcurementProposalValues(submissionId);
+    em.merge(initializeCommissionProcurementProposalValues(submissionId));
     // Update submission status.
     submissionService.updateSubmissionStatus(submissionId,
       TenderStatus.AWARD_EVALUATION_CLOSED.getValue(),
@@ -896,14 +1012,13 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    *
    * @param submissionId the submission id
    */
-  private void initializeCommissionProcurementProposalValues(String submissionId) {
+  private SubmissionEntity initializeCommissionProcurementProposalValues(String submissionId) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method initializeCommissionProcurementProposalValues, Parameters: "
         + "submissionId: {0}",
       submissionId);
 
-    if (submissionId != null) {
       SubmissionDTO submissionDTO = submissionService.getSubmissionById(submissionId);
       // Initialize submission values for commission procurement proposal where required.
       // Initializing the commission procurement proposal reservation value.
@@ -961,9 +1076,8 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         }
       }
       submissionDTO.setCommissionProcurementProposalSuitabilityAuditText(suitabilityAuditText);
-      SubmissionEntity submissionEntity = SubmissionMapper.INSTANCE.toSubmission(submissionDTO);
-      em.merge(submissionEntity);
-    }
+      return SubmissionMapper.INSTANCE.toSubmission(submissionDTO);
+
   }
 
   /**
@@ -1072,30 +1186,30 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    * @param submissionId the submission id
    * @param offerEntities the offer entities
    */
-  private void updateAndGetThreshold(String submissionId, List<OfferEntity> offerEntities) {
+  private void updateTresholdAndGeko(SubmissionEntity submissionEntity, List<OfferEntity> offerEntities) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method updateAndGetThreshold, Parameters: submissionId: {0}, "
+      "Executing method updateTresholdAndGeko, Parameters: submissionEntity: {0}, "
         + "offerEntities: {1}",
-      new Object[]{submissionId, offerEntities});
-
-    ProcedureHistoryDTO thresholdEntity = null;
-    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
-    /**
+      new Object[]{submissionEntity, offerEntities});
+    /*
      * Get a procedure history entity so to compare the value with the max Offer afterwards. Process
      * must be the next step of Freihandiges verfarhen(process: Negotiated Procedure)
      */
-    thresholdEntity = procedureService.readProcedure(submissionEntity.getProcessType().getId(),
-      Process.INVITATION, submissionEntity.getProject().getTenant().getId());
+    ProcedureHistoryDTO thresholdEntity = procedureService.readProcedure(
+      submissionEntity.getProcessType().getId(),
+      Process.INVITATION,
+      submissionEntity.getProject().getTenant().getId());
 
     for (OfferEntity offerEntity : offerEntities) {
       if (thresholdEntity != null) {
-        /** Convert String to BigDecimal */
+        /* Convert String to BigDecimal */
         BigDecimal tresholdValue = thresholdEntity.getValue();
-        /** if the offer amount value is greater than the value of threshold then set it to true */
+        /* if the offer amount value is greater than the value of threshold then set it to true */
         if (offerEntity.getAmount() != null
           && (offerEntity.getAmount().compareTo(tresholdValue)) == 1
-          && ((submissionEntity.getProcess() == Process.NEGOTIATED_PROCEDURE) || submissionEntity
+          && ((offerEntity.getSubmittent().getSubmissionId().getProcess()
+          == Process.NEGOTIATED_PROCEDURE) || submissionEntity
           .getProcess() == Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
           submissionEntity.setAboveThreshold(true);
           //Bug 13233 - Freihändiges Verfahren oberhalb Schwellenwert und GeKo
@@ -1158,93 +1272,69 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return documentService.getNodeByAttributes(submissionId, attributesMap).isEmpty();
   }
 
-  /**
-   * This method is used to close the offer period of the submission and to update the order of the
-   * submitted offers.
-   *
-   * @param submissionEntity the submission entity
-   */
-  private void closeOfferStatus(SubmissionEntity submissionEntity) {
-
-    LOGGER.log(Level.CONFIG,
-      "Executing method closeOfferStatus, Parameters: submissionEntity: {0}",
-      submissionEntity);
-
-    // Set minGrade and maxGrade values if the offer opening is closed for the first time.
-    if (!submissionService.hasOfferOpeningBeenClosedBefore(submissionEntity.getId())) {
-      submissionEntity.setMinGrade(BigDecimal.valueOf(0));
-      submissionEntity.setMaxGrade(BigDecimal.valueOf(5));
-      em.merge(submissionEntity);
-    }
-    submissionService.updateSubmissionStatus(submissionEntity.getId(),
-      TenderStatus.OFFER_OPENING_CLOSED.getValue(), AuditMessages.CLOSE_OFFER.name(), null,
-      LookupValues.EXTERNAL_LOG);
-
-    /* Update offer sort order. */
-    if (!submissionEntity.getProcess().equals(Process.SELECTIVE)) {
-      Integer sortOrder = 1;
-      List<OfferEntity> offerEntities =
-        new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
-          .where(qOfferEntity.submittent.submissionId.id.eq(submissionEntity.getId())).fetch();
-      Collections.sort(offerEntities, ComparatorUtil.sortOfferEntities);
-      for (OfferEntity o : offerEntities) {
-        o.getSubmittent().setSortOrder(sortOrder);
-        em.merge(o);
-        sortOrder++;
-      }
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#updateApplication(java.lang.String,
-   * java.util.Date, java.lang.String)
-   */
-  public void updateApplication(String applicationId, Date applicationDate,
-    String applicationInformation) {
+  @Override
+  public Set<ValidationError> updateApplication(String applicationId, Date applicationDate,
+    String applicationInformation, Long applicationVersion, Long submissionVerion) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateApplication, Parameters: applicationId: {0}, "
         + "applicationDate: {1}, applicationInformation: {2}",
       new Object[]{applicationId, applicationDate, applicationInformation});
 
-    // Application and offer are the same thing, but occur at different statuses.
-    OfferEntity offerEntity = em.find(OfferEntity.class, applicationId);
-    if (offerEntity != null) {
-      SubmissionEntity submissionEntity =
-        em.find(SubmissionEntity.class, offerEntity.getSubmittent().getSubmissionId().getId());
-      // Change the submission (tender) status to application opening started, if no higher or equal
-      // status has been set.
-      if (!compareCurrentVsSpecificStatus(
-        TenderStatus
-          .fromValue(submissionService.getCurrentStatusOfSubmission(submissionEntity.getId())),
-        TenderStatus.APPLICATION_OPENING_STARTED)) {
-        submissionService.updateSubmissionStatus(submissionEntity.getId(),
-          TenderStatus.APPLICATION_OPENING_STARTED.getValue(), null, null,
-          LookupValues.INTERNAL_LOG);
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      // Application and offer are the same thing, but occur at different statuses.
+      OfferEntity offerEntity = em.find(OfferEntity.class, applicationId);
+
+      if (offerEntity != null) {
+
+        if (!applicationVersion.equals(offerEntity.getVersion())) {
+          optimisticLockErrors
+            .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+              ValidationMessages.OPTIMISTIC_LOCK));
+          return optimisticLockErrors;
+        }
+
+        SubmissionEntity submissionEntity =
+          em.find(SubmissionEntity.class, offerEntity.getSubmittent().getSubmissionId().getId());
+
+        if (!submissionVerion.equals(submissionEntity.getVersion())) {
+          optimisticLockErrors
+            .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+              ValidationMessages.OPTIMISTIC_LOCK));
+          return optimisticLockErrors;
+        }
+
+        // Change the submission (tender) status to application opening started, if no higher or equal
+        // status has been set.
+        if (!compareCurrentVsSpecificStatus(
+          TenderStatus
+            .fromValue(submissionService.getCurrentStatusOfSubmission(submissionEntity.getId())),
+          TenderStatus.APPLICATION_OPENING_STARTED)) {
+          submissionService.updateSubmissionStatus(submissionEntity.getId(),
+            TenderStatus.APPLICATION_OPENING_STARTED.getValue(), null, null,
+            LookupValues.INTERNAL_LOG);
+        }
+        offerEntity.setApplicationDate(applicationDate);
+        offerEntity.setApplicationInformation(applicationInformation);
+        em.merge(offerEntity);
+        int offerCriteria = new JPAQueryFactory(em).selectFrom(qOfferCriterionEntity)
+          .where(qOfferCriterionEntity.offer.id.eq(offerEntity.getId())).fetch().size();
+        // Only create offer criteria and offer sub-criteria for applicant, if they don't already have
+        // offer criteria.
+        if (offerCriteria == 0) {
+          createOfferCriteriaAndOfferSubcriteria(offerEntity);
+        }
       }
-      offerEntity.setApplicationDate(applicationDate);
-      offerEntity.setApplicationInformation(applicationInformation);
-      em.merge(offerEntity);
-      int offerCriteria = new JPAQueryFactory(em).selectFrom(qOfferCriterionEntity)
-        .where(qOfferCriterionEntity.offer.id.eq(offerEntity.getId())).fetch().size();
-      // Only create offer criteria and offer sub-criteria for applicant, if they don't already have
-      // offer criteria.
-      if (offerCriteria == 0) {
-        createOfferCriteriaAndOfferSubcriteria(offerEntity);
-      }
+    } catch (OptimisticLockException | RollbackException e) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
     }
+    return optimisticLockErrors;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#findIfApplicantHasApplication(java.
-   * lang.String)
-   */
+  @Override
   public Boolean findIfApplicantHasApplication(String applicantId) {
 
     LOGGER.log(Level.CONFIG,
@@ -1259,12 +1349,6 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return (!offerEntity.isEmpty());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#deleteApplication(java.lang.String)
-   */
   @Override
   public String deleteApplication(String applicationId) {
 
@@ -1303,13 +1387,32 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#calculateOfferAmount(ch.bern.submiss.
-   * services.api.dto.OfferDTO)
-   */
+  @Override
+  public Set<ValidationError> deleteApplicationOptimisticLock(String applicationId,
+    Long applicationVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method deleteApplicationOptimisticLock, Parameters: applicationId: {0}, "
+        + "applicationVersion: {1}",
+      new Object[]{applicationId, applicationVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    // Application and offer are the same thing, but occur at different statuses.
+    if (!offerExists(applicationId)) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.DELETED_BY_ANOTHER_USER_ERROR_FIELD,
+          ValidationMessages.APPLICATION_DELETED));
+    } else {
+      OfferEntity applicationEntity = em.find(OfferEntity.class, applicationId);
+      if (!applicationVersion.equals(applicationEntity.getVersion())) {
+        optimisticLockErrors
+          .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+            ValidationMessages.OPTIMISTIC_LOCK));
+      }
+    }
+    return optimisticLockErrors;
+  }
+
   @Override
   public BigDecimal calculateOfferAmount(OfferDTO offerDTO) {
 
@@ -1340,13 +1443,6 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       .valueOf(customRoundNumber(grossAmount - discount - buildingCosts - discount2));
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#calculateOperatingCostsAmount(ch.bern.
-   * submiss.services.api.dto.OfferDTO)
-   */
   @Override
   public BigDecimal calculateOperatingCostsAmount(OfferDTO offerDTO) {
 
@@ -1402,13 +1498,6 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.OfferService#retrieveNotExcludedOffers(java.lang.
-   * String)
-   */
   @Override
   public List<OfferDTO> retrieveNotExcludedOffers(String submissionId) {
 
@@ -1582,4 +1671,38 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     return value;
   }
 
+  @Override
+  public boolean offerExists(String offerId) {
+    OfferEntity offerEntity = em.find(OfferEntity.class, offerId);
+    return offerEntity != null;
+  }
+
+  @Override
+  public boolean submittentExists(String submittentId) {
+    SubmittentEntity submittentEntity = em.find(SubmittentEntity.class, submittentId);
+    return submittentEntity != null;
+  }
+
+  @Override
+  public void offerListSecurityCheck(String submissionId) {
+    if (getGroupName(getUser()).equals(Group.DIR.getValue())
+      && !compareCurrentVsSpecificStatus(
+      TenderStatus.fromValue(submissionService.getCurrentStatusOfSubmission(submissionId)),
+      TenderStatus.OFFER_OPENING_CLOSED)) {
+      throw new AuthorisationException(getUserId(),
+        SecurityOperation.COMPANY_OFFERS_VIEW.getValue());
+    }
+    if (getGroupName(getUser()).equals(Group.PL.getValue())
+      && !compareCurrentVsSpecificStatus(
+      TenderStatus.fromValue(submissionService.getCurrentStatusOfSubmission(submissionId)),
+      TenderStatus.OFFER_OPENING_CLOSED)
+      && !(submissionService.getSubmissionProcess(submissionId).equals(Process.NEGOTIATED_PROCEDURE)
+      || submissionService.getSubmissionProcess(submissionId)
+      .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))) {
+      throw new AuthorisationException(getUserId(),
+        SecurityOperation.COMPANY_OFFERS_VIEW.getValue());
+    }
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.COMPANY_OFFERS_VIEW.getValue(), submissionId);
+  }
 }

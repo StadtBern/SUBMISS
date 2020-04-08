@@ -42,6 +42,10 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +
           '/tasks/allTasks/' + showUserTasks);
       },
+      getCompanyTask: function (companyId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +
+          '/tasks/companyTask/' + companyId);
+      },
       settleTask: function (id) {
         return $http.delete(AppConstants.URLS.RESOURCE_PROVIDER +
           '/tasks/settleTask/' + id);

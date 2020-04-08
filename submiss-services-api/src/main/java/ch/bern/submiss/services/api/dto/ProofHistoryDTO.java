@@ -19,13 +19,7 @@ import java.sql.Timestamp;
 /**
  * The Class ProofHistoryDTO.
  */
-public class ProofHistoryDTO {
-
-  /** The id. */
-  private String id;
-
-  /** The proof name. */
-  private String proofName;
+public class ProofHistoryDTO extends AbstractStammdatenDTO {
 
   /** The description. */
   private String description;
@@ -59,42 +53,6 @@ public class ProofHistoryDTO {
 
   /** The proof id. */
   private ProofDTO proofId;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  /**
-   * Gets the proof name.
-   *
-   * @return the proof name
-   */
-  public String getProofName() {
-    return proofName;
-  }
-
-  /**
-   * Sets the proof name.
-   *
-   * @param proofName the new proof name
-   */
-  public void setProofName(String proofName) {
-    this.proofName = proofName;
-  }
 
   /**
    * Gets the description.
@@ -301,10 +259,10 @@ public class ProofHistoryDTO {
    */
   @Override
   public String toString() {
-    return "ProofHistoryDTO [id=" + id + ", proofName=" + proofName + ", description=" + description
-        + ", proofOrder=" + proofOrder + ", descriptionFr=" + descriptionFr + ", active=" + active
-        + ", required=" + required + ", validityPeriod=" + validityPeriod + ", fromDate=" + fromDate
-        + ", toDate=" + toDate + "]";
+    return "ProofHistoryDTO [id=" + super.getId() + ", proofName=" + super.getName() + ", version="
+      + super.getVersion() + ", description=" + description
+      + ", proofOrder=" + proofOrder + ", descriptionFr=" + descriptionFr + ", active=" + active
+      + ", required=" + required + ", validityPeriod=" + validityPeriod + ", fromDate=" + fromDate
+      + ", toDate=" + toDate + "]";
   }
-
 }

@@ -55,7 +55,8 @@
         isPublic: true,
         title: "Ihr Registrierungsantrag",
         body: "Ihr Registrierungsantrag wurde erfolgreich entgegengenommen. Sobald Ihr Antrag bearbeitet wurde," +
-          " werden Sie entsprechend per E-Mail informiert."
+          " werden Sie entsprechend per E-Mail informiert.",
+        icon: "fa fa-info-circle fa-3x"
       },
       ncyBreadcrumb: {
         skip: true
@@ -71,7 +72,8 @@
         isPublic: true,
         title: "Registrierungsantrag in Bearbeitung",
         body: "Ihr Registrierungsantrag befindet sich noch in Bearbeitung. Bitte warten Sie, " +
-          "bis Sie über den Ausgang Ihres Antrags mittels E-Mail informiert werden."
+          "bis Sie über den Ausgang Ihres Antrags mittels E-Mail informiert werden.",
+        icon: "fa fa-info-circle fa-3x"
       },
       ncyBreadcrumb: {
         skip: true
@@ -87,7 +89,8 @@
         isPublic: true,
         title: "Submiss Benutzerkonto deaktiviert",
         body: "Ihr Benutzerkonto wurde deaktiviert. " +
-          "Für weitere Informationen kontaktieren Sie bitte Ihren Administrator."
+          "Für weitere Informationen kontaktieren Sie bitte Ihren Administrator.",
+        icon: "fa fa-info-circle fa-3x"
       },
       ncyBreadcrumb: {
         skip: true

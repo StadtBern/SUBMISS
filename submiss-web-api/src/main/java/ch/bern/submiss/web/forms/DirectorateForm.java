@@ -13,7 +13,7 @@
 
 package ch.bern.submiss.web.forms;
 
-public class DirectorateForm extends AbstractForm {
+public class DirectorateForm extends AbstractStammdatenForm {
 
   private boolean active;
 

@@ -13,51 +13,54 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import ch.bern.submiss.services.api.constants.TaskTypes;
+import java.sql.Timestamp;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
-import ch.bern.submiss.services.api.constants.TaskTypes;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class SubmissTasksEntity.
  */
 @Entity
 @Table(name = "SUB_TASKS")
-public class SubmissTasksEntity {
+public class SubmissTasksEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDER")
   private SubmissionEntity submission;
 
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_COMPANY")
   private CompanyEntity company;
 
-  /** User to edit. */
+  /**
+   * User to edit.
+   */
   @Column(name = "FK_USER_TO_EDIT")
   private String userToEdit;
 
-  /** User assigned. */
+  /**
+   * User assigned.
+   */
   @Column(name = "FK_USER_ASSIGNED")
   private String userAssigned;
 
-  /** description is the task name. */
+  /**
+   * description is the task name.
+   */
   @Column(name = "DESCRIPTION")
   @Enumerated(EnumType.STRING)
   private TaskTypes description;
@@ -68,11 +71,22 @@ public class SubmissTasksEntity {
   @Column(name = "CREATED_BY")
   private String createdBy;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @Column(name = "CREATED_ON")
   private Date createdOn;
 
-  /** User Assigned by the system. */
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
+
+  /**
+   * User Assigned by the system.
+   */
   @Column(name = "FK_USER_AUTOASSIGNED")
   private String userAutoAssigned;
 
@@ -81,28 +95,12 @@ public class SubmissTasksEntity {
    */
   @Column(name = "TYPE")
   private Integer type;
-  
-  /** The submit date. */
+
+  /**
+   * The submit date.
+   */
   @Column(name = "SUBMIT_DATE")
   private Date submitDate;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -266,7 +264,7 @@ public class SubmissTasksEntity {
   public void setType(Integer type) {
     this.type = type;
   }
-  
+
   /**
    * Gets the submit date.
    *
@@ -285,16 +283,29 @@ public class SubmissTasksEntity {
     this.submitDate = submitDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
    */
-  @Override
-  public String toString() {
-    return "SubmissTasksEntity [id=" + id + ", userToEdit=" + userToEdit + ", userAssigned="
-        + userAssigned + ", description=" + description + ", createdBy=" + createdBy
-        + ", createdOn=" + createdOn + ", userAutoAssigned=" + userAutoAssigned + "]";
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
   }
 
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "SubmissTasksEntity [id=" + super.getId() + ", userToEdit=" + userToEdit
+      + ", userAssigned="
+      + userAssigned + ", description=" + description + ", createdBy=" + createdBy
+      + ", createdOn=" + createdOn + ", userAutoAssigned=" + userAutoAssigned + "]";
+  }
 }

@@ -11,38 +11,50 @@
   ~  under the Licence.
   -->
 
-<div class="alert alert-danger"
-	ng-if="documentViewCtrl.invalidNavigation" role="alert">
-	<ul>
-		<li translate>no_legal_hearing_document_created</li>
-	</ul>
+<div class="alert alert-danger" ng-if="documentViewCtrl.invalidNavigation" role="alert">
+  <ul>
+    <li translate>no_legal_hearing_document_created</li>
+  </ul>
 </div>
 <tr>
-	<td colspan="9" class="hiddenRow">
-		<div id="demo1" class="collapse subTabs"
-			is-open="close" style="display: block;">
-			<ul class="nav nav-tabs" role="tablist" id="insideTabs">
-				<li ui-sref-active="active"><a ui-sref="documentView.documentList({submissionId: submission.id})">Dokumentenliste</a></li>
-				<li ng-class="{'active': documentViewCtrl.legalHearingTabActive}" ng-if="documentViewCtrl.isLegal()">
-				<a ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">Rechtliches Gehör</a></li>
-				<li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoFirstLevelTabVisible()">
-				<a ui-sref="documentView.awardInfoFirstLevel({submissionId: documentViewCtrl.submission.id})">Verfügungen 1. Stufe</a></li>
-				<li ui-sref-active="active" ng-if="documentViewCtrl.secCommissionProcurementProposalView
+  <td colspan="9" class="hiddenRow">
+    <div id="demo1" class="collapse subTabs" is-open="close" style="display: block;">
+      <ul class="nav nav-tabs" role="tablist" id="insideTabs">
+        <li ui-sref-active="active"><a ui-sref="documentView.documentList({submissionId: submission.id})"
+            ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===0}">Dokumentenliste</a>
+        </li>
+        <li ng-class="{'active': documentViewCtrl.legalHearingTabActive}" ng-if="documentViewCtrl.isLegal()">
+          <a ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">Rechtliches
+            Gehör</a></li>
+        <li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoFirstLevelTabVisible()"
+          ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===1}">
+          <a ui-sref="documentView.awardInfoFirstLevel({submissionId: documentViewCtrl.submission.id})">Verfügungen 1.
+            Stufe</a></li>
+        <li ui-sref-active="active" ng-if="documentViewCtrl.secCommissionProcurementProposalView
 					&& documentViewCtrl.isCommissionProcurementProposalTabVisible(documentViewCtrl.currentStatus,
-					documentViewCtrl.submission.process)">
-				<a ui-sref="documentView.commissionProcurementProposal({submissionId: documentViewCtrl.submission.id})">Beschaffungsantrag</a></li>
-				<li ui-sref-active="active" ng-if="documentViewCtrl.secCommissionProcurementDecisionView
-					&& documentViewCtrl.isCPDecisionTabVisible(documentViewCtrl.submission.process)">
-				<a ui-sref="documentView.commissionProcurementDecision({submissionId: documentViewCtrl.submission.id})">BeKo Beschluss</a></li>
-				<li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoTabVisible()">
-				<a ui-sref="documentView.awardInfo({submissionId: documentViewCtrl.submission.id})">Verfügungen</a></li>
-				<li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoTabNegotiatedVisible()">
-				<a ui-sref="documentView.awardInfo({submissionId: documentViewCtrl.submission.id})">Zu/Absage</a></li>
-				<li ng-if="documentViewCtrl.isSubmissionCancelTabVisible()"
-					ng-class="{'active': documentViewCtrl.submissionCancelTabActive}">
-					<a ng-click="documentViewCtrl.submissionCancelNavigation()">Verfahrensabbruch</a>
-				</li>
-			</ul>
-		</div>
-	</td>
+          documentViewCtrl.submission.process)"
+          ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===2}">
+          <a
+            ui-sref="documentView.commissionProcurementProposal({submissionId: documentViewCtrl.submission.id})">Beschaffungsantrag</a>
+        </li>
+        <li ui-sref-active="active" ng-if="documentViewCtrl.secCommissionProcurementDecisionView
+          && documentViewCtrl.isCPDecisionTabVisible(documentViewCtrl.submission.process)"
+          ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===3}">
+          <a ui-sref="documentView.commissionProcurementDecision({submissionId: documentViewCtrl.submission.id})">BeKo
+            Beschluss</a></li>
+        <li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoTabVisible()"
+          ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===4}">
+          <a ui-sref="documentView.awardInfo({submissionId: documentViewCtrl.submission.id})">Verfügungen</a>
+        </li>
+        <li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoTabNegotiatedVisible()"
+          ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===5}">
+          <a ui-sref="documentView.awardInfo({submissionId: documentViewCtrl.submission.id})">Zu/Absage</a>
+        </li>
+        <li ng-if="documentViewCtrl.isSubmissionCancelTabVisible()"
+          ng-class="{'active': documentViewCtrl.submissionCancelTabActive, 'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===6}">
+          <a ng-click="documentViewCtrl.submissionCancelNavigation()">Verfahrensabbruch</a>
+        </li>
+      </ul>
+    </div>
+  </td>
 </tr>

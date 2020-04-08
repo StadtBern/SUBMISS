@@ -1,0 +1,18 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_structure_v1.6.0.0014.xml">
+    <sql>
+      ALTER TABLE SUB_OFFER_CRITERION
+      ADD VERSION BIGINT DEFAULT 0;
+
+      ALTER TABLE SUB_OFFER_CRITERION
+      ADD CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+      ALTER TABLE SUB_OFFER_CRITERION
+      ADD UPDATED_ON TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP;
+    </sql>
+  </changeSet>
+</databaseChangeLog>

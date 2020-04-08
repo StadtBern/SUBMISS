@@ -12,111 +12,109 @@
   -->
 
 <div class="col-sm-12 ToolbarContainer">
-	<div class="btn-toolbar pull-right" role="toolbar">
-		<button type="button" class="btn btn-primary"
-				ng-click="cPDecisionCtrl.checkForChanges(cPDecisionCtrl.commissionDecisionForm.$dirty)"
-				ng-if="cPDecisionCtrl.currentStatus < cPDecisionCtrl.status.COMMISSION_PROCUREMENT_DECISION_CLOSED
-					&& cPDecisionCtrl.secCommissionProcurementDecisionClose"
-				ng-disabled="cPDecisionCtrl.currentStatus < cPDecisionCtrl.status.COMMISSION_PROCUREMENT_DECISION_STARTED
-							|| cPDecisionCtrl.isCompletedOrCancelled"> 
-				BeKo Beschluss abschliessen
-		</button>
-		<button type="button" class="btn btn-primary"
-				ng-click="cPDecisionCtrl.reopenCommissionProcurementDecision()"
-				ng-if="cPDecisionCtrl.currentStatus >= cPDecisionCtrl.status.COMMISSION_PROCUREMENT_DECISION_CLOSED
-					&& cPDecisionCtrl.secCommissionProcurementDecisionReopen"
-				ng-disabled="cPDecisionCtrl.currentStatus >= cPDecisionCtrl.status.PROCEDURE_COMPLETED
+  <div class="btn-toolbar pull-right" role="toolbar">
+    <button type="button" class="btn btn-primary"
+      ng-click="cPDecisionCtrl.checkForChanges(cPDecisionCtrl.commissionDecisionForm.$dirty)" ng-if="cPDecisionCtrl.currentStatus < cPDecisionCtrl.status.COMMISSION_PROCUREMENT_DECISION_CLOSED
+					&& cPDecisionCtrl.secCommissionProcurementDecisionClose" ng-disabled="cPDecisionCtrl.currentStatus < cPDecisionCtrl.status.COMMISSION_PROCUREMENT_DECISION_STARTED
 							|| cPDecisionCtrl.isCompletedOrCancelled">
-				BeKo Beschluss wiederaufnehmen
-		</button>
-	</div>
+      BeKo Beschluss abschliessen
+    </button>
+    <button type="button" class="btn btn-primary" ng-click="cPDecisionCtrl.reopenCommissionProcurementDecision()" ng-if="cPDecisionCtrl.currentStatus >= cPDecisionCtrl.status.COMMISSION_PROCUREMENT_DECISION_CLOSED
+					&& cPDecisionCtrl.secCommissionProcurementDecisionReopen" ng-disabled="cPDecisionCtrl.currentStatus >= cPDecisionCtrl.status.PROCEDURE_COMPLETED
+							|| cPDecisionCtrl.isCompletedOrCancelled">
+      BeKo Beschluss wiederaufnehmen
+    </button>
+  </div>
 </div>
 <div role="tabpanel" class="tab-pane card-box">
-	<form name="cPDecisionCtrl.commissionDecisionForm"
-		ng-if="cPDecisionCtrl.secCommissionProcurementDecisionView && cPDecisionCtrl.isFormVisible(cPDecisionCtrl.submission.process)"
-		data-ng-submit="cPDecisionCtrl.save()" shows-validation-errors>
-		<fieldset ng-disabled="!cPDecisionCtrl.secCommissionProcurementDecisionEdit 
+  <form name="cPDecisionCtrl.commissionDecisionForm"
+    ng-if="cPDecisionCtrl.secCommissionProcurementDecisionView && cPDecisionCtrl.isFormVisible(cPDecisionCtrl.submission.process)"
+    data-ng-submit="cPDecisionCtrl.save()" shows-validation-errors>
+    <fieldset ng-disabled="!cPDecisionCtrl.secCommissionProcurementDecisionEdit
 			|| cPDecisionCtrl.isFormDisabled(cPDecisionCtrl.currentStatus)">
-		<div class="col-sm-12">
-			<div class="alert alert-danger"
-				ng-if="cPDecisionCtrl.commissionDecisionForm.$invalid" role="alert">
-				<field-error form-element-name="decisionRecommendationErrorField" translate
-					name="error"></field-error>
-				<field-error form-element-name="noDecisionDocumentErrorField" translate
-					name="error"></field-error>
-			</div>
-			<input name="decisionRecommendationErrorField" ng-hide="true" data-ng-model="fd"></input>
-			<input name="noDecisionDocumentErrorField" ng-hide="true" data-ng-model="fd"></input>
-		</div>
-		<div class="col-sm-12 col-md-6">	
-			<div class="form-group"> 
-				<label for="BeKodate">BeKo Sitzung</label> 
-					<div class="input-group">	 
-						<input class="form-control datepicker" id="commissionProcurementDate" type="text"
-                	   		name="commissionProcurementDate" uib-datepicker-popup="dd.MM.yyyy"
-					   		ng-model="cPDecisionCtrl.submission.commissionProcurementProposalDate"
-					   		disabled> 
-						<span class="input-group-addon">
-							<span class="fa fa-calendar" aria-hidden="true"></span>
-						</span>
-					</div>
-			</div>
-			<div class="form-group"> 
-				<label for="decisionRecommendation">Empfehlung</label>
-				<textarea class="form-control"  id="decisionRecommendation" name="decisionRecommendation"
-					ng-model="cPDecisionCtrl.cPDecision.recommendation" rows="3"></textarea> 
-			</div>			
-		</div>	
-		<div class="col-sm-12 col-md-6">
-			<div class="form-group"> 
-				<label for="Vorbehalt">Vorbehalt</label> 
-				<textarea disabled="disabled" ng-model="cPDecisionCtrl.submission.commissionProcurementProposalReservation"
-					 class="form-control" rows="3"></textarea> 
-			</div>
-			<div class="form-group"> 
-				<label for="Verfahrensausschluss">Verfahrensausschluss</label>
-					<div class="form-group"> 
-						<textarea disabled class="form-control" ng-model="cPDecisionCtrl.submission.commissionProcurementProposalSuitabilityAuditText"
-							rows="3"></textarea> 
-					</div>
-			</div>
-		</div>
-		<div ng-repeat="awardRecipient in cPDecisionCtrl.awardRecipients | orderBy : 'awardRank'">
-			<div class="col-sm-12">
-				<div class="row">
-					<div class="col-sm-12 col-md-6">
-						<div class="form-group"> 
-							<label for="herkunftsangabe">Zuschlag {{$index + 1}}</label> 
-							<input class="form-control" ng-value="cPDecisionCtrl.showAwardRecipientJointVenturesSubcontractors(awardRecipient)"
-								readonly="readonly" type="text"> 
-						</div>
-						<div class="form-group"> 
-							<label for="herkunftsangabe">Nettobetrag exkl. MWST</label>
-							<input class="form-control" readonly="readonly" ng-model="awardRecipient.amount" type="text" df-currency> 
-						</div>
-					</div>
-					<div class="col-sm-12 col-md-6">
-						<div class="form-group" ng-if="awardRecipient.operatingCostsAmount"> 
-							<label for="herkunftsangabe">BK - Nettobetrag exkl. MWST</label>
-							<input class="form-control" readonly="readonly" ng-model="awardRecipient.operatingCostsAmount"
-								type="text" df-currency> 
-						</div>	
-						<div class="form-group" ng-if="awardRecipient.operatingCostNotes"> 
-							<label for="herkunftsangabe">BK Kosteninformation</label>
-							<input class="form-control" readonly="readonly" ng-model="awardRecipient.operatingCostNotes" type="text"> 
-						</div>	
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="col-sm-12 col-md-12 btn-bar">
-			<button type="submit" class="btn btn-primary">Speichern</button>
-			<button type="button" class="btn btn-default" 
-				ng-click="cPDecisionCtrl.cancelButton(cPDecisionCtrl.commissionDecisionForm.$dirty)">Abbrechen</button>
-			<div ng-if="cPDecisionCtrl.commissionDecisionForm.$dirty">
-				<input ng-hide="true" type="checkbox" data-ng-model="cPDecisionCtrl.dirtyFlag" ng-init="cPDecisionCtrl.dirtyFlag=true">
-			</div>
-		</div>
-		</fieldset>
-	</form>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="cPDecisionCtrl.commissionDecisionForm.$invalid" role="alert">
+          <field-error form-element-name="decisionRecommendationErrorField" translate name="error"></field-error>
+          <field-error form-element-name="noDecisionDocumentErrorField" translate name="error"></field-error>
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        </div>
+        <input name="decisionRecommendationErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="noDecisionDocumentErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="BeKodate">BeKo Sitzung</label>
+          <div class="input-group">
+            <input class="form-control datepicker" id="commissionProcurementDate" type="text"
+              name="commissionProcurementDate" uib-datepicker-popup="dd.MM.yyyy"
+              ng-model="cPDecisionCtrl.submission.commissionProcurementProposalDate" disabled>
+            <span class="input-group-addon">
+              <span class="fa fa-calendar" aria-hidden="true"></span>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="decisionRecommendation">Empfehlung</label>
+          <textarea class="form-control" id="decisionRecommendation" name="decisionRecommendation"
+            ng-model="cPDecisionCtrl.cPDecision.recommendation" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="Vorbehalt">Vorbehalt</label>
+          <textarea disabled="disabled" ng-model="cPDecisionCtrl.submission.commissionProcurementProposalReservation"
+            class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="Verfahrensausschluss">Verfahrensausschluss</label>
+          <div class="form-group">
+            <textarea disabled class="form-control"
+              ng-model="cPDecisionCtrl.submission.commissionProcurementProposalSuitabilityAuditText"
+              rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div ng-repeat="awardRecipient in cPDecisionCtrl.awardRecipients | orderBy : 'awardRank'">
+        <div class="col-sm-12">
+          <div class="row">
+            <div class="col-sm-12 col-md-6">
+              <div class="form-group">
+                <label for="herkunftsangabe">Zuschlag {{$index + 1}}</label>
+                <input class="form-control"
+                  ng-value="cPDecisionCtrl.showAwardRecipientJointVenturesSubcontractors(awardRecipient)"
+                  readonly="readonly" type="text">
+              </div>
+              <div class="form-group">
+                <label for="herkunftsangabe">Nettobetrag exkl. MWST</label>
+                <input class="form-control" readonly="readonly" ng-model="awardRecipient.amount" type="text"
+                  df-currency>
+              </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+              <div class="form-group" ng-if="awardRecipient.operatingCostsAmount">
+                <label for="herkunftsangabe">BK - Nettobetrag exkl. MWST</label>
+                <input class="form-control" readonly="readonly" ng-model="awardRecipient.operatingCostsAmount"
+                  type="text" df-currency>
+              </div>
+              <div class="form-group" ng-if="awardRecipient.operatingCostNotes">
+                <label for="herkunftsangabe">BK Kosteninformation</label>
+                <input class="form-control" readonly="readonly" ng-model="awardRecipient.operatingCostNotes"
+                  type="text">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12 btn-bar">
+        <button type="submit" class="btn btn-primary">Speichern</button>
+        <button type="button" class="btn btn-default"
+          ng-click="cPDecisionCtrl.cancelButton(cPDecisionCtrl.commissionDecisionForm.$dirty)">Abbrechen</button>
+        <div ng-if="cPDecisionCtrl.commissionDecisionForm.$dirty">
+          <input ng-hide="true" type="checkbox" data-ng-model="cPDecisionCtrl.dirtyFlag"
+            ng-init="cPDecisionCtrl.dirtyFlag=true">
+        </div>
+      </div>
+    </fieldset>
+  </form>
 </div>

@@ -13,23 +13,18 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import java.util.List;
+import ch.bern.submiss.services.api.constants.EmailTemplate;
+import ch.bern.submiss.services.api.util.View;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import ch.bern.submiss.services.api.constants.EmailTemplate;
-import ch.bern.submiss.services.api.util.View;
+import java.util.List;
 
 /**
  * The Class EmailTemplateTenantDTO.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class EmailTemplateTenantDTO {
-
-  /** The id. */
-  @JsonView(View.Public.class)
-  private String id;
+public class EmailTemplateTenantDTO extends AbstractDTO {
 
   /** The tenant. */
   @JsonView(View.Internal.class)
@@ -62,24 +57,6 @@ public class EmailTemplateTenantDTO {
   /** The available part. */
   @JsonView(View.Public.class)
   private EmailTemplate.AVAILABLE_PART availablePart;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the tenant.
@@ -224,5 +201,4 @@ public class EmailTemplateTenantDTO {
   public void setAvailablePart(EmailTemplate.AVAILABLE_PART availablePart) {
     this.availablePart = availablePart;
   }
-
 }

@@ -12,442 +12,443 @@
   -->
 
 <form name="editForm" data-ng-submit="typeDataEditCtrl.save()" shows-validation-errors>
-	<div class="modal-header">
-		<button type="button" class="close" data-dismiss="modal" aria-label="Close" ng-click="typeDataEditCtrl.cancelButton()"><span aria-hidden="true">&times;</span></button>
-		<h4 class="modal-title" id="myModalLabel">{{typeDataEditCtrl.modalTitle}}</h4>
-	</div>
-	<div class="modal-body">
-		<div class="alert alert-danger" ng-if="editForm.$invalid && typeDataEditCtrl.errorFieldsVisible" role="alert">
-				<field-error form-element-name="emptyMandatoryField" translate name="error"></field-error>
-				<field-error form-element-name="descriptionErrorField" translate name="error"></field-error>
-				<field-error form-element-name="articleErrorField" translate name="error"></field-error>
-				<field-error form-element-name="shortNameErrorField" translate name="error"></field-error>
-				<field-error form-element-name="addressErrorField" translate name="error"></field-error>
-				<field-error form-element-name="locationErrorField" translate name="error"></field-error>
-				<field-error form-element-name="postCodeErrorField" translate name="error"></field-error>
-				<field-error form-element-name="telephoneErrorField" translate name="error"></field-error>
-				<field-error form-element-name="faxErrorField" translate name="error"></field-error>
-				<field-error form-element-name="emailErrorField" translate name="error"></field-error>
-				<field-error form-element-name="websiteErrorField" translate name="error"></field-error>
-				<field-error form-element-name="workTypeNumberErrorField" translate name="error"></field-error>
-				<field-error form-element-name="formulaErrorField" translate name="error"></field-error>
-				<field-error form-element-name="telPrefixErrorField" translate name="error"></field-error>
-				<field-error form-element-name="countryShortNameErrorField" translate name="error"></field-error>
-				<field-error form-element-name="validityPeriodErrorField" translate name="error"></field-error>
-				<field-error form-element-name="germanTextErrorField" translate name="error"></field-error>
-				<field-error form-element-name="frenchTextErrorField" translate name="error"></field-error>
-				<field-error form-element-name="proofOrderErrorField" translate name="error"></field-error>
-				<field-error form-element-name="proofNameAndCountryField" translate name="error"></field-error>
-				<field-error form-element-name="valueErrorField" translate name="error"></field-error>
-				<field-error form-element-name="subjectErrorField" translate name="error"></field-error>
-				<field-error form-element-name="contentErrorField" translate name="error"></field-error>
-				<field-error form-element-name="TOReceiverErrorField" translate name="error"></field-error>
-				<field-error form-element-name="CCReceiverErrorField" translate name="error"></field-error>
-				<field-error form-element-name="BCCReceiverErrorField" translate name="error"></field-error>
-				<field-error form-element-name="nameAndShortNameField" translate name="error"></field-error>
-				
-		</div>
-		<div class="alert alert-danger" ng-if="typeDataEditCtrl.invalidImageMessageVisible" role="alert">
-				<field-error form-element-name="invalidImageErrorField" translate name="error"></field-error>
-		</div>
-		<div class="form-group">
-				<input name="emptyMandatoryField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="descriptionErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="articleErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="shortNameErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="addressErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="locationErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="postCodeErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="telephoneErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="faxErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="emailErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="websiteErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="workTypeNumberErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="formulaErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="telPrefixErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="countryShortNameErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="validityPeriodErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="germanTextErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="frenchTextErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="proofOrderErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="proofNameAndCountryField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="valueErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="subjectErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="contentErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="TOReceiverErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="CCReceiverErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="BCCReceiverErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="nameAndShortNameField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="invalidImageErrorField" ng-hide="true" data-ng-model="fd"></input>
-		</div>
-		<div ng-if="typeDataEditCtrl.activeCheckboxVisible()" class="form-group"> 
-			<label for="status">Aktiv</label> 
-			<div class="checkbox">
-				<label>
-					<input ng-if="typeDataEditCtrl.isEmailTemplate || typeDataEditCtrl.isLogib" 
-						type="checkbox" ng-checked="typeDataEditCtrl.entry.isActive"
-						data-ng-model="typeDataEditCtrl.entry.isActive">
-					<input ng-if="!(typeDataEditCtrl.isEmailTemplate || typeDataEditCtrl.isLogib)"
-						type="checkbox" ng-checked="typeDataEditCtrl.entry.active"
-						data-ng-model="typeDataEditCtrl.entry.active">
-				</label>
-			</div>
-		</div>
-		<div ng-if="typeDataEditCtrl.descriptionVisible()" class="form-group"> 
-			<label>Beschreibung<span class="mandatory">*</span></label> 
-			<input name="inputName" ng-if="typeDataEditCtrl.isLogib || typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-control"
-				ng-model="typeDataEditCtrl.entry.name" type="text" ng-disabled="typeDataEditCtrl.isLogib"/>
-			<input ng-if="typeDataEditCtrl.isProcessType || typeDataEditCtrl.isCalculationFormula || typeDataEditCtrl.isILO
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+      ng-click="typeDataEditCtrl.cancelButton()"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">{{typeDataEditCtrl.modalTitle}}</h4>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-danger" ng-if="editForm.$invalid && typeDataEditCtrl.errorFieldsVisible" role="alert">
+      <field-error form-element-name="emptyMandatoryField" translate name="error"></field-error>
+      <field-error form-element-name="descriptionErrorField" translate name="error"></field-error>
+      <field-error form-element-name="articleErrorField" translate name="error"></field-error>
+      <field-error form-element-name="shortNameErrorField" translate name="error"></field-error>
+      <field-error form-element-name="addressErrorField" translate name="error"></field-error>
+      <field-error form-element-name="locationErrorField" translate name="error"></field-error>
+      <field-error form-element-name="postCodeErrorField" translate name="error"></field-error>
+      <field-error form-element-name="telephoneErrorField" translate name="error"></field-error>
+      <field-error form-element-name="faxErrorField" translate name="error"></field-error>
+      <field-error form-element-name="emailErrorField" translate name="error"></field-error>
+      <field-error form-element-name="websiteErrorField" translate name="error"></field-error>
+      <field-error form-element-name="workTypeNumberErrorField" translate name="error"></field-error>
+      <field-error form-element-name="formulaErrorField" translate name="error"></field-error>
+      <field-error form-element-name="telPrefixErrorField" translate name="error"></field-error>
+      <field-error form-element-name="countryShortNameErrorField" translate name="error"></field-error>
+      <field-error form-element-name="validityPeriodErrorField" translate name="error"></field-error>
+      <field-error form-element-name="germanTextErrorField" translate name="error"></field-error>
+      <field-error form-element-name="frenchTextErrorField" translate name="error"></field-error>
+      <field-error form-element-name="proofOrderErrorField" translate name="error"></field-error>
+      <field-error form-element-name="proofNameAndCountryField" translate name="error"></field-error>
+      <field-error form-element-name="valueErrorField" translate name="error"></field-error>
+      <field-error form-element-name="subjectErrorField" translate name="error"></field-error>
+      <field-error form-element-name="contentErrorField" translate name="error"></field-error>
+      <field-error form-element-name="TOReceiverErrorField" translate name="error"></field-error>
+      <field-error form-element-name="CCReceiverErrorField" translate name="error"></field-error>
+      <field-error form-element-name="BCCReceiverErrorField" translate name="error"></field-error>
+      <field-error form-element-name="nameAndShortNameField" translate name="error"></field-error>
+      <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+    </div>
+    <div class="alert alert-danger" ng-if="typeDataEditCtrl.invalidImageMessageVisible" role="alert">
+      <field-error form-element-name="invalidImageErrorField" translate name="error"></field-error>
+    </div>
+    <div class="form-group">
+      <input name="emptyMandatoryField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="descriptionErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="articleErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="shortNameErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="addressErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="locationErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="postCodeErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="telephoneErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="faxErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="emailErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="websiteErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="workTypeNumberErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="formulaErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="telPrefixErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="countryShortNameErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="validityPeriodErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="germanTextErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="frenchTextErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="proofOrderErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="proofNameAndCountryField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="valueErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="subjectErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="contentErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="TOReceiverErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="CCReceiverErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="BCCReceiverErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="nameAndShortNameField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="invalidImageErrorField" ng-hide="true" data-ng-model="fd"></input>
+      <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+    </div>
+    <div ng-if="typeDataEditCtrl.activeCheckboxVisible()" class="form-group">
+      <label for="status">Aktiv</label>
+      <div class="checkbox">
+        <label>
+          <input ng-if="typeDataEditCtrl.isEmailTemplate || typeDataEditCtrl.isLogib" type="checkbox"
+            ng-checked="typeDataEditCtrl.entry.isActive" data-ng-model="typeDataEditCtrl.entry.isActive">
+          <input ng-if="!(typeDataEditCtrl.isEmailTemplate || typeDataEditCtrl.isLogib)" type="checkbox"
+            ng-checked="typeDataEditCtrl.entry.active" data-ng-model="typeDataEditCtrl.entry.active">
+        </label>
+      </div>
+    </div>
+    <div ng-if="typeDataEditCtrl.descriptionVisible()" class="form-group">
+      <label>Beschreibung<span class="mandatory">*</span></label>
+      <input name="inputName"
+        ng-if="typeDataEditCtrl.isLogib || typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate"
+        class="form-control" ng-model="typeDataEditCtrl.entry.name" type="text"
+        ng-disabled="typeDataEditCtrl.isLogib" />
+      <input ng-if="typeDataEditCtrl.isProcessType || typeDataEditCtrl.isCalculationFormula || typeDataEditCtrl.isILO
 						|| typeDataEditCtrl.isVatRate || typeDataEditCtrl.isObject || typeDataEditCtrl.isProcessPM
-						|| typeDataEditCtrl.isSettlementType" class="form-control"
-				ng-model="typeDataEditCtrl.entry.value1" type="text" name="inputValue1"/>
-			<input ng-if="typeDataEditCtrl.isWorkType" class="form-control" name="inputValue2"
-				ng-model="typeDataEditCtrl.entry.value2" type="text"/>
-			<textarea name="textValue2" ng-if="typeDataEditCtrl.isCancelReason || typeDataEditCtrl.isExclusionCriterion || typeDataEditCtrl.isNegotiationReason"
-				class="form-control" rows="2"
-				ng-model="typeDataEditCtrl.entry.value2" type="text" ng-style="typeDataEditCtrl.notResizable"></textarea>
-			<input ng-if="typeDataEditCtrl.isEmailTemplate" class="form-control" name="emailDescription"
-				ng-disabled="typeDataEditCtrl.entry.emailTemplate.workflowRelated"
-				ng-model="typeDataEditCtrl.entry.description" type="text"/>
-			<input ng-if="typeDataEditCtrl.isCountry" class="form-control"
-				ng-model="typeDataEditCtrl.entry.countryName" name="countryName" type="text"/>
-			<input ng-if="typeDataEditCtrl.isProofs" class="form-control"
-				ng-model="typeDataEditCtrl.entry.proofName" name="proofName" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isSettings" class="form-group"> 
-			<label>Kennung</span></label>
-			<input ng-model="typeDataEditCtrl.entry.value1" type="text" name="key" class="form-control" disabled/>
-		</div>
-		<div ng-if="typeDataEditCtrl.shortNameVisible() || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>Kürzel<span class="mandatory">*</span></label> 
-			<input name="inputShortName" class="form-control" ng-model="typeDataEditCtrl.entry.shortName" type="text"/>
-		</div>
-		<div class="form-group" ng-if="typeDataEditCtrl.isDepartment"> 
-				<label>Direktion<span class="mandatory">*</span></label>
-				<ui-select name="directorate" ng-model="typeDataEditCtrl.entry.directorate" theme="select2">
-					<ui-select-match allow-clear="true"> <span
-						ng-bind="$select.selected.name"></span> 
-					</ui-select-match> 
-					<ui-select-choices
-						repeat="directorate in typeDataEditCtrl.directorates | filter: {name: $select.search}">
-					<span ng-bind="directorate.name"></span></ui-select-choices> 
-				</ui-select>
-		</div>
-		<div class="form-group" ng-if="typeDataEditCtrl.isDepartment"> 
-				<label>Intern/Extern<span class="mandatory">*</span></label>
-				<ui-select name="internal" ng-model="typeDataEditCtrl.entry.internal" theme="select2">
-					<ui-select-match allow-clear="true"> <span
-						ng-bind="typeDataEditCtrl.toInternalOrExternal($select.selected)"></span> 
-					</ui-select-match> 
-					<ui-select-choices
-						repeat="choice in typeDataEditCtrl.internalOrExternal">
-					<span ng-bind="typeDataEditCtrl.toInternalOrExternal(choice)"></span></ui-select-choices> 
-				</ui-select>
-		</div>
-		<div class="form-group" ng-if="typeDataEditCtrl.isProofs"> 
-				<label>Land<span class="mandatory">*</span></label>
-				<ui-select name="country" ng-model="typeDataEditCtrl.entryCountry" theme="select2"
-						ng-change="typeDataEditCtrl.isFrenchTextMandatory()">
-					<ui-select-match allow-clear="true"> <span
-						ng-bind="$select.selected.countryName"></span> 
-					</ui-select-match> 
-					<ui-select-choices
-						repeat="country in typeDataEditCtrl.countries | filter: {countryName: $select.search, 'active': true}">
-					<span ng-bind="country.countryName"></span></ui-select-choices> 
-				</ui-select>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>Adresse<span class="mandatory">*</span></label> 
-			<input name="inputAddress" class="form-control" ng-model="typeDataEditCtrl.entry.address" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>PLZ<span class="mandatory">*</span></label> 
-			<input name="postCode" class="form-control" ng-model="typeDataEditCtrl.entry.postCode" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>Ort<span class="mandatory">*</span></label> 
-			<input name="location" class="form-control" ng-model="typeDataEditCtrl.entry.location" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>Telefon<span class="mandatory">*</span></label> 
-			<input name="telephone" class="form-control" ng-model="typeDataEditCtrl.entry.telephone" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>Telefax</label> 
-			<input name="fax" class="form-control" ng-model="typeDataEditCtrl.entry.fax" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>E-Mail<span class="mandatory">*</span></label> 
-			<input name="email" class="form-control" ng-model="typeDataEditCtrl.entry.email" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group"> 
-			<label>Web-Adresse<span class="mandatory">*</span></label> 
-			<input name="website" class="form-control" ng-model="typeDataEditCtrl.entry.website" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isWorkType" class="form-group"> 
-			<label>ArG-Nr.<span class="mandatory">*</span></label> 
-			<input name="workTypeNumber" class="form-control" ng-model="typeDataEditCtrl.entry.value1" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.articleVisible()" class="form-group"> 
-			<label>{{typeDataEditCtrl.articleTitle}}<span class="mandatory">*</span></label> 
-			<input name="article" class="form-control" ng-model="typeDataEditCtrl.entry.value1" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isCalculationFormula" class="form-group"> 
-			<label>Formel<span class="mandatory">*</span></label> 
-			<input name="formula" class="form-control" ng-model="typeDataEditCtrl.entry.value2" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group">
-			<div ng-repeat="attribute in typeDataEditCtrl.entry.attributes" class="form-group">
-				<label>{{typeDataEditCtrl.translateSendType(attribute.sendType)}}</label>
-				<input class="form-control" ng-model="attribute.reciever" name="receiver{{$index}}" type="text"
-					ng-disabled="typeDataEditCtrl.entry.emailTemplate.workflowRelated"/>
-			</div>
-		</div>
-		<div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group">
-			<label>Betreff<span class="mandatory">*</span></label> 
-			<input class="form-control" ng-model="typeDataEditCtrl.entry.subject" name="subject" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group"> 
-			<label>Inhaltstext</label> 
-			<textarea class="form-control" ng-model="typeDataEditCtrl.entry.content"
-					name="content" type="text" rows="6"></textarea>
-		</div>
-		<div ng-if="typeDataEditCtrl.isCountry" class="form-group"> 
-			<label>ISO-Code</label> 
-			<input class="form-control" ng-model="typeDataEditCtrl.entry.countryShortName" name="countryShortName" type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isCountry" class="form-group"> 
-			<label>Telefon-Vorwahl<span class="mandatory">*</span></label> 
-			<input class="form-control" ng-model="typeDataEditCtrl.entry.telPrefix" name="telPrefix"type="text"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group"> 
-			<label for="status">Verfügbar<span class="mandatory">*</span></label> 
-			<br />
-			<div class="radio-inline">
-				<label>
-					<!-- <input type="checkbox" ng-checked="typeDataEditCtrl.entry.availablePart == 'PROJECT_PART'"
+						|| typeDataEditCtrl.isSettlementType" class="form-control" ng-model="typeDataEditCtrl.entry.value1" type="text"
+        name="inputValue1" />
+      <input ng-if="typeDataEditCtrl.isWorkType" class="form-control" name="inputValue2"
+        ng-model="typeDataEditCtrl.entry.value2" type="text" />
+      <textarea name="textValue2"
+        ng-if="typeDataEditCtrl.isCancelReason || typeDataEditCtrl.isExclusionCriterion || typeDataEditCtrl.isNegotiationReason"
+        class="form-control" rows="2" ng-model="typeDataEditCtrl.entry.value2" type="text"
+        ng-style="typeDataEditCtrl.notResizable"></textarea>
+      <input ng-if="typeDataEditCtrl.isEmailTemplate" class="form-control" name="emailDescription"
+        ng-disabled="typeDataEditCtrl.entry.emailTemplate.workflowRelated" ng-model="typeDataEditCtrl.entry.description"
+        type="text" />
+      <input ng-if="typeDataEditCtrl.isCountry" class="form-control" ng-model="typeDataEditCtrl.entry.countryName"
+        name="countryName" type="text" />
+      <input ng-if="typeDataEditCtrl.isProofs" class="form-control" ng-model="typeDataEditCtrl.entry.name"
+        name="proofName" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isSettings" class="form-group">
+      <label>Kennung</span></label>
+      <input ng-model="typeDataEditCtrl.entry.value1" type="text" name="key" class="form-control" disabled />
+    </div>
+    <div ng-if="typeDataEditCtrl.shortNameVisible() || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>Kürzel<span class="mandatory">*</span></label>
+      <input name="inputShortName" class="form-control" ng-model="typeDataEditCtrl.entry.shortName" type="text" />
+    </div>
+    <div class="form-group" ng-if="typeDataEditCtrl.isDepartment">
+      <label>Direktion<span class="mandatory">*</span></label>
+      <ui-select name="directorate" ng-model="typeDataEditCtrl.entry.directorate" theme="select2">
+        <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.name"></span>
+        </ui-select-match>
+        <ui-select-choices repeat="directorate in typeDataEditCtrl.directorates | filter: {name: $select.search}">
+          <span ng-bind="directorate.name"></span></ui-select-choices>
+      </ui-select>
+    </div>
+    <div class="form-group" ng-if="typeDataEditCtrl.isDepartment">
+      <label>Intern/Extern<span class="mandatory">*</span></label>
+      <ui-select name="internal" ng-model="typeDataEditCtrl.entry.internal" theme="select2">
+        <ui-select-match allow-clear="true"> <span
+            ng-bind="typeDataEditCtrl.toInternalOrExternal($select.selected)"></span>
+        </ui-select-match>
+        <ui-select-choices repeat="choice in typeDataEditCtrl.internalOrExternal">
+          <span ng-bind="typeDataEditCtrl.toInternalOrExternal(choice)"></span></ui-select-choices>
+      </ui-select>
+    </div>
+    <div class="form-group" ng-if="typeDataEditCtrl.isProofs">
+      <label>Land<span class="mandatory">*</span></label>
+      <ui-select name="country" ng-model="typeDataEditCtrl.entryCountry" theme="select2"
+        ng-change="typeDataEditCtrl.isFrenchTextMandatory()">
+        <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.countryName"></span>
+        </ui-select-match>
+        <ui-select-choices
+          repeat="country in typeDataEditCtrl.countries | filter: {countryName: $select.search, 'active': true}">
+          <span ng-bind="country.countryName"></span></ui-select-choices>
+      </ui-select>
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>Adresse<span class="mandatory">*</span></label>
+      <input name="inputAddress" class="form-control" ng-model="typeDataEditCtrl.entry.address" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>PLZ<span class="mandatory">*</span></label>
+      <input name="postCode" class="form-control" ng-model="typeDataEditCtrl.entry.postCode" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>Ort<span class="mandatory">*</span></label>
+      <input name="location" class="form-control" ng-model="typeDataEditCtrl.entry.location" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>Telefon<span class="mandatory">*</span></label>
+      <input name="telephone" class="form-control" ng-model="typeDataEditCtrl.entry.telephone" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>Telefax</label>
+      <input name="fax" class="form-control" ng-model="typeDataEditCtrl.entry.fax" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>E-Mail<span class="mandatory">*</span></label>
+      <input name="email" class="form-control" ng-model="typeDataEditCtrl.entry.email" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment || typeDataEditCtrl.isDirectorate" class="form-group">
+      <label>Web-Adresse<span class="mandatory">*</span></label>
+      <input name="website" class="form-control" ng-model="typeDataEditCtrl.entry.website" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isWorkType" class="form-group">
+      <label>ArG-Nr.<span class="mandatory">*</span></label>
+      <input name="workTypeNumber" class="form-control" ng-model="typeDataEditCtrl.entry.value1" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.articleVisible()" class="form-group">
+      <label>{{typeDataEditCtrl.articleTitle}}<span class="mandatory">*</span></label>
+      <input name="article" class="form-control" ng-model="typeDataEditCtrl.entry.value1" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isCalculationFormula" class="form-group">
+      <label>Formel<span class="mandatory">*</span></label>
+      <input name="formula" class="form-control" ng-model="typeDataEditCtrl.entry.value2" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group">
+      <div ng-repeat="attribute in typeDataEditCtrl.entry.attributes" class="form-group">
+        <label>{{typeDataEditCtrl.translateSendType(attribute.sendType)}}</label>
+        <input class="form-control" ng-model="attribute.reciever" name="receiver{{$index}}" type="text"
+          ng-disabled="typeDataEditCtrl.entry.emailTemplate.workflowRelated" />
+      </div>
+    </div>
+    <div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group">
+      <label>Betreff<span class="mandatory">*</span></label>
+      <input class="form-control" ng-model="typeDataEditCtrl.entry.subject" name="subject" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group">
+      <label>Inhaltstext</label>
+      <textarea class="form-control" ng-model="typeDataEditCtrl.entry.content" name="content" type="text"
+        rows="6"></textarea>
+    </div>
+    <div ng-if="typeDataEditCtrl.isCountry" class="form-group">
+      <label>ISO-Code</label>
+      <input class="form-control" ng-model="typeDataEditCtrl.entry.countryShortName" name="countryShortName"
+        type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isCountry" class="form-group">
+      <label>Telefon-Vorwahl<span class="mandatory">*</span></label>
+      <input class="form-control" ng-model="typeDataEditCtrl.entry.telPrefix" name="telPrefix" type="text" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isEmailTemplate" class="form-group">
+      <label for="status">Verfügbar<span class="mandatory">*</span></label>
+      <br />
+      <div class="radio-inline">
+        <label>
+          <!-- <input type="checkbox" ng-checked="typeDataEditCtrl.entry.availablePart == 'PROJECT_PART'"
 						ng-disabled="typeDataEditCtrl.isTenantKantonBern"
 						ng-click="typeDataEditCtrl.setAvailablePartValue(true)"
 						ng-model="typeDataEditCtrl.entry.availablePart" name="projectPart">im Projektteil -->
-						<input type="radio" ng-model="typeDataEditCtrl.entry.availablePart" 
-						value="PROJECT_PART"> im Projektteil
-				</label>
-			</div>
-			<br />
-			<div class="radio-inline">
-				<label>
-						<input type="radio" ng-model="typeDataEditCtrl.entry.availablePart" 
-						value="COMPANY_PART"> im Firmenteil
-				</label>
-			</div>
-			<br />
-			<div class="radio-inline">
-				<label>
-						<input type="radio" ng-model="typeDataEditCtrl.entry.availablePart" 
-						value="USER_PART"> in der Benutzerverwaltung
-				</label>
-			</div>
-		</div>
-		<div ng-if="typeDataEditCtrl.isProofs" class="form-group"> 
-			<label>Gültigkeit (Monate)</label> 
-			<input class="form-control" name="validityPeriod"
-				ng-model="typeDataEditCtrl.entry.validityPeriod" step="1" type="number"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isProofs" class="form-group"> 
-			<label>Text DE<span class="mandatory">*</span></label> 
-			<textarea class="form-control" name="germanText"
-				ng-model="typeDataEditCtrl.entry.description" rows="3" type="text"></textarea>
-		</div>
-		<div ng-if="typeDataEditCtrl.isProofs" class="form-group"> 
-			<label>Text FR<span ng-if="typeDataEditCtrl.frenchTextMandatory" class="mandatory">*</span></label> 
-			<textarea class="form-control" name="frenchText"
-				ng-model="typeDataEditCtrl.entry.descriptionFr" rows="3" type="text"/></textarea>
-		</div>
-		<div ng-if="typeDataEditCtrl.isProofs" class="form-group"> 
-			<label>Sortierung</label> 
-			<input class="form-control" name="proofOrder"
-				ng-model="typeDataEditCtrl.entry.proofOrder" step="1" type="number"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isProofs" class="form-group"> 
-			<label>Erforderlich<span class="mandatory">*</span></label> 
-			<div class="checkbox">
-				<label>
-					<input type="checkbox" ng-checked="typeDataEditCtrl.entry.required"
-						ng-model="typeDataEditCtrl.entry.required" name="required">
-				</label>
-			</div>
-		</div>
-		<div ng-if="typeDataEditCtrl.isLogib" class="form-group"> 
-			<label>Mitarbeiteranzahl<span class="mandatory">*</span></label> 
-			<input ng-if="typeDataEditCtrl.isLogib" class="form-control" name="workerNumber"
-				ng-model="typeDataEditCtrl.entry.workerNumber" type="number"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isLogib" class="form-group"> 
-			<label>Anzahl Frauen<span class="mandatory">*</span></label> 
-			<input ng-if="typeDataEditCtrl.isLogib" class="form-control" name="womenNumber"
-				ng-model="typeDataEditCtrl.entry.womenNumber" type="number"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isLogib" class="form-group"> 
-			<label>Anzahl Männer<span class="mandatory">*</span></label> 
-			<input ng-if="typeDataEditCtrl.isLogib" class="form-control" name="menNumber"
-				ng-model="typeDataEditCtrl.entry.menNumber" type="number"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isVatRate" class="form-group"> 
-			<label>Wert in %<span class="mandatory">*</span></label> 
-			<input class="form-control" ng-model="typeDataEditCtrl.vatRatePercentage"
-				step=".01" type="number" name="vatRatePercentage"/>
-		</div>
-		<div ng-if="typeDataEditCtrl.isSettings" class="form-group"> 
-			<label ng-if="typeDataEditCtrl.entry.shortCode != 'S5'">Wert</span></label>
-			<input ng-if="typeDataEditCtrl.settingsInputValueVisible()" class="form-control" ng-model="typeDataEditCtrl.entry.value2"
-				type="text" name="inputValue"/>
-			<ui-select ng-if="typeDataEditCtrl.entry.shortCode == 'S9'" name="language" ng-disabled="true" ng-model="typeDataEditCtrl.entry.value2" theme="select2">
-					<ui-select-match allow-clear="true"> <span
-						ng-bind="$select.selected"></span> 
-					</ui-select-match> 
-					<ui-select-choices repeat="language in languages">
-					<span ng-bind=""></span></ui-select-choices> 
-			</ui-select>
-			<ui-select ng-if="typeDataEditCtrl.entry.shortCode == 'S8'" name="serverSideType" ng-model="typeDataEditCtrl.entry.value2" theme="select2">
-					<ui-select-match allow-clear="true"> <span
-						ng-bind="$select.selected"></span> 
-					</ui-select-match> 
-					<ui-select-choices repeat="serverSideType in typeDataEditCtrl.serverSideTypes">
-					<span ng-bind="serverSideType"></span></ui-select-choices> 
-			</ui-select>
-			<input ng-if="typeDataEditCtrl.entry.shortCode == 'S6' || typeDataEditCtrl.entry.shortCode == 'S12'" class="form-control" ng-model="typeDataEditCtrl.entry.value2"
-				step="1" type="number" name="numberValue"/>
-			<label ng-if="typeDataEditCtrl.entry.shortCode == 'S5'">Logo</span></label>
-			<div ng-if="typeDataEditCtrl.entry.shortCode == 'S5'"><img ng-if="typeDataEditCtrl.entry.tenantLogo" ng-src="data:image/png;base64, {{typeDataEditCtrl.entry.tenantLogo}}"></div>
-			<div ng-if="typeDataEditCtrl.entry.shortCode == 'S5'" flow-init flow-name="typeDataEditCtrl.files"
-					style="display: inline;" flow-name="obj.flow"
-					flow-files-submitted="typeDataEditCtrl.uploadSelectedImage($flow)" title="Logo Hochladen">
-					<span flow-btn flow-attrs="{accept:'*'}"
-						flow-complete="typeDataEditCtrl.uploaded($flow);"
-						class="btn action btn-primary fa fa-upload">
-						<div ng-if="main.spinner" class="fa fa-upload" />
-					</span>
-			</div>
-		</div>
-		<div ng-if="typeDataEditCtrl.isDepartment" class="form-group">
-			<label>Logo</label>
-			<div><img ng-if="typeDataEditCtrl.entry.logo" ng-src="data:image/png;base64, {{typeDataEditCtrl.entry.logo}}"></div>
-			<div flow-init flow-name="typeDataEditCtrl.files" style="display: inline;" flow-name="obj.flow"
-					flow-files-submitted="typeDataEditCtrl.uploadSelectedImage($flow)" title="Logo Hochladen">
-					<span flow-btn flow-attrs="{accept:'*'}"
-						flow-complete="typeDataEditCtrl.uploaded($flow);"
-						class="btn action btn-primary fa fa-upload">
-						<div ng-if="main.spinner" class="fa fa-upload" />
-					</span>
-			</div>
-		</div>
-	</div>
-	<div class="form-group" ng-if="typeDataEditCtrl.isCalculationFormula">
-		<div class="col-sm-12">
-			<div class="table-responsive">
-				<table class=" table-condensed">
-					<thead>
-						<tr>
-	
-							<th><u>Variablen</u></th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-	
-							<td><b>ai</b> (Angebotspreis)</td>
-							<td><b>ao</b> (niedrigster Angebotspreis)</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<div class="col-sm-12">
-			<div class="table-responsive">
-				<table class=" table-condensed">
-					<thead>
-						<tr>
-							<th><u>Operatoren</u></th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<th>Arithmetische Operatoren:</th>
-							<td>&nbsp;+&nbsp;&nbsp; -&nbsp;&nbsp; *&nbsp;&nbsp; /&nbsp;&nbsp; %</td>
-	
-						</tr>
-						<tr>
-							<th>Vergleichs Operatoren:</th>
-							<td>&nbsp;== &nbsp; &nbsp;!= &nbsp; &nbsp; &gt; &nbsp;&nbsp; &lt; &nbsp;&nbsp; &gt;&#61; &nbsp;&nbsp; &lt;&#61;</td> </tr> 
-						
-						<tr>
-							<th>Bedingung:</th>
-							<td>&nbsp;if({Bedingung},{Wahr_Wert},{Falsch_Wert})</td>
-	
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<div class="col-sm-12">					
-							<div class="table-responsive">								
-								<table class=" table-condensed">
-									<thead>
-										</tr>	
-											<tr>
-											<th></th>																						
-										</tr>
-										<tr>
-											<th><u>Funktionen</u></th>																						
-										</tr>
-										
-									</thead>
-									<tbody>									
-										<tr>
-											<td><b>  {Zahl}^{Exponent} </b> </td>
-											<td>Potenziert {Zahl} mit {Exponent}.</td>
-										</tr>
-											
-											<tr>
-											
-											<td><b>sqrt({Zahl})</td>
-											<td>Gibt die Quadratwurzel von {Zahl} zurück. </td>
-										</tr>	
-											<tr>
-											<th></th>																						
-										</tr>
-											<tr>
-											
-											<td><b>round({Wert}, {Anzahl_Stellen})</b></td>
-											<td>Rundet {Wert} auf die in {Anzahl_Stellen} angegebene Anzahl Stellen. </td>
-										</tr>	
-										<tr>
-											<th></th>																						
-										</tr>
-										<tr>
-									
-											<td><b>min({Zahl1}, {Zahl2})</b></td>
-											<td>Gibt die kleinere von zwei Zahlen zurück.</td>
-										</tr>		
-											<tr>
-											<th></th>																						
-										</tr>
-										<tr>
-									
-											<td><b>max({Zahl1}, {Zahl2})</b></td>
-											<td>Gibt die grössere von zwei Zahlen zurück.<td>
-										</tr>							
-									</tbody>									
-								</table>								
-							</div>
-						</div>
-	</div>
-	<div class='row'></div>	
-	<div class="modal-footer">
-		<button type="submit" class="btn btn-primary">Speichern</button>
-		<button type="button" class="btn btn-default" ng-click="typeDataEditCtrl.cancelButton()">Abbrechen</button>
-		<div ng-if="editForm.$dirty">
-			<input ng-hide="true" data-ng-model="typeDataEditCtrl.dirtyFlag" ng-init="typeDataEditCtrl.dirtyFlag = true">
-		</div>
-	</div>
-</form>	
+          <input type="radio" ng-model="typeDataEditCtrl.entry.availablePart" value="PROJECT_PART"> im Projektteil
+        </label>
+      </div>
+      <br />
+      <div class="radio-inline">
+        <label>
+          <input type="radio" ng-model="typeDataEditCtrl.entry.availablePart" value="COMPANY_PART"> im Firmenteil
+        </label>
+      </div>
+      <br />
+      <div class="radio-inline">
+        <label>
+          <input type="radio" ng-model="typeDataEditCtrl.entry.availablePart" value="USER_PART"> in der
+          Benutzerverwaltung
+        </label>
+      </div>
+    </div>
+    <div ng-if="typeDataEditCtrl.isProofs" class="form-group">
+      <label>Gültigkeit (Monate)</label>
+      <input class="form-control" name="validityPeriod" ng-model="typeDataEditCtrl.entry.validityPeriod" step="1"
+        type="number" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isProofs" class="form-group">
+      <label>Text DE<span class="mandatory">*</span></label>
+      <textarea class="form-control" name="germanText" ng-model="typeDataEditCtrl.entry.description" rows="3"
+        type="text"></textarea>
+    </div>
+    <div ng-if="typeDataEditCtrl.isProofs" class="form-group">
+      <label>Text FR<span ng-if="typeDataEditCtrl.frenchTextMandatory" class="mandatory">*</span></label>
+      <textarea class="form-control" name="frenchText" ng-model="typeDataEditCtrl.entry.descriptionFr" rows="3"
+        type="text" /></textarea>
+    </div>
+    <div ng-if="typeDataEditCtrl.isProofs" class="form-group">
+      <label>Sortierung</label>
+      <input class="form-control" name="proofOrder" ng-model="typeDataEditCtrl.entry.proofOrder" step="1"
+        type="number" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isProofs" class="form-group">
+      <label>Erforderlich<span class="mandatory">*</span></label>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-checked="typeDataEditCtrl.entry.required" ng-model="typeDataEditCtrl.entry.required"
+            name="required">
+        </label>
+      </div>
+    </div>
+    <div ng-if="typeDataEditCtrl.isLogib" class="form-group">
+      <label>Mitarbeiteranzahl<span class="mandatory">*</span></label>
+      <input ng-if="typeDataEditCtrl.isLogib" class="form-control" name="workerNumber"
+        ng-model="typeDataEditCtrl.entry.workerNumber" type="number" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isLogib" class="form-group">
+      <label>Anzahl Frauen<span class="mandatory">*</span></label>
+      <input ng-if="typeDataEditCtrl.isLogib" class="form-control" name="womenNumber"
+        ng-model="typeDataEditCtrl.entry.womenNumber" type="number" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isLogib" class="form-group">
+      <label>Anzahl Männer<span class="mandatory">*</span></label>
+      <input ng-if="typeDataEditCtrl.isLogib" class="form-control" name="menNumber"
+        ng-model="typeDataEditCtrl.entry.menNumber" type="number" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isVatRate" class="form-group">
+      <label>Wert in %<span class="mandatory">*</span></label>
+      <input class="form-control" ng-model="typeDataEditCtrl.vatRatePercentage" step=".01" type="number"
+        name="vatRatePercentage" />
+    </div>
+    <div ng-if="typeDataEditCtrl.isSettings" class="form-group">
+      <label ng-if="typeDataEditCtrl.entry.shortCode != 'S5'">Wert</span></label>
+      <input ng-if="typeDataEditCtrl.settingsInputValueVisible()" class="form-control"
+        ng-model="typeDataEditCtrl.entry.value2" type="text" name="inputValue" />
+      <ui-select ng-if="typeDataEditCtrl.entry.shortCode == 'S9'" name="language" ng-disabled="true"
+        ng-model="typeDataEditCtrl.entry.value2" theme="select2">
+        <ui-select-match allow-clear="true"> <span ng-bind="$select.selected"></span>
+        </ui-select-match>
+        <ui-select-choices repeat="language in languages">
+          <span ng-bind=""></span></ui-select-choices>
+      </ui-select>
+      <ui-select ng-if="typeDataEditCtrl.entry.shortCode == 'S8'" name="serverSideType"
+        ng-model="typeDataEditCtrl.entry.value2" theme="select2">
+        <ui-select-match allow-clear="true"> <span ng-bind="$select.selected"></span>
+        </ui-select-match>
+        <ui-select-choices repeat="serverSideType in typeDataEditCtrl.serverSideTypes">
+          <span ng-bind="serverSideType"></span></ui-select-choices>
+      </ui-select>
+      <input ng-if="typeDataEditCtrl.entry.shortCode == 'S6' || typeDataEditCtrl.entry.shortCode == 'S12'"
+        class="form-control" ng-model="typeDataEditCtrl.entry.value2" step="1" type="number" name="numberValue" />
+      <label ng-if="typeDataEditCtrl.entry.shortCode == 'S5'">Logo</span></label>
+      <div ng-if="typeDataEditCtrl.entry.shortCode == 'S5'"><img ng-if="typeDataEditCtrl.entry.tenantLogo"
+          ng-src="data:image/png;base64, {{typeDataEditCtrl.entry.tenantLogo}}"></div>
+      <div ng-if="typeDataEditCtrl.entry.shortCode == 'S5'" flow-init flow-name="typeDataEditCtrl.files"
+        style="display: inline;" flow-name="obj.flow" flow-files-submitted="typeDataEditCtrl.uploadSelectedImage($flow)"
+        title="Logo Hochladen">
+        <span flow-btn flow-attrs="{accept:'*'}" flow-complete="typeDataEditCtrl.uploaded($flow);"
+          class="btn action btn-primary fa fa-upload">
+          <div ng-if="main.spinner" class="fa fa-upload" />
+        </span>
+      </div>
+    </div>
+    <div ng-if="typeDataEditCtrl.isDepartment" class="form-group">
+      <label>Logo</label>
+      <div><img ng-if="typeDataEditCtrl.entry.logo" ng-src="data:image/png;base64, {{typeDataEditCtrl.entry.logo}}">
+      </div>
+      <div flow-init flow-name="typeDataEditCtrl.files" style="display: inline;" flow-name="obj.flow"
+        flow-files-submitted="typeDataEditCtrl.uploadSelectedImage($flow)" title="Logo Hochladen">
+        <span flow-btn flow-attrs="{accept:'*'}" flow-complete="typeDataEditCtrl.uploaded($flow);"
+          class="btn action btn-primary fa fa-upload">
+          <div ng-if="main.spinner" class="fa fa-upload" />
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="form-group" ng-if="typeDataEditCtrl.isCalculationFormula">
+    <div class="col-sm-12">
+      <div class="table-responsive">
+        <table class=" table-condensed">
+          <thead>
+            <tr>
+
+              <th><u>Variablen</u></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+
+              <td><b>ai</b> (Angebotspreis)</td>
+              <td><b>ao</b> (niedrigster Angebotspreis)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <div class="table-responsive">
+        <table class=" table-condensed">
+          <thead>
+            <tr>
+              <th><u>Operatoren</u></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Arithmetische Operatoren:</th>
+              <td>&nbsp;+&nbsp;&nbsp; -&nbsp;&nbsp; *&nbsp;&nbsp; /&nbsp;&nbsp; %</td>
+
+            </tr>
+            <tr>
+              <th>Vergleichs Operatoren:</th>
+              <td>&nbsp;== &nbsp; &nbsp;!= &nbsp; &nbsp; &gt; &nbsp;&nbsp; &lt; &nbsp;&nbsp; &gt;&#61; &nbsp;&nbsp;
+                &lt;&#61;</td>
+            </tr>
+
+            <tr>
+              <th>Bedingung:</th>
+              <td>&nbsp;if({Bedingung},{Wahr_Wert},{Falsch_Wert})</td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <div class="table-responsive">
+        <table class=" table-condensed">
+          <thead>
+            </tr>
+            <tr>
+              <th></th>
+            </tr>
+            <tr>
+              <th><u>Funktionen</u></th>
+            </tr>
+
+          </thead>
+          <tbody>
+            <tr>
+              <td><b> {Zahl}^{Exponent} </b> </td>
+              <td>Potenziert {Zahl} mit {Exponent}.</td>
+            </tr>
+
+            <tr>
+
+              <td><b>sqrt({Zahl})</td>
+              <td>Gibt die Quadratwurzel von {Zahl} zurück. </td>
+            </tr>
+            <tr>
+              <th></th>
+            </tr>
+            <tr>
+
+              <td><b>round({Wert}, {Anzahl_Stellen})</b></td>
+              <td>Rundet {Wert} auf die in {Anzahl_Stellen} angegebene Anzahl Stellen. </td>
+            </tr>
+            <tr>
+              <th></th>
+            </tr>
+            <tr>
+
+              <td><b>min({Zahl1}, {Zahl2})</b></td>
+              <td>Gibt die kleinere von zwei Zahlen zurück.</td>
+            </tr>
+            <tr>
+              <th></th>
+            </tr>
+            <tr>
+
+              <td><b>max({Zahl1}, {Zahl2})</b></td>
+              <td>Gibt die grössere von zwei Zahlen zurück.
+              <td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class='row'></div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-primary" ng-disabled="!editForm.$dirty">Speichern</button>
+    <button type="button" class="btn btn-default" ng-click="typeDataEditCtrl.cancelButton()">Abbrechen</button>
+    <div ng-if="editForm.$dirty">
+      <input ng-hide="true" data-ng-model="typeDataEditCtrl.dirtyFlag" ng-init="typeDataEditCtrl.dirtyFlag = true">
+    </div>
+  </div>
+</form>

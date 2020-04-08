@@ -77,11 +77,18 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      AppService.setIsDirty(false);
-      readSubmission($stateParams.id);
-      readApplicantsOfSubmission($stateParams.id);
-      readStatusOfSubmission($stateParams.id);
-      implementingSecurity($stateParams.id);
+      SubmissionService.loadApplicants($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            AppService.setIsDirty(false);
+            readSubmission($stateParams.id);
+            readApplicantsOfSubmission($stateParams.id);
+            readStatusOfSubmission($stateParams.id);
+            implementingSecurity($stateParams.id);
+          }
+        });
     }
 
     /***********************************************************************
@@ -375,7 +382,7 @@
     }
 
     /** Function to delete an application */
-    function deleteApplicationModal(applicationId) {
+    function deleteApplicationModal(applicationId, applicationVersion) {
       if (AppService.getIsDirty()) {
         handleUnsavedChanges();
       } else {
@@ -408,7 +415,7 @@
           });
         return confirmationWindowInstance.result.then(function () {}, function (response) {
           if (response) {
-            SelectiveService.deleteApplication(applicationId).success(
+            SelectiveService.deleteApplication(applicationId, applicationVersion).success(
               function (data) {
                 $state.go('applicants', {
                   displayedApplicationId: data[0],
@@ -416,7 +423,13 @@
                 }, {
                   reload: true
                 });
-              });
+              }).error(function (response, status) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) {
+                $anchorScroll();
+                QFormJSRValidation.markErrors($scope,
+                  $scope.applicantsForm, response);
+              }
+            });
           }
           return null;
         });
@@ -432,7 +445,7 @@
         var closeApplicationOpeningModal = AppService.closeApplicationOpening();
         return closeApplicationOpeningModal.result.then(function (response) {
           if (response) {
-            SelectiveService.closeApplicationOpening(vm.submission.id).success(
+            SelectiveService.closeApplicationOpening(vm.submission.id, vm.submission.version).success(
               function (data) {
                 $state.go('applicants', {
                   displayedApplicationId: null
@@ -440,7 +453,7 @@
                   reload: true
                 });
               }).error(function (response, status) {
-              if (status === 400) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) {
                 $anchorScroll();
                 QFormJSRValidation.markErrors($scope,
                   $scope.applicantsForm, response);
@@ -462,9 +475,15 @@
         if (!angular.isUndefined(response)) {
           reopenForm.reopenReason = response;
           SelectiveService.reopenApplicationOpening(reopenForm,
-            $stateParams.id).success(
-            function (data) {
+              vm.submission.id, vm.submission.version)
+            .success(function (data) {
               $state.reload();
+            }).error(function (response, status) {
+              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) {
+                $anchorScroll();
+                QFormJSRValidation.markErrors($scope,
+                  $scope.applicantsForm, response);
+              }
             });
         }
       });

@@ -15,112 +15,115 @@ package ch.bern.submiss.services.impl.model;
 
 import java.sql.Timestamp;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class SubmittentEntity.
  */
 @Entity
 @Table(name = "SUB_TENDERER")
-public class SubmittentEntity {
+public class SubmittentEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The company id. */
+  /**
+   * The company id.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_COMPANY")
   private CompanyEntity companyId;
 
-  /** The submission id. */
+  /**
+   * The submission id.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDER")
   private SubmissionEntity submissionId;
 
-  /** The subcontractors. */
+  /**
+   * The subcontractors.
+   */
   @ManyToMany
   @JoinTable(name = "SUB_SUBCONTRACTOR", joinColumns = {@JoinColumn(name = "FK_TENDERER")},
-      inverseJoinColumns = {@JoinColumn(name = "FK_COMPANY")})
+    inverseJoinColumns = {@JoinColumn(name = "FK_COMPANY")})
   @Cascade({CascadeType.SAVE_UPDATE})
   private Set<CompanyEntity> subcontractors;
 
-  /** The joint ventures. */
+  /**
+   * The joint ventures.
+   */
   @ManyToMany
   @JoinTable(name = "SUB_JOINT_VENTURE", joinColumns = {@JoinColumn(name = "FK_TENDERER")},
-      inverseJoinColumns = {@JoinColumn(name = "FK_COMPANY")})
+    inverseJoinColumns = {@JoinColumn(name = "FK_COMPANY")})
   @Cascade({CascadeType.SAVE_UPDATE})
   private Set<CompanyEntity> jointVentures;
 
-  /** The exists exclusion reasons. */
+  /**
+   * The exists exclusion reasons.
+   */
   @Column(name = "EXISTS_EXCLUSION_REASONS")
   private Boolean existsExclusionReasons;
 
-  /** The formal examination fulfilled. */
+  /**
+   * The formal examination fulfilled.
+   */
   @Column(name = "FORMAL_EXAMINATION_FULFILLED")
   private Boolean formalExaminationFulfilled;
 
-  /** The sort order. */
+  /**
+   * The sort order.
+   */
   @Column(name = "SORT_ORDER")
   private Integer sortOrder;
 
-  /** The proof doc pending. */
+  /**
+   * The proof doc pending.
+   */
   @Column(name = "PROOF_DOC_PENDING")
   private Boolean proofDocPending;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @Column(name = "CREATED_ON")
   private Timestamp createdOn;
 
-  /** The created by. */
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
+
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
 
-  /** The is applicant. */
+  /**
+   * The is applicant.
+   */
   @Column(name = "IS_APPLICANT")
   private Boolean isApplicant;
 
-  /** The formal audit notes. */
+  /**
+   * The formal audit notes.
+   */
   @Column(name = "FORMAL_AUDIT_NOTES")
   private String formalAuditNotes;
-  
+
   @OneToOne(mappedBy = "submittent", fetch = FetchType.EAGER)
   private OfferEntity offer;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the company id.
@@ -356,21 +359,34 @@ public class SubmittentEntity {
     this.offer = offer;
   }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the updatedOn.
+   *
+   * @return the updatedOn
    */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updatedOn.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
   @Override
   public String toString() {
-    return "SubmittentEntity [id=" + id + ", companyId=" + companyId + ", submissionId="
-        + submissionId + ", subcontractors=" + subcontractors + ", jointVentures=" + jointVentures
-        + ", existsExclusionReasons=" + existsExclusionReasons + ", formalExaminationFulfilled="
-        + formalExaminationFulfilled + ", sortOrder=" + sortOrder + ", proofDocPending="
-        + proofDocPending + ", createdOn=" + createdOn + ", createdBy=" + createdBy
-        + ", isApplicant=" + isApplicant + ", formalAuditNotes=" + formalAuditNotes + ", offer="
-        + offer + "]";
+    return "SubmittentEntity [id=" + super.getId() + ", version=" + super.getVersion()
+      + ", companyId=" + companyId + ", submissionId="
+      + submissionId + ", subcontractors=" + subcontractors + ", jointVentures=" + jointVentures
+      + ", existsExclusionReasons=" + existsExclusionReasons + ", formalExaminationFulfilled="
+      + formalExaminationFulfilled + ", sortOrder=" + sortOrder + ", proofDocPending="
+      + proofDocPending + ", createdOn=" + createdOn + ", createdBy=" + createdBy
+      + ", isApplicant=" + isApplicant + ", formalAuditNotes=" + formalAuditNotes + ", offer="
+      + offer + "]";
   }
 
   @Override
@@ -380,17 +396,20 @@ public class SubmittentEntity {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     SubmittentEntity other = (SubmittentEntity) obj;
     if (hashCode() == other.hashCode()) {
       // Check subcontractor
       return hashCode() + subcontractors.hashCode() == other.hashCode()
-          + other.subcontractors.hashCode();
+        + other.subcontractors.hashCode();
     }
     return hashCode() == other.hashCode();
   }

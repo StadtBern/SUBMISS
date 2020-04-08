@@ -16,13 +16,15 @@
 		<div id="demo1" class="collapse subTabs"
 			is-open="close" style="display: block;">
 			<ul class="nav nav-tabs" role="tablist">
-				<li role="presentation" ui-sref-active="active" ng-if="firstStageTabsCtrl.secApplicantsView"><a 
+				<li role="presentation" ui-sref-active="active" ng-if="firstStageTabsCtrl.secApplicantsView"><a
 					ui-sref="applicants({id: firstStageTabsCtrl.id})"
-					aria-controls="documents" role="tab" data-toggle="tab">{{firstStageTabsCtrl.applicantListTitle}}</a></li>
-				<li role="presentation" ui-sref-active="active"><a 
+          aria-controls="documents" role="tab" data-toggle="tab"
+          ng-class="{'status': firstStageTabsCtrl.getStatusSubTab(firstStageTabsCtrl.tabStatus)===0}">{{firstStageTabsCtrl.applicantListTitle}}</a></li>
+				<li role="presentation" ui-sref-active="active"><a
 					ng-if="firstStageTabsCtrl.examinationTabVisible"
 					ui-sref="examination.view({id: firstStageTabsCtrl.id})"
-					aria-controls="documents" role="tab" data-toggle="tab">Formelle/Eignungsprüfung</a></li>
+          aria-controls="documents" role="tab" data-toggle="tab"
+          ng-class="{'status': firstStageTabsCtrl.getStatusSubTab(firstStageTabsCtrl.tabStatus)===1}">Formelle/Eignungsprüfung</a></li>
 			</ul>
 		</div>
 	</div>

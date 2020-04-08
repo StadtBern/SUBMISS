@@ -39,7 +39,7 @@ public class DBUtils {
   public static BooleanExpression getFullTextSearchExpression(String query, StringPath path) {
     return Expressions.stringTemplate(MATCH, path,
         PLUS_WILDCARD + query.replace("+", " ").replace("*", " ").replace("-", " ")
-            .replace("()", " ").replace("<", " ").replace(">", " ").replace("~", " ")
+            .replace("(", " ").replace(")", " ").replace("()", " ").replace("<", " ").replace(">", " ").replace("~", " ")
             + STAR_WILDCARD)
         .gt("0");
   }

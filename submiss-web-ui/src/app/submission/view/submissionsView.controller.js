@@ -66,11 +66,18 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.readProject($stateParams.id);
-      vm.readProjectSubmissions($stateParams.id);
-      vm.secTenderDelete = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_DELETE, null);
-      vm.secTenderView = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_VIEW, null);
-      vm.secTenderCreate = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_CREATE, null);
+      ProjectService.loadSubmissionList($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.readProject($stateParams.id);
+            vm.readProjectSubmissions($stateParams.id);
+            vm.secTenderDelete = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_DELETE, null);
+            vm.secTenderView = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_VIEW, null);
+            vm.secTenderCreate = AppService.isOperationPermitted(AppConstants.OPERATION.TENDER_CREATE, null);
+          }
+        });
     }
 
     /***********************************************************************
@@ -226,14 +233,28 @@
     }
 
     function navigateToSubmissionView(submissionId) {
-      $state.go('submissionView', {
-        id: submissionId
+      SubmissionService.submissionExists(submissionId).success(function (data) {
+        $state.go('submissionView', {
+          id: submissionId
+        });
+      }).error(function (response, status) {
+        if (status === 400) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.submissionsViewCtr.submissionForm, response);
+        }
       });
     }
 
     function navigateToProject(projectId) {
-      $state.go('project.view', {
-        id: projectId
+      ProjectService.projectExists(projectId).success(function (data) {
+        $state.go('project.view', {
+          id: projectId
+        });
+      }).error(function (response, status) {
+        if (status === 400) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.submissionsViewCtr.submissionForm, response);
+        }
       });
     }
 

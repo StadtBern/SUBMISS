@@ -13,6 +13,9 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonView;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,92 +23,97 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
-import ch.bern.submiss.services.api.util.View;
-
 /**
  * The Class SubmittentDTO.
  */
-public class SubmittentDTO {
+public class SubmittentDTO extends AbstractDTO {
 
-  /** The id. */
-  @JsonView(View.Public.class)
-  private String id;
-
-  /** The company id. */
+  /**
+   * The Constant sortCompaniesByCompanyName.
+   */
+  public static final Comparator<CompanyDTO> sortCompaniesByCompanyName =
+    Comparator.comparing(CompanyDTO::getCompanyName); // compare by name and order alphabetically
+  /**
+   * The company id.
+   */
   @JsonView(View.Public.class)
   private CompanyDTO companyId;
-
-  /** The submission id. */
+  /**
+   * The submission id.
+   */
   @JsonView(View.Internal.class)
   private SubmissionDTO submissionId;
-
-  /** The subcontractors. */
+  /**
+   * The subcontractors.
+   */
   @JsonView(View.Public.class)
   private Set<CompanyDTO> subcontractors;
-
-  /** The joint ventures. */
+  /**
+   * The joint ventures.
+   */
   @JsonView(View.Public.class)
   private Set<CompanyDTO> jointVentures;
-
-  /** The exists exclusion reasons. */
+  /**
+   * The exists exclusion reasons.
+   */
   @JsonView(View.Public.class)
   private Boolean existsExclusionReasons;
-
-  /** The formal examination fulfilled. */
+  /**
+   * The formal examination fulfilled.
+   */
   @JsonView(View.Public.class)
   private Boolean formalExaminationFulfilled;
-
-  /** The sort order. */
+  /**
+   * The sort order.
+   */
   @JsonView(View.Public.class)
   private Integer sortOrder;
-
-  /** The proof doc pending. */
+  /**
+   * The proof doc pending.
+   */
   @JsonView(View.Internal.class)
   private Boolean proofDocPending;
-
-  /** The is variant. */
+  /**
+   * The is variant.
+   */
   @JsonView(View.Public.class)
   private Boolean isVariant;
-
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @JsonView(View.Internal.class)
   private Timestamp createdOn;
-
-  /** The created by. */
+  /**
+   * The updated on.
+   */
+  @JsonView(View.Internal.class)
+  private Timestamp updatedOn;
+  /**
+   * The created by.
+   */
   @JsonView(View.Internal.class)
   private String createdBy;
-
-  /** The is applicant. */
+  /**
+   * The is applicant.
+   */
   @JsonView(View.Public.class)
   private Boolean isApplicant;
-
-  /** The submittent name arge sub. */
+  /**
+   * The submittent name arge sub.
+   */
   @JsonView(View.Public.class)
   private String submittentNameArgeSub;
-
-  /** The formal audit notes. */
+  /**
+   * The formal audit notes.
+   */
   @JsonView(View.Public.class)
   private String formalAuditNotes;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The formal audit version.
    */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @JsonView(View.Public.class)
+  private Long formalAuditVersion;
 
   /**
    * Gets the company id.
@@ -269,7 +277,6 @@ public class SubmittentDTO {
     this.isVariant = isVariant;
   }
 
-
   /**
    * Gets the created on.
    *
@@ -331,10 +338,11 @@ public class SubmittentDTO {
    */
   public String getSubmittentNameArgeSub() {
     StringBuilder name = new StringBuilder();
-    name.append(getCompanyId().getCompanyName() + ", " + getCompanyId().getLocation());
+    name.append(getCompanyId().getCompanyName())
+      .append(LookupValues.COMMA)
+      .append(getCompanyId().getLocation());
     if (getJointVentures() != null && !getJointVentures().isEmpty()) {
-      name.append(" (ARGE: ");
-      name.append(constructCompaniesNames(getJointVentures()));
+      name.append(" (ARGE: ").append(constructCompaniesNames(getJointVentures()));
     }
     if (getSubcontractors() != null && !getSubcontractors().isEmpty()) {
       if (getJointVentures() != null && !getJointVentures().isEmpty()) {
@@ -345,11 +353,20 @@ public class SubmittentDTO {
       name.append(constructCompaniesNames(getSubcontractors()));
     }
     if ((getJointVentures() != null && !getJointVentures().isEmpty())
-        || (getSubcontractors() != null && !getSubcontractors().isEmpty())) {
-      name.append(")");
+      || (getSubcontractors() != null && !getSubcontractors().isEmpty())) {
+      name.append(LookupValues.RIGHT_PARENTHESIS);
     }
     submittentNameArgeSub = name.toString();
     return submittentNameArgeSub;
+  }
+
+  /**
+   * Sets the submittent name arge sub.
+   *
+   * @param submittentNameArgeSub the new submittent name arge sub
+   */
+  public void setSubmittentNameArgeSub(String submittentNameArgeSub) {
+    this.submittentNameArgeSub = submittentNameArgeSub;
   }
 
   /**
@@ -375,19 +392,6 @@ public class SubmittentDTO {
     return name.toString();
   }
 
-  /** The Constant sortCompaniesByCompanyName. */
-  public static final Comparator<CompanyDTO> sortCompaniesByCompanyName =
-    Comparator.comparing(CompanyDTO::getCompanyName); // compare by name and order alphabetically
-
-  /**
-   * Sets the submittent name arge sub.
-   *
-   * @param submittentNameArgeSub the new submittent name arge sub
-   */
-  public void setSubmittentNameArgeSub(String submittentNameArgeSub) {
-    this.submittentNameArgeSub = submittentNameArgeSub;
-  }
-
   /**
    * Gets the formal audit notes.
    *
@@ -406,20 +410,41 @@ public class SubmittentDTO {
     this.formalAuditNotes = formalAuditNotes;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
    */
-  @Override
-  public String toString() {
-    return "SubmittentDTO [id=" + id + ", existsExclusionReasons=" + existsExclusionReasons
-        + ", formalExaminationFulfilled=" + formalExaminationFulfilled + ", sortOrder=" + sortOrder
-        + ", proofDocPending=" + proofDocPending + ", isVariant=" + isVariant + ", createdOn="
-        + createdOn + ", createdBy=" + createdBy + ", isApplicant=" + isApplicant
-        + ", submittentNameArgeSub=" + submittentNameArgeSub + ", formalAuditNotes="
-        + formalAuditNotes + "]";
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
   }
 
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  public Long getFormalAuditVersion() {
+    return formalAuditVersion;
+  }
+
+  public void setFormalAuditVersion(Long formalAuditVersion) {
+    this.formalAuditVersion = formalAuditVersion;
+  }
+
+  @Override
+  public String toString() {
+    return "SubmittentDTO [id=" + super.getId() + ", version=" + super.getVersion()
+      + ", existsExclusionReasons=" + existsExclusionReasons
+      + ", formalExaminationFulfilled=" + formalExaminationFulfilled + ", sortOrder=" + sortOrder
+      + ", proofDocPending=" + proofDocPending + ", isVariant=" + isVariant + ", createdOn="
+      + createdOn + ", createdBy=" + createdBy + ", isApplicant=" + isApplicant
+      + ", submittentNameArgeSub=" + submittentNameArgeSub + ", formalAuditNotes="
+      + formalAuditNotes + "]";
+  }
 }
 

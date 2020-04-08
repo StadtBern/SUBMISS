@@ -21,7 +21,7 @@ import ch.bern.submiss.services.api.dto.DirectorateDTO;
  * The Class DirectorateHistoryForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DirectorateHistoryForm extends AbstractForm {
+public class DirectorateHistoryForm extends AbstractStammdatenForm {
 
   /** The active. */
   private boolean active;

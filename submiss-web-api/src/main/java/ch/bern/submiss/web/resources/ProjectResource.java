@@ -18,6 +18,7 @@ import ch.bern.submiss.services.api.dto.PaginationDTO;
 import ch.bern.submiss.services.api.dto.ProjectDTO;
 import ch.bern.submiss.services.api.dto.SearchDTO;
 import ch.bern.submiss.services.api.dto.TenderDTO;
+import ch.bern.submiss.services.api.exceptions.AuthorisationException;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.web.forms.ProjectForm;
 import ch.bern.submiss.web.forms.SearchForm;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -74,12 +76,11 @@ public class ProjectResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public Response getProjectById(@PathParam("id") String id) {
+    projectService.projectDetailsSecurityCheck(id);
     ProjectDTO project = projectService.getProjectById(id);
-    if (project != null) {
-      return Response.ok(project).build();
-    } else {
-      return Response.status(Status.NOT_FOUND).build();
-    }
+    return (project != null)
+      ? Response.ok(project).build()
+      : Response.status(Status.NOT_FOUND).build();
   }
 
   /**
@@ -97,19 +98,15 @@ public class ProjectResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/search/{page}/{pageItems}/{sortColumn}/{sortType}")
   public Response search(SearchForm searchForm, @PathParam("page") int page,
-      @PathParam("pageItems") int pageItems, @PathParam("sortColumn") String sortColumn,
-      @PathParam("sortType") String sortType) {
+    @PathParam("pageItems") int pageItems, @PathParam("sortColumn") String sortColumn,
+    @PathParam("sortType") String sortType) throws AuthorisationException {
     SearchDTO searchDTO = SearchMapper.INSTANCE.toSearchDTO(searchForm);
     List<TenderDTO> tenderDTOList =
         projectService.search(searchDTO, page, pageItems, sortColumn, sortType);
-    if (tenderDTOList != null) {
-      PaginationDTO paginationDTO =
-          new PaginationDTO(projectService.projectCount(searchDTO), tenderDTOList);
-      return Response.ok(paginationDTO).build();
-    } else {
-      return Response.status(Status.NOT_FOUND).build();
-    }
 
+    PaginationDTO paginationDTO =
+      new PaginationDTO(projectService.projectCount(searchDTO), tenderDTOList);
+    return Response.ok(paginationDTO).build();
   }
 
   /**
@@ -122,12 +119,8 @@ public class ProjectResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response create(@Valid ProjectForm project) {
-    Boolean uniqueName = false;
-    if (project.getProjectName() != null && project.getObjectName() != null) {
-      uniqueName = projectService.findIfNameUnique(project.getProjectName(),
-          project.getObjectName().getId(), project.getId());
-    }
-    Set<ValidationError> errors = validation(project, uniqueName, null);
+    projectService.projectCreateSecurityCheck();
+    Set<ValidationError> errors = validation(project, isNameUnique(project), null);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
@@ -148,16 +141,35 @@ public class ProjectResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public Response deleteProject(@PathParam("id") String id) {
-    Boolean projectHasSubmission = false;
-    if (id != null) {
-      projectHasSubmission = projectService.findIfProjectHasSubmission(id);
+
+    // Check if project is already deleted by another user
+    if (!projectService.projectExists(id)) {
+      Set<ValidationError> projectDeleted = new HashSet<>();
+      projectDeleted
+        .add(new ValidationError("deletedByAnotherUserErrorField", ValidationMessages.PROJECT_DELETED));
+      return Response.status(Response.Status.BAD_REQUEST).entity(projectDeleted).build();
     }
-    Set<ValidationError> errors = validation(null, null, projectHasSubmission);
+    // Check if project has submission(s)
+    Set<ValidationError> errors = validation(null, null, hasProjectSubmission(id));
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
     projectService.deleteProject(id);
     return Response.ok().build();
+  }
+
+  /**
+   * Checks if project has submission.
+   *
+   * @param id the id
+   * @return the Boolean projectHasSubmission
+   */
+  private Boolean hasProjectSubmission(String id) {
+    Boolean projectHasSubmission = false;
+    if (id != null) {
+      projectHasSubmission = projectService.findIfProjectHasSubmission(id);
+    }
+    return projectHasSubmission;
   }
 
   /**
@@ -257,17 +269,36 @@ public class ProjectResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/update")
   public Response update(@Valid ProjectForm project) {
-    Boolean uniqueName = false;
-    if (project.getProjectName() != null && project.getObjectName() != null) {
-      uniqueName = projectService.findIfNameUnique(project.getProjectName(),
-          project.getObjectName().getId(), project.getId());
-    }
-    Set<ValidationError> errors = validation(project, uniqueName, null);
+    projectService.projectEditSecurityCheck(project.getId());
+    Set<ValidationError> errors = validation(project, isNameUnique(project), null);
     if (!errors.isEmpty()) {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
-    projectService.updateProject(ProjectMapper.INSTANCE.toProjectDTO(project));
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      optimisticLockErrors = projectService.updateProject(ProjectMapper.INSTANCE.toProjectDTO(project));
+    } catch (OptimisticLockException e) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Check if name is unique.
+   *
+   * @param project the project form
+   * @return the Boolean uniqueName
+   */
+  private Boolean isNameUnique(ProjectForm project) {
+    Boolean uniqueName = false;
+    if (project.getProjectName() != null && project.getObjectName() != null) {
+      uniqueName = projectService.findIfNameUnique(project.getProjectName(),
+        project.getObjectName().getId(), project.getId());
+    }
+    return uniqueName;
   }
 
   /**
@@ -372,4 +403,93 @@ public class ProjectResource {
 
   }
 
+  /**
+   * Checks if project exists.
+   *
+   * @param id the project id
+   * @return true if exists, otherwise the error for deleted project
+   */
+  @GET
+  @Path("/exists/{id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response projectExists(@PathParam("id") String id) {
+    if (projectService.projectExists(id)) {
+      return Response.ok(true).build();
+    }
+    Set<ValidationError> projectDeleted = new HashSet<>();
+    projectDeleted
+      .add(new ValidationError("deletedByAnotherUserErrorField", ValidationMessages.PROJECT_DELETED));
+    return Response.status(Response.Status.BAD_REQUEST).entity(projectDeleted).build();
+  }
+
+  /**
+   * Run security check before loading Project Create form.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadProjectCreate")
+  public Response loadProjectCreate() {
+    projectService.projectCreateSecurityCheck();
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Project Edit form.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadProjectEdit/{projectId}")
+  public Response loadProjectEdit(@PathParam("projectId") String projectId) {
+    projectService.projectEditSecurityCheck(projectId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Project Details.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadProjectDetails/{projectId}")
+  public Response loadProjectDetails(@PathParam("projectId") String projectId) {
+    projectService.projectDetailsSecurityCheck(projectId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Submission List.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadSubmissionList/{projectId}")
+  public Response loadSubmissionList(@PathParam("projectId") String projectId) {
+    projectService.submissionListSecurityCheck(projectId);
+    return Response.ok().build();
+  }
+
+  /**
+   * Run security check before loading Project Search.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadProjectSearch")
+  public Response loadProjectSearch() {
+    projectService.projectSearchSecurityCheck();
+    return Response.ok().build();
+  }
 }

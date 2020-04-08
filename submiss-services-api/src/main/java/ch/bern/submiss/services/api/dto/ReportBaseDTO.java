@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * The Class ReportDTO.
  */
-public class ReportBaseDTO extends AbstractDTO {
+public class ReportBaseDTO extends AbstractStammdatenDTO {
 
   /**
    * The start date.

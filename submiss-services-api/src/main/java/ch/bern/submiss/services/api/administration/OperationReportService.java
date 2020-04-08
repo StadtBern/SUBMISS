@@ -13,12 +13,10 @@
 
 package ch.bern.submiss.services.api.administration;
 
-import java.util.Set;
-
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
-
 import ch.bern.submiss.services.api.dto.OperationReportDTO;
 import ch.bern.submiss.services.api.dto.OperationReportResultsDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
+import java.util.Set;
 
 /**
  * The Interface OperationReportService.
@@ -82,4 +80,9 @@ public interface OperationReportService {
    * @return the operation report results DTO
    */
   OperationReportResultsDTO calculateReportResults(OperationReportDTO operationReportDTO);
+
+  /**
+   * Security check for Operation Report.
+   */
+  void operationReportSecurityCheck();
 }

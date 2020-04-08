@@ -11,472 +11,424 @@
   ~  under the Licence.
   -->
 
-<form name="submissionCreateCtr.submissionForm"
-	data-ng-submit="submissionCreateCtr.save()" id="submissionForm"
-	shows-validation-errors>
-	<div id='errorScroll' class="card-box">
-		<fieldset
-			data-ng-disabled="submissionCreateCtr.genericDisable()">
-			<div id='errorScroll' class="col-sm-12">
-				<div class="alert alert-danger"
-					ng-if="submissionCreateCtr.submissionForm.errorField.$invalid || submissionCreateCtr.submissionForm.descriptionErrorField.$invalid || submissionCreateCtr.submissionForm.pmDepartmentNameErrorField.$invalid ||
+<form name="submissionCreateCtr.submissionForm" data-ng-submit="submissionCreateCtr.save()" id="submissionForm"
+  shows-validation-errors>
+  <div id='errorScroll' class="card-box">
+    <fieldset data-ng-disabled="submissionCreateCtr.genericDisable()">
+      <div id='errorScroll' class="col-sm-12">
+        <div class="alert alert-danger"
+          ng-if="submissionCreateCtr.submissionForm.errorField.$invalid || submissionCreateCtr.submissionForm.descriptionErrorField.$invalid || submissionCreateCtr.submissionForm.pmDepartmentNameErrorField.$invalid ||
 			submissionCreateCtr.submissionForm.notesErrorField.$invalid || (submissionCreateCtr.submissionForm.costEstimate.$invalid && !submissionCreateCtr.submissionForm.costEstimate.$dirty) || submissionCreateCtr.invalidDate ||
-			submissionCreateCtr.submissionForm.costEstimateErrorField.$invalid"
-					role="alert">
-					<ul ng-if="submissionCreateCtr.invalidDate">
-						<li><field-error translate>invalid_date_error_message</field-error></li>
-					</ul>
-					<field-error
-						ng-if="submissionCreateCtr.submissionForm.errorField.$invalid"
-						form-element-name="errorField" translate name="error"></field-error>
-					<field-error
-						ng-if="submissionCreateCtr.submissionForm.pmDepartmentNameErrorField.$invalid"
-						form-element-name="pmDepartmentNameErrorField" translate
-						name="error"></field-error>
-					<field-error
-						ng-if="submissionCreateCtr.submissionForm.notesErrorField.$invalid"
-						form-element-name="notesErrorField" translate name="error"></field-error>
-					<field-error
-						ng-if="submissionCreateCtr.submissionForm.descriptionErrorField.$invalid"
-						form-element-name="descriptionErrorField" translate name="error"></field-error>
-					<field-error
-						ng-if="submissionCreateCtr.submissionForm.costEstimateErrorField.$invalid"
-						form-element-name="costEstimateErrorField" translate name="error"></field-error>
-					<field-error
-						ng-if="submissionCreateCtr.submissionForm.reasonAboveThresholdErrorField.$invalid"
-						form-element-name="reasonAboveThresholdErrorField" name="error"></field-error>
-
-				</div>
-				<input name="errorField" ng-hide="true" data-ng-model="fd">
-				<input name="pmDepartmentNameErrorField" ng-hide="true" data-ng-model="fd">
+			submissionCreateCtr.submissionForm.costEstimateErrorField.$invalid || submissionCreateCtr.submissionForm.optimisticLockErrorField.$invalid"
+          role="alert">
+          <ul ng-if="submissionCreateCtr.invalidDate">
+            <li>
+              <field-error translate>invalid_date_error_message</field-error>
+            </li>
+          </ul>
+          <field-error ng-if="submissionCreateCtr.submissionForm.errorField.$invalid" form-element-name="errorField"
+            translate name="error"></field-error>
+          <field-error ng-if="submissionCreateCtr.submissionForm.pmDepartmentNameErrorField.$invalid"
+            form-element-name="pmDepartmentNameErrorField" translate name="error"></field-error>
+          <field-error ng-if="submissionCreateCtr.submissionForm.notesErrorField.$invalid"
+            form-element-name="notesErrorField" translate name="error"></field-error>
+          <field-error ng-if="submissionCreateCtr.submissionForm.descriptionErrorField.$invalid"
+            form-element-name="descriptionErrorField" translate name="error"></field-error>
+          <field-error ng-if="submissionCreateCtr.submissionForm.costEstimateErrorField.$invalid"
+            form-element-name="costEstimateErrorField" translate name="error"></field-error>
+          <field-error ng-if="submissionCreateCtr.submissionForm.reasonAboveThresholdErrorField.$invalid"
+            form-element-name="reasonAboveThresholdErrorField" name="error"></field-error>
+          <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+        </div>
+        <input name="errorField" ng-hide="true" data-ng-model="fd">
+        <input name="pmDepartmentNameErrorField" ng-hide="true" data-ng-model="fd">
         <input name="notesErrorField" ng-hide="true" data-ng-model="fd">
         <input name="descriptionErrorField" ng-hide="true" data-ng-model="fd">
-				<input name="costEstimateErrorField" ng-hide="true" data-ng-model="fd">
-			</div>
-			<div class="col-sm-12">
-				<div class="alert alert-danger"
-					ng-if="submissionCreateCtr.moreThanOneError" role="alert" translate>
-					company_add_only_one_extern</div>
-			</div>
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label for="workType">Arbeitsgattung<span class="mandatory">*</span></label>
-					<ui-select name="workType" autofocus
-						data-ng-disabled="submissionCreateCtr.genericDisable()
+        <input name="costEstimateErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="submissionCreateCtr.moreThanOneError" role="alert" translate>
+          company_add_only_one_extern</div>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="workType">Arbeitsgattung<span class="mandatory">*</span></label>
+          <ui-select name="workType" autofocus data-ng-disabled="submissionCreateCtr.genericDisable()
 				|| (submissionCreateCtr.editSubmission && (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED
 				|| (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED
 					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE)))"
-						ng-model="submissionCreateCtr.submission.workType" theme="select2">
-					<ui-select-match allow-clear="true"> <span>
-						{{$select.selected.value1}} {{$select.selected.value2}}</span> </ui-select-match> <ui-select-choices
-						repeat="item in (submissionCreateCtr.workTypes | propsFilter: {value1: $select.search, value2: $select.search}) track by item.id">
-					{{item.value1}} {{item.value2}} </ui-select-choices> </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="description">Beschreibung</label> <input
-						data-ng-disabled="submissionCreateCtr.editSubmission && (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED
+            ng-model="submissionCreateCtr.submission.workType" theme="select2">
+            <ui-select-match allow-clear="true"> <span>
+                {{$select.selected.value1}} {{$select.selected.value2}}</span> </ui-select-match>
+            <ui-select-choices
+              repeat="item in (submissionCreateCtr.workTypes | propsFilter: {value1: $select.search, value2: $select.search}) track by item.id">
+              {{item.value1}} {{item.value2}} </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="description">Beschreibung</label> <input data-ng-disabled="submissionCreateCtr.editSubmission && (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED
 				|| (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED
-					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE))"
-						class="form-control" id="description" name="description"
-						type="text"
-						data-ng-model="submissionCreateCtr.submission.description">
-				</div>
-				<div class="form-group">
-					<label for="process">Verfahrensart<span class="mandatory">*</span></label>
-					<ui-select name="process" id="process"
-					ng-change="submissionCreateCtr.gekoEntryValue(); submissionCreateCtr.resetValues(); submissionCreateCtr.setPublicationDateDirectAwardEnabled();
+					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE))" class="form-control"
+            id="description" name="description" type="text" data-ng-model="submissionCreateCtr.submission.description">
+        </div>
+        <div class="form-group">
+          <label for="process">Verfahrensart<span class="mandatory">*</span></label>
+          <ui-select name="process" id="process" ng-change="submissionCreateCtr.gekoEntryValue(); submissionCreateCtr.resetValues(); submissionCreateCtr.setPublicationDateDirectAwardEnabled();
 								submissionCreateCtr.setApplicationOpeningDate(submissionCreateCtr.submission.process)"
-						data-ng-model="submissionCreateCtr.submission.process"
-						data-ng-disabled="submissionCreateCtr.genericDisable()
+            data-ng-model="submissionCreateCtr.submission.process" data-ng-disabled="submissionCreateCtr.genericDisable()
 	|| (submissionCreateCtr.editSubmission && (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.SUBMITTENT_LIST_CREATED
 		|| (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICANTS_LIST_CREATED
-					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE)))"
-						theme="select2"> <ui-select-match allow-clear="true">
-					<span> {{$select.selected.label}}</span> 
-					</ui-select-match> <ui-select-choices
-						repeat="item.value as item in (submissionCreateCtr.processOptions | propsFilter: {label: $select.search} | orderBy:'label')">
-					<span ng-bind="item.label"></span> </ui-select-choices> </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="costEstimate">Kostenvoranschlag<span
-						class="mandatory">*</span></label> <input class="form-control"
-						id="costEstimate" name="costEstimate"
-						data-ng-model="submissionCreateCtr.submission.costEstimate"
-						type="number" step=".01" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
-											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"> 
-				</div>
-				<div class="form-group">
-					<label for="processType">Auftragsart<span
-						class="mandatory">*</span></label>
-					<ui-select name="processType" id="processType"
-						ng-change="submissionCreateCtr.isLockedValue(submissionCreateCtr.processType.value1) "
-						data-ng-model="submissionCreateCtr.submission.processType"
-						data-ng-disabled="submissionCreateCtr.genericDisable()
+					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE)))" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span> {{$select.selected.label}}</span>
+            </ui-select-match>
+            <ui-select-choices
+              repeat="item.value as item in (submissionCreateCtr.processOptions | propsFilter: {label: $select.search} | orderBy:'label')">
+              <span ng-bind="item.label"></span> </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="costEstimate">Kostenvoranschlag<span class="mandatory">*</span></label> <input
+            class="form-control" id="costEstimate" name="costEstimate"
+            data-ng-model="submissionCreateCtr.submission.costEstimate" type="number" step=".01" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
+        </div>
+        <div class="form-group">
+          <label for="processType">Auftragsart<span class="mandatory">*</span></label>
+          <ui-select name="processType" id="processType"
+            ng-change="submissionCreateCtr.isLockedValue(submissionCreateCtr.processType.value1) "
+            data-ng-model="submissionCreateCtr.submission.processType" data-ng-disabled="submissionCreateCtr.genericDisable()
 	|| (submissionCreateCtr.editSubmission && (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED
 				|| (submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED
-					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE)))"
-						theme="select2"> <ui-select-match allow-clear="true">
-					<span> {{$select.selected.value1}}</span> </ui-select-match> <ui-select-choices
-						repeat="item in (submissionCreateCtr.processTypes | propsFilter: {value1: $select.search}) track by item.id">
-					{{item.value1}}</ui-select-choices> </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="gattWto">GATT / WTO <span class="mandatory">*</span></label>
-					<ui-select name="gattWto" id="gattWto"
-						data-ng-model="submissionCreateCtr.submission.gattTwo"
-						data-ng-disabled="submissionCreateCtr.genericDisable() || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
-											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-						theme="select2"> <ui-select-match allow-clear="true">
-					<span> {{$select.selected.label}}</span> 
-					</ui-select-match> <ui-select-choices
-						repeat="item.value as item in (submissionCreateCtr.options | propsFilter: {label: $select.search} | orderBy:'label')">
-					<span ng-bind="item.label"></span> </ui-select-choices> </ui-select>
-				</div>
-				<div class="form-group"
-					ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDate.$valid || submissionCreateCtr.invalidPublicationDate}">
-					<label for="publicationDate">Publikation<span
-						class="mandatory"
-						ng-if="submissionCreateCtr.submission.process == 'SELECTIVE' || submissionCreateCtr.submission.process == 'OPEN'">*</span></label>
-					<div class="input-group">
-						<input class="form-control datepicker" id="publicationDate"
-							type="text" uib-datepicker-popup="dd.MM.yyyy"
-							is-open="submissionCreateCtr.openPublicationDate.opened"
-							data-ng-model="submissionCreateCtr.submission.publicationDate"
-							name="publicationDate"
-							data-ng-click="submissionCreateCtr.openPublicationDate()"
-							data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' && submissionCreateCtr.submission.process != 'OPEN' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+					&& submissionCreateCtr.submission.process == submissionCreateCtr.process.SELECTIVE)))" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span> {{$select.selected.value1}}</span> </ui-select-match>
+            <ui-select-choices
+              repeat="item in (submissionCreateCtr.processTypes | propsFilter: {value1: $select.search}) track by item.id">
+              {{item.value1}}</ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="gattWto">GATT / WTO <span class="mandatory">*</span></label>
+          <ui-select name="gattWto" id="gattWto" data-ng-model="submissionCreateCtr.submission.gattTwo"
+            data-ng-disabled="submissionCreateCtr.genericDisable() || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span> {{$select.selected.label}}</span>
+            </ui-select-match>
+            <ui-select-choices
+              repeat="item.value as item in (submissionCreateCtr.options | propsFilter: {label: $select.search} | orderBy:'label')">
+              <span ng-bind="item.label"></span> </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group"
+          ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDate.$valid || submissionCreateCtr.invalidPublicationDate}">
+          <label for="publicationDate">Publikation<span class="mandatory"
+              ng-if="submissionCreateCtr.submission.process == 'SELECTIVE' || submissionCreateCtr.submission.process == 'OPEN'">*</span></label>
+          <div class="input-group">
+            <input class="form-control datepicker" id="publicationDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+              is-open="submissionCreateCtr.openPublicationDate.opened"
+              data-ng-model="submissionCreateCtr.submission.publicationDate" name="publicationDate"
+              data-ng-click="submissionCreateCtr.openPublicationDate()" data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' && submissionCreateCtr.submission.process != 'OPEN' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
-						<span class="input-group-btn">
-							<button class="btn btn-default" type="button"
-								data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' && submissionCreateCtr.submission.process != 'OPEN' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' && submissionCreateCtr.submission.process != 'OPEN' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-								data-ng-click="submissionCreateCtr.openPublicationDate()">
-								<span class="fa fa-calendar"></span>
-							</button>
-						</span>
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12">
-							<label class="checkbox-inline"
-								ng-if="submissionCreateCtr.secDLWettbewerbFieldTenderCreate">
-								<input type="checkbox" id="isLocked" name="isLocked"
-								ng-init="submissionCreateCtr.isLockedValue(submissionCreateCtr.processType.value1)"
-								ng-click="submissionCreateCtr.submission.isLocked"
-								ng-model="submissionCreateCtr.submission.isLocked"
-								ng-checked="submissionCreateCtr.submission.isLocked" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+                data-ng-click="submissionCreateCtr.openPublicationDate()">
+                <span class="fa fa-calendar"></span>
+              </button>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12">
+              <label class="checkbox-inline" ng-if="submissionCreateCtr.secDLWettbewerbFieldTenderCreate">
+                <input type="checkbox" id="isLocked" name="isLocked"
+                  ng-init="submissionCreateCtr.isLockedValue(submissionCreateCtr.processType.value1)"
+                  ng-click="submissionCreateCtr.submission.isLocked" ng-model="submissionCreateCtr.submission.isLocked"
+                  ng-checked="submissionCreateCtr.submission.isLocked" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
-								Submission für Dienststelle sperren
-							</label><label class="checkbox-inline"
-								ng-if="submissionCreateCtr.secGeKoEintragFieldTenderCreate">
-								<input type="checkbox" id="isGekoEntry" name="isGekoEntry"
-								ng-checked="submissionCreateCtr.submission.isGekoEntry"
-								data-ng-model="submissionCreateCtr.submission.isGekoEntry"
-								data-ng-disabled="submissionCreateCtr.submission.process != 'NEGOTIATED_PROCEDURE' && submissionCreateCtr.submission.process != 'NEGOTIATED_PROCEDURE_WITH_COMPETITION' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+                Submission für Dienststelle sperren
+              </label><label class="checkbox-inline" ng-if="submissionCreateCtr.secGeKoEintragFieldTenderCreate">
+                <input type="checkbox" id="isGekoEntry" name="isGekoEntry"
+                  ng-checked="submissionCreateCtr.submission.isGekoEntry"
+                  data-ng-model="submissionCreateCtr.submission.isGekoEntry"
+                  data-ng-disabled="submissionCreateCtr.submission.process != 'NEGOTIATED_PROCEDURE' && submissionCreateCtr.submission.process != 'NEGOTIATED_PROCEDURE_WITH_COMPETITION' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED || submissionCreateCtr.deactivateGekoEnty()">
-								GeKo-Eintrag
-							</label>
-						</div>
-						<div class="col-sm-12">
-							<label class="checkbox-inline"
-								ng-if="!submissionCreateCtr.editSubmission"> <input
-								type="checkbox" id="isServiceTender" name="isServiceTender"
-								data-ng-disabled="submissionCreateCtr.submission.processType.shortCode != 'PT3'
+                GeKo-Eintrag
+              </label>
+            </div>
+            <div class="col-sm-12">
+              <label class="checkbox-inline" ng-if="!submissionCreateCtr.editSubmission"> <input type="checkbox"
+                  id="isServiceTender" name="isServiceTender" data-ng-disabled="submissionCreateCtr.submission.processType.shortCode != 'PT3'
 								|| (submissionCreateCtr.submission.process != submissionCreateCtr.process.SELECTIVE
 									&& submissionCreateCtr.submission.process != submissionCreateCtr.process.OPEN)"
-								data-ng-model="submissionCreateCtr.submission.isServiceTender"
-								ng-checked="submissionCreateCtr.submission.processType.shortCode == 'PT3' && ng-click"
-								ng-click="submissionCreateCtr.setIsLocked(submissionCreateCtr.submission.isServiceTender, submissionCreateCtr.submission.processType.shortCode)" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+                  data-ng-model="submissionCreateCtr.submission.isServiceTender"
+                  ng-checked="submissionCreateCtr.submission.processType.shortCode == 'PT3' && ng-click"
+                  ng-click="submissionCreateCtr.setIsLocked(submissionCreateCtr.submission.isServiceTender, submissionCreateCtr.submission.processType.shortCode)"
+                  data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
-								DL-Wettbewerb
-							</label> <label class="checkbox-inline"
-								ng-if="submissionCreateCtr.editSubmission"> <input
-								type="checkbox" id="isServiceTender" name="isServiceTender"
-								data-ng-disabled="submissionCreateCtr.submission.processType.shortCode != 'PT3' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED
+                DL-Wettbewerb
+              </label> <label class="checkbox-inline" ng-if="submissionCreateCtr.editSubmission"> <input type="checkbox"
+                  id="isServiceTender" name="isServiceTender" data-ng-disabled="submissionCreateCtr.submission.processType.shortCode != 'PT3' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED
 								|| (submissionCreateCtr.submission.process != submissionCreateCtr.process.SELECTIVE
 									&& submissionCreateCtr.submission.process != submissionCreateCtr.process.OPEN)"
-								data-ng-model="submissionCreateCtr.submission.isServiceTender"
-								ng-checked="((submissionCreateCtr.submission.processType.shortCode == 'PT3' && ng-click) || submissionCreateCtr.submission.isServiceTender)"
-								ng-click="submissionCreateCtr.setIsLocked(submissionCreateCtr.submission.isServiceTender, submissionCreateCtr.submission.processType.shortCode)" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+                  data-ng-model="submissionCreateCtr.submission.isServiceTender"
+                  ng-checked="((submissionCreateCtr.submission.processType.shortCode == 'PT3' && ng-click) || submissionCreateCtr.submission.isServiceTender)"
+                  ng-click="submissionCreateCtr.setIsLocked(submissionCreateCtr.submission.isServiceTender, submissionCreateCtr.submission.processType.shortCode)"
+                  data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
-								DL-Wettbewerb
-							</label>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label for="procedure">Verfahrensleitung<span
-						class="mandatory"
-						ng-if="submissionCreateCtr.submission.process == 'SELECTIVE' || submissionCreateCtr.submission.process == 'OPEN' 
+                DL-Wettbewerb
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="procedure">Verfahrensleitung<span class="mandatory" ng-if="submissionCreateCtr.submission.process == 'SELECTIVE' || submissionCreateCtr.submission.process == 'OPEN'
 				|| submissionCreateCtr.submission.process == 'INVITATION'">*</span></label>
-					<ui-select name="procedure"
-						data-ng-disabled="submissionCreateCtr.genericDisable() || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+          <ui-select name="procedure" data-ng-disabled="submissionCreateCtr.genericDisable() || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-						data-ng-model="submissionCreateCtr.submission.procedure"
-						theme="select2"> <ui-select-match allow-clear="true">
-					<span> {{$select.selected.value1}}</span> </ui-select-match> <ui-select-choices
-						repeat="item in (submissionCreateCtr.procedures | propsFilter: {value1: $select.search}) track by item.id">
-					{{item.value1}}</ui-select-choices> </ui-select>
+            data-ng-model="submissionCreateCtr.submission.procedure" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span> {{$select.selected.value1}}</span> </ui-select-match>
+            <ui-select-choices
+              repeat="item in (submissionCreateCtr.procedures | propsFilter: {value1: $select.search}) track by item.id">
+              {{item.value1}}</ui-select-choices>
+          </ui-select>
 
-				</div>
-				<div class="form-group">
-					<label class="" for="pmDepartmentName">Projektleitung der
-						Abt.<span class="mandatory">*</span>
-					</label> <input class="form-control"
-						data-ng-model="submissionCreateCtr.submission.pmDepartmentName"
-						id="pmDepartmentName" type="text" name="pmDepartmentName" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+        </div>
+        <div class="form-group">
+          <label class="" for="pmDepartmentName">Projektleitung der
+            Abt.<span class="mandatory">*</span>
+          </label> <input class="form-control" data-ng-model="submissionCreateCtr.submission.pmDepartmentName"
+            id="pmDepartmentName" type="text" name="pmDepartmentName" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
-				</div>
-				<div class="form-group">
-					<label for="bauleitung">Externe Projektleitung</label>
-					<div class="input-group">
-						<input type="text" id="pmExternal" disabled name="pmExternal"
-							class="form-control"
-							data-ng-model="submissionCreateCtr.submission.pmExternal.companyName">
-						<span class="input-group-btn">
-							<button class="btn btn-primary" type="button"
-								ng-if="submissionCreateCtr.submission.pmExternal.companyName != null"
-								data-ng-click="submissionCreateCtr.submission.pmExternal = null; submissionCreateCtr.moreThanOneError = false">
-								<span class="fa fa-trash"></span>
-							</button>
-							<button class="btn btn-primary" type="button"
-								data-ng-click="submissionCreateCtr.addCompany()">
-								<span class="fa fa-search"></span>
-							</button>
-						</span>
-					</div>
-				</div>
+        </div>
+        <div class="form-group">
+          <label for="bauleitung">Externe Projektleitung</label>
+          <div class="input-group">
+            <input type="text" id="pmExternal" disabled name="pmExternal" class="form-control"
+              data-ng-model="submissionCreateCtr.submission.pmExternal.companyName">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button"
+                ng-if="submissionCreateCtr.submission.pmExternal.companyName != null"
+                data-ng-click="submissionCreateCtr.submission.pmExternal = null; submissionCreateCtr.moreThanOneError = false">
+                <span class="fa fa-trash"></span>
+              </button>
+              <button class="btn btn-primary" type="button" data-ng-click="submissionCreateCtr.addCompany()">
+                <span class="fa fa-search"></span>
+              </button>
+            </span>
+          </div>
+        </div>
 
-				<div class="form-group">
-					<label for="constructionPermit">Baubewilligung</label> <select
-						ui-select2="{allowClear: true}" id="constructionPermit"
-						name="constructionPermit"
-						data-ng-model="submissionCreateCtr.submission.constructionPermit"
-						disabled>
-						<option></option>
-						<option value="EXISTING" translate>EXISTING</option>
-						<option value="PENDING" translate>PENDING</option>
-						<option value="NON_EXISTING" translate>NON_EXISTING</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="loanApproval">Kreditbewilligung</label> <select
-						ui-select2="{allowClear: true}" id="loanApproval"
-						name="loanApproval"
-						data-ng-model="submissionCreateCtr.submission.loanApproval"
-						disabled>
-						<option></option>
-						<option value="EXISTING">vorhanden</option>
-						<option value="PENDING">ausstehend</option>
-					</select>
-				</div>
-				<div class="form-group"
-					ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDateAward.$valid || submissionCreateCtr.invalidPublicationDateAward}">
-					<label for="publicationDateAward">Zuschlagspublikation</label>
-					<div class="input-group">
-						<input class="form-control datepicker" id="publicationDateAward"
-							type="text" uib-datepicker-popup="dd.MM.yyyy"
-							name="publicationDateAward"
-							is-open="submissionCreateCtr.openPublicationDateAward.opened"
-							data-ng-model="submissionCreateCtr.submission.publicationDateAward"
-							data-ng-click="submissionCreateCtr.openPublicationDateAward()"
-							data-ng-disabled="submissionCreateCtr.submission.gattTwo != true || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+        <div class="form-group">
+          <label for="constructionPermit">Baubewilligung</label> <select ui-select2="{allowClear: true}"
+            id="constructionPermit" name="constructionPermit"
+            data-ng-model="submissionCreateCtr.submission.constructionPermit" disabled>
+            <option></option>
+            <option value="EXISTING" translate>EXISTING</option>
+            <option value="PENDING" translate>PENDING</option>
+            <option value="NON_EXISTING" translate>NON_EXISTING</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="loanApproval">Kreditbewilligung</label> <select ui-select2="{allowClear: true}" id="loanApproval"
+            name="loanApproval" data-ng-model="submissionCreateCtr.submission.loanApproval" disabled>
+            <option></option>
+            <option value="EXISTING">vorhanden</option>
+            <option value="PENDING">ausstehend</option>
+          </select>
+        </div>
+        <div class="form-group"
+          ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDateAward.$valid || submissionCreateCtr.invalidPublicationDateAward}">
+          <label for="publicationDateAward">Zuschlagspublikation</label>
+          <div class="input-group">
+            <input class="form-control datepicker" id="publicationDateAward" type="text"
+              uib-datepicker-popup="dd.MM.yyyy" name="publicationDateAward"
+              is-open="submissionCreateCtr.openPublicationDateAward.opened"
+              data-ng-model="submissionCreateCtr.submission.publicationDateAward"
+              data-ng-click="submissionCreateCtr.openPublicationDateAward()" data-ng-disabled="submissionCreateCtr.submission.gattTwo != true || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
-						<span class="input-group-btn">
-							<button class="btn btn-default" type="button"
-								data-ng-disabled="submissionCreateCtr.submission.gattTwo != true || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" data-ng-disabled="submissionCreateCtr.submission.gattTwo != true || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-								data-ng-click="submissionCreateCtr.openPublicationDateAward()">
-								<span class="fa fa-calendar"></span>
-							</button>
-						</span>
-					</div>
-				</div>
+                data-ng-click="submissionCreateCtr.openPublicationDateAward()">
+                <span class="fa fa-calendar"></span>
+              </button>
+            </span>
+          </div>
+        </div>
 
-				<div class="form-group"
-					ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDateDirectAward.$valid || submissionCreateCtr.invalidPublicationDateDirectAward}">
-					<label for="publicationDateDirectAward">Publikation Absicht
-						freihändige Vergabe</label>
-					<div class="input-group">
-						<input class="form-control datepicker"
-							id="publicationDateDirectAward" type="text"
-							uib-datepicker-popup="dd.MM.yyyy"
-							name="publicationDateDirectAward"
-							is-open="submissionCreateCtr.openPublicationDateDirectAward.opened" 
-							ng-disabled="!submissionCreateCtr.publicationDateDirectAwardEnabled || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+        <div class="form-group"
+          ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDateDirectAward.$valid || submissionCreateCtr.invalidPublicationDateDirectAward}">
+          <label for="publicationDateDirectAward">Publikation Absicht
+            freihändige Vergabe</label>
+          <div class="input-group">
+            <input class="form-control datepicker" id="publicationDateDirectAward" type="text"
+              uib-datepicker-popup="dd.MM.yyyy" name="publicationDateDirectAward"
+              is-open="submissionCreateCtr.openPublicationDateDirectAward.opened" ng-disabled="!submissionCreateCtr.publicationDateDirectAwardEnabled || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-							data-ng-model="submissionCreateCtr.submission.publicationDateDirectAward"
-							data-ng-click="submissionCreateCtr.openPublicationDateDirectAward()">
-						<span class="input-group-btn">
-							<button class="btn btn-default" type="button"
-								data-ng-disabled="!submissionCreateCtr.publicationDateDirectAwardEnabled || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+              data-ng-model="submissionCreateCtr.submission.publicationDateDirectAward"
+              data-ng-click="submissionCreateCtr.openPublicationDateDirectAward()">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" data-ng-disabled="!submissionCreateCtr.publicationDateDirectAwardEnabled || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-								data-ng-click="submissionCreateCtr.openPublicationDateDirectAward()">
-								<span class="fa fa-calendar"></span>
-							</button>
-						</span>
-					</div>
-					<!-- /input-group -->
-				</div>
-				<div class="form-group">
-					<label for="reasonFreeAward">Begründung Freihandvergabe
-						nach Art. 7 ÖBV <span
-						ng-if="submissionCreateCtr.submission.aboveThreshold"
-						class="mandatory">*</span>
-					</label>
-					<ui-select name="reasonFreeAward"
-						data-ng-model="submissionCreateCtr.submission.reasonFreeAward"
-						data-ng-disabled="submissionCreateCtr.genericDisable()
+                data-ng-click="submissionCreateCtr.openPublicationDateDirectAward()">
+                <span class="fa fa-calendar"></span>
+              </button>
+            </span>
+          </div>
+          <!-- /input-group -->
+        </div>
+        <div class="form-group">
+          <label for="reasonFreeAward">Begründung Freihandvergabe
+            nach Art. 7 ÖBV <span ng-if="submissionCreateCtr.submission.aboveThreshold" class="mandatory">*</span>
+          </label>
+          <ui-select name="reasonFreeAward" data-ng-model="submissionCreateCtr.submission.reasonFreeAward"
+            data-ng-disabled="submissionCreateCtr.genericDisable()
 	|| !submissionCreateCtr.publicationDateDirectAwardEnabled || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
-											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-						theme="select2"> <ui-select-match allow-clear="true">
-					<span> {{$select.selected.value2}}</span> </ui-select-match> <ui-select-choices
-						repeat="item in (submissionCreateCtr.negotiatedProcedures | propsFilter: {value2: $select.search}) track by item.id">
-					{{item.value2}}</ui-select-choices> </ui-select>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-12">
-				<div class="row">
-					<div class="col-sm-6">
-						<div class="form-group"
-							ng-class="{'has-error': !submissionCreateCtr.submissionForm.firstDeadline.$valid || submissionCreateCtr.invalidFirstDeadline}">
-							<label for="firstDeadline"> Eingabetermin 1</label>
-							<div class="input-group">
-								<input class="form-control datepicker" id="firstDeadline"
-									type="text" uib-datepicker-popup="dd.MM.yyyy"
-									is-open="submissionCreateCtr.openFirstDeadline.opened"
-									data-ng-model="submissionCreateCtr.submission.firstDeadline"
-									data-ng-click="submissionCreateCtr.openFirstDeadline()"
-									name="firstDeadline"
-									data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-										data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED"
-										data-ng-click="submissionCreateCtr.openFirstDeadline()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-							<!-- /input-group -->
-						</div>
-						<div class="form-group"
-							ng-class="{'has-error': !submissionCreateCtr.submissionForm.applicationOpeningDate.$valid || submissionCreateCtr.invalidApplicationOpeningDate}">
-							<label for="applicationOpeningDate">Bewerbungsöffnung</label>
-							<div class="input-group">
-								<input class="form-control datepicker"
-									id="applicationOpeningDate" type="text"
-									uib-datepicker-popup="dd.MM.yyyy" name="applicationOpeningDate"
-									is-open="submissionCreateCtr.openApplicationOpeningDate.opened"
-									data-ng-model="submissionCreateCtr.submission.applicationOpeningDate"
-									data-ng-click="submissionCreateCtr.openApplicationOpeningDate()"
-									data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-										data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED"
-										data-ng-click="submissionCreateCtr.openApplicationOpeningDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-							<!-- /input-group -->
-						</div>
-						<div class="form-group">
-							<label for="firstLoggedBy">Protokolliert durch</label> <input
-								class="form-control" id="firstLoggedBy" placeholder=""
-								name="firstLoggedBy"
-								data-ng-model="submissionCreateCtr.submission.firstLoggedBy"
-								data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED"
-								type="text">
-						</div>
-					</div>
-					<div class="col-sm-6">
-						<div class="form-group"
-							ng-class="{'has-error': !submissionCreateCtr.submissionForm.secondDeadline.$valid || submissionCreateCtr.invalidSecondDeadline}">
-							<label for="secondDeadline"> Eingabetermin 2</label>
-							<div class="input-group">
-								<input class="form-control datepicker" id="secondDeadline"
-									type="text" uib-datepicker-popup="dd.MM.yyyy"
-									name="secondDeadline"
-									is-open="submissionCreateCtr.openSecondDeadlineDate.opened"
-									data-ng-model="submissionCreateCtr.submission.secondDeadline"
-									data-ng-click="submissionCreateCtr.openSecondDeadlineDate()"
-									data-ng-disabled="(submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED)
-											|| (!((appCtrl.getLoggedUser().userGroup.name == submissionViewCtr.group.ADMIN) 
+											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span> {{$select.selected.value2}}</span> </ui-select-match>
+            <ui-select-choices
+              repeat="item in (submissionCreateCtr.negotiatedProcedures | propsFilter: {value2: $select.search}) track by item.id">
+              {{item.value2}}</ui-select-choices>
+          </ui-select>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group"
+              ng-class="{'has-error': !submissionCreateCtr.submissionForm.firstDeadline.$valid || submissionCreateCtr.invalidFirstDeadline}">
+              <label for="firstDeadline"> Eingabetermin 1</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="firstDeadline" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  is-open="submissionCreateCtr.openFirstDeadline.opened"
+                  data-ng-model="submissionCreateCtr.submission.firstDeadline"
+                  data-ng-click="submissionCreateCtr.openFirstDeadline()" name="firstDeadline"
+                  data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"
+                    data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED"
+                    data-ng-click="submissionCreateCtr.openFirstDeadline()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </div>
+            <div class="form-group"
+              ng-class="{'has-error': !submissionCreateCtr.submissionForm.applicationOpeningDate.$valid || submissionCreateCtr.invalidApplicationOpeningDate}">
+              <label for="applicationOpeningDate">Bewerbungsöffnung</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="applicationOpeningDate" type="text"
+                  uib-datepicker-popup="dd.MM.yyyy" name="applicationOpeningDate"
+                  is-open="submissionCreateCtr.openApplicationOpeningDate.opened"
+                  data-ng-model="submissionCreateCtr.submission.applicationOpeningDate"
+                  data-ng-click="submissionCreateCtr.openApplicationOpeningDate()"
+                  data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"
+                    data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED"
+                    data-ng-click="submissionCreateCtr.openApplicationOpeningDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </div>
+            <div class="form-group">
+              <label for="firstLoggedBy">Protokolliert durch</label> <input class="form-control" id="firstLoggedBy"
+                placeholder="" name="firstLoggedBy" data-ng-model="submissionCreateCtr.submission.firstLoggedBy"
+                data-ng-disabled="submissionCreateCtr.submission.process != 'SELECTIVE' || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.APPLICATION_OPENING_CLOSED"
+                type="text">
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group"
+              ng-class="{'has-error': !submissionCreateCtr.submissionForm.secondDeadline.$valid || submissionCreateCtr.invalidSecondDeadline}">
+              <label for="secondDeadline"> Eingabetermin 2</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="secondDeadline" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  name="secondDeadline" is-open="submissionCreateCtr.openSecondDeadlineDate.opened"
+                  data-ng-model="submissionCreateCtr.submission.secondDeadline"
+                  data-ng-click="submissionCreateCtr.openSecondDeadlineDate()" data-ng-disabled="(submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED)
+											|| (!((appCtrl.getLoggedUser().userGroup.name == submissionViewCtr.group.ADMIN)
 											|| (submissionCreateCtr.secEingabetermin2FieldTenderEdit
 											&& submissionCreateCtr.currentStatus >= submissionCreateCtr.status.AWARD_NOTICES_1_LEVEL_CREATED
 											&& submissionCreateCtr.currentStatus < submissionCreateCtr.status.OFFER_OPENING_STARTED)))">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-										data-ng-disabled="(submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED)
-											|| (!((appCtrl.getLoggedUser().userGroup.name == submissionViewCtr.group.ADMIN) 
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-disabled="(submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED)
+											|| (!((appCtrl.getLoggedUser().userGroup.name == submissionViewCtr.group.ADMIN)
 											|| (submissionCreateCtr.secEingabetermin2FieldTenderEdit
 											&& submissionCreateCtr.currentStatus >= submissionCreateCtr.status.AWARD_NOTICES_1_LEVEL_CREATED
 											&& submissionCreateCtr.currentStatus < submissionCreateCtr.status.OFFER_OPENING_STARTED)))"
-										data-ng-click="submissionCreateCtr.openSecondDeadlineDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-							<!-- /input-group -->
-						</div>
-						<div class="form-group"
-							ng-class="{'has-error': !submissionCreateCtr.submissionForm.offerOpeningDate.$valid || submissionCreateCtr.invalidOfferOpeningDate}">
-							<label for="offerOpeningDate">Offertöffnung</label>
-							<div class="input-group">
-								<input class="form-control datepicker" id="offerOpeningDate"
-									type="text" uib-datepicker-popup="dd.MM.yyyy"
-									name="offerOpeningDate"
-									is-open="submissionCreateCtr.openOfferOpeningDate.opened"
-									data-ng-model="submissionCreateCtr.submission.offerOpeningDate"
-									data-ng-click="submissionCreateCtr.openOfferOpeningDate()"
-									data-ng-disabled="submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-										data-ng-disabled="submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED"
-										data-ng-click="submissionCreateCtr.openOfferOpeningDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
+                    data-ng-click="submissionCreateCtr.openSecondDeadlineDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </div>
+            <div class="form-group"
+              ng-class="{'has-error': !submissionCreateCtr.submissionForm.offerOpeningDate.$valid || submissionCreateCtr.invalidOfferOpeningDate}">
+              <label for="offerOpeningDate">Offertöffnung</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="offerOpeningDate" type="text"
+                  uib-datepicker-popup="dd.MM.yyyy" name="offerOpeningDate"
+                  is-open="submissionCreateCtr.openOfferOpeningDate.opened"
+                  data-ng-model="submissionCreateCtr.submission.offerOpeningDate"
+                  data-ng-click="submissionCreateCtr.openOfferOpeningDate()"
+                  data-ng-disabled="submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"
+                    data-ng-disabled="submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED"
+                    data-ng-click="submissionCreateCtr.openOfferOpeningDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
 
 
-						</div>
-						<div class="form-group">
-							<label for="secondLoggedBy">Protokolliert durch</label> <input
-								class="form-control" id="secondLoggedBy" placeholder=""
-								name="secondLoggedBy"
-								data-ng-model="submissionCreateCtr.submission.secondLoggedBy"
-								data-ng-disabled="submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED"
-								type="text">
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-12">
-				<div class="row">
-					<div class="col-sm-12">
-						<div class="form-group">
-							<label for="notes">Submissionsbemerkung</label>
-							<input class="form-control" id="notes" name="notes" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+            </div>
+            <div class="form-group">
+              <label for="secondLoggedBy">Protokolliert durch</label> <input class="form-control" id="secondLoggedBy"
+                placeholder="" name="secondLoggedBy" data-ng-model="submissionCreateCtr.submission.secondLoggedBy"
+                data-ng-disabled="submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED"
+                type="text">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="notes">Submissionsbemerkung</label>
+              <input class="form-control" id="notes" name="notes" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
-								data-ng-model="submissionCreateCtr.submission.notes" >
-						</div>
-					</div>
-				</div>
-			</div>
+                data-ng-model="submissionCreateCtr.submission.notes">
+            </div>
+          </div>
+        </div>
+      </div>
 
 
-			<div class="modal-footer">
-				<div class="col-sm-12 col-md-12 btn-bar">
-					<button type="submit" class="btn btn-primary" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
-											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">Speichern </button>
-					<button type="button" class="btn btn-default" data-dismiss="modal"
-						ng-click="submissionCreateCtr.closeWindow(submissionCreateCtr.submissionForm.$dirty)">Abbrechen</button>
-				</div>
-			</div>
-		</fieldset>
-	</div>
+      <div class="modal-footer">
+        <div class="col-sm-12 col-md-12 btn-bar">
+          <button type="submit" class="btn btn-primary"
+            data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED || !submissionCreateCtr.submissionForm.$dirty">Speichern</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal"
+            ng-click="submissionCreateCtr.closeWindow(submissionCreateCtr.submissionForm.$dirty)">Abbrechen</button>
+        </div>
+      </div>
+    </fieldset>
+  </div>
 </form>

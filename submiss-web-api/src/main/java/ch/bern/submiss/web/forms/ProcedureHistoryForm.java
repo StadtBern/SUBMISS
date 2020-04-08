@@ -18,7 +18,7 @@ import ch.bern.submiss.services.api.constants.Process;
 /**
  * The Class ProcedureHistoryForm.
  */
-public class ProcedureHistoryForm {
+public class ProcedureHistoryForm extends AbstractForm {
 
 	/** The value. */
 	private String value;

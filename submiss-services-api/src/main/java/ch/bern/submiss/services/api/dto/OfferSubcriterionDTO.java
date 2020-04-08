@@ -14,10 +14,9 @@
 package ch.bern.submiss.services.api.dto;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
-public class OfferSubcriterionDTO {
-
-  private String id;
+public class OfferSubcriterionDTO extends AbstractDTO {
 
   private OfferDTO offer;
 
@@ -27,13 +26,9 @@ public class OfferSubcriterionDTO {
 
   private BigDecimal score;
 
-  public String getId() {
-    return id;
-  }
+  private Timestamp createdOn;
 
-  public void setId(String id) {
-    this.id = id;
-  }
+  private Timestamp updatedOn;
 
   public OfferDTO getOffer() {
     return offer;
@@ -65,5 +60,21 @@ public class OfferSubcriterionDTO {
 
   public void setScore(BigDecimal score) {
     this.score = score;
+  }
+
+  public Timestamp getCreatedOn() {
+    return createdOn;
+  }
+
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
   }
 }

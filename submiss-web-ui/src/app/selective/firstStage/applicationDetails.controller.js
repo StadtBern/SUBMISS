@@ -103,6 +103,8 @@
 
     /** Function to save the application */
     function save() {
+      // Get the submission version.
+      vm.application.submissionVersion = vm.submission.version;
       SelectiveService.updateApplication(vm.application)
         .success(function (data) {
           vm.dirtyFlag = false;
@@ -123,6 +125,8 @@
     function getApplicationDetails(offer) {
       // Get the application id.
       vm.application.applicationId = offer.id;
+      // Get the application version.
+      vm.application.applicationVersion = offer.version;
       // Get the application date.
       if (offer.applicationDate) {
         vm.application.applicationDate = offer.applicationDate;

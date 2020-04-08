@@ -13,10 +13,12 @@
 
 package ch.bern.submiss.services.impl.administration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;

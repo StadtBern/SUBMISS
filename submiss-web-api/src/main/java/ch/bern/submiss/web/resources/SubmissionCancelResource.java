@@ -32,11 +32,13 @@ import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.ops4j.pax.cdi.api.OsgiService;
 
 /**
@@ -74,7 +76,7 @@ public class SubmissionCancelResource {
       return Response.status(Response.Status.NO_CONTENT).build();
     }
   }
-  
+
   /**
    * Updates or creates (if not exists) a submission cancel entity.
    *
@@ -84,13 +86,37 @@ public class SubmissionCancelResource {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response set(@Valid SubmissionCancelForm submissionCancel) {
+  public Response createSubmissionCancel(@Valid SubmissionCancelForm submissionCancel) {
     Set<ValidationError> errors = validation(submissionCancel);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    submissionCancelService.set(SubmissionCancelFormMapper.INSTANCE.toSubmissionCancelDTO(submissionCancel));
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = submissionCancelService.createSubmissionCancel(
+      SubmissionCancelFormMapper.INSTANCE.toSubmissionCancelDTO(submissionCancel));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
+  }
+
+  /**
+   * Updates or creates (if not exists) a submission cancel entity.
+   *
+   * @param submissionCancel the submissionCancel entity to be created
+   * @return empty response
+   */
+  @PUT
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response updateSubmissionCancel(@Valid SubmissionCancelForm submissionCancel) {
+    Set<ValidationError> errors = validation(submissionCancel);
+    if (!errors.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
+    }
+    Set<ValidationError> optimisticLockErrors = submissionCancelService.updateSubmissionCancel(
+      SubmissionCancelFormMapper.INSTANCE.toSubmissionCancelDTO(submissionCancel));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
   }
 
   private Set<ValidationError> validation(SubmissionCancelForm submissionCancel) {
@@ -118,11 +144,18 @@ public class SubmissionCancelResource {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/cancel/{submissionId}")
-  public Response cancelSubmission(@PathParam("submissionId") String submissionId) {
+  @Path("/cancel/{submissionId}/{submissionCancelId}/{submissionCancelVersion}")
+  public Response cancelSubmission(@PathParam("submissionId") String submissionId,
+    @PathParam("submissionCancelId") String submissionCancelId,
+    @PathParam("submissionCancelVersion") Long submissionCancelVersion) {
+    Set<ValidationError> optimisticLockErrors =
+      submissionCancelService.cancellingSubmission(submissionCancelId, submissionCancelVersion);
+    if (!optimisticLockErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    }
     submissionService.updateSubmissionStatus(submissionId,
-        TenderStatus.PROCEDURE_CANCELED.getValue(), AuditMessages.CANCEL_SUBMISSION.name(),
-        null, LookupValues.EXTERNAL_LOG);
+      TenderStatus.PROCEDURE_CANCELED.getValue(), AuditMessages.CANCEL_SUBMISSION.name(),
+      null, LookupValues.EXTERNAL_LOG);
     return Response.ok().build();
   }
   

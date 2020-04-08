@@ -38,6 +38,13 @@
     var CONTENT_DISPOSITION = 'content-disposition';
     var SUBMISSIONCANCEL = 'documentView.submissionCancel';
     var i = 0;
+    var dokumentenlisteStatus = [260, 270];
+    var verfugungenStufe1Status = [60];
+    var beKoAntragStatus = [200, 210, 220];
+    var beKoBeschlussStatus = [230, 240];
+    var verfugungenStatus = [250];
+    var zu_absageStatus = [210];
+    var verfahrensabbruchStatus = [290];
     /***********************************************************************
      * Exported variables.
      **********************************************************************/
@@ -65,7 +72,6 @@
     vm.secIsLegalView = false;
     vm.secAwardInfoView = false;
     vm.secAwardInfoFirstLevelView = false;
-    vm.currentStatus = "";
     vm.status = AppConstants.STATUS;
     vm.invalidNavigation = false;
     vm.signatures = [];
@@ -76,6 +82,7 @@
     vm.showError = false;
     vm.legalHearingErrorMessage = false;
     vm.anonymousOfferDocTemplate = {};
+    vm.group = AppConstants.GROUP;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
@@ -93,34 +100,42 @@
     vm.getObjectInfo = getObjectInfo;
     vm.submissionCancelNavigation = submissionCancelNavigation;
     vm.printDocuments = printDocuments;
+    vm.getStatusSubTab = getStatusSubTab;
     // Activating the controller.
     activate();
     /***********************************************************************
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.getTemplates();
-      vm.readSubmission($stateParams.id);
-      haveAwardStatusesBeenClosed($stateParams.id);
-      hasCommissionProcurementProposalBeenClosed($stateParams.id);
-      vm.readStatusOfSubmission($stateParams.id);
-      readUserDepartments();
-      loadSignatures();
-      // we need to check if the status of the submission was ever set to certain statuses
-      // in order to identify if certain tabs should be visible
-      hasSubmissionStatusCancelled($stateParams.id);
-      hasSubmissionStatusComProcDecClosed($stateParams.id);
-      hasSubmissionStatusComProcDecStarted($stateParams.id);
-      hasSubmissionStatusManualAwardCompleted($stateParams.id);
-      hasSubmissionStatusSuitAudComplS($stateParams.id);
-      //default child state
-      if ($state.current.name === "documentView" ||
-        $state.current.name === DOCUMENTLIST) {
-        $state.go(DOCUMENTLIST, {
-          errorReturned: $stateParams.uploadError
+      SubmissionService.loadDocumentArea($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.getTemplates();
+            vm.readSubmission($stateParams.id);
+            haveAwardStatusesBeenClosed($stateParams.id);
+            hasCommissionProcurementProposalBeenClosed($stateParams.id);
+            vm.readStatusOfSubmission($stateParams.id);
+            readUserDepartments();
+            loadSignatures();
+            // we need to check if the status of the submission was ever set to certain statuses
+            // in order to identify if certain tabs should be visible
+            hasSubmissionStatusCancelled($stateParams.id);
+            hasSubmissionStatusComProcDecClosed($stateParams.id);
+            hasSubmissionStatusComProcDecStarted($stateParams.id);
+            hasSubmissionStatusManualAwardCompleted($stateParams.id);
+            hasSubmissionStatusSuitAudComplS($stateParams.id);
+            //default child state
+            if ($state.current.name === "documentView" ||
+              $state.current.name === DOCUMENTLIST) {
+              $state.go(DOCUMENTLIST, {
+                errorReturned: $stateParams.uploadError
+              });
+            }
+            legalHearingOrSubmissionCancelActive();
+          }
         });
-      }
-      legalHearingOrSubmissionCancelActive();
     }
     /***********************************************************************
      * $scope destroy.
@@ -130,6 +145,29 @@
         function (data) {
           vm.currentStatus = data;
         });
+    }
+
+    function getStatusSubTab(status) {
+      let statusSubTab = -1;
+      if (dokumentenlisteStatus.includes(status)) {
+        statusSubTab = 0;
+      } else if (verfugungenStufe1Status.includes(status)) {
+        statusSubTab = 1;
+      } else if (vm.submission && (!(vm.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE || vm.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION) ||
+          (vm.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE || vm.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION) && vm.submission.aboveThreshold) &&
+        beKoAntragStatus.includes(status)) {
+        statusSubTab = 2;
+      } else if (beKoBeschlussStatus.includes(status)) {
+        statusSubTab = 3;
+      } else if (verfugungenStatus.includes(status) && vm.submission.aboveThreshold !== true) {
+        statusSubTab = 4;
+      } else if (vm.submission && (vm.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE || vm.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION) &&
+        (zu_absageStatus.includes(status) || (verfugungenStatus.includes(status) && vm.submission.aboveThreshold === true))) {
+        statusSubTab = 5;
+      } else if (verfahrensabbruchStatus.includes(status)) {
+        statusSubTab = 6;
+      }
+      return statusSubTab;
     }
 
     function readUserDepartments(id) {
@@ -211,7 +249,7 @@
           // created together.
           if (vm.chosenTemplate.shortCode === AppConstants.OFFERRTOFFNUNGSPROTOKOLL ||
             vm.chosenTemplate.shortCode === AppConstants.OFFERRTOFFNUNGSPROTOKOLL_DL_WW) {
-              createAnonymOfferTemplateForm();
+            createAnonymOfferTemplateForm();
           }
 
           if (vm.chosenTemplate.value1 ===

@@ -13,19 +13,15 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonView;
 import java.sql.Timestamp;
 import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonView;
-import ch.bern.submiss.services.api.util.View;
 
 /**
  * The Class MasterListValueHistoryDTO.
  */
-public class MasterListValueHistoryDTO {
-
-  /** The id. */
-  @JsonView(View.Internal.class)
-  private String id;
+public class MasterListValueHistoryDTO extends AbstractDTO {
 
   /** The value 1. */
   @JsonView(View.Public.class)
@@ -70,24 +66,6 @@ public class MasterListValueHistoryDTO {
   /** The tenant logo */
   @JsonView(View.Internal.class)
   private byte[] tenantLogo;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the value 1.
@@ -294,7 +272,7 @@ public class MasterListValueHistoryDTO {
    */
   @Override
   public String toString() {
-    return "MasterListValueHistoryDTO [id=" + id + ", value1=" + value1 + ", active=" + active
+    return "MasterListValueHistoryDTO [value1=" + value1 + ", active=" + active
         + ", modifiedOn=" + modifiedOn + ", internalVersion=" + internalVersion + ", value2="
         + value2 + ", fromDate=" + fromDate + ", toDate=" + toDate + ", shortCode=" + shortCode
         + "]";

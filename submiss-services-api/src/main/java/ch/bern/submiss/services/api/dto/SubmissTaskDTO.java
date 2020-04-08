@@ -13,121 +13,146 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonView;
-
 import ch.bern.submiss.services.api.constants.TaskTypes;
 import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonView;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * The Class SubmissionCancelDTO.
  */
-public class SubmissTaskDTO {
+public class SubmissTaskDTO extends AbstractDTO {
 
-  /** The id. */
-  @JsonView(View.Public.class)
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @JsonView(View.Public.class)
   private SubmissionDTO submission;
 
-  /** The company. */
+  /**
+   * The company.
+   */
   @JsonView(View.Public.class)
   private CompanyDTO company;
 
-  /** The description. */
+  /**
+   * The description.
+   */
   @JsonView(View.Public.class)
   private TaskTypes description;
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   @JsonView(View.Public.class)
   private String createdBy;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @JsonView(View.Public.class)
   private Date createdOn;
 
-  /** The user to edit. */
+  /**
+   * The updated on.
+   */
+  @JsonView(View.Public.class)
+  private Timestamp updatedOn;
+
+  /**
+   * The user to edit.
+   */
   @JsonView(View.Public.class)
   private String userToEdit;
 
-  /** The user to edit DTO. */
+  /**
+   * The user to edit DTO.
+   */
   @JsonView(View.Public.class)
   private SubmissUserDTO userToEditDTO;
 
-  /** The user assigned. */
+  /**
+   * The user assigned.
+   */
   @JsonView(View.Public.class)
   private String userAssigned;
 
-  /** The user assigned. */
+  /**
+   * The user assigned.
+   */
   @JsonView(View.Public.class)
   private String objectName;
 
-  /** The user assigned. */
+  /**
+   * The user assigned.
+   */
   @JsonView(View.Public.class)
   private String projectName;
 
-  /** The user assigned. */
+  /**
+   * The user assigned.
+   */
   @JsonView(View.Public.class)
   private String workType;
 
-  /** The user assigned. */
+  /**
+   * The user assigned.
+   */
   @JsonView(View.Public.class)
   private String companyName;
 
-  /** The user assigned. */
+  /**
+   * The user assigned.
+   */
   @JsonView(View.Public.class)
   private String userAutoAssigned;
 
-  /** The type. */
+  /**
+   * The type.
+   */
   @JsonView(View.Public.class)
   private Integer type;
 
-  /** The first name. */
+  /**
+   * The first name.
+   */
   private String firstName;
 
-
-  /** The last name. */
+  /**
+   * The last name.
+   */
   private String lastName;
 
-  /** The email. */
+  /**
+   * The email.
+   */
   private String email;
 
-  /** The main department str. */
+  /**
+   * The main department str.
+   */
   private String mainDepartmentStr;
 
-  /** The directorates str. */
+  /**
+   * The directorates str.
+   */
   private String directoratesStr;
 
-  /** The tenant name. */
+  /**
+   * The tenant name.
+   */
   private String tenantName;
 
-  /** The role. */
+  /**
+   * The role.
+   */
   private String role;
-  
-  /** The submit date. */
+
+  /**
+   * The submit date.
+   */
   private Date submitDate;
-
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submission.
@@ -526,21 +551,34 @@ public class SubmissTaskDTO {
     this.submitDate = submitDate;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
    */
-  @Override
-  public String toString() {
-    return "SubmissTaskDTO [id=" + id + ", description=" + description + ", createdBy=" + createdBy
-        + ", createdOn=" + createdOn + ", userToEdit=" + userToEdit + ", userAssigned="
-        + userAssigned + ", objectName=" + objectName + ", projectName=" + projectName
-        + ", workType=" + workType + ", companyName=" + companyName + ", userAutoAssigned="
-        + userAutoAssigned + ", type=" + type + ", firstName=" + firstName + ", lastName="
-        + lastName + ", email=" + email + ", mainDepartmentStr=" + mainDepartmentStr
-        + ", directoratesStr=" + directoratesStr + ", tenantName=" + tenantName + ", role=" + role
-        + "]";
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
   }
 
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "SubmissTaskDTO [id=" + super.getId() + ", description=" + description + ", createdBy="
+      + createdBy
+      + ", createdOn=" + createdOn + ", userToEdit=" + userToEdit + ", userAssigned="
+      + userAssigned + ", objectName=" + objectName + ", projectName=" + projectName
+      + ", workType=" + workType + ", companyName=" + companyName + ", userAutoAssigned="
+      + userAutoAssigned + ", type=" + type + ", firstName=" + firstName + ", lastName="
+      + lastName + ", email=" + email + ", mainDepartmentStr=" + mainDepartmentStr
+      + ", directoratesStr=" + directoratesStr + ", tenantName=" + tenantName + ", role=" + role
+      + "]";
+  }
 }

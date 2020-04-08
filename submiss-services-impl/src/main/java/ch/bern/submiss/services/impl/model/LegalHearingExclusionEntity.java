@@ -13,35 +13,25 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class LegalHearingExclusionEntity.
  */
 @Entity
 @Table(name = "SUB_LEGAL_EXCLUSION")
-public class LegalHearingExclusionEntity {
-
-  /**
-   * The id.
-   */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
+public class LegalHearingExclusionEntity extends AbstractEntity {
 
   /**
    * The submittent.
@@ -98,8 +88,9 @@ public class LegalHearingExclusionEntity {
   /**
    * The created on.
    */
+  @CreationTimestamp
   @Column(name = "CREATED_ON")
-  private Date createdOn;
+  private Timestamp createdOn;
 
   /**
    * The updated by.
@@ -110,8 +101,9 @@ public class LegalHearingExclusionEntity {
   /**
    * The updated on.
    */
+  @UpdateTimestamp
   @Column(name = "UPDATED_ON")
-  private Date updatedOn;
+  private Timestamp updatedOn;
 
   /**
    * The level.
@@ -124,24 +116,6 @@ public class LegalHearingExclusionEntity {
    */
   @Column(name = "EXCL_HEARING_DEADLINE_FIRST_LEVEL")
   private Date firstLevelExclusionDate;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submittent.
@@ -292,7 +266,7 @@ public class LegalHearingExclusionEntity {
    *
    * @return the created on
    */
-  public Date getCreatedOn() {
+  public Timestamp getCreatedOn() {
     return createdOn;
   }
 
@@ -301,7 +275,7 @@ public class LegalHearingExclusionEntity {
    *
    * @param createdOn the new created on
    */
-  public void setCreatedOn(Date createdOn) {
+  public void setCreatedOn(Timestamp createdOn) {
     this.createdOn = createdOn;
   }
 
@@ -328,7 +302,7 @@ public class LegalHearingExclusionEntity {
    *
    * @return the updated on
    */
-  public Date getUpdatedOn() {
+  public Timestamp getUpdatedOn() {
     return updatedOn;
   }
 
@@ -337,7 +311,7 @@ public class LegalHearingExclusionEntity {
    *
    * @param updatedOn the new updated on
    */
-  public void setUpdatedOn(Date updatedOn) {
+  public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
   }
 
@@ -379,7 +353,8 @@ public class LegalHearingExclusionEntity {
 
   @Override
   public String toString() {
-    return "LegalHearingExclusionEntity [id=" + id + ", exclusionDeadline=" + exclusionDeadline
+    return "LegalHearingExclusionEntity [id=" + super.getId() + ", exclusionDeadline="
+      + exclusionDeadline
       + ", proofsProvided=" + proofsProvided
       + ", existsExlReasons=" + existsExlReasons + ", mustCritFulfilled=" + mustCritFulfilled
       + ", exclusionReason=" + exclusionReason + ", createdBy=" + createdBy + ", createdOn="
@@ -387,5 +362,4 @@ public class LegalHearingExclusionEntity {
       + ", updatedOn=" + updatedOn + ", level=" + level + ", firstLevelExclusionDate="
       + firstLevelExclusionDate + "]";
   }
-
 }

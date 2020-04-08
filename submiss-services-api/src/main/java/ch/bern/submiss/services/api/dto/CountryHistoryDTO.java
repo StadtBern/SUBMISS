@@ -16,10 +16,7 @@ package ch.bern.submiss.services.api.dto;
 /**
  * The Class CountryHistoryDTO.
  */
-public class CountryHistoryDTO {
-
-  /** The id. */
-  private String id;
+public class CountryHistoryDTO extends AbstractDTO {
 
   /** The country name. */
   private String countryName;
@@ -35,24 +32,6 @@ public class CountryHistoryDTO {
 
   /** The active. */
   private Boolean active;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the country name.
@@ -144,15 +123,10 @@ public class CountryHistoryDTO {
     this.active = active;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "CountryHistoryDTO [id=" + id + ", countryName=" + countryName + ", countryShortName="
-        + countryShortName + ", telPrefix=" + telPrefix + ",  active=" + active + "]";
+    return "CountryHistoryDTO [id=" + super.getId() + ", version=" + super.getVersion()
+      + ", countryName=" + countryName + ", countryShortName="
+      + countryShortName + ", telPrefix=" + telPrefix + ",  active=" + active + "]";
   }
-
 }

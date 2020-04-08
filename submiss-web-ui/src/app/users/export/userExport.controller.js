@@ -69,7 +69,14 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.statusTemp = vm.status[0];
+      UsersService.loadUserExport()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.statusTemp = vm.status[0];
+          }
+        });
     }
 
     /***********************************************************************
@@ -89,11 +96,18 @@
         vm.invalidDate = false;
         vm.usersExportForm.status = vm.statusTemp.value;
         UsersService.validateExportForm(vm.usersExportForm)
-          .success(function (data) {
+          .success(function (data, status) {
+            if (status === 403) { // Security checks.
+              return;
+            }
             vm.clearFormErrors();
             AppService.setPaneShown(true);
             UsersService.exportUsers(vm.usersExportForm)
               .success(function (response, status, headers) {
+                if (status === 403) { // Security checks.
+                  AppService.setPaneShown(false);
+                  return;
+                }
                 checkForEmptyResults(response);
                 AppService.setPaneShown(false);
                 if (response.byteLength > 0) {

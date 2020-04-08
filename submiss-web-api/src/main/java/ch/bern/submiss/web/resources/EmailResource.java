@@ -16,6 +16,7 @@ package ch.bern.submiss.web.resources;
 import ch.bern.submiss.services.api.administration.CompanyService;
 import ch.bern.submiss.services.api.administration.EmailService;
 import ch.bern.submiss.services.api.administration.RuleService;
+import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.administration.SubmissTaskService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.constants.EmailTemplate;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -132,6 +134,10 @@ public class EmailResource {
   @Inject
   private CompanyService companyService;
 
+  @OsgiService
+  @Inject
+  private SDService sDService;
+
   /**
    * Open email default client.
    *
@@ -165,6 +171,7 @@ public class EmailResource {
   @Path("/retrieve/{id}")
   @JsonView(View.Public.class)
   public Response retrieveEmailTemplates(@PathParam("id") String id) {
+    emailService.emailSecurityCheck();
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(id);
     CompanyDTO companyDTO = companyService.getCompanyById(id);
     if (submissionDTO != null) {
@@ -249,7 +256,7 @@ public class EmailResource {
   /**
    * Saves the email template entry.
    *
-   * @param emailTemplateForm the email template form
+   * @param emailTemplateTenant the email template form
    * @return the response
    */
   @PUT
@@ -257,23 +264,54 @@ public class EmailResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/saveEmailTemplateEntry")
   public Response saveEmailTemplateEntry(@Valid EmailTemplateTenantForm emailTemplateTenant) {
-    Set<ValidationError> errors;
-    errors = validateEmailTemplateTenant(emailTemplateTenant);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    sDService.sdSecurityCheck();
+    Set<ValidationError> validationErrors = validateEmailTemplateTenant(emailTemplateTenant);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
-    emailService.saveEmailEntry(
-      EmailTemplateTenantFormMapper.INSTANCE.toEmailTemplateTenantDTO(emailTemplateTenant));
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    try {
+      emailService.saveEmailEntry(
+        EmailTemplateTenantFormMapper.INSTANCE.toEmailTemplateTenantDTO(emailTemplateTenant));
+    } catch (OptimisticLockException e) {
+      optimisticLockErrors
+        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
-   * Function to validate the email template
+   * EmailTemplateTenant validation.
+   *
+   * @param emailTemplateTenant the emailTemplateTenant
+   * @return the errors
    */
   private Set<ValidationError> validateEmailTemplateTenant(
     EmailTemplateTenantForm emailTemplateTenant) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if the mandatory fields are filled out.
+    validateEmailTemplateTenantMandatory(emailTemplateTenant, errors);
+    // Check the description.
+    validateEmailTemplateTenantDescription(emailTemplateTenant, errors);
+    // Check the subject length.
+    validateEmailTemplateTenantSubject(emailTemplateTenant, errors);
+    // Check the content length.
+    validateEmailTemplateTenantContent(emailTemplateTenant, errors);
+    // Check the receiver text length.
+    validateEmailTemplateTenantReceiver(emailTemplateTenant, errors);
+    return errors;
+  }
+
+  /**
+   * EmailTemplateTenant mandatory validation.
+   *
+   * @param emailTemplateTenant emailTemplateTenant
+   * @param errors the errors
+   */
+  private void validateEmailTemplateTenantMandatory(EmailTemplateTenantForm emailTemplateTenant,
+    Set<ValidationError> errors) {
     if (StringUtils.isBlank(emailTemplateTenant.getDescription())
       || StringUtils.isBlank(emailTemplateTenant.getSubject())
       || emailTemplateTenant.getAvailablePart() == null) {
@@ -291,7 +329,16 @@ public class EmailResource {
         errors.add(new ValidationError(COMPANY_PART, ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
     }
-    // Check the description.
+  }
+
+  /**
+   * EmailTemplateTenant description validation.
+   *
+   * @param emailTemplateTenant the emailTemplateTenant
+   * @param errors the errors
+   */
+  private void validateEmailTemplateTenantDescription(EmailTemplateTenantForm emailTemplateTenant,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(emailTemplateTenant.getDescription())) {
       // Check the description length.
       if (emailTemplateTenant.getDescription().length() > TextType.MIDDLE_TEXT.getValue()) {
@@ -314,22 +361,49 @@ public class EmailResource {
           ValidationMessages.UNIQUE_DESCRIPTION_AND_AVAILABLE_PART));
       }
     }
-    // Check the subject length.
+  }
+
+  /**
+   * EmailTemplateTenant subject validation.
+   *
+   * @param emailTemplateTenant the emailTemplateTenant
+   * @param errors the errors
+   */
+  private void validateEmailTemplateTenantSubject(EmailTemplateTenantForm emailTemplateTenant,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(emailTemplateTenant.getSubject())
       && emailTemplateTenant.getSubject().length() > TextType.MIDDLE_TEXT.getValue()) {
       errors.add(
         new ValidationError(SUBJECT_ERROR_FIELD, ValidationMessages.SUBJECT_MAX_SIZE_MESSAGE));
       errors.add(new ValidationError(SUBJECT, ValidationMessages.SUBJECT_MAX_SIZE_MESSAGE));
     }
-    // Check the content length.
+  }
+
+  /**
+   * EmailTemplateTenant content validation.
+   *
+   * @param emailTemplateTenant the emailTemplateTenant
+   * @param errors the errors
+   */
+  private void validateEmailTemplateTenantContent(EmailTemplateTenantForm emailTemplateTenant,
+    Set<ValidationError> errors) {
     if (StringUtils.isNotBlank(emailTemplateTenant.getContent())
       && emailTemplateTenant.getContent().length() > TextType.LONG_TEXT.getValue()) {
       errors.add(
         new ValidationError(CONTENT_ERROR_FIELD, ValidationMessages.CONTENT_MAX_SIZE_MESSAGE));
       errors.add(new ValidationError(CONTENT, ValidationMessages.CONTENT_MAX_SIZE_MESSAGE));
     }
+  }
+
+  /**
+   * EmailTemplateTenant receiver validation.
+   *
+   * @param emailTemplateTenant the emailTemplateTenant
+   * @param errors the errors
+   */
+  private void validateEmailTemplateTenantReceiver(EmailTemplateTenantForm emailTemplateTenant,
+    Set<ValidationError> errors) {
     int index = 0;
-    // Check the receiver text length.
     for (EmailAttributesForm emailAttribute : emailTemplateTenant.getAttributes()) {
       if (StringUtils.isNotBlank(emailAttribute.getReciever())
         && emailAttribute.getReciever().length() > TextType.MIDDLE_TEXT.getValue()) {
@@ -355,6 +429,5 @@ public class EmailResource {
       }
       index++;
     }
-    return errors;
   }
 }

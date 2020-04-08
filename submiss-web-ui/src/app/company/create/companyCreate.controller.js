@@ -74,16 +74,23 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      vm.loadCountries();
-      vm.loadWorkTypes();
-      vm.loadILO();
-      vm.apprenticeFactor();
-      vm.numberOfColleagues();
-      vm.loadLogib();
-      vm.loadLogibArgib();
-      vm.company.branches = []; // initialise in order to be updated by the add button
-      vm.secMainTenantBemerkungFabeEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BEMERKUNG_FABE_EDIT, null);
-      vm.secMainTenantBeschaffungswesenEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_EDIT, null);
+      CompanyService.loadCompanyCreate()
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            vm.loadCountries();
+            vm.loadWorkTypes();
+            vm.loadILO();
+            vm.apprenticeFactor();
+            vm.numberOfColleagues();
+            vm.loadLogib();
+            vm.loadLogibArgib();
+            vm.company.branches = []; // initialise in order to be updated by the add button
+            vm.secMainTenantBemerkungFabeEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BEMERKUNG_FABE_EDIT, null);
+            vm.secMainTenantBeschaffungswesenEdit = AppService.isOperationPermitted(AppConstants.OPERATION.MAIN_TENANT_BESCHAFFUNGSWESEN_EDIT, null);
+          }
+        });
     }
     /***********************************************************************
      * $scope destroy.
@@ -231,7 +238,10 @@
       } else {
         vm.invalidDate = false;
         CompanyService.createCompany(company)
-          .success(function (data) {
+          .success(function (data, status) {
+            if (status === 403) { // Security checks.
+              return;
+            }
             $state.go('company.view', {
               id: data.id
             });

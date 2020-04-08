@@ -13,18 +13,14 @@
 
 package ch.bern.submiss.services.api.dto;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
 /**
  * The Class LegalHearingTerminateDTO.
  */
-public class LegalHearingTerminateDTO {
-
-  /**
-   * The id.
-   */
-  private String id;
+public class LegalHearingTerminateDTO extends AbstractDTO {
 
   /**
    * The deadline.
@@ -47,9 +43,14 @@ public class LegalHearingTerminateDTO {
   private String submissionId;
 
   /**
-   * The last modified on.
+   * The created on.
    */
-  private Date lastModifiedOn;
+  private Timestamp createdOn;
+
+  /**
+   * The updated on.
+   */
+  private Timestamp updatedOn;
 
   /**
    * Gets the deadline.
@@ -110,7 +111,7 @@ public class LegalHearingTerminateDTO {
    *
    * @return the submission
    */
-  public String getSubmission() {
+  public String getSubmissionId() {
     return submissionId;
   }
 
@@ -119,49 +120,51 @@ public class LegalHearingTerminateDTO {
    *
    * @param submissionId the new submission
    */
-  public void setSubmission(String submissionId) {
+  public void setSubmissionId(String submissionId) {
     this.submissionId = submissionId;
   }
 
+
   /**
-   * Gets the id.
+   * Gets the created on.
    *
-   * @return the id
+   * @return the created on
    */
-  public String getId() {
-    return id;
+  public Timestamp getCreatedOn() {
+    return createdOn;
   }
 
   /**
-   * Sets the id.
+   * Sets the created on.
    *
-   * @param id the new id
+   * @param createdOn the new created on
    */
-  public void setId(String id) {
-    this.id = id;
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
   }
 
   /**
-   * Gets the last modified on.
+   * Gets the updated on.
    *
-   * @return the last modified on
+   * @return the updated on
    */
-  public Date getLastModifiedOn() {
-    return lastModifiedOn;
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
   }
 
   /**
-   * Sets the last modified on.
+   * Sets the updated on.
    *
-   * @param lastModifiedOn the last modified on
+   * @param updatedOn the new updated on
    */
-  public void setLastModifiedOn(Date lastModifiedOn) {
-    this.lastModifiedOn = lastModifiedOn;
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
   }
 
   @Override
   public String toString() {
-    return "LegalHearingTerminateDTO [id=" + id + ", deadline=" + deadline + ", reason=" + reason
-      + ", submissionId=" + submissionId + ", lastModifiedOn=" + lastModifiedOn + "]";
+    return "LegalHearingTerminateDTO [id=" + super.getId() + ", deadline=" + deadline + ", reason="
+      + reason
+      + ", submissionId=" + submissionId + ", lastModifiedOn=" + "]";
   }
 }

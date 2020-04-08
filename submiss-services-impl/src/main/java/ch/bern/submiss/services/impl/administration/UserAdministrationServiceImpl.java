@@ -13,6 +13,8 @@
 
 package ch.bern.submiss.services.impl.administration;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import ch.bern.submiss.services.api.administration.EmailService;
 import ch.bern.submiss.services.api.administration.SDDepartmentService;
 import ch.bern.submiss.services.api.administration.SDTenantService;
@@ -35,6 +37,7 @@ import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
 import ch.bern.submiss.services.api.util.LookupValues.USER_STATUS;
 import ch.bern.submiss.services.api.util.LookupValues.WEBSSO_ATTRIBUTES;
 import ch.bern.submiss.services.api.util.SubmissConverter;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.UserDTOtoSubmissUserDTOMapper;
 import com.eurodyn.qlack2.fuse.aaa.api.OperationService;
 import com.eurodyn.qlack2.fuse.aaa.api.criteria.UserSearchCriteria;
@@ -43,6 +46,7 @@ import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.ResourceDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserAttributeDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.eurodyn.qlack2.util.sso.dto.SAMLAttributeDTO;
 import com.eurodyn.qlack2.util.sso.dto.WebSSOHolder;
 import java.io.ByteArrayOutputStream;
@@ -58,6 +62,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,7 +99,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
    * The Constant LOGGER.
    */
   private static final Logger LOGGER =
-    Logger.getLogger(TenderStatusHistoryServiceImpl.class.getName());
+    Logger.getLogger(UserAdministrationServiceImpl.class.getName());
 
   /**
    * The Constant SPLIT_REGEX.
@@ -151,8 +156,8 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Create user.
    *
-   * @param dto the dto
-   * @param groupName The name of the group of the user
+   * @param dto         the dto
+   * @param groupName   The name of the group of the user
    * @param isFirstUser The flag indicating whether the user is the first user
    * @return the user id
    */
@@ -186,7 +191,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
       UserAttributeDTO attrib = new UserAttributeDTO();
       attrib.setName(USER_ATTRIBUTES.REGISTERED_DATE.getValue());
       attrib.setData(reportDate);
-      /** Add attribute to user. */
+      /* Add attribute to user. */
       persistedUser.setAttribute(attrib);
 
       userService.updateUser(persistedUser, false);
@@ -202,7 +207,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Creates the task.
    *
-   * @param userId the user id
+   * @param userId   the user id
    * @param taskType the task type
    */
   private void createTask(String userId, TaskTypes taskType) {
@@ -222,13 +227,15 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Edit user.
    *
-   * @param dto the UserDTO
-   * @param groupName The name of the group of the user
-   * @param groupChanged The flag indicating whether group is changed or not
-   * @param secDeptsChanged The flag indicating whether secondary Departments are changed or not
-   * @param userAdminRight The flag indicating whether the user has the right to edit users or not
+   * @param dto                   the UserDTO
+   * @param groupName             The name of the group of the user
+   * @param groupChanged          The flag indicating whether group is changed or not
+   * @param secDeptsChanged       The flag indicating whether secondary Departments are changed or
+   *                              not
+   * @param userAdminRight        The flag indicating whether the user has the right to edit users
+   *                              or not
    * @param userAdminRightChanged The flag indicating whether userAdminRight is changed or not
-   * @param register The flag indicating whether to register a user
+   * @param register              The flag indicating whether to register a user
    * @return the UserDTO id
    */
   @Override
@@ -245,7 +252,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
 
     // if the user needs to be registered set the registered date as attribute
     if (register != null && register) {
-      /**
+      /*
        * Set the date that the user is registered and convert it to string in order to match with
        * user attributes in DB.
        */
@@ -255,7 +262,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
       UserAttributeDTO attrib = new UserAttributeDTO();
       attrib.setName(USER_ATTRIBUTES.REGISTERED_DATE.getValue());
       attrib.setData(reportDate);
-      /** Add attribute to user. */
+      /* Add attribute to user. */
       dto.setAttribute(attrib);
 
       // Delete task when user is registered.
@@ -315,7 +322,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Add user group by name.
    *
-   * @param userId the user id
+   * @param userId    the user id
    * @param groupName the group name
    */
   @Override
@@ -337,7 +344,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Update user group by name.
    *
-   * @param userId the user id
+   * @param userId    the user id
    * @param groupName the group name
    */
   @Override
@@ -371,7 +378,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Add user group by id.
    *
-   * @param userId the user id
+   * @param userId  the user id
    * @param groupId the group id
    */
   @Override
@@ -462,7 +469,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Search department and directorate.
    *
-   * @param userDTOList the user DTO list
+   * @param userDTOList    the user DTO list
    * @param submissUserDTO the submiss user DTO
    * @return the list
    */
@@ -579,10 +586,10 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Adds the security checks to user.
    *
-   * @param userDTO the user DTO
-   * @param groups the groups
-   * @param tenant the tenant
-   * @param mainDepartment the main department
+   * @param userDTO              the user DTO
+   * @param groups               the groups
+   * @param tenant               the tenant
+   * @param mainDepartment       the main department
    * @param secondaryDepartments the secondary departments
    * @return the submiss user DTO
    */
@@ -619,7 +626,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
       "Executing method findSpecificUser, Parameters: userSearchCriteria: {0}",
       userSearchCriteria);
 
-    return (userService.findUserCount(userSearchCriteria) > 0) ? true : false;
+    return userService.findUserCount(userSearchCriteria) > 0;
   }
 
   /**
@@ -741,7 +748,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
    * Change user's attributes.
    *
    * @param userName the user name
-   * @param attr the attr
+   * @param attr     the attr
    */
   @Override
   public void changeUserAttributes(String userName, List<UserAttributeDTO> attr) {
@@ -928,7 +935,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
    * Get usres by tenant and role.
    *
    * @param tenantId the tenant id
-   * @param role the role
+   * @param role     the role
    * @return the list with the users
    */
   @Override
@@ -962,8 +969,8 @@ public class UserAdministrationServiceImpl extends BaseService implements
    * Get exported users.
    *
    * @param startDate the start date
-   * @param endDate the end date
-   * @param status the status
+   * @param endDate   the end date
+   * @param status    the status
    * @return the list with the exported users
    */
   @Override
@@ -1013,9 +1020,9 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Gets the user entries whose active period overlaps with the given start and end dates.
    *
-   * @param users the users
+   * @param users     the users
    * @param startDate the start date
-   * @param endDate the end date
+   * @param endDate   the end date
    * @return the user entries
    */
   private List<SubmissUserDTO> getSearchedRangeUsers(List<SubmissUserDTO> users, Date startDate,
@@ -1038,38 +1045,39 @@ public class UserAdministrationServiceImpl extends BaseService implements
     List<UserHistoryDTO> userHistoryDTOs =
       userHistoryService.getUserHistoryEntriesByUserIds(userIds);
     List<SubmissUserDTO> rangeDateUsers = new ArrayList<>();
-    for (UserHistoryDTO userHistoryDTO : userHistoryDTOs) {
-      // Check if the user history entry dates overlap with the given dates.
-      if ((userHistoryDTO.getFromDate().before(startDate)
-        && ((userHistoryDTO.getToDate() == null && currentDate.after(endDate))
-        || (userHistoryDTO.getToDate() != null && userHistoryDTO.getToDate().after(endDate))))
-        || (userHistoryDTO.getFromDate().before(startDate) && ((userHistoryDTO.getToDate() == null
-        && currentDate.before(endDate) && currentDate.after(startDate))
-        || (userHistoryDTO.getToDate() != null && userHistoryDTO.getToDate().before(endDate)
-        && userHistoryDTO.getToDate().after(startDate))))
-        || ((userHistoryDTO.getFromDate().after(startDate)
-        && userHistoryDTO.getFromDate().before(endDate))
-        && ((userHistoryDTO.getToDate() == null && currentDate.after(endDate))
-        || (userHistoryDTO.getToDate() != null
-        && userHistoryDTO.getToDate().after(endDate))))
-        || ((userHistoryDTO.getFromDate().after(startDate)
-        && userHistoryDTO.getFromDate().before(endDate))
-        && ((userHistoryDTO.getToDate() == null && currentDate.before(endDate)
-        && currentDate.after(startDate))
-        || (userHistoryDTO.getToDate() != null
-        && userHistoryDTO.getToDate().before(endDate)
-        && userHistoryDTO.getToDate().after(startDate))))) {
-        for (SubmissUserDTO user : users) {
-          // Check if the user history entry is connected to the current user.
-          if (userHistoryDTO.getUserId().equals(user.getId())) {
-            // For every valid user history entry, create a new user instance with the
-            // required history values.
-            SubmissUserDTO rangeDateUser =
-              createRangeDateUser(startDate, endDate, currentDate, userHistoryDTO, user);
-            rangeDateUsers.add(rangeDateUser);
-            break;
-          }
+
+    for (SubmissUserDTO user : users) {
+      List<UserHistoryDTO> userHistoryDTOsPerUser = new ArrayList<>();
+      for (UserHistoryDTO userHistoryDTO : userHistoryDTOs) {
+        // Check if the user history entry is connected to the current user
+        // and the user history entry dates overlap with the given dates.
+        if (userHistoryDTO.getUserId().equals(user.getId())
+          && ((userHistoryDTO.getFromDate().before(startDate)
+          && ((userHistoryDTO.getToDate() == null && currentDate.after(endDate))
+          || (userHistoryDTO.getToDate() != null && userHistoryDTO.getToDate().after(endDate))))
+          || (userHistoryDTO.getFromDate().before(startDate) && ((userHistoryDTO.getToDate() == null
+          && currentDate.before(endDate) && currentDate.after(startDate))
+          || (userHistoryDTO.getToDate() != null && userHistoryDTO.getToDate().before(endDate)
+          && userHistoryDTO.getToDate().after(startDate))))
+          || ((userHistoryDTO.getFromDate().after(startDate)
+          && userHistoryDTO.getFromDate().before(endDate))
+          && ((userHistoryDTO.getToDate() == null && currentDate.after(endDate))
+          || (userHistoryDTO.getToDate() != null
+          && userHistoryDTO.getToDate().after(endDate))))
+          || ((userHistoryDTO.getFromDate().after(startDate)
+          && userHistoryDTO.getFromDate().before(endDate))
+          && ((userHistoryDTO.getToDate() == null && currentDate.before(endDate)
+          && currentDate.after(startDate))
+          || (userHistoryDTO.getToDate() != null
+          && userHistoryDTO.getToDate().before(endDate)
+          && userHistoryDTO.getToDate().after(startDate)))))) {
+          userHistoryDTOsPerUser.add(userHistoryDTO);
         }
+      }
+      if (!userHistoryDTOsPerUser.isEmpty()) {
+        // For every user entry, create a new user instance with the required history values.
+        rangeDateUsers
+          .addAll(createRangeDateUser(startDate, endDate, currentDate, userHistoryDTOsPerUser, user));
       }
     }
     return rangeDateUsers;
@@ -1078,53 +1086,146 @@ public class UserAdministrationServiceImpl extends BaseService implements
   /**
    * Creates the user with the required history values.
    *
-   * @param startDate the start date
-   * @param endDate the end date
-   * @param currentDate the current date
-   * @param userHistoryDTO the user history DTO
-   * @param user the user
+   * @param startDate      the start date
+   * @param endDate        the end date
+   * @param currentDate    the current date
+   * @param userHistoryDTOs the user history DTO list
+   * @param user           the user
    * @return the user
    */
-  private SubmissUserDTO createRangeDateUser(Date startDate, Date endDate, Timestamp currentDate,
-    UserHistoryDTO userHistoryDTO, SubmissUserDTO user) {
+  private List<SubmissUserDTO> createRangeDateUser(Date startDate, Date endDate, Timestamp currentDate,
+    List<UserHistoryDTO> userHistoryDTOs, SubmissUserDTO user) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method createRangeDateUser, Parameters: startDate: {0}, "
         + "endDate: {1}, currentDate: {2}, userHistoryDTO: {3}, user: {4}",
-      new Object[]{startDate, endDate, currentDate, userHistoryDTO, user});
+      new Object[]{startDate, endDate, currentDate, userHistoryDTOs, user});
 
-    // Create default "range date" user.
-    SubmissUserDTO rangeDateUser = initializeUserValues(user);
-    // Get the group from the current history entry and assign it to the user.
-    rangeDateUser.setUserGroup(userGroupService.getGroupByID(userHistoryDTO.getGroupId(), false));
-    // Get the user start (registered) and end (deactivation) dates from the history entry.
-    rangeDateUser.setRegisteredDate(extractDateWithoutTime(userHistoryDTO.getFromDate()));
-    if (userHistoryDTO.getToDate() != null) {
-      rangeDateUser.setDeactivationDate(extractDateWithoutTime(userHistoryDTO.getToDate()));
-    }
-    // Get the start calculation date.
-    Timestamp startCalculationDate;
-    if (userHistoryDTO.getFromDate().before(startDate)) {
-      startCalculationDate = new Timestamp(startDate.getTime());
-    } else {
-      startCalculationDate = userHistoryDTO.getFromDate();
-    }
-    // Get the end calculation date.
-    Timestamp endCalculationDate;
-    if ((userHistoryDTO.getToDate() == null && currentDate.after(endDate))
-      || (userHistoryDTO.getToDate() != null && userHistoryDTO.getToDate().after(endDate))) {
-      endCalculationDate = new Timestamp(endDate.getTime());
-    } else {
-      if (userHistoryDTO.getToDate() == null) {
-        endCalculationDate = currentDate;
+    List<SubmissUserDTO> rangeDateUserList = new ArrayList<>();
+
+    for(UserHistoryDTO userHistoryDTO : userHistoryDTOs){
+      // Create default "range date" user.
+      SubmissUserDTO rangeDateUser = initializeUserValues(user);
+      // Get the group from the current history entry and assign it to the user.
+      rangeDateUser.setUserGroup(userGroupService.getGroupByID(userHistoryDTO.getGroupId(), false));
+      // Get the user start (registered) and end (deactivation) dates from the history entry.
+      rangeDateUser.setRegisteredDate(extractDateWithoutTime(userHistoryDTO.getFromDate()));
+      if (userHistoryDTO.getToDate() != null) {
+        rangeDateUser.setDeactivationDate(extractDateWithoutTime(userHistoryDTO.getToDate()));
+      }
+      // Get the start calculation date.
+      Timestamp startCalculationDate;
+      if (userHistoryDTO.getFromDate().before(startDate)) {
+        startCalculationDate = new Timestamp(startDate.getTime());
       } else {
-        endCalculationDate = userHistoryDTO.getToDate();
+        startCalculationDate = userHistoryDTO.getFromDate();
+      }
+      // Get the end calculation date.
+      Timestamp endCalculationDate;
+      if ((userHistoryDTO.getToDate() == null && currentDate.after(endDate))
+        || (userHistoryDTO.getToDate() != null && userHistoryDTO.getToDate().after(endDate))) {
+        endCalculationDate = new Timestamp(endDate.getTime());
+      } else {
+        if (userHistoryDTO.getToDate() == null) {
+          endCalculationDate = currentDate;
+        } else {
+          endCalculationDate = userHistoryDTO.getToDate();
+        }
+      }
+      // Call function to calculate registered (active) days.
+      rangeDateUser
+        .setRegisteredDays(calculateUserRegisteredDays(startCalculationDate, endCalculationDate));
+      rangeDateUserList.add(rangeDateUser);
+    }
+    return mergeRangeDatesForUser(rangeDateUserList);
+  }
+
+  /**
+   * Merges all history entries per role for each user.
+   *
+   * @param rangeDateUserList the rangeDateUser DTO list
+   * @return the mergedRangeDateUser
+   */
+  private List<SubmissUserDTO> mergeRangeDatesForUser(List<SubmissUserDTO> rangeDateUserList) {
+    List<SubmissUserDTO> mergedRangeDateUserList = new ArrayList<>();
+    List<SubmissUserDTO> adminUserList = new ArrayList<>();
+    List<SubmissUserDTO> plUserList = new ArrayList<>();
+    List<SubmissUserDTO> sbUserList = new ArrayList<>();
+    List<SubmissUserDTO> dirUserList = new ArrayList<>();
+
+    // Split the rangeDateUserList into separate Lists depending on the user group.
+    for(SubmissUserDTO userDTO : rangeDateUserList){
+      if(userDTO.getUserGroup().getDescription().equals("Administration")){
+        adminUserList.add(userDTO);
+      }else if(userDTO.getUserGroup().getDescription().equals("Projektleitung")){
+        plUserList.add(userDTO);
+      }else if(userDTO.getUserGroup().getDescription().equals("Sachbearbeitung")){
+        sbUserList.add(userDTO);
+      }else if(userDTO.getUserGroup().getDescription().equals("Direktion")){
+        dirUserList.add(userDTO);
       }
     }
-    // Call function to calculate registered (active) days.
-    rangeDateUser
-      .setRegisteredDays(calculateUserRegisteredDays(startCalculationDate, endCalculationDate));
-    return rangeDateUser;
+    // Merge all history entries of user and sum Registered days per UserGroup
+    if(!adminUserList.isEmpty()){
+      mergedRangeDateUserList.add(mergeRangeDatesByUserGroup(adminUserList));
+    }
+    if(!plUserList.isEmpty()){
+      mergedRangeDateUserList.add(mergeRangeDatesByUserGroup(plUserList));
+    }
+    if(!sbUserList.isEmpty()){
+      mergedRangeDateUserList.add(mergeRangeDatesByUserGroup(sbUserList));
+    }
+    if(!dirUserList.isEmpty()){
+      mergedRangeDateUserList.add(mergeRangeDatesByUserGroup(dirUserList));
+    }
+    return mergedRangeDateUserList;
+  }
+
+  private SubmissUserDTO mergeRangeDatesByUserGroup(List<SubmissUserDTO> rangeDateUserList) {
+    // Sort the list by Registered Date in asc order after converting date String
+    // into Date.
+    SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
+    rangeDateUserList.sort((o1,o2) -> {
+      try {
+        return df.parse(o1.getRegisteredDate()).compareTo(df.parse(o2.getRegisteredDate()));
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
+      return 0;
+    });
+    // The SubmissUserDTO which holds the merged history entries
+    SubmissUserDTO mergedRangeDateUser = rangeDateUserList.get(0);
+    // The first entry in the list is the one we'll use to compare with the next one
+    SubmissUserDTO rangeDateUserToCompare = rangeDateUserList.get(0);
+    for (int i = 1; i < rangeDateUserList.size(); i++) {
+      // Check the Deactivation Date of previous entry with
+      // the Registered Date of the current one in list.
+      if (rangeDateUserList.get(i).getRegisteredDate()
+        .equals(rangeDateUserToCompare.getDeactivationDate())) {
+        // If Registered Date and Deactivation Date of the current one in list are the same,
+        // add to the sum of Registered Days of mergedRangeDateUser but subtract one day
+        // because it's already calculated in previous entry. Finally set Deactivation Date
+        // in mergedRangeDateUser to complete the merge of these entries.
+        if (!rangeDateUserList.get(i).getRegisteredDate()
+          .equals(rangeDateUserList.get(i).getDeactivationDate())) {
+          mergedRangeDateUser.setDeactivationDate(rangeDateUserList.get(i).getDeactivationDate());
+          mergedRangeDateUser.setRegisteredDays(
+            mergedRangeDateUser.getRegisteredDays() + rangeDateUserList.get(i).getRegisteredDays()
+              - 1);
+        } else if (rangeDateUserList.get(i).getDeactivationDate() == null) {
+          mergedRangeDateUser.setDeactivationDate(null);
+        }
+      } else {
+        // If Registered Date and Deactivation Date of compared entries are not the same we
+        // continue with the merge of Registered Days and set the new Deactivation Date.
+        mergedRangeDateUser.setDeactivationDate(rangeDateUserList.get(i).getDeactivationDate());
+        mergedRangeDateUser.setRegisteredDays(
+          mergedRangeDateUser.getRegisteredDays() + rangeDateUserList.get(i).getRegisteredDays());
+      }
+      // Current entry will be used for next iteration.
+      rangeDateUserToCompare = rangeDateUserList.get(i);
+    }
+    return mergedRangeDateUser;
   }
 
   /**
@@ -1156,7 +1257,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
    * Calculates the user registered (active) days.
    *
    * @param startCalculationDate the start calculation date
-   * @param endCalculationDate the end calculation date
+   * @param endCalculationDate   the end calculation date
    * @return the user registered days
    */
   private int calculateUserRegisteredDays(Timestamp startCalculationDate,
@@ -1167,9 +1268,24 @@ public class UserAdministrationServiceImpl extends BaseService implements
         + "startCalculationDate: {0}, endCalculationDate: {1}",
       new Object[]{startCalculationDate, endCalculationDate});
 
+    // The only way to ensure a proper calculation of days difference
+    // is to manipulate the time part of the start & end Timestamps
+    Calendar calStart = Calendar.getInstance();
+    calStart.setTime(startCalculationDate);     // set calStart to startCalculationDate
+    calStart.set(Calendar.HOUR_OF_DAY, 0);
+    calStart.set(Calendar.MINUTE, 0);
+    calStart.set(Calendar.SECOND, 0);
+    calStart.set(Calendar.MILLISECOND, 0);
+
+    Calendar calEnd = Calendar.getInstance();
+    calEnd.setTime(endCalculationDate);         // set calEnd to endCalculationDate
+    calEnd.set(Calendar.HOUR_OF_DAY, 23);
+    calEnd.set(Calendar.MINUTE, 59);
+    calEnd.set(Calendar.SECOND, 59);
+    calEnd.set(Calendar.MILLISECOND, 999);
+
     // Calculate the difference in milliseconds and convert it into days.
-    return (int) ((endCalculationDate.getTime() - startCalculationDate.getTime())
-      / (1000 * 60 * 60 * 24)) + 1;
+    return (int) DAYS.between(calStart.getTime().toInstant(), calEnd.getTime().toInstant()) + 1;
   }
 
   /**
@@ -1362,16 +1478,76 @@ public class UserAdministrationServiceImpl extends BaseService implements
     return submissUserDTO;
   }
 
-  /**
-   * Get user group name.
-   *
-   * @return the group name
-   */
   @Override
   public String getUserGroupName() {
 
     LOGGER.log(Level.CONFIG, "Executing method getUserGroupName");
 
     return getGroupName(getUser());
+  }
+
+  @Override
+  public Set<ValidationError> editUserOptimisticLock(String userId, Long userVersion,
+    Long functionVersion, Long secondaryDepartmentsVersion) {
+
+    LOGGER.log(Level.CONFIG, "Executing method editUserOptimisticLock, Parameters: userId: {0}, "
+        + "userVersion: {1}",
+      new Object[]{userId, userVersion});
+
+    Set<ValidationError> optimisticLockErrors = new HashSet<>();
+    if (checkUserVersion(userId, userVersion)
+      || (functionVersion != null && USER_ATTRIBUTES.FUNCTION.getValue() != null
+      && checkAttributeVersion(userId, functionVersion, USER_ATTRIBUTES.FUNCTION.getValue()))
+      || checkAttributeVersion(userId, secondaryDepartmentsVersion,
+      USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue())) {
+      optimisticLockErrors
+        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
+          ValidationMessages.OPTIMISTIC_LOCK));
+    }
+    return optimisticLockErrors;
+  }
+
+  /**
+   * Checks if user dto version is not equal with user db version.
+   *
+   * @param userId      the userId
+   * @param userVersion the userVersion
+   * @return true/false
+   */
+  private boolean checkUserVersion(String userId, Long userVersion) {
+    Long dbVersion = userService.getUserById(userId).getDbversion();
+    return !userVersion.equals(dbVersion);
+  }
+
+  /**
+   * Checks if userAttribute dto version is not equal with userAttribute db version.
+   *
+   * @param userId           the userId
+   * @param attributeVersion the attributeVersion
+   * @param userAttribute    the userAttribute
+   * @return true/false
+   */
+  private boolean checkAttributeVersion(String userId, Long attributeVersion,
+    String userAttribute) {
+    Long dbVersion = userService.getUserById(userId).getAttribute(userAttribute).getDbversion();
+    return !attributeVersion.equals(dbVersion);
+  }
+
+  @Override
+  public void userExportSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method userExportSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.GENERATE_USERS_EXPORT_REPORT.getValue(), null);
+  }
+
+  @Override
+  public void userSearchSecurityCheck() {
+
+    LOGGER.log(Level.CONFIG, "Executing method userSearchSecurityCheck");
+
+    security.isPermittedOperationForUser(getUserId(),
+      SecurityOperation.USER_OPERATION_USER_VIEW.getValue(), null);
   }
 }

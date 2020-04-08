@@ -84,10 +84,17 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      getApplicants($stateParams.id);
-      readStatusOfSubmission($stateParams.id);
-      readSubmission($stateParams.id);
-      findUserOperations();
+      SubmissionService.loadFormalAudit($stateParams.id)
+        .success(function (data, status) {
+          if (status === 403) { // Security checks.
+            return;
+          } else {
+            getApplicants($stateParams.id);
+            readStatusOfSubmission($stateParams.id);
+            readSubmission($stateParams.id);
+            findUserOperations();
+          }
+        });
     }
 
     /***********************************************************************
@@ -120,19 +127,24 @@
 
     /** Function to save the changes */
     function save(submittents) {
-      AppService.setPaneShown(true);
-      SelectiveService.updateSelectiveFormalAudit(submittents).success(
-        function (data) {
+
+      SelectiveService.updateSelectiveFormalAudit(submittents)
+        .success(function (data) {
+          AppService.setPaneShown(true);
           ExaminationService.updateSubmissionFormalAuditExaminationStatus(
             $stateParams.id).success(function (data) {
-              // Here we simply reload the page without hiding the spinner.
-              // The spinner will be removed on page reload from the
-              // getApplicants function.
-              defaultReload();
-            });
+            // Here we simply reload the page without hiding the spinner.
+            // The spinner will be removed on page reload from the
+            // getApplicants function.
+            defaultReload();
+          });
         }).error(function (response, status) {
           AppService.setPaneShown(false);
-      });
+          if (status === 400) { // Validation errors.
+            QFormJSRValidation
+              .markErrors($scope, $scope.formalAuditCtrl.evidenceForm, response);
+          }
+        });
     }
 
     /** Function to get applicants of submission */

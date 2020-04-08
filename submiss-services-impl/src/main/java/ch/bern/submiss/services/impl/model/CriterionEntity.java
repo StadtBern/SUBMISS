@@ -13,69 +13,69 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class CriterionEntity.
  */
 @Entity
 @Table(name = "SUB_CRITERION")
-public class CriterionEntity {
+public class CriterionEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The submission. */
+  /**
+   * The submission.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENDER")
   private SubmissionEntity submission;
 
-  /** The criterion text. */
+  /**
+   * The criterion text.
+   */
   @Column(name = "CRITERION_TEXT")
   private String criterionText;
 
-  /** The weighting. */
+  /**
+   * The weighting.
+   */
   @Column(name = "WEIGHTING")
   private Double weighting;
 
-  /** The criterion type. */
+  /**
+   * The criterion type.
+   */
   @Column(name = "CRITERION_TYPE")
   private String criterionType;
 
-  /** The subcriteria. */
+  /**
+   * The subcriteria.
+   */
   @OneToMany(mappedBy = "criterion", cascade = CascadeType.ALL)
   private List<SubcriterionEntity> subcriteria;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The created on.
    */
-  public String getId() {
-    return id;
-  }
+  @CreationTimestamp
+  @Column(name = "CREATED_ON")
+  private Timestamp createdOn;
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The updated on.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
 
   /**
    * Gets the submission.
@@ -167,15 +167,49 @@ public class CriterionEntity {
     this.subcriteria = subcriteria;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the created on.
+   *
+   * @return the createdOn
    */
-  @Override
-  public String toString() {
-    return "CriterionEntity [id=" + id + ", criterionText=" + criterionText + ", weighting="
-        + weighting + ", criterionType=" + criterionType + "]";
+  public Timestamp getCreatedOn() {
+    return createdOn;
   }
 
+  /**
+   * Sets the created on.
+   *
+   * @param createdOn the createdOn
+   */
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "CriterionEntity [id=" + super.getId() + ", version=" + super.getVersion()
+      + ", submission=" + submission
+      + ", criterionText=" + criterionText + ", weighting="
+      + weighting + ", criterionType=" + criterionType
+      + ", subcriteria=" + subcriteria + ", createdOn=" + createdOn + ", updatedOn="
+      + updatedOn + "]";
+  }
 }

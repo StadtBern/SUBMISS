@@ -19,16 +19,32 @@ import java.util.Date;
  * The Class ApplicationForm.
  */
 public class ApplicationForm {
-  
-  /** The application id. */
+
+  /**
+   * The application id.
+   */
   private String applicationId;
-  
-  /** The application date. */
+
+  /**
+   * The application date.
+   */
   private Date applicationDate;
-  
-  /** The application information. */
+
+  /**
+   * The application information.
+   */
   private String applicationInformation;
-  
+
+  /**
+   * The application version.
+   */
+  private Long applicationVersion;
+
+  /**
+   * The application version.
+   */
+  private Long submissionVersion;
+
   /**
    * Gets the application id.
    *
@@ -55,7 +71,7 @@ public class ApplicationForm {
   public Date getApplicationDate() {
     return applicationDate;
   }
-  
+
   /**
    * Sets the application date.
    *
@@ -64,7 +80,7 @@ public class ApplicationForm {
   public void setApplicationDate(Date applicationDate) {
     this.applicationDate = applicationDate;
   }
-  
+
   /**
    * Gets the application information.
    *
@@ -73,7 +89,7 @@ public class ApplicationForm {
   public String getApplicationInformation() {
     return applicationInformation;
   }
-  
+
   /**
    * Sets the application information.
    *
@@ -82,5 +98,40 @@ public class ApplicationForm {
   public void setApplicationInformation(String applicationInformation) {
     this.applicationInformation = applicationInformation;
   }
-  
+
+  /**
+   * Gets the application version.
+   *
+   * @return applicationVersion the applicationVersion
+   */
+  public Long getApplicationVersion() {
+    return applicationVersion;
+  }
+
+  /**
+   * Sets the application version.
+   *
+   * @param applicationVersion the applicationVersion
+   */
+  public void setApplicationVersion(Long applicationVersion) {
+    this.applicationVersion = applicationVersion;
+  }
+
+  /**
+   * Gets the submission version.
+   *
+   * @return submissionVersion the submissionVersion
+   */
+  public Long getSubmissionVersion() {
+    return submissionVersion;
+  }
+
+  /**
+   * Sets the submission version.
+   *
+   * @param submissionVersion the submissionVersion
+   */
+  public void setSubmissionVersion(Long submissionVersion) {
+    this.submissionVersion = submissionVersion;
+  }
 }

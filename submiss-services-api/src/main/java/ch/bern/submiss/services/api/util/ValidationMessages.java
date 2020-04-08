@@ -684,7 +684,7 @@ public class ValidationMessages {
   /**
    * The Constant OPTIMISTIC_LOCK.
    */
-  public static final String OPTIMISTIC_LOCK = "optimistic_lock";
+  public static final String OPTIMISTIC_LOCK = "optimistic_lock_message";
 
   /**
    * The Constant EXPIRED_VALIDITY_PERIOD_AFTER_CREATION.
@@ -775,6 +775,31 @@ public class ValidationMessages {
    * The Constant DOCUMENT_SHOULD_BE_CREATED.
    */
   public static final String DOCUMENT_SHOULD_BE_CREATED = "document_should_be_created";
+
+  /**
+   * The Constant DOCUMENT_ERROR_FIELD.
+   */
+  public static final String DOCUMENT_ERROR_FIELD = "mandatoryDocument";
+
+  /**
+   * The Constant LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED.
+   */
+  public static final String LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED = "legal_hearing_document_should_be_created";
+
+  /**
+   * The Constant LEGAL_HEARING_ERROR_FIELD.
+   */
+  public static final String LEGAL_HEARING_ERROR_FIELD = "mandatoryLegalHearingDocument";
+
+  /**
+   * The Constant PROOF_DOCUMENT_SHOULD_BE_CREATED.
+   */
+  public static final String PROOF_DOCUMENT_SHOULD_BE_CREATED = "proof_document_should_be_created";
+
+  /**
+   * The Constant PROOF_DOCUMENT_ERROR_FIELD.
+   */
+  public static final String PROOF_DOCUMENT_ERROR_FIELD = "mandatoryProofDocument";
 
   /**
    * The Constant CLOSE_EXAMINATION_INVALID_GRADES.
@@ -1005,4 +1030,124 @@ public class ValidationMessages {
    * The Constant TECHNICAL_ERROR.
    */
   public static final String TECHNICAL_ERROR = "technical_error";
+
+  /**
+   * The Constant SUBMISSION_DELETED.
+   */
+  public static final String SUBMISSION_DELETED = "submission_deleted";
+
+  /**
+   * The Constant PROJECT_DELETED.
+   */
+  public static final String PROJECT_DELETED = "project_deleted";
+
+  /**
+   * The Constant OFFER_DELETED.
+   */
+  public static final String OFFER_DELETED = "offer_deleted";
+
+  /**
+   * The Constant OPTIMISTIC_LOCK_ERROR_FIELD.
+   */
+  public static final String OPTIMISTIC_LOCK_ERROR_FIELD = "optimisticLockErrorField";
+
+  /**
+   * The Constant SUBMITTENT_DELETED.
+   */
+  public static final String SUBMITTENT_DELETED = "submittentDeleted";
+
+  /**
+   * The Constant CRITERION_DELETED.
+   */
+  public static final String CRITERION_DELETED = "criterionDeleted";
+
+  /**
+   * The Constant SUBCRITERION_DELETED.
+   */
+  public static final String SUBCRITERION_DELETED = "subCriterionDeleted";
+
+  /**
+   * The Constant EXAMINATION_LOCKED.
+   */
+  public static final String EXAMINATION_LOCKED = "examination_locked";
+
+  /**
+   * The Constant AWARD_LOCKED.
+   */
+  public static final String AWARD_LOCKED = "award_locked";
+
+  /**
+   * The Constant STATUS_CHANGED.
+   */
+  public static final String STATUS_CHANGED = "status_changed";
+
+  /**
+   * The Constant STATUS_CHANGED_ERROR_FIELD.
+   */
+  public static final String STATUS_CHANGED_ERROR_FIELD = "statusChangedErrorField";
+
+  /**
+   * The Constant DELETED_BY_ANOTHER_USER_ERROR_FIELD.
+   */
+  public static final String DELETED_BY_ANOTHER_USER_ERROR_FIELD = "deletedByAnotherUserErrorField";
+
+  /**
+   * The Constant APPLICATION_DELETED.
+   */
+  public static final String APPLICATION_DELETED = "applicationDeleted";
+
+  /**
+   * The Constant APPLICANT_DELETED.
+   */
+  public static final String APPLICANT_DELETED = "applicantDeleted";
+
+  /**
+   * The Constant TASK_COMPLETED_ERROR_FIELD.
+   */
+  public static final String TASK_COMPLETED_ERROR_FIELD = "taskCompletedErrorField";
+
+  /**
+   * The Constant TASK_COMPLETED.
+   */
+  public static final String TASK_COMPLETED = "task_completed";
+
+  /**
+   * The Constant ARGE_DELETED.
+   */
+  public static final String ARGE_DELETED = "argeDeleted";
+
+  /**
+   * The Constant SUBCONTRACTOR_DELETED.
+   */
+  public static final String SUBCONTRACTOR_DELETED = "subcontractorDeleted";
+
+  /**
+   * The Constant OFFER_PROTOCOL_ERROR_FIELD.
+   */
+  public static final String OFFER_PROTOCOL_ERROR_FIELD = "offerProtocolErrorField";
+
+  /**
+   * The Constant SUBMITTENTLISTE_ERROR_FIELD.
+   */
+  public static final String SUBMITTENTLISTE_ERROR_FIELD = "submittentlisteErrorField";
+
+  /**
+   * The Constant OFFERS_NO_DATE_ERROR_FIELD.
+   */
+  public static final String OFFERS_NO_DATE_ERROR_FIELD = "offersNoDateErrorField";
+
+  /**
+   * The Constant MISSING_APPLICATION_DATES_ERROR_FIELD.
+   */
+  public static final String MISSING_APPLICATION_DATES_ERROR_FIELD = "missingApplicationDatesErrorField";
+
+  /**
+   * The Constant NO_APPLICANT_DOCUMENT_ERROR_FIELD.
+   */
+  public static final String NO_APPLICANT_DOCUMENT_ERROR_FIELD = "noApplicantDocumentErrorField";
+
+  /**
+   * The Constant SUBMISSION_NOT_FOUND.
+   */
+  public static final String SUBMISSION_NOT_FOUND = "submission_not_found_message";
 }

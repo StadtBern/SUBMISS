@@ -22,7 +22,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "SUB_COMPANY_WORK_TYPE")
-public class CompanyWorkTypeEntity extends AbstractEntity {
+public class CompanyWorkTypeEntity extends AbstractStammdatenEntity {
 
   /** The company id. */
   @Column(name = "FK_COMPANY")

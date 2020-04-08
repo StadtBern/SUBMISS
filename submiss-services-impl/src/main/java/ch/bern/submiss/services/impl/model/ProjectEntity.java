@@ -16,113 +16,112 @@ package ch.bern.submiss.services.impl.model;
 import ch.bern.submiss.services.api.constants.ConstructionPermit;
 import ch.bern.submiss.services.api.constants.LoanApproval;
 import java.sql.Timestamp;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * The Class ProjectEntity.
  */
 @Entity
 @Table(name = "SUB_PROJECT")
-public class ProjectEntity {
+public class ProjectEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The project name. */
+  /**
+   * The project name.
+   */
   @Column(name = "NAME")
   private String projectName;
 
-  /** The tenant. */
+  /**
+   * The tenant.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_TENANT")
   private TenantEntity tenant;
 
-  /** The object name. */
+  /**
+   * The object name.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_OBJECT")
   private MasterListValueEntity objectName;
 
-  /** The procedure. */
+  /**
+   * The procedure.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_PM_PROCEDURE")
   private MasterListValueEntity procedure;
 
-  /** The gatt wto. */
+  /**
+   * The gatt wto.
+   */
   @Column(name = "GATT_WTO")
   private Boolean gattWto;
 
-  /** The pm department name. */
+  /**
+   * The pm department name.
+   */
   @Column(name = "PM_DEPARTMENT_NAME", length = 100)
   private String pmDepartmentName;
 
-  /** The pm external. */
-  @ManyToOne(cascade = CascadeType.ALL)
+  /**
+   * The pm external.
+   */
+  @ManyToOne(cascade = CascadeType.REFRESH)
   @JoinColumn(name = "FK_PM_EXTERNAL")
   private CompanyEntity pmExternal;
 
-  /** The department. */
+  /**
+   * The department.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_DEPARTMENT")
   private DepartmentEntity department;
 
-  /** The project number. */
+  /**
+   * The project number.
+   */
   @Column(name = "PROJECT_NUMBER", length = 50)
   private String projectNumber;
 
-  /** The notes. */
+  /**
+   * The notes.
+   */
   @Column(name = "NOTES", length = 100)
   private String notes;
 
-  /** The construction permit. */
+  /**
+   * The construction permit.
+   */
   @Column(name = "CONSTRUCTION_PERMIT", length = 4, columnDefinition = "TINYINT")
   @Enumerated
   private ConstructionPermit constructionPermit;
 
-  /** The loan approval. */
+  /**
+   * The loan approval.
+   */
   @Column(name = "LOAN_APPROVAL")
   @Enumerated
   private LoanApproval loanApproval;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @Column(name = "CREATED_ON")
   private Timestamp createdOn;
 
 
-  /** The created by. */
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
-
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the project name.
@@ -379,7 +378,8 @@ public class ProjectEntity {
   }
 
   public MasterListValueHistoryEntity getRecentProcedureHistory() {
-    for (MasterListValueHistoryEntity procedureHistoryEntity : procedure.getMasterListValueHistory()) {
+    for (MasterListValueHistoryEntity procedureHistoryEntity : procedure
+      .getMasterListValueHistory()) {
       if (procedureHistoryEntity.getToDate() == null) {
         return procedureHistoryEntity;
       }
@@ -388,7 +388,8 @@ public class ProjectEntity {
   }
 
   public MasterListValueHistoryEntity getRecentObjectNameHistory() {
-    for (MasterListValueHistoryEntity objectNameHistoryEntity : objectName.getMasterListValueHistory()) {
+    for (MasterListValueHistoryEntity objectNameHistoryEntity : objectName
+      .getMasterListValueHistory()) {
       if (objectNameHistoryEntity.getToDate() == null) {
         return objectNameHistoryEntity;
       }

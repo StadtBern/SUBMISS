@@ -17,6 +17,7 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Version;
 import org.hibernate.annotations.GenericGenerator;
 
 @MappedSuperclass
@@ -27,8 +28,9 @@ public abstract class AbstractEntity {
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   private String id;
 
-  @Column(name = "NAME", length = 100)
-  private String name;
+  @Version
+  @Column(name = "VERSION", nullable = false)
+  private Long version;
 
   public String getId() {
     return id;
@@ -38,12 +40,11 @@ public abstract class AbstractEntity {
     this.id = id;
   }
 
-  public String getName() {
-    return name;
+  public Long getVersion() {
+    return version;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setVersion(Long version) {
+    this.version = version;
   }
-
 }

@@ -12,20 +12,23 @@
   -->
 
 <div class="modal-header">
-	<button type="button" class="close" aria-label="Close"
-		ng-click="$close()">
-		<span aria-hidden="true">&times;</span>
-	</button>
-    <h3 class="modal-title" id="modal-title">Kontakt</h3>
-  </div>
-  <div class="modal-body" id="modal-body">
-  <p>Technischer Support <br>
-     {{footerContactCtrl.userSettings.support}}, Telefon {{footerContactCtrl.userSettings.techTelephone}}, <a href="{{footerContactCtrl.userSettings.techEmail}}">{{footerContactCtrl.userSettings.techEmail}}</a> <br>
-    <p>Fachlicher Support <br>
-      {{footerContactCtrl.userSettings.contactLocation}}, Telefon {{footerContactCtrl.userSettings.contactTelephone}}, <a href=" {{footerContactCtrl.userSettings.contactEmail}}"> {{footerContactCtrl.userSettings.contactEmail}}</a> </p>
-  </div>
-				   
-				   
-				   
-				   
-				  
+  <button type="button" class="close" aria-label="Close" ng-click="$close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h3 class="modal-title" id="modal-title">Kontakt</h3>
+</div>
+<div class="modal-body" id="modal-body">
+  <p>
+    <strong>Technischer Support</strong>
+    <br>
+    {{footerContactCtrl.userSettings.support}}, Telefon {{footerContactCtrl.userSettings.techTelephone}},
+    <a href="{{footerContactCtrl.userSettings.techEmail}}">{{footerContactCtrl.userSettings.techEmail}}</a>
+  </p>
+  <br>
+  <p>
+    <strong>Fachlicher Support</strong>
+    <br>
+    {{footerContactCtrl.userSettings.contactLocation}}, Telefon {{footerContactCtrl.userSettings.contactTelephone}},
+    <a href=" {{footerContactCtrl.userSettings.contactEmail}}"> {{footerContactCtrl.userSettings.contactEmail}}</a>
+  </p>
+</div>

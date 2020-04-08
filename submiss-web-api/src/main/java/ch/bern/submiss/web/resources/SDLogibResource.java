@@ -14,6 +14,7 @@
 package ch.bern.submiss.web.resources;
 
 import ch.bern.submiss.services.api.administration.SDLogibService;
+import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.dto.LogibHistoryDTO;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.web.forms.LogibHistoryForm;
@@ -44,6 +45,10 @@ public class SDLogibResource {
   @Inject
   private SDLogibService sDLogibService;
 
+  @OsgiService
+  @Inject
+  private SDService sDService;
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/logib")
@@ -69,17 +74,25 @@ public class SDLogibResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/saveLogibEntry")
   public Response saveSDEntry(@Valid LogibHistoryForm logibHistoryForm) {
-    Set<ValidationError> errors = validateLogib(logibHistoryForm);
-    if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+    sDService.sdSecurityCheck();
+    Set<ValidationError> validationErrors = validateLogib(logibHistoryForm);
+    if (!validationErrors.isEmpty()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
     // If there are no errors, proceed with updating the logib history entry.
-    sDLogibService
-        .saveLogibEntry(LogibHistoryFormMapper.INSTANCE.toLogibHistoryDTO(logibHistoryForm));
-    return Response.ok().build();
+    Set<ValidationError> optimisticLockErrors = sDLogibService
+      .saveLogibEntry(LogibHistoryFormMapper.INSTANCE.toLogibHistoryDTO(logibHistoryForm));
+    return (optimisticLockErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
-  /** Function to validate the type logib */
+  /**
+   * Logi validation.
+   *
+   * @param logibHistoryForm the logibHistoryForm
+   * @return the errors
+   */
   private Set<ValidationError> validateLogib(LogibHistoryForm logibHistoryForm) {
     Set<ValidationError> errors = new HashSet<>();
     // Check if mandatory fields are empty.
@@ -99,5 +112,4 @@ public class SDLogibResource {
     }
     return errors;
   }
-
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -63,6 +64,9 @@ public class SubmissAuditResource {
   public Response getAuditLogs(AuditFilterForm auditFilterForm, @PathParam("page") int page,
     @PathParam("pageItems") int pageItems, @PathParam("sortColumn") String sortColumn,
     @PathParam("sortType") String sortType, @PathParam("levelIdOption") String levelIdOption) {
+
+    submissAuditService.auditLogSecurityCheck();
+
     AuditLogDTO searchDTO = AudtLogFilterMapper.INSTANCE.toAuditDTO(auditFilterForm);
 
     List<?> auditDTOList = submissAuditService.getAuditLogs(page, pageItems, sortColumn, sortType,
@@ -77,4 +81,17 @@ public class SubmissAuditResource {
     }
   }
 
+  /**
+   * Run security check before loading Verlauf.
+   *
+   * @return the response
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/loadAuditLogs")
+  public Response loadAuditLogs() {
+    submissAuditService.auditLogSecurityCheck();
+    return Response.ok().build();
+  }
 }

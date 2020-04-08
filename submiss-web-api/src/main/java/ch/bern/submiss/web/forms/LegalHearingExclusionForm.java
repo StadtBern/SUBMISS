@@ -13,33 +13,49 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class LegalHearingExclusionForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LegalHearingExclusionForm {
+public class LegalHearingExclusionForm extends AbstractForm {
 
-  /** The exclusion date. */
+  /**
+   * The exclusion date.
+   */
   private Date exclusionDate;
 
-  /** The legal exclusions. */
+  /**
+   * The legal exclusions.
+   */
   private List<LegalExclusionForm> legalExclusions;
 
-  /** The submission id. */
+  /**
+   * The submission id.
+   */
   private String submissionId;
 
-  /** The first level exclusion date. */
+  /**
+   * The submission version.
+   */
+  private Long submissionVersion;
+
+  /**
+   * The first level exclusion date.
+   */
   private Date firstLevelExclusionDate;
 
-  /** The first level exclusion date view value. */
+  /**
+   * The first level exclusion date view value.
+   */
   private String fLExclusionDateViewValue;
 
-  /** The exclusion date view value. */
+  /**
+   * The exclusion date view value.
+   */
   private String exclusionDateViewValue;
 
   /**
@@ -150,4 +166,21 @@ public class LegalHearingExclusionForm {
     this.exclusionDateViewValue = exclusionDateViewValue;
   }
 
+  /**
+   * Gets the submissionVersion.
+   *
+   * @return the submissionVersion
+   */
+  public Long getSubmissionVersion() {
+    return submissionVersion;
+  }
+
+  /**
+   * Sets the submissionVersion.
+   *
+   * @param submissionVersion the submissionVersion
+   */
+  public void setSubmissionVersion(Long submissionVersion) {
+    this.submissionVersion = submissionVersion;
+  }
 }

@@ -13,217 +13,306 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
 import ch.bern.submiss.services.api.constants.ConstructionPermit;
 import ch.bern.submiss.services.api.constants.LoanApproval;
 import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
 
 /**
  * The Class SubmissionDTO.
  */
-@JsonIgnoreProperties(value = { "submittents" })
-public class SubmissionDTO {
+@JsonIgnoreProperties(value = {"submittents"})
+public class SubmissionDTO extends AbstractDTO {
 
-  /** The id. */
-  @JsonView(View.Public.class)
-  private String id;
-
-  /** The project. */
+  /**
+   * The project.
+   */
   @JsonView(View.Public.class)
   private ProjectDTO project;
 
-  /** The work type. */
+  /**
+   * The work type.
+   */
   @JsonView(View.Public.class)
   private MasterListValueHistoryDTO workType;
 
-  /** The description. */
+  /**
+   * The description.
+   */
   @JsonView(View.Internal.class)
   private String description;
 
-  /** The process. */
+  /**
+   * The process.
+   */
   @JsonView(View.Internal.class)
   private Process process;
 
-  /** The cost estimate. */
+  /**
+   * The cost estimate.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal costEstimate;
 
-  /** The process type. */
+  /**
+   * The process type.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO processType;
 
-  /** The gatt two. */
+  /**
+   * The gatt two.
+   */
   @JsonView(View.Internal.class)
   private Boolean gattTwo;
 
-  /** The publication date. */
+  /**
+   * The publication date.
+   */
   @JsonView(View.Internal.class)
   private Date publicationDate;
 
-  /** The publication date direct award. */
+  /**
+   * The publication date direct award.
+   */
   @JsonView(View.Internal.class)
   private Date publicationDateDirectAward;
 
-  /** The publication date award. */
+  /**
+   * The publication date award.
+   */
   @JsonView(View.Internal.class)
   private Date publicationDateAward;
 
-  /** The procedure. */
+  /**
+   * The procedure.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO procedure;
 
-  /** The pm department name. */
+  /**
+   * The pm department name.
+   */
   @JsonView(View.Internal.class)
   private String pmDepartmentName;
 
-  /** The pm external. */
+  /**
+   * The pm external.
+   */
   @JsonView(View.Internal.class)
   private CompanyDTO pmExternal;
 
-  /** The is locked. */
+  /**
+   * The is locked.
+   */
   @JsonView(View.Internal.class)
   private Boolean isLocked;
 
-  /** The construction permit. */
+  /**
+   * The construction permit.
+   */
   @JsonView(View.Internal.class)
   private ConstructionPermit constructionPermit;
 
-  /** The loan approval. */
+  /**
+   * The loan approval.
+   */
   @JsonView(View.Internal.class)
   private LoanApproval loanApproval;
 
-  /** The first deadline. */
+  /**
+   * The first deadline.
+   */
   @JsonView(View.Internal.class)
   private Date firstDeadline;
 
-  /** The second deadline. */
+  /**
+   * The second deadline.
+   */
   @JsonView(View.Internal.class)
   private Date secondDeadline;
 
-  /** The application opening date. */
+  /**
+   * The application opening date.
+   */
   @JsonView(View.Internal.class)
   private Date applicationOpeningDate;
 
-  /** The offer opening date. */
+  /**
+   * The offer opening date.
+   */
   @JsonView(View.Internal.class)
   private Date offerOpeningDate;
 
-  /** The first logged by. */
+  /**
+   * The first logged by.
+   */
   @JsonView(View.Internal.class)
   private String firstLoggedBy;
 
-  /** The second logged by. */
+  /**
+   * The second logged by.
+   */
   @JsonView(View.Internal.class)
   private String secondLoggedBy;
 
-  /** The notes. */
+  /**
+   * The notes.
+   */
   @JsonView(View.Internal.class)
   private String notes;
 
-  /** The is service tender. */
+  /**
+   * The is service tender.
+   */
   @JsonView(View.Internal.class)
   private Boolean isServiceTender;
 
-  /** The is geko entry. */
+  /**
+   * The is geko entry.
+   */
   @JsonView(View.Internal.class)
   private Boolean isGekoEntry;
 
-  /** The reason free award. */
+  /**
+   * The reason free award.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO reasonFreeAward;
 
-  /** The submittents. */
+  /**
+   * The submittents.
+   */
   @JsonView(View.Internal.class)
   @JsonIgnore
   private List<SubmittentDTO> submittents;
 
-  /** The min grade. */
+  /**
+   * The min grade.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal minGrade;
 
-  /** The max grade. */
+  /**
+   * The max grade.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal maxGrade;
 
-  /** The change for sec. */
+  /**
+   * The change for sec.
+   */
   @JsonView(View.Internal.class)
   private Boolean changeForSec;
 
-  /** The is locked changed. */
+  /**
+   * The is locked changed.
+   */
   @JsonView(View.Internal.class)
   private Boolean isLockedChanged;
 
-  /** The above threshold. */
+  /**
+   * The above threshold.
+   */
   @JsonView(View.Internal.class)
   private Boolean aboveThreshold;
 
-  /** The award min grade. */
+  /**
+   * The award min grade.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal awardMinGrade;
 
-  /** The award max grade. */
+  /**
+   * The award max grade.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal awardMaxGrade;
 
-  /** The operating cost formula. */
+  /**
+   * The operating cost formula.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO operatingCostFormula;
 
-  /** The price formula. */
+  /**
+   * The price formula.
+   */
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO priceFormula;
 
-  /** The added award recipients. */
+  /**
+   * The added award recipients.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal addedAwardRecipients;
 
-  /** The evaluation through. */
+  /**
+   * The evaluation through.
+   */
   @JsonView(View.Internal.class)
   private String evaluationThrough;
 
-  /** The commission procurement proposal date. */
+  /**
+   * The commission procurement proposal date.
+   */
   @JsonView(View.Internal.class)
   private Date commissionProcurementProposalDate;
 
-  /** The commission procurement proposal business. */
+  /**
+   * The commission procurement proposal business.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal commissionProcurementProposalBusiness;
 
-  /** The commission procurement proposal object. */
+  /**
+   * The commission procurement proposal object.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementProposalObject;
 
-  /** The commission procurement proposal suitability audit dropdown. */
+  /**
+   * The commission procurement proposal suitability audit dropdown.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementProposalSuitabilityAuditDropdown;
 
-  /** The commission procurement proposal suitability audit text. */
+  /**
+   * The commission procurement proposal suitability audit text.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementProposalSuitabilityAuditText;
 
-  /** The commission procurement proposal pre remarks. */
+  /**
+   * The commission procurement proposal pre remarks.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementProposalPreRemarks;
 
-  /** The commission procurement proposal reservation. */
+  /**
+   * The commission procurement proposal reservation.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementProposalReservation;
 
-  /** The commission procurement proposal reason given. */
+  /**
+   * The commission procurement proposal reason given.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementProposalReasonGiven;
 
-  /** The commission procurement decision recommendation. */
+  /**
+   * The commission procurement decision recommendation.
+   */
   @JsonView(View.Internal.class)
   private String commissionProcurementDecisionRecommendation;
 
@@ -234,118 +323,200 @@ public class SubmissionDTO {
   @JsonView(View.Internal.class)
   private Process oldProcess;
 
-  /** The current state. */
+  /**
+   * The current state.
+   */
   @JsonView(View.Internal.class)
   private TenderStatus currentState;
 
-  /** The current process. It is used to store the string value of Process in the rule. */
+  /**
+   * The current process. It is used to store the string value of Process in the rule.
+   */
   @JsonView(View.Internal.class)
   private String currentProcess;
 
-  /** The submission cancel. */
+  /**
+   * The submission cancel.
+   */
   @JsonView(View.Internal.class)
   private List<SubmissionCancelDTO> submissionCancel;
 
-  /** Whether field pm department name is updated. */
+  /**
+   * Whether field pm department name is updated.
+   */
   @JsonView(View.Internal.class)
   private Boolean isPmDepartmentNameUpdated;
 
-  /** Whether field pm external is updated. */
+  /**
+   * Whether field pm external is updated.
+   */
   @JsonView(View.Internal.class)
   private Boolean isPmExternalUpdated;
 
-  /** Whether field procedure is updated. */
+  /**
+   * Whether field procedure is updated.
+   */
   @JsonView(View.Internal.class)
   private Boolean isProcedureUpdated;
 
-  /** Whether field gatt two is updated. */
+  /**
+   * Whether field gatt two is updated.
+   */
   @JsonView(View.Internal.class)
   private Boolean isGattTwoUpdated;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @JsonView(View.Internal.class)
   private Timestamp createdOn;
 
-  /** The created by. */
+  /**
+   * The updated on.
+   */
+  @JsonView(View.Internal.class)
+  private Timestamp updatedOn;
+
+  /**
+   * The created by.
+   */
   @JsonView(View.Internal.class)
   private String createdBy;
 
-  /**
+  /*
    * Fields reportCompanies - reportAvailableDate - reportAmount - reportAmountTotal -
    * reportAwardedSubmittentName - reportAwardedSubmittentAmount are used only for the generation of
    * reports.
    */
 
-  /** The report companies. */
+  /**
+   * The report companies.
+   */
   @JsonView(View.Internal.class)
   private List<String> reportCompanies;
 
-  /** The report available Date. */
+  /**
+   * The report available Date.
+   */
   @JsonView(View.Internal.class)
   private Date reportAvailableDate;
 
-  /** The exclusion deadline. */
+  /**
+   * The exclusion deadline.
+   */
   @JsonView(View.Internal.class)
   private Date exclusionDeadline;
 
-  /** The report amount. */
+  /**
+   * The report amount.
+   */
   @JsonView(View.Internal.class)
   private List<BigDecimal> reportAmount;
 
-  /** The report awarded submittent. */
+  /**
+   * The report awarded submittent.
+   */
   @JsonView(View.Internal.class)
   private String reportAwardedSubmittentName;
 
-  /** The report awarded submittent amount. */
+  /**
+   * The report awarded submittent amount.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal reportAwardedSubmittentAmount;
 
-  /** The report amount total. */
+  /**
+   * The report amount total.
+   */
   @JsonView(View.Internal.class)
   private BigDecimal reportAmountTotal;
 
-  /** The status. */
+  /**
+   * The status.
+   */
   @JsonView(View.Internal.class)
   private String status;
 
-  /** The first level exclusion date. */
+  /**
+   * The first level exclusion date.
+   */
   private Date firstLevelExclusionDate;
 
-  /** The custom operating cost formula. */
+  /**
+   * The custom operating cost formula.
+   */
   @JsonView(View.Internal.class)
   private String customOperatingCostFormula;
 
-  /** The custom price formula. */
+  /**
+   * The custom price formula.
+   */
   @JsonView(View.Internal.class)
   private String customPriceFormula;
 
-  /** The examination is locked. */
+  /**
+   * The examination is locked.
+   */
   @JsonView(View.Internal.class)
   private Boolean examinationIsLocked;
 
-  /** The award is locked. */
+  /**
+   * The award is locked.
+   */
   @JsonView(View.Internal.class)
   private Boolean awardIsLocked;
-  
-  /** The examination locking timestamp. */
+
+  /**
+   * The examination locking timestamp.
+   */
   @JsonView(View.Internal.class)
   private Timestamp examinationLockedTime;
-  
-  /** The award locking timestamp. */
+
+  /**
+   * The award locking timestamp.
+   */
   @JsonView(View.Internal.class)
   private Timestamp awardLockedTime;
-  
-  /** The user who locked the examination. */
+
+  /**
+   * The user who locked the examination.
+   */
   @JsonView(View.Internal.class)
   private String examinationLockedBy;
-  
-  /** The user who locked the award. */
+
+  /**
+   * The user who locked the award.
+   */
   @JsonView(View.Internal.class)
   private String awardLockedBy;
-  
-  /** The is geko entry. */
+
+  /**
+   * The is geko entry.
+   */
   @JsonView(View.Internal.class)
   private Boolean isGekoEntryByManualAward;
+
+  /**
+   * The submittentListCheckedBy.
+   */
+  @JsonView(View.Internal.class)
+  private String submittentListCheckedBy;
+
+  /**
+   * The submittentListCheckedOn.
+   */
+  @JsonView(View.Internal.class)
+  private Long submittentListCheckedOn;
+  /**
+   * The legal hearing terminate.
+   */
+  private List<LegalHearingTerminateDTO> legalHearingTerminate;
+
+  /**
+   * The pageRequestedOn timestamp.
+   */
+  @JsonView(View.Internal.class)
+  private Timestamp pageRequestedOn;
 
   /**
    * Gets the report companies.
@@ -363,27 +534,6 @@ public class SubmissionDTO {
    */
   public void setReportCompanies(List<String> reportCompanies) {
     this.reportCompanies = reportCompanies;
-  }
-
-  /** The legal hearing terminate. */
-  private List<LegalHearingTerminateDTO> legalHearingTerminate;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
   }
 
   /**
@@ -1107,7 +1257,7 @@ public class SubmissionDTO {
    * @param commissionProcurementProposalBusiness the new commission procurement proposal business
    */
   public void setCommissionProcurementProposalBusiness(
-      BigDecimal commissionProcurementProposalBusiness) {
+    BigDecimal commissionProcurementProposalBusiness) {
     this.commissionProcurementProposalBusiness = commissionProcurementProposalBusiness;
   }
 
@@ -1142,12 +1292,13 @@ public class SubmissionDTO {
    * Sets the commission procurement proposal suitability audit dropdown.
    *
    * @param commissionProcurementProposalSuitabilityAuditDropdown the new commission procurement
-   *        proposal suitability audit dropdown
+   *                                                              proposal suitability audit
+   *                                                              dropdown
    */
   public void setCommissionProcurementProposalSuitabilityAuditDropdown(
-      String commissionProcurementProposalSuitabilityAuditDropdown) {
+    String commissionProcurementProposalSuitabilityAuditDropdown) {
     this.commissionProcurementProposalSuitabilityAuditDropdown =
-        commissionProcurementProposalSuitabilityAuditDropdown;
+      commissionProcurementProposalSuitabilityAuditDropdown;
   }
 
   /**
@@ -1163,12 +1314,12 @@ public class SubmissionDTO {
    * Sets the commission procurement proposal suitability audit text.
    *
    * @param commissionProcurementProposalSuitabilityAuditText the new commission procurement
-   *        proposal suitability audit text
+   *                                                          proposal suitability audit text
    */
   public void setCommissionProcurementProposalSuitabilityAuditText(
-      String commissionProcurementProposalSuitabilityAuditText) {
+    String commissionProcurementProposalSuitabilityAuditText) {
     this.commissionProcurementProposalSuitabilityAuditText =
-        commissionProcurementProposalSuitabilityAuditText;
+      commissionProcurementProposalSuitabilityAuditText;
   }
 
   /**
@@ -1184,10 +1335,10 @@ public class SubmissionDTO {
    * Sets the commission procurement proposal pre remarks.
    *
    * @param commissionProcurementProposalPreRemarks the new commission procurement proposal pre
-   *        remarks
+   *                                                remarks
    */
   public void setCommissionProcurementProposalPreRemarks(
-      String commissionProcurementProposalPreRemarks) {
+    String commissionProcurementProposalPreRemarks) {
     this.commissionProcurementProposalPreRemarks = commissionProcurementProposalPreRemarks;
   }
 
@@ -1204,10 +1355,10 @@ public class SubmissionDTO {
    * Sets the commission procurement proposal reservation.
    *
    * @param commissionProcurementProposalReservation the new commission procurement proposal
-   *        reservation
+   *                                                 reservation
    */
   public void setCommissionProcurementProposalReservation(
-      String commissionProcurementProposalReservation) {
+    String commissionProcurementProposalReservation) {
     this.commissionProcurementProposalReservation = commissionProcurementProposalReservation;
   }
 
@@ -1224,10 +1375,10 @@ public class SubmissionDTO {
    * Sets the commission procurement proposal reason given.
    *
    * @param commissionProcurementProposalReasonGiven the new commission procurement proposal reason
-   *        given
+   *                                                 given
    */
   public void setCommissionProcurementProposalReasonGiven(
-      String commissionProcurementProposalReasonGiven) {
+    String commissionProcurementProposalReasonGiven) {
     this.commissionProcurementProposalReasonGiven = commissionProcurementProposalReasonGiven;
   }
 
@@ -1280,10 +1431,10 @@ public class SubmissionDTO {
    * Sets the commission procurement decision recommendation.
    *
    * @param commissionProcurementDecisionRecommendation the new commission procurement decision
-   *        recommendation
+   *                                                    recommendation
    */
   public void setCommissionProcurementDecisionRecommendation(
-      String commissionProcurementDecisionRecommendation) {
+    String commissionProcurementDecisionRecommendation) {
     this.commissionProcurementDecisionRecommendation = commissionProcurementDecisionRecommendation;
   }
 
@@ -1668,8 +1819,8 @@ public class SubmissionDTO {
   }
 
   /**
-   *  Gets Examination locking time.
-   *  
+   * Gets Examination locking time.
+   *
    * @return Examination locking time.
    */
   public Timestamp getExaminationLockedTime() {
@@ -1678,7 +1829,7 @@ public class SubmissionDTO {
 
   /**
    * Sets the examination locking time.
-   * 
+   *
    * @param examinationLockedTime
    */
   public void setExaminationLockedTime(Timestamp examinationLockedTime) {
@@ -1687,17 +1838,17 @@ public class SubmissionDTO {
 
   /**
    * Gets Award locking time.
-   * 
+   *
    * @return Award locking time.
    */
   public Timestamp getAwardLockedTime() {
     return awardLockedTime;
   }
-  
+
   /**
    * Sets award locking time
-   *  
-   *  @param awardLockedTime
+   *
+   * @param awardLockedTime
    */
   public void setAwardLockedTime(Timestamp awardLockedTime) {
     this.awardLockedTime = awardLockedTime;
@@ -1705,6 +1856,7 @@ public class SubmissionDTO {
 
   /**
    * Gets the user who locked the examination.
+   *
    * @return the user who locked the examination.
    */
   public String getExaminationLockedBy() {
@@ -1713,17 +1865,17 @@ public class SubmissionDTO {
 
   /**
    * Sets the user who locks the examination
-   * 
+   *
    * @param examinationBy
    */
   public void setExaminationLockedBy(String examinationBy) {
     this.examinationLockedBy = examinationBy;
   }
 
-  
+
   /**
    * Gets the user who locks the award.
-   * 
+   *
    * @return the user who locks the award.
    */
   public String getAwardLockedBy() {
@@ -1732,80 +1884,146 @@ public class SubmissionDTO {
 
   /**
    * Sets the user who locks the award.
-   * 
+   *
    * @param awardLockedBy
    */
   public void setAwardLockedBy(String awardLockedBy) {
     this.awardLockedBy = awardLockedBy;
   }
-  
-  
 
-	/**
-	 * Gets the checks if is geko entry by manual award.
-	 *
-	 * @return the checks if is geko entry by manual award
-	 */
-	public Boolean getIsGekoEntryByManualAward() {
-		return isGekoEntryByManualAward;
-	}
 
-	/**
-	 * Sets the checks if is geko entry by manual award.
-	 *
-	 * @param isGekoEntryByManualAward the new checks if is geko entry by manual award
-	 */
-	public void setIsGekoEntryByManualAward(Boolean isGekoEntryByManualAward) {
-		this.isGekoEntryByManualAward = isGekoEntryByManualAward;
-	}
-
-/*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the checks if is geko entry by manual award.
+   *
+   * @return the checks if is geko entry by manual award
    */
-  @Override
-  public String toString() {
-    return "SubmissionDTO [id=" + id + ", description=" + description + ", process=" + process
-        + ", costEstimate=" + costEstimate + ", gattTwo=" + gattTwo + ", publicationDate="
-        + publicationDate + ", publicationDateDirectAward=" + publicationDateDirectAward
-        + ", publicationDateAward=" + publicationDateAward + ", pmDepartmentName="
-        + pmDepartmentName + ", pmExternal=" + pmExternal + ", isLocked=" + isLocked
-        + ", constructionPermit=" + constructionPermit + ", loanApproval=" + loanApproval
-        + ", firstDeadline=" + firstDeadline + ", secondDeadline=" + secondDeadline
-        + ", applicationOpeningDate=" + applicationOpeningDate + ", offerOpeningDate="
-        + offerOpeningDate + ", firstLoggedBy=" + firstLoggedBy + ", secondLoggedBy="
-        + secondLoggedBy + ", notes=" + notes + ", isServiceTender=" + isServiceTender
-        + ", isGekoEntry=" + isGekoEntry + ", minGrade=" + minGrade + ", maxGrade=" + maxGrade
-        + ", changeForSec=" + changeForSec + ", isLockedChanged=" + isLockedChanged
-        + ", aboveThreshold=" + aboveThreshold + ", awardMinGrade=" + awardMinGrade
-        + ", awardMaxGrade=" + awardMaxGrade + ", addedAwardRecipients=" + addedAwardRecipients
-        + ", evaluationThrough=" + evaluationThrough + ", commissionProcurementProposalDate="
-        + commissionProcurementProposalDate + ", commissionProcurementProposalBusiness="
-        + commissionProcurementProposalBusiness + ", commissionProcurementProposalObject="
-        + commissionProcurementProposalObject
-        + ", commissionProcurementProposalSuitabilityAuditDropdown="
-        + commissionProcurementProposalSuitabilityAuditDropdown
-        + ", commissionProcurementProposalSuitabilityAuditText="
-        + commissionProcurementProposalSuitabilityAuditText
-        + ", commissionProcurementProposalPreRemarks=" + commissionProcurementProposalPreRemarks
-        + ", commissionProcurementProposalReservation=" + commissionProcurementProposalReservation
-        + ", commissionProcurementProposalReasonGiven=" + commissionProcurementProposalReasonGiven
-        + ", commissionProcurementDecisionRecommendation="
-        + commissionProcurementDecisionRecommendation + ", oldProcess=" + oldProcess
-        + ", currentState=" + currentState + ", currentProcess=" + currentProcess
-        + ", isPmDepartmentNameUpdated=" + isPmDepartmentNameUpdated + ", isPmExternalUpdated="
-        + isPmExternalUpdated + ", isProcedureUpdated=" + isProcedureUpdated + ", isGattTwoUpdated="
-        + isGattTwoUpdated + ", createdOn=" + createdOn + ", createdBy=" + createdBy
-        + ", reportCompanies=" + reportCompanies + ", reportAvailableDate=" + reportAvailableDate
-        + ", exclusionDeadline=" + exclusionDeadline + ", reportAmount=" + reportAmount
-        + ", reportAwardedSubmittentName=" + reportAwardedSubmittentName
-        + ", reportAwardedSubmittentAmount=" + reportAwardedSubmittentAmount
-        + ", reportAmountTotal=" + reportAmountTotal + ", status=" + status
-        + ", firstLevelExclusionDate=" + firstLevelExclusionDate + ", customOperatingCostFormula="
-        + customOperatingCostFormula + ", customPriceFormula=" + customPriceFormula
-        + ", examinationIsLocked=" + examinationIsLocked + ", awardIsLocked=" + awardIsLocked
-        + ", legalHearingTerminate=" + legalHearingTerminate + "]";
+  public Boolean getIsGekoEntryByManualAward() {
+    return isGekoEntryByManualAward;
   }
 
+  /**
+   * Sets the checks if is geko entry by manual award.
+   *
+   * @param isGekoEntryByManualAward the new checks if is geko entry by manual award
+   */
+  public void setIsGekoEntryByManualAward(Boolean isGekoEntryByManualAward) {
+    this.isGekoEntryByManualAward = isGekoEntryByManualAward;
+  }
+
+  /**
+   * Gets the user who clicked the Submittentenliste prüfen button.
+   *
+   * @return the submittentListCheckedBy
+   */
+  public String getSubmittentListCheckedBy() {
+    return submittentListCheckedBy;
+  }
+
+  /**
+   * Sets the user who clicked the Submittentenliste prüfen button.
+   *
+   * @param submittentListCheckedBy the user who clicked the button
+   */
+  public void setSubmittentListCheckedBy(String submittentListCheckedBy) {
+    this.submittentListCheckedBy = submittentListCheckedBy;
+  }
+
+  /**
+   * Gets the timestamp of the Submittentenliste prüfen button click.
+   *
+   * @return the submittentListCheckedOn
+   */
+  public Long getSubmittentListCheckedOn() {
+    return submittentListCheckedOn;
+  }
+
+  /**
+   * Sets the timestamp of the Submittentenliste prüfen button click.
+   *
+   * @param submittentListCheckedOn the timestamp
+   */
+  public void setSubmittentListCheckedOn(Long submittentListCheckedOn) {
+    this.submittentListCheckedOn = submittentListCheckedOn;
+  }
+
+  /**
+   * Gets the pageRequestedOn.
+   *
+   * @return the pageRequestedOn
+   */
+  public Timestamp getPageRequestedOn() {
+    return pageRequestedOn;
+  }
+
+  /**
+   * Sets pageRequestedOn as the timestamp of the GET request.
+   *
+   * @param pageRequestedOn the pageRequestedOn
+   */
+  public void setPageRequestedOn(Timestamp pageRequestedOn) {
+    this.pageRequestedOn = pageRequestedOn;
+  }
+
+  /**
+   * Gets the updatedOn.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updatedOn.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "SubmissionDTO [id=" + super.getId() + ", version=" + super.getVersion()
+      + ", description=" + description + ", process=" + process
+      + ", costEstimate=" + costEstimate + ", gattTwo=" + gattTwo + ", publicationDate="
+      + publicationDate + ", publicationDateDirectAward=" + publicationDateDirectAward
+      + ", publicationDateAward=" + publicationDateAward + ", pmDepartmentName="
+      + pmDepartmentName + ", pmExternal=" + pmExternal + ", isLocked=" + isLocked
+      + ", constructionPermit=" + constructionPermit + ", loanApproval=" + loanApproval
+      + ", firstDeadline=" + firstDeadline + ", secondDeadline=" + secondDeadline
+      + ", applicationOpeningDate=" + applicationOpeningDate + ", offerOpeningDate="
+      + offerOpeningDate + ", firstLoggedBy=" + firstLoggedBy + ", secondLoggedBy="
+      + secondLoggedBy + ", notes=" + notes + ", isServiceTender=" + isServiceTender
+      + ", isGekoEntry=" + isGekoEntry + ", minGrade=" + minGrade + ", maxGrade=" + maxGrade
+      + ", changeForSec=" + changeForSec + ", isLockedChanged=" + isLockedChanged
+      + ", aboveThreshold=" + aboveThreshold + ", awardMinGrade=" + awardMinGrade
+      + ", awardMaxGrade=" + awardMaxGrade + ", addedAwardRecipients=" + addedAwardRecipients
+      + ", evaluationThrough=" + evaluationThrough + ", commissionProcurementProposalDate="
+      + commissionProcurementProposalDate + ", commissionProcurementProposalBusiness="
+      + commissionProcurementProposalBusiness + ", commissionProcurementProposalObject="
+      + commissionProcurementProposalObject
+      + ", commissionProcurementProposalSuitabilityAuditDropdown="
+      + commissionProcurementProposalSuitabilityAuditDropdown
+      + ", commissionProcurementProposalSuitabilityAuditText="
+      + commissionProcurementProposalSuitabilityAuditText
+      + ", commissionProcurementProposalPreRemarks=" + commissionProcurementProposalPreRemarks
+      + ", commissionProcurementProposalReservation=" + commissionProcurementProposalReservation
+      + ", commissionProcurementProposalReasonGiven=" + commissionProcurementProposalReasonGiven
+      + ", commissionProcurementDecisionRecommendation="
+      + commissionProcurementDecisionRecommendation + ", oldProcess=" + oldProcess
+      + ", currentState=" + currentState + ", currentProcess=" + currentProcess
+      + ", isPmDepartmentNameUpdated=" + isPmDepartmentNameUpdated + ", isPmExternalUpdated="
+      + isPmExternalUpdated + ", isProcedureUpdated=" + isProcedureUpdated + ", isGattTwoUpdated="
+      + isGattTwoUpdated + ", createdOn=" + createdOn + ", createdBy=" + createdBy
+      + ", reportCompanies=" + reportCompanies + ", reportAvailableDate=" + reportAvailableDate
+      + ", exclusionDeadline=" + exclusionDeadline + ", reportAmount=" + reportAmount
+      + ", reportAwardedSubmittentName=" + reportAwardedSubmittentName
+      + ", reportAwardedSubmittentAmount=" + reportAwardedSubmittentAmount
+      + ", reportAmountTotal=" + reportAmountTotal + ", status=" + status
+      + ", firstLevelExclusionDate=" + firstLevelExclusionDate + ", customOperatingCostFormula="
+      + customOperatingCostFormula + ", customPriceFormula=" + customPriceFormula
+      + ", examinationIsLocked=" + examinationIsLocked + ", awardIsLocked=" + awardIsLocked
+      + ", legalHearingTerminate=" + legalHearingTerminate + "]";
+  }
 }

@@ -13,16 +13,16 @@
 
 package ch.bern.submiss.services.impl.mappers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 import ch.bern.submiss.services.api.dto.CriterionDTO;
 import ch.bern.submiss.services.api.dto.SubcriterionDTO;
 import ch.bern.submiss.services.impl.model.CriterionEntity;
 import ch.bern.submiss.services.impl.model.SubcriterionEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(uses = {SubmissionMapper.class})
 public abstract class CriterionDTOMapper {
@@ -41,6 +41,7 @@ public abstract class CriterionDTOMapper {
 
     submission.setId(dto.getSubmission());
     criterionEntity.setId(dto.getId());
+    criterionEntity.setVersion(dto.getVersion());
     criterionEntity.setCriterionText(dto.getCriterionText());
     if (dto.getWeighting() != null) {
       criterionEntity.setWeighting(dto.getWeighting());
@@ -48,6 +49,12 @@ public abstract class CriterionDTOMapper {
     criterionEntity.setCriterionType(dto.getCriterionType());
     if (dto.getSubcriterion() != null) {
       criterionEntity.setSubcriteria(dtoToSubcriterionEntity(dto));
+    }
+    if (dto.getCreatedOn() != null) {
+      criterionEntity.setCreatedOn(dto.getCreatedOn());
+    }
+    if (dto.getUpdatedOn() != null) {
+      criterionEntity.setUpdatedOn(dto.getUpdatedOn());
     }
     return criterionEntity;
   }
@@ -69,6 +76,13 @@ public abstract class CriterionDTOMapper {
       if (subcriterionDTO.getWeighting() != null) {
         subcriterionEntity.setWeighting(subcriterionDTO.getWeighting());
       }
+      if (subcriterionDTO.getCreatedOn() != null) {
+        subcriterionEntity.setCreatedOn(subcriterionDTO.getCreatedOn());
+      }
+      if (subcriterionDTO.getUpdatedOn() != null) {
+        subcriterionEntity.setUpdatedOn(subcriterionDTO.getUpdatedOn());
+      }
+      subcriterionEntity.setVersion(subcriterionDTO.getVersion());
       subcriterionEntityList.add(subcriterionEntity);
     }
     return subcriterionEntityList;
@@ -91,6 +105,11 @@ public abstract class CriterionDTOMapper {
       if (subcriterionEntity.getWeighting() != null) {
         subcriterionDTO.setWeighting(subcriterionEntity.getWeighting());
       }
+      subcriterionDTO.setCreatedOn(subcriterionEntity.getCreatedOn());
+      if (subcriterionEntity.getUpdatedOn() != null) {
+        subcriterionDTO.setUpdatedOn(entity.getUpdatedOn());
+      }
+      subcriterionDTO.setVersion(subcriterionEntity.getVersion());
       subcriterionDTOList.add(subcriterionDTO);
     }
     return subcriterionDTOList;
@@ -131,6 +150,7 @@ public abstract class CriterionDTOMapper {
 
     criterionDTO.setSubmission(entitySubmissionId(entity));
     criterionDTO.setId(entity.getId());
+    criterionDTO.setVersion(entity.getVersion());
     criterionDTO.setCriterionText(entity.getCriterionText());
     if (entity.getWeighting() != null) {
       criterionDTO.setWeighting(entity.getWeighting());
@@ -138,6 +158,10 @@ public abstract class CriterionDTOMapper {
     criterionDTO.setCriterionType(entity.getCriterionType());
     if (entity.getSubcriteria() != null) {
       criterionDTO.setSubcriterion(entityToSubcriterionDTO(entity));
+    }
+    criterionDTO.setCreatedOn(entity.getCreatedOn());
+    if (entity.getUpdatedOn() != null) {
+      criterionDTO.setUpdatedOn(entity.getUpdatedOn());
     }
     return criterionDTO;
   }

@@ -14,47 +14,47 @@
 package ch.bern.submiss.services.api.dto;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /**
  * The Class OfferCriterionDTO.
  */
-public class OfferCriterionDTO {
+public class OfferCriterionDTO extends AbstractDTO {
 
-  /** The id. */
-  private String id;
-
-  /** The offer. */
+  /**
+   * The offer.
+   */
   private OfferDTO offer;
 
-  /** The criterion. */
+  /**
+   * The criterion.
+   */
   private CriterionDTO criterion;
 
-  /** The grade. */
+  /**
+   * The grade.
+   */
   private BigDecimal grade;
 
-  /** The score. */
+  /**
+   * The score.
+   */
   private BigDecimal score;
 
-  /** The is fulfilled. */
+  /**
+   * The is fulfilled.
+   */
   private Boolean isFulfilled;
 
   /**
-   * Gets the id.
-   *
-   * @return the id
+   * The created on.
    */
-  public String getId() {
-    return id;
-  }
+  private Timestamp createdOn;
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The updated on.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  private Timestamp updatedOn;
 
   /**
    * Gets the offer.
@@ -146,15 +146,46 @@ public class OfferCriterionDTO {
     this.isFulfilled = isFulfilled;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
+  /**
+   * Gets the created on.
+   *
+   * @return the createdOn
    */
-  @Override
-  public String toString() {
-    return "OfferCriterionDTO [id=" + id + ", grade=" + grade + ", score=" + score
-        + ", isFulfilled=" + isFulfilled + "]";
+  public Timestamp getCreatedOn() {
+    return createdOn;
   }
 
+  /**
+   * Sets the created on.
+   *
+   * @param createdOn the createdOn
+   */
+  public void setCreatedOn(Timestamp createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  /**
+   * Gets the updated on.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updated on.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "OfferCriterionDTO [id=" + super.getId() + ", version=" + super.getVersion() + ", grade="
+      + grade + ", score=" + score + ", isFulfilled=" + isFulfilled +
+      ", createdOn=" + createdOn + ", updatedOn=" +updatedOn + "]";
+  }
 }

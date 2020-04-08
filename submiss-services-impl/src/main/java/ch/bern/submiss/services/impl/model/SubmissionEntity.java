@@ -13,341 +13,460 @@
 
 package ch.bern.submiss.services.impl.model;
 
+import ch.bern.submiss.services.api.constants.ConstructionPermit;
+import ch.bern.submiss.services.api.constants.LoanApproval;
+import ch.bern.submiss.services.api.constants.Process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.GenericGenerator;
-import ch.bern.submiss.services.api.constants.ConstructionPermit;
-import ch.bern.submiss.services.api.constants.LoanApproval;
-import ch.bern.submiss.services.api.constants.Process;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class SubmissionEntity.
  */
 @Entity
 @Table(name = "SUB_TENDER")
-public class SubmissionEntity {
+public class SubmissionEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The project. */
+  /**
+   * The project.
+   */
   @ManyToOne
-  @Cascade({ CascadeType.SAVE_UPDATE})
+  @Cascade({CascadeType.SAVE_UPDATE})
   @JoinColumn(name = "FK_PROJECT")
   private ProjectEntity project;
 
-  /** The work type. */
+  /**
+   * The work type.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_HISTORY_WORK_TYPE")
   private MasterListValueEntity workType;
 
-  /** The description. */
+  /**
+   * The description.
+   */
   @Column(name = "DESCRIPTION")
   private String description;
 
-  /** The process. */
+  /**
+   * The process.
+   */
   @Column(name = "PROCESS")
   @Enumerated
   private Process process;
 
-  /** The cost estimate. */
+  /**
+   * The cost estimate.
+   */
   @Column(name = "COST_ESTIMATE")
   private BigDecimal costEstimate;
 
-  /** The process type. */
+  /**
+   * The process type.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_PROCESS_TYPE")
   private MasterListValueEntity processType;
 
-  /** The gatt two. */
+  /**
+   * The gatt two.
+   */
   @Column(name = "GATT_WTO")
   private Boolean gattTwo;
 
-  /** The publication date. */
+  /**
+   * The publication date.
+   */
   @Column(name = "PUBLICATION_DATE")
   private Date publicationDate;
 
-  /** The publication date direct award. */
+  /**
+   * The publication date direct award.
+   */
   @Column(name = "PUBLICATION_DATE_DIRECT_AWARD")
   private Date publicationDateDirectAward;
 
-  /** The publication date award. */
+  /**
+   * The publication date award.
+   */
   @Column(name = "PUBLICATION_DATE_AWARD")
   private Date publicationDateAward;
 
-  /** The procedure. */
+  /**
+   * The procedure.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_PM_ADMIN")
   private MasterListValueEntity procedure;
 
-  /** The pm department name. */
+  /**
+   * The pm department name.
+   */
   @Column(name = "PM_DEPARTMENT_NAME")
   private String pmDepartmentName;
 
-  /** The pm external. */
+  /**
+   * The pm external.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_PM_EXTERNAL")
-  @Cascade({ CascadeType.SAVE_UPDATE})
+  @Cascade({CascadeType.SAVE_UPDATE})
   private CompanyEntity pmExternal;
 
-  /** The is locked. */
+  /**
+   * The is locked.
+   */
   @Column(name = "IS_LOCKED")
   private Boolean isLocked;
 
-  /** The construction permit. */
+  /**
+   * The construction permit.
+   */
   @Column(name = "CONSTRUCTION_PERMIT", length = 4, columnDefinition = "TINYINT")
   @Enumerated
   private ConstructionPermit constructionPermit;
 
-  /** The loan approval. */
+  /**
+   * The loan approval.
+   */
   @Column(name = "LOAN_APPROVAL")
   @Enumerated
   private LoanApproval loanApproval;
 
-  /** The first deadline. */
+  /**
+   * The first deadline.
+   */
   @Column(name = "DEADLINE1")
   private Date firstDeadline;
 
-  /** The second deadline. */
+  /**
+   * The second deadline.
+   */
   @Column(name = "DEADLINE2")
   private Date secondDeadline;
 
-  /** The application opening date. */
+  /**
+   * The application opening date.
+   */
   @Column(name = "APPLICATION_OPENING_DATE")
   private Date applicationOpeningDate;
 
-  /** The offer opening date. */
+  /**
+   * The offer opening date.
+   */
   @Column(name = "OFFER_OPENING")
   private Date offerOpeningDate;
 
-  /** The first logged by. */
+  /**
+   * The first logged by.
+   */
   @Column(name = "LOGGED_BY")
   private String firstLoggedBy;
 
-  /** The second logged by. */
+  /**
+   * The second logged by.
+   */
   @Column(name = "LOGGED_BY_2")
   private String secondLoggedBy;
 
-  /** The notes. */
+  /**
+   * The notes.
+   */
   @Column(name = "NOTES")
   private String notes;
 
-  /** The is service tender. */
+  /**
+   * The is service tender.
+   */
   @Column(name = "IS_SERVICE_TENDER")
   private Boolean isServiceTender;
 
-  /** The is geko entry. */
+  /**
+   * The is geko entry.
+   */
   @Column(name = "IS_GEKO_ENTRY")
   private Boolean isGekoEntry;
 
-  /** The reason free award. */
+  /**
+   * The reason free award.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_REASON_NEGOTIATED_PROCEDURE")
   private MasterListValueEntity reasonFreeAward;
 
-  /** The submittents. */
+  /**
+   * The submittents.
+   */
   @OneToMany(mappedBy = "submissionId", fetch = FetchType.EAGER)
   @OrderBy(value = "SORT_ORDER ASC")
   private List<SubmittentEntity> submittents;
 
-  /** The min grade. */
+  /**
+   * The min grade.
+   */
   @Column(name = "MIN_GRADE")
   private BigDecimal minGrade;
 
-  /** The max grade. */
+  /**
+   * The max grade.
+   */
   @Column(name = "MAX_GRADE")
   private BigDecimal maxGrade;
 
-  /** The above threshold. */
+  /**
+   * The above threshold.
+   */
   @Column(name = "ABOVE_THRESHOLD")
   private Boolean aboveThreshold;
 
-  /** The award min grade. */
+  /**
+   * The award min grade.
+   */
   @Column(name = "AWARD_MIN_GRADE")
   private BigDecimal awardMinGrade;
 
-  /** The award max grade. */
+  /**
+   * The award max grade.
+   */
   @Column(name = "AWARD_MAX_GRADE")
   private BigDecimal awardMaxGrade;
 
-  /** The operating cost formula. */
+  /**
+   * The operating cost formula.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_MASTER_LIST_VALUE_HISTORY_OPERATING_COST_FORMULA")
   private MasterListValueEntity operatingCostFormula;
 
-  /** The price formula. */
+  /**
+   * The price formula.
+   */
   @ManyToOne
   @JoinColumn(name = "FK_MASTER_LIST_VALUE_HISTORY_PRICE_FORMULA")
   private MasterListValueEntity priceFormula;
 
-  /** The added award recipients. */
+  /**
+   * The added award recipients.
+   */
   @Column(name = "ADDED_AWARD_RECIPIENTS")
   private BigDecimal addedAwardRecipients;
 
-  /** The evaluation through. */
+  /**
+   * The evaluation through.
+   */
   @Column(name = "EVALUATION_THROUGH")
   private String evaluationThrough;
 
-  /** The commission procurement proposal date. */
+  /**
+   * The commission procurement proposal date.
+   */
   @Column(name = "CPP_DATE")
   private Date commissionProcurementProposalDate;
 
-  /** The commission procurement proposal business. */
+  /**
+   * The commission procurement proposal business.
+   */
   @Column(name = "CPP_BUSINESS")
   private BigDecimal commissionProcurementProposalBusiness;
 
-  /** The commission procurement proposal object. */
+  /**
+   * The commission procurement proposal object.
+   */
   @Column(name = "CPP_OBJECT")
   private String commissionProcurementProposalObject;
 
-  /** The commission procurement proposal suitability audit dropdown. */
+  /**
+   * The commission procurement proposal suitability audit dropdown.
+   */
   @Column(name = "CPP_SUITABILITY_AUDIT_DROPDOWN")
   private String commissionProcurementProposalSuitabilityAuditDropdown;
 
-  /** The commission procurement proposal suitability audit text. */
+  /**
+   * The commission procurement proposal suitability audit text.
+   */
   @Column(name = "CPP_SUITABILITY_AUDIT_TEXT")
   private String commissionProcurementProposalSuitabilityAuditText;
 
-  /** The commission procurement proposal pre remarks. */
+  /**
+   * The commission procurement proposal pre remarks.
+   */
   @Column(name = "CPP_PRE_REMARKS")
   private String commissionProcurementProposalPreRemarks;
 
-  /** The commission procurement proposal reservation. */
+  /**
+   * The commission procurement proposal reservation.
+   */
   @Column(name = "CPP_RESERVATION")
   private String commissionProcurementProposalReservation;
 
-  /** The commission procurement proposal reason given. */
+  /**
+   * The commission procurement proposal reason given.
+   */
   @Column(name = "CPP_REASON_GIVEN")
   private String commissionProcurementProposalReasonGiven;
 
-  /** The commission procurement decision recommendation. */
+  /**
+   * The commission procurement decision recommendation.
+   */
   @Column(name = "CPD_RECOMMENDATION")
   private String commissionProcurementDecisionRecommendation;
 
-  /** The submission cancel. */
+  /**
+   * The submission cancel.
+   */
   @OneToMany(mappedBy = "submission")
   private List<SubmissionCancelEntity> submissionCancel;
 
-  /** The created on. */
+  /**
+   * The created on.
+   */
   @Column(name = "CREATED_ON")
   private Timestamp createdOn;
 
-  /** The created by. */
+  /**
+   * The updated on.
+   */
+  @UpdateTimestamp
+  @Column(name = "UPDATED_ON", insertable = false)
+  private Timestamp updatedOn;
+
+  /**
+   * The created by.
+   */
   @Column(name = "CREATED_BY")
   private String createdBy;
 
-  /** Whether field pm department name is updated. */
+  /**
+   * Whether field pm department name is updated.
+   */
   @Column(name = "IS_PM_DEPARTMENT_NAME_UPDATED")
   private Boolean isPmDepartmentNameUpdated;
 
-  /** Whether field pm external is updated. */
+  /**
+   * Whether field pm external is updated.
+   */
   @Column(name = "IS_FK_PM_EXTERNAL_UPDATED")
   private Boolean isPmExternalUpdated;
 
-  /** Whether field procedure is updated. */
+  /**
+   * Whether field procedure is updated.
+   */
   @Column(name = "IS_FK_PM_ADMIN_UPDATED")
   private Boolean isProcedureUpdated;
 
-  /** Whether field gatt two is updated. */
+  /**
+   * Whether field gatt two is updated.
+   */
   @Column(name = "IS_GATT_WTO_UPDATED")
   private Boolean isGattTwoUpdated;
 
-  /** The legal hearing terminate. */
+  /**
+   * The legal hearing terminate.
+   */
   @OneToMany(mappedBy = "submission")
   private List<LegalHearingTerminateEntity> legalHearingTerminate;
 
-  /** The exclusion deadline. */
+  /**
+   * The exclusion deadline.
+   */
   @Column(name = "EXCLUSION_DEADLINE")
   private Date exclusionDeadline;
 
-  /** The status. */
+  /**
+   * The status.
+   */
   @Column(name = "STATUS")
   private String status;
 
-  /** The first level exclusion date. */
+  /**
+   * The first level exclusion date.
+   */
   @Column(name = "EXCLUSION_DEADLINE_FIRST_LEVEL")
   private Date firstLevelExclusionDate;
 
-  /** The custom price formula. */
+  /**
+   * The custom price formula.
+   */
   @Column(name = "CUSTOM_PRICE_FORMULA")
   private String customPriceFormula;
 
-  /** The custom operationg cost formula. */
+  /**
+   * The custom operationg cost formula.
+   */
   @Column(name = "CUSTOM_OPERATING_COST_FORMULA")
   private String customOperatingCostFormula;
 
-  /** The examination is locked. */
+  /**
+   * The examination is locked.
+   */
   @Column(name = "EXAMINATION_IS_LOCKED")
   private Boolean examinationIsLocked;
 
-  /** The award is locked. */
+  /**
+   * The award is locked.
+   */
   @Column(name = "AWARD_IS_LOCKED")
   private Boolean awardIsLocked;
-  
-  /** The examination locking timestamp. */
+
+  /**
+   * The examination locking timestamp.
+   */
   @Column(name = "EXAMINATION_LOCKED_TIME")
   private Timestamp examinationLockedTime;
-  
-  /** The award locking timestamp. */
+
+  /**
+   * The award locking timestamp.
+   */
   @Column(name = "AWARD_LOCKED_TIME")
   private Timestamp awardLockedTime;
-  
-  /** The user who locked the examination. */
+
+  /**
+   * The user who locked the examination.
+   */
   @Column(name = "EXAMINATION_LOCKED_BY")
   private String examinationLockedBy;
-  
-  /** The user who locked the award. */
+
+  /**
+   * The user who locked the award.
+   */
   @Column(name = "AWARD_LOCKED_BY")
   private String awardLockedBy;
-  
+
   @OneToMany(mappedBy = "tenderId")
   @OrderBy(value = "onDate DESC")
   private Set<TenderStatusHistoryEntity> tenderStatusHistory;
-  
-  /** The is geko entry by Manual award. */
-  @Column(name = "IS_GEKO_ENTRY_BY_MANUAL_AWARD")
-  private Boolean isGekoEntryByManualAward;
-  
-
-
-/**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
 
   /**
-   * Sets the id.
-   *
-   * @param id the new id
+   * The is geko entry by Manual award.
    */
-  public void setId(String id) {
-    this.id = id;
-  }
+  @Column(name = "IS_GEKO_ENTRY_BY_MANUAL_AWARD")
+  private Boolean isGekoEntryByManualAward;
+
+  /**
+   * The submittentListCheckedBy.
+   */
+  @Column(name = "SUBMITTENTLIST_CHECKED_BY")
+  private String submittentListCheckedBy;
+
+  /**
+   * The submittentListCheckedOn.
+   */
+  @Column(name = "SUBMITTENTLIST_CHECKED_ON")
+  private Long submittentListCheckedOn;
 
   /**
    * Gets the project.
@@ -1030,7 +1149,7 @@ public class SubmissionEntity {
    * @param commissionProcurementProposalBusiness the new commission procurement proposal business
    */
   public void setCommissionProcurementProposalBusiness(
-      BigDecimal commissionProcurementProposalBusiness) {
+    BigDecimal commissionProcurementProposalBusiness) {
     this.commissionProcurementProposalBusiness = commissionProcurementProposalBusiness;
   }
 
@@ -1065,12 +1184,13 @@ public class SubmissionEntity {
    * Sets the commission procurement proposal suitability audit dropdown.
    *
    * @param commissionProcurementProposalSuitabilityAuditDropdown the new commission procurement
-   *        proposal suitability audit dropdown
+   *                                                              proposal suitability audit
+   *                                                              dropdown
    */
   public void setCommissionProcurementProposalSuitabilityAuditDropdown(
-      String commissionProcurementProposalSuitabilityAuditDropdown) {
+    String commissionProcurementProposalSuitabilityAuditDropdown) {
     this.commissionProcurementProposalSuitabilityAuditDropdown =
-        commissionProcurementProposalSuitabilityAuditDropdown;
+      commissionProcurementProposalSuitabilityAuditDropdown;
   }
 
   /**
@@ -1086,12 +1206,12 @@ public class SubmissionEntity {
    * Sets the commission procurement proposal suitability audit text.
    *
    * @param commissionProcurementProposalSuitabilityAuditText the new commission procurement
-   *        proposal suitability audit text
+   *                                                          proposal suitability audit text
    */
   public void setCommissionProcurementProposalSuitabilityAuditText(
-      String commissionProcurementProposalSuitabilityAuditText) {
+    String commissionProcurementProposalSuitabilityAuditText) {
     this.commissionProcurementProposalSuitabilityAuditText =
-        commissionProcurementProposalSuitabilityAuditText;
+      commissionProcurementProposalSuitabilityAuditText;
   }
 
   /**
@@ -1107,10 +1227,10 @@ public class SubmissionEntity {
    * Sets the commission procurement proposal pre remarks.
    *
    * @param commissionProcurementProposalPreRemarks the new commission procurement proposal pre
-   *        remarks
+   *                                                remarks
    */
   public void setCommissionProcurementProposalPreRemarks(
-      String commissionProcurementProposalPreRemarks) {
+    String commissionProcurementProposalPreRemarks) {
     this.commissionProcurementProposalPreRemarks = commissionProcurementProposalPreRemarks;
   }
 
@@ -1127,10 +1247,10 @@ public class SubmissionEntity {
    * Sets the commission procurement proposal reservation.
    *
    * @param commissionProcurementProposalReservation the new commission procurement proposal
-   *        reservation
+   *                                                 reservation
    */
   public void setCommissionProcurementProposalReservation(
-      String commissionProcurementProposalReservation) {
+    String commissionProcurementProposalReservation) {
     this.commissionProcurementProposalReservation = commissionProcurementProposalReservation;
   }
 
@@ -1147,10 +1267,10 @@ public class SubmissionEntity {
    * Sets the commission procurement proposal reason given.
    *
    * @param commissionProcurementProposalReasonGiven the new commission procurement proposal reason
-   *        given
+   *                                                 given
    */
   public void setCommissionProcurementProposalReasonGiven(
-      String commissionProcurementProposalReasonGiven) {
+    String commissionProcurementProposalReasonGiven) {
     this.commissionProcurementProposalReasonGiven = commissionProcurementProposalReasonGiven;
   }
 
@@ -1167,10 +1287,10 @@ public class SubmissionEntity {
    * Sets the commission procurement decision recommendation.
    *
    * @param commissionProcurementDecisionRecommendation the new commission procurement decision
-   *        recommendation
+   *                                                    recommendation
    */
   public void setCommissionProcurementDecisionRecommendation(
-      String commissionProcurementDecisionRecommendation) {
+    String commissionProcurementDecisionRecommendation) {
     this.commissionProcurementDecisionRecommendation = commissionProcurementDecisionRecommendation;
   }
 
@@ -1378,7 +1498,7 @@ public class SubmissionEntity {
   public MasterListValueHistoryEntity getOperatingCostFormulaHistory(Date fromDate) {
 
     for (MasterListValueHistoryEntity historyEntity : operatingCostFormula
-        .getMasterListValueHistory()) {
+      .getMasterListValueHistory()) {
       if (historyEntity.getFromDate().before(fromDate)) {
         return historyEntity;
       }
@@ -1430,7 +1550,7 @@ public class SubmissionEntity {
   public MasterListValueHistoryEntity getRecentReasonFreeAwardHistory() {
     if (null != reasonFreeAward.getMasterListValueHistory()) {
       for (MasterListValueHistoryEntity reasonFreeAwardHistoryEntity : reasonFreeAward
-          .getMasterListValueHistory()) {
+        .getMasterListValueHistory()) {
         if (reasonFreeAwardHistoryEntity.getToDate() == null) {
           return reasonFreeAwardHistoryEntity;
         }
@@ -1446,7 +1566,7 @@ public class SubmissionEntity {
    */
   public MasterListValueHistoryEntity getRecentOperatingCostFormulaHistory() {
     for (MasterListValueHistoryEntity operatingCostFormulaHistoryEntity : operatingCostFormula
-        .getMasterListValueHistory()) {
+      .getMasterListValueHistory()) {
       if (operatingCostFormulaHistoryEntity.getToDate() == null) {
         return operatingCostFormulaHistoryEntity;
       }
@@ -1461,7 +1581,7 @@ public class SubmissionEntity {
    */
   public MasterListValueHistoryEntity getRecentPriceFormulaHistory() {
     for (MasterListValueHistoryEntity priceFormulaHistoryEntity : priceFormula
-        .getMasterListValueHistory()) {
+      .getMasterListValueHistory()) {
       if (priceFormulaHistoryEntity.getToDate() == null) {
         return priceFormulaHistoryEntity;
       }
@@ -1476,7 +1596,7 @@ public class SubmissionEntity {
    */
   public MasterListValueHistoryEntity getRecentWorkTypeHistory() {
     for (MasterListValueHistoryEntity workTypeHistoryEntity : workType
-        .getMasterListValueHistory()) {
+      .getMasterListValueHistory()) {
       if (workTypeHistoryEntity.getToDate() == null) {
         return workTypeHistoryEntity;
       }
@@ -1490,8 +1610,11 @@ public class SubmissionEntity {
    * @return the recent procedure history
    */
   public MasterListValueHistoryEntity getRecentProcedureHistory() {
+    if (procedure == null) {
+      return new MasterListValueHistoryEntity();
+    }
     for (MasterListValueHistoryEntity procedureHistoryEntity : procedure
-        .getMasterListValueHistory()) {
+      .getMasterListValueHistory()) {
       if (procedureHistoryEntity.getToDate() == null) {
         return procedureHistoryEntity;
       }
@@ -1506,7 +1629,7 @@ public class SubmissionEntity {
    */
   public MasterListValueHistoryEntity getRecentProcessTypeHistory() {
     for (MasterListValueHistoryEntity processTypeHistoryEntity : processType
-        .getMasterListValueHistory()) {
+      .getMasterListValueHistory()) {
       if (processTypeHistoryEntity.getToDate() == null) {
         return processTypeHistoryEntity;
       }
@@ -1642,8 +1765,8 @@ public class SubmissionEntity {
   }
 
   /**
-   *  Gets Examination locking time.
-   *  
+   * Gets Examination locking time.
+   *
    * @return Examination locking time.
    */
   public Timestamp getExaminationLockedTime() {
@@ -1652,7 +1775,7 @@ public class SubmissionEntity {
 
   /**
    * Sets the examination locking time.
-   * 
+   *
    * @param examinationLockedTime
    */
   public void setExaminationLockedTime(Timestamp examinationLockedTime) {
@@ -1661,17 +1784,17 @@ public class SubmissionEntity {
 
   /**
    * Gets Award locking time.
-   * 
+   *
    * @return Award locking time.
    */
   public Timestamp getAwardLockedTime() {
     return awardLockedTime;
   }
-  
+
   /**
    * Sets award locking time
-   *  
-   *  @param awardLockedTime
+   *
+   * @param awardLockedTime
    */
   public void setAwardLockedTime(Timestamp awardLockedTime) {
     this.awardLockedTime = awardLockedTime;
@@ -1679,6 +1802,7 @@ public class SubmissionEntity {
 
   /**
    * Gets the user who locked the examination.
+   *
    * @return the user who locked the examination.
    */
   public String getExaminationLockedBy() {
@@ -1687,17 +1811,17 @@ public class SubmissionEntity {
 
   /**
    * Sets the user who locks the examination
-   * 
+   *
    * @param examinationBy
    */
   public void setExaminationLockedBy(String examinationBy) {
     this.examinationLockedBy = examinationBy;
   }
 
-  
+
   /**
    * Gets the user who locks the award.
-   * 
+   *
    * @return the user who locks the award.
    */
   public String getAwardLockedBy() {
@@ -1706,91 +1830,138 @@ public class SubmissionEntity {
 
   /**
    * Sets the user who locks the award.
-   * 
+   *
    * @param awardLockedBy
    */
   public void setAwardLockedBy(String awardLockedBy) {
     this.awardLockedBy = awardLockedBy;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  @Override
-  public String toString() {
-    return "SubmissionEntity [id=" + id + ",  description=" + description + ",  costEstimate="
-        + costEstimate + ",  gattTwo=" + gattTwo + ", publicationDate=" + publicationDate
-        + ", publicationDateDirectAward=" + publicationDateDirectAward + ", publicationDateAward="
-        + publicationDateAward + ",  pmDepartmentName=" + pmDepartmentName + ", isLocked="
-        + isLocked + ", loanApproval=" + loanApproval + ", firstDeadline=" + firstDeadline
-        + ", secondDeadline=" + secondDeadline + ", applicationOpeningDate="
-        + applicationOpeningDate + ", offerOpeningDate=" + offerOpeningDate + ", firstLoggedBy="
-        + firstLoggedBy + ", secondLoggedBy=" + secondLoggedBy + ", notes=" + notes
-        + ", isServiceTender=" + isServiceTender + ", isGekoEntry=" + isGekoEntry + ", minGrade="
-        + minGrade + ", maxGrade=" + maxGrade + ", aboveThreshold=" + aboveThreshold
-        + ", awardMinGrade=" + awardMinGrade + ", awardMaxGrade=" + awardMaxGrade
-        + ",  addedAwardRecipients=" + addedAwardRecipients + ", evaluationThrough="
-        + evaluationThrough + ", commissionProcurementProposalDate="
-        + commissionProcurementProposalDate + ", commissionProcurementProposalBusiness="
-        + commissionProcurementProposalBusiness + ", commissionProcurementProposalObject="
-        + commissionProcurementProposalObject
-        + ", commissionProcurementProposalSuitabilityAuditDropdown="
-        + commissionProcurementProposalSuitabilityAuditDropdown
-        + ", commissionProcurementProposalSuitabilityAuditText="
-        + commissionProcurementProposalSuitabilityAuditText
-        + ", commissionProcurementProposalPreRemarks=" + commissionProcurementProposalPreRemarks
-        + ", commissionProcurementProposalReservation=" + commissionProcurementProposalReservation
-        + ", commissionProcurementProposalReasonGiven=" + commissionProcurementProposalReasonGiven
-        + ", commissionProcurementDecisionRecommendation="
-        + commissionProcurementDecisionRecommendation + ",  createdOn=" + createdOn + ", createdBy="
-        + createdBy + ", isPmDepartmentNameUpdated=" + isPmDepartmentNameUpdated
-        + ", isPmExternalUpdated=" + isPmExternalUpdated + ", isProcedureUpdated="
-        + isProcedureUpdated + ", isGattTwoUpdated=" + isGattTwoUpdated + ",  exclusionDeadline="
-        + exclusionDeadline + ", status=" + status + ", firstLevelExclusionDate="
-        + firstLevelExclusionDate + ", customPriceFormula=" + customPriceFormula
-        + ", customOperatingCostFormula=" + customOperatingCostFormula + ", examinationIsLocked="
-        + examinationIsLocked + ", awardIsLocked=" + awardIsLocked + "]";
-  }
-  
-
   /**
    * Gets the tender status history.
    *
    * @return the tender status history
    */
-	public Set<TenderStatusHistoryEntity> getTenderStatusHistory() {
-		return tenderStatusHistory;
-	}
+  public Set<TenderStatusHistoryEntity> getTenderStatusHistory() {
+    return tenderStatusHistory;
+  }
 
-/**
- * Sets the tender status history.
- *
- * @param tenderStatusHistory the new tender status history
- */
-	public void setTenderStatusHistory(Set<TenderStatusHistoryEntity> tenderStatusHistory) {
-		this.tenderStatusHistory = tenderStatusHistory;
-	}
-	
-	
-	/**
-	 * Gets the checks if is geko entry by manual award.
-	 *
-	 * @return the checks if is geko entry by manual award
-	 */
-	public Boolean getIsGekoEntryByManualAward() {
-		return isGekoEntryByManualAward;
-	}
+  /**
+   * Sets the tender status history.
+   *
+   * @param tenderStatusHistory the new tender status history
+   */
+  public void setTenderStatusHistory(Set<TenderStatusHistoryEntity> tenderStatusHistory) {
+    this.tenderStatusHistory = tenderStatusHistory;
+  }
 
-	/**
-	 * Sets the checks if is geko entry by manual award.
-	 *
-	 * @param isGekoEntryByManualAward the new checks if is geko entry by manual award
-	 */
-	public void setIsGekoEntryByManualAward(Boolean isGekoEntryByManualAward) {
-		this.isGekoEntryByManualAward = isGekoEntryByManualAward;
-	}
-	
-	
+
+  /**
+   * Gets the checks if is geko entry by manual award.
+   *
+   * @return the checks if is geko entry by manual award
+   */
+  public Boolean getIsGekoEntryByManualAward() {
+    return isGekoEntryByManualAward;
+  }
+
+  /**
+   * Sets the checks if is geko entry by manual award.
+   *
+   * @param isGekoEntryByManualAward the new checks if is geko entry by manual award
+   */
+  public void setIsGekoEntryByManualAward(Boolean isGekoEntryByManualAward) {
+    this.isGekoEntryByManualAward = isGekoEntryByManualAward;
+  }
+
+  /**
+   * Gets the user who clicked the Submittentenliste prüfen button.
+   *
+   * @return the submittentListCheckedBy
+   */
+  public String getSubmittentListCheckedBy() {
+    return submittentListCheckedBy;
+  }
+
+  /**
+   * Sets the user who clicked the Submittentenliste prüfen button.
+   *
+   * @param submittentListCheckedBy the user who clicked the button
+   */
+  public void setSubmittentListCheckedBy(String submittentListCheckedBy) {
+    this.submittentListCheckedBy = submittentListCheckedBy;
+  }
+
+  /**
+   * Gets the timestamp of the Submittentenliste prüfen button click.
+   *
+   * @return the submittentListCheckedOn
+   */
+  public Long getSubmittentListCheckedOn() {
+    return submittentListCheckedOn;
+  }
+
+  /**
+   * Sets the timestamp of the Submittentenliste prüfen button click.
+   *
+   * @param submittentListCheckedOn the timestamp
+   */
+  public void setSubmittentListCheckedOn(Long submittentListCheckedOn) {
+    this.submittentListCheckedOn = submittentListCheckedOn;
+  }
+
+  /**
+   * Gets the updatedOn.
+   *
+   * @return the updatedOn
+   */
+  public Timestamp getUpdatedOn() {
+    return updatedOn;
+  }
+
+  /**
+   * Sets the updatedOn.
+   *
+   * @param updatedOn the updatedOn
+   */
+  public void setUpdatedOn(Timestamp updatedOn) {
+    this.updatedOn = updatedOn;
+  }
+
+  @Override
+  public String toString() {
+    return "SubmissionEntity [id=" + super.getId() + ", version=" + super.getVersion()
+      + ",  description=" + description + ",  costEstimate="
+      + costEstimate + ",  gattTwo=" + gattTwo + ", publicationDate=" + publicationDate
+      + ", publicationDateDirectAward=" + publicationDateDirectAward + ", publicationDateAward="
+      + publicationDateAward + ",  pmDepartmentName=" + pmDepartmentName + ", isLocked="
+      + isLocked + ", loanApproval=" + loanApproval + ", firstDeadline=" + firstDeadline
+      + ", secondDeadline=" + secondDeadline + ", applicationOpeningDate="
+      + applicationOpeningDate + ", offerOpeningDate=" + offerOpeningDate + ", firstLoggedBy="
+      + firstLoggedBy + ", secondLoggedBy=" + secondLoggedBy + ", notes=" + notes
+      + ", isServiceTender=" + isServiceTender + ", isGekoEntry=" + isGekoEntry + ", minGrade="
+      + minGrade + ", maxGrade=" + maxGrade + ", aboveThreshold=" + aboveThreshold
+      + ", awardMinGrade=" + awardMinGrade + ", awardMaxGrade=" + awardMaxGrade
+      + ",  addedAwardRecipients=" + addedAwardRecipients + ", evaluationThrough="
+      + evaluationThrough + ", commissionProcurementProposalDate="
+      + commissionProcurementProposalDate + ", commissionProcurementProposalBusiness="
+      + commissionProcurementProposalBusiness + ", commissionProcurementProposalObject="
+      + commissionProcurementProposalObject
+      + ", commissionProcurementProposalSuitabilityAuditDropdown="
+      + commissionProcurementProposalSuitabilityAuditDropdown
+      + ", commissionProcurementProposalSuitabilityAuditText="
+      + commissionProcurementProposalSuitabilityAuditText
+      + ", commissionProcurementProposalPreRemarks=" + commissionProcurementProposalPreRemarks
+      + ", commissionProcurementProposalReservation=" + commissionProcurementProposalReservation
+      + ", commissionProcurementProposalReasonGiven=" + commissionProcurementProposalReasonGiven
+      + ", commissionProcurementDecisionRecommendation="
+      + commissionProcurementDecisionRecommendation + ",  createdOn=" + createdOn + ", createdBy="
+      + createdBy + ", isPmDepartmentNameUpdated=" + isPmDepartmentNameUpdated
+      + ", isPmExternalUpdated=" + isPmExternalUpdated + ", isProcedureUpdated="
+      + isProcedureUpdated + ", isGattTwoUpdated=" + isGattTwoUpdated + ",  exclusionDeadline="
+      + exclusionDeadline + ", status=" + status + ", firstLevelExclusionDate="
+      + firstLevelExclusionDate + ", customPriceFormula=" + customPriceFormula
+      + ", customOperatingCostFormula=" + customOperatingCostFormula + ", examinationIsLocked="
+      + examinationIsLocked + ", awardIsLocked=" + awardIsLocked + "]";
+  }
 }

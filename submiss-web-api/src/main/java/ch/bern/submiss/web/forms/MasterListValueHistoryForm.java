@@ -13,21 +13,15 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.sql.Timestamp;
 import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * The Class MasterListValueHistoryForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MasterListValueHistoryForm {
-
-  /**
-   * The id.
-   */
-  private String id;
+public class MasterListValueHistoryForm extends AbstractForm {
 
   /**
    * The value 1.
@@ -83,24 +77,6 @@ public class MasterListValueHistoryForm {
    * The tenant logo.
    */
   private byte[] tenantLogo;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the value 1.
@@ -302,7 +278,7 @@ public class MasterListValueHistoryForm {
 
   @Override
   public String toString() {
-    return "MasterListValueHistoryForm [id=" + id + ", value1=" + value1 + ", active=" + active
+    return "MasterListValueHistoryForm [value1=" + value1 + ", active=" + active
       + ", tenant=" + tenant + ", modifiedOn=" + modifiedOn + ", internalVersion="
       + internalVersion + ", value2=" + value2 + ", fromDate=" + fromDate + ", toDate=" + toDate
       + ", masterListValueId=" + masterListValueId + "]";

@@ -136,6 +136,7 @@
     vm.printDocument = printDocument;
     vm.printDocuments = printDocuments;
     vm.printAllowedFiles = printAllowedFiles;
+    vm.getCompanyTask = getCompanyTask;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -162,6 +163,7 @@
       vm.secCompanyDocumentEditProperties = AppService
         .isOperationPermitted(
           AppConstants.OPERATION.COMPANY_DOCUMENT_EDIT_PROPERTIES, null);
+      vm.getCompanyTask($stateParams.id);
     }
     /***********************************************************************
      * $scope destroy
@@ -194,6 +196,16 @@
     function readCompany(id) {
       CompanyService.readCompany(id).success(function (data) {
         vm.data.company = data;
+      }).error(function (response, status) {});
+    }
+
+    function getCompanyTask(companyId) {
+      TasksService.getCompanyTask(companyId).success(function (data) {
+        var name = (data.firstName != null && data.lastName != null) ? data.firstName + ' ' + data.lastName : null;
+        vm.data.companyTask = {
+          createdOn: data.createdOn,
+          createdBy: name
+        };
       }).error(function (response, status) {});
     }
 

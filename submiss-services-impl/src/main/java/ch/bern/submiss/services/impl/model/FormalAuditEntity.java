@@ -15,61 +15,41 @@ package ch.bern.submiss.services.impl.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * The Class FormalAuditEntity.
  */
 @Entity
 @Table(name = "SUB_FORMAL_AUDIT")
-public class FormalAuditEntity {
+public class FormalAuditEntity extends AbstractEntity {
 
-  /** The id. */
-  @Id
-  @GeneratedValue(generator = "uuid1")
-  @GenericGenerator(name = "uuid1", strategy = "uuid2")
-  private String id;
-
-  /** The submittent. */
+  /**
+   * The submittent.
+   */
   @OneToOne
   @JoinColumn(name = "FK_TENDERER")
   private SubmittentEntity submittent;
 
-  /** The exists exclusion reasons. */
+  /**
+   * The exists exclusion reasons.
+   */
   @Column(name = "EXISTS_EXCLUSION_REASONS")
   private Boolean existsExclusionReasons;
 
-  /** The formal examination fulfilled. */
+  /**
+   * The formal examination fulfilled.
+   */
   @Column(name = "FORMAL_EXAMINATION_FULFILLED")
   private Boolean formalExaminationFulfilled;
 
-  /** The level. */
+  /**
+   * The level.
+   */
   @Column(name = "LEVEL")
   private Integer level;
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id the new id
-   */
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * Gets the submittent.
