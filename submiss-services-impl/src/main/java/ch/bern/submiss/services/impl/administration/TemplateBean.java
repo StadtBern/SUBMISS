@@ -1217,7 +1217,7 @@ public class TemplateBean extends BaseService {
    * @param offers the offers
    * @return the number of awarded companies
    */
-  private int getAwardedNumber(List<SubmittentOfferDTO> offers) {
+  public int getAwardedNumber(List<SubmittentOfferDTO> offers) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getAwardedNumber, Parameters: offers: {0}", offers);

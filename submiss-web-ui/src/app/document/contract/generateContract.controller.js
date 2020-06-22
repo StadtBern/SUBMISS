@@ -25,7 +25,7 @@
 
   /** @ngInject */
   function GenerateContractController($scope, QFormJSRValidation, AppService,
-    $uibModalInstance, SubmissionService, DocumentService, $stateParams,
+    AppConstants, $uibModalInstance, SubmissionService, DocumentService, $stateParams,
     template, $state, submission, $uibModal, createAndPrintDocument) {
     /***********************************************************************
      * Local variables.
@@ -74,7 +74,11 @@
               printDocuments(data);
             }
           }).error(function (response, status) {
-            AppService.setPaneShown(true);
+            AppService.setPaneShown(false);
+            if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) {
+              QFormJSRValidation.markErrors($scope,
+                $scope.generateContractCtrl.requestForm, response);
+            }
           });
       } else {
         DocumentService
@@ -93,6 +97,12 @@
                   AppService.setPaneShown(false);
                   if (createAndPrintDocument) {
                     printDocuments(data);
+                  }
+                }).error(function (response, status) {
+                  AppService.setPaneShown(false);
+                  if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) {
+                    QFormJSRValidation.markErrors($scope,
+                      $scope.generateContractCtrl.requestForm, response);
                   }
                 });
             }
@@ -174,7 +184,13 @@
                 if (createAndPrintDocument) {
                   printDocuments(data);
                 }
-              }).error(function (response, status) {});
+              }).error(function (response, status) {
+                AppService.setPaneShown(false);
+                if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) {
+                  QFormJSRValidation.markErrors($scope,
+                    $scope.generateContractCtrl.requestForm, response);
+                }
+              });
           } else {
             return false;
           }

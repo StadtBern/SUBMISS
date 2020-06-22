@@ -82,6 +82,7 @@
     }];
     vm.moreThanOneError = false;
     vm.publicationDateDirectAwardEnabled = false;
+    vm.pmExternalChanged = false;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
@@ -105,6 +106,8 @@
     vm.genericDisable = genericDisable;
     vm.setApplicationOpeningDate = setApplicationOpeningDate;
     vm.deactivateGekoEnty = deactivateGekoEnty;
+    vm.deleteCompany = deleteCompany;
+    vm.noAwardCheckboxDisabled = noAwardCheckboxDisabled;
     // Activating the controller.
     activate();
 
@@ -244,6 +247,7 @@
             vm.submission.description = '';
           }
           vm.submission.project = vm.project;
+          vm.submission.noAwardTender = false;
           SubmissionService
             .createSubmission(vm.submission)
             .success(function (data, status) {
@@ -305,8 +309,8 @@
       }
     }
 
-    function closeWindow(dirtyflag) {
-      if (dirtyflag) {
+    function closeWindow() {
+      if (vm.submissionForm.$dirty || vm.pmExternalChanged) {
         var closeSubmissionModal = $uibModal
           .open({
             template: '<div class="modal-header">' +
@@ -364,12 +368,19 @@
         return addCompany.result.then(function (response) {
           vm.companyList = [];
           vm.companyList = response;
+          vm.pmExternalChanged = true;
           for (var i = 0; i < vm.companyList.length; i++) {
             vm.submission.pmExternal = vm.companyList[i];
           }
         });
       }
       return null;
+    }
+
+    function deleteCompany() {
+      vm.submission.pmExternal = null;
+      vm.moreThanOneError = false;
+      vm.pmExternalChanged = true;
     }
 
     function loadProcedures() {
@@ -534,6 +545,14 @@
           vm.submission.process === 'NEGOTIATED_PROCEDURE_WITH_COMPETITION') &&
         vm.currentStatus >= vm.status.MANUAL_AWARD_COMPLETED &&
         vm.submission.aboveThreshold === true);
+    }
+
+    function noAwardCheckboxDisabled() {
+      return vm.submission.process === vm.process.NEGOTIATED_PROCEDURE || vm.submission.process === vm.process.NEGOTIATED_PROCEDURE_WITH_COMPETITION ||
+        (vm.submission.process != vm.process.SELECTIVE && vm.currentStatus < vm.status.SUBMITTENT_LIST_CREATED) ||
+        (vm.submission.process === vm.process.SELECTIVE && vm.currentStatus < vm.status.APPLICANTS_LIST_CREATED) ||
+        vm.currentStatus >= vm.status.PROCEDURE_COMPLETED ||
+        vm.currentStatus >= vm.status.PROCEDURE_CANCELED;
     }
   }
 })();

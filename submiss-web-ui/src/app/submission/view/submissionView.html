@@ -99,7 +99,11 @@
 								| date:'dd.MM.yyyy'}}</dd>
                 <dt>Zuschlagspublikation</dt>
                 <dd>{{submissionViewCtr.data.submission.publicationDateAward
-								| date:'dd.MM.yyyy'}}</dd>
+                | date:'dd.MM.yyyy'}}</dd>
+                <dl>
+                  <dt ng-style="{'color': '#a94442'}" ng-if="submissionViewCtr.data.submission.noAwardTender">
+                    Kein Zuschlag</dt>
+                </dl>
                 <br>
                 <br>
                 <dt>Submissionsbemerkung</dt>
@@ -126,7 +130,8 @@
                 <dt>Kreditbewilligung</dt>
                 <dd translate>{{submissionViewCtr.data.submission.loanApproval}}</dd>
                 <dt>Verfahrensabbruch</dt>
-                <dd ng-if="submissionViewCtr.currentStatus === submissionViewCtr.status.PROCEDURE_CANCELED || submissionViewCtr.isCancelledBeforeClose">
+                <dd
+                  ng-if="submissionViewCtr.currentStatus === submissionViewCtr.status.PROCEDURE_CANCELED || submissionViewCtr.isCancelledBeforeClose">
                   {{submissionViewCtr.cancelledMessageStart}}
                   {{submissionViewCtr.availableDateOfCancelledSubmission | date:'dd.MM.yyyy'}}</dd>
                 <dd ng-if="submissionViewCtr.currentStatus !== submissionViewCtr.status.PROCEDURE_CANCELED"></dd>

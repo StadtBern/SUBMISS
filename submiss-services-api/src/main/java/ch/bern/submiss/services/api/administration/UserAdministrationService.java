@@ -20,10 +20,8 @@ import com.eurodyn.qlack2.fuse.aaa.api.criteria.UserSearchCriteria;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserAttributeDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The Interface UserAdministrationService.
@@ -121,12 +119,14 @@ public interface UserAdministrationService {
   /**
    * Checks for optimistic lock errors when updating the user.
    *
-   * @param userId      the userId
-   * @param userVersion the userVersion
-   * @return the error
+   * @param userId                      the userId
+   * @param oldGroupId                  the oldGroupId
+   * @param userVersion                 the userVersion
+   * @param functionVersion             the functionVersion
+   * @param secondaryDepartmentsVersion the secondaryDepartmentsVersion
    */
-  Set<ValidationError> editUserOptimisticLock(String userId, Long userVersion, Long functionVersion,
-    Long secondaryDepartmentsVersion);
+  void editUserOptimisticLock(String userId, String oldGroupId, Long userVersion,
+    Long functionVersion, Long secondaryDepartmentsVersion);
 
   /**
    * Update user group by name.

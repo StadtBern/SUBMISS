@@ -19,7 +19,7 @@
   <parent>
     <groupId>ch.bern.submiss</groupId>
     <artifactId>submiss</artifactId>
-    <version>1.7.0</version>    <relativePath>../</relativePath>
+    <version>1.8.0</version>    <relativePath>../</relativePath>
   </parent>
 
   <artifactId>submiss-web-ui</artifactId>

@@ -41,7 +41,7 @@ rule "PT02"
 	then [commissionProcurementProposalObject]
 		placeholderMappings.put("ba_proc_object", "");
 	then [commissionProcurementProposalSuitabilityAuditText]
-		placeholderMappings.put("ba_process_exclusion", "");
+		placeholderMappings.put("ba_process_exclusion", "keiner");
 	then [commissionProcurementProposalSuitabilityAuditDropdown]
 		placeholderMappings.put("ba_evaluation", "");
 	then [commissionProcurementProposalDateFill]

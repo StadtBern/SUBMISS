@@ -15,9 +15,7 @@ package ch.bern.submiss.services.api.administration;
 
 import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.List;
-import java.util.Set;
 
 public interface SDDepartmentService {
 
@@ -79,7 +77,7 @@ public interface SDDepartmentService {
    *
    * @param departmentHistoryDTO the department history DTO
    */
-  Set<ValidationError> saveDepartmentEntry(DepartmentHistoryDTO departmentHistoryDTO);
+  void saveDepartmentEntry(DepartmentHistoryDTO departmentHistoryDTO);
 
 
   /**

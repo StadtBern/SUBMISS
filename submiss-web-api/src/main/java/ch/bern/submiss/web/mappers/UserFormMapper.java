@@ -13,6 +13,7 @@
 
 package ch.bern.submiss.web.mappers;
 
+import ch.bern.submiss.services.api.util.LookupValues;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserAttributeDTO;
@@ -39,7 +40,7 @@ public abstract class UserFormMapper {
       dto.setId(form.getId());
     }
     if (form.getUsername() != null) {
-      dto.setUsername(form.getUsername() + "@" + form.getTenant().getName());
+      dto.setUsername(form.getUsername() + LookupValues.USER_NAME_SPECIAL_CHARACTER + form.getTenant().getName());
     }
     if (form.isActive() != null) {
       dto.setStatus((byte) (form.isActive() ? 3 : 1));

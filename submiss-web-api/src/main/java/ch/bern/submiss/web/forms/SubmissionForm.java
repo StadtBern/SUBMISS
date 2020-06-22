@@ -25,120 +25,64 @@ import java.util.Date;
 public class SubmissionForm extends AbstractForm {
 
   private ProjectForm project;
-
   private MasterListValueHistoryForm workType;
-
   private String description;
-
   private Process process;
-
   private BigDecimal costEstimate;
-
   private MasterListValueHistoryForm processType;
-
   private Boolean gattTwo;
-
   private Date publicationDate;
-
   private Date publicationDateDirectAward;
-
   private Date publicationDateAward;
-
   private MasterListValueHistoryForm procedure;
-
   private String pmDepartmentName;
-
   private CompanyForm pmExternal;
-
   private Boolean isLocked;
-
   private ConstructionPermit constructionPermit;
-
   private LoanApproval loanApproval;
-
   private Date firstDeadline;
-
   private Date secondDeadline;
-
   private Date applicationOpeningDate;
-
   private Date offerOpeningDate;
-
   private String firstLoggedBy;
-
   private String secondLoggedBy;
-
   private String notes;
-
   private Boolean isServiceTender;
-
   private Boolean isGekoEntry;
-
   private MasterListValueHistoryForm reasonFreeAward;
-
   private BigDecimal minGrade;
-
   private BigDecimal maxGrade;
-
   private Boolean changeForSec;
-
   private Boolean isLockedChanged;
-
   private Boolean aboveThreshold;
-
   private BigDecimal awardMinGrade;
-
   private BigDecimal awardMaxGrade;
-
   private BigDecimal addedAwardRecipients;
-
   private String evaluationThrough;
-
   private Date commissionProcurementProposalDate;
-
   private BigDecimal commissionProcurementProposalBusiness;
-
   private String commissionProcurementProposalObject;
-
   private String commissionProcurementProposalSuitabilityAuditDropdown;
-
   private String commissionProcurementProposalSuitabilityAuditText;
-
   private String commissionProcurementProposalPreRemarks;
-
   private String commissionProcurementProposalReservation;
-
   private String commissionProcurementProposalReasonGiven;
-
   private String commissionProcurementDecisionRecommendation;
-
   private Process oldProcess;
-
   private Boolean isPmDepartmentNameUpdated;
-
   private Boolean isPmExternalUpdated;
-
   private Boolean isProcedureUpdated;
-
   private Boolean isGattTwoUpdated;
-
   private String createdBy;
-
   private Timestamp createdOn;
-
   private Timestamp updatedOn;
-
   private MasterListValueHistoryForm operatingCostFormula;
-
   private MasterListValueHistoryForm priceFormula;
-
   private String status;
-
   private String customPriceFormula;
-
   private String customOperatingCostFormula;
-
   private Boolean isGekoEntryByManualAward;
+  private Boolean noAwardTender;
 
   public ProjectForm getProject() {
     return project;
@@ -339,7 +283,6 @@ public class SubmissionForm extends AbstractForm {
   public void setIsGekoEntry(Boolean isGekoEntry) {
     this.isGekoEntry = isGekoEntry;
   }
-
 
   public MasterListValueHistoryForm getReasonFreeAward() {
     return reasonFreeAward;
@@ -598,7 +541,6 @@ public class SubmissionForm extends AbstractForm {
     this.customOperatingCostFormula = customOperatingCostFormula;
   }
 
-
   public Boolean getIsGekoEntryByManualAward() {
     return isGekoEntryByManualAward;
   }
@@ -613,6 +555,14 @@ public class SubmissionForm extends AbstractForm {
 
   public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
+  }
+
+  public Boolean getNoAwardTender() {
+    return noAwardTender;
+  }
+
+  public void setNoAwardTender(Boolean noAwardTender) {
+    this.noAwardTender = noAwardTender;
   }
 
   @Override

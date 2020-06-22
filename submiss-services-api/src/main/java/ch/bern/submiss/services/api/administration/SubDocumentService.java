@@ -215,4 +215,12 @@ public interface SubDocumentService {
    */
   List<String> permittedDocumentsForUpload(String folderId, List<String> filenames,
     boolean isProjectPart);
+
+  /**
+   * Validation for Vertrag documents.
+   *
+   * @param submissionId the submissionId
+   * @return the error
+   */
+  Set<ValidationError> contractDocumentValidation(String submissionId);
 }

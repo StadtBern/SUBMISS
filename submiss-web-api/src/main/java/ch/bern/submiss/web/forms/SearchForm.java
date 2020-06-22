@@ -13,15 +13,14 @@
 
 package ch.bern.submiss.web.forms;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 /**
  * Form for searching tenders.
- *
+ * <p>
  * We ignore unknown properties in order to facilitate using the same model for view and update at
  * client side.
  *
@@ -79,11 +78,13 @@ public class SearchForm {
   private Date offerDateUntil;
 
   private FilterForm filter;
-  
-  private String excludedProject;
-  
 
- 
+  private String excludedProject;
+
+  private Date tenderCreationDate;
+
+  private String documentTitle;
+
 
   public String getObjectId() {
     return objectId;
@@ -284,12 +285,28 @@ public class SearchForm {
   public void setOfferDateUntil(Date offerDateUntil) {
     this.offerDateUntil = offerDateUntil;
   }
-  
+
   public String getExcludedProject() {
     return excludedProject;
   }
 
   public void setExcludedProject(String excludedProject) {
     this.excludedProject = excludedProject;
+  }
+
+  public Date getTenderCreationDate() {
+    return tenderCreationDate;
+  }
+
+  public void setTenderCreationDate(Date tenderCreationDate) {
+    this.tenderCreationDate = tenderCreationDate;
+  }
+
+  public String getDocumentTitle() {
+    return documentTitle;
+  }
+
+  public void setDocumentTitle(String documentTitle) {
+    this.documentTitle = documentTitle;
   }
 }

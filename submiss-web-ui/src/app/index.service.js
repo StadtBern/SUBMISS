@@ -287,6 +287,16 @@
         return num;
       },
 
+      closeSubmissionModal: function () {
+        return $uibModal.open({
+          templateUrl: 'app/submission/closeSubmission/closeSubmission.html',
+          controller: 'CloseSubmissionController',
+          controllerAs: 'closeSubmissionCtrl',
+          backdrop: 'static',
+          keyboard: false
+        });
+      },
+
       /**Function to show modal for reopening a status */
       reopenTenderStatusModal: function (reopenTitle, reopenQuestion,
         statusToReopen) {
@@ -669,9 +679,9 @@
         });
       },
       isValidFormat: function (ext) {
-        var validFormats = ['doc', 'docx', 'pdf', 'xls', 'xlsx', 'csv', 'msg',
+        var validFormats = ['docx', 'pdf', 'xlsx', 'csv', 'msg',
           'png', 'jpg',
-          'jpeg', 'txt', 'rtf', 'htm', 'html', 'mpp', 'ppt', 'pptx'
+          'jpeg', 'txt', 'rtf', 'htm', 'html', 'mpp', 'pptx'
         ];
         if (validFormats.indexOf(ext.toLowerCase()) === -1) {
           return false;
@@ -711,6 +721,11 @@
         return $http.get(
           AppConstants.URLS.RESOURCE_PROVIDER + '/sd/getNameOfMasterListType/' +
           type);
+      },
+
+      pingBackEnd: function () {
+        return $http.get(
+          AppConstants.URLS.RESOURCE_PROVIDER + '/ping');
       }
     };
   }

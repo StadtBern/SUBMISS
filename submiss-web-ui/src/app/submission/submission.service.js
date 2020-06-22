@@ -120,15 +120,19 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +
           '/submission/awardNoticesCreatedDate/' + submissionId);
       },
-      closeSubmission: function (submissionId, version) {
+      closeSubmission: function (submissionId, version, closeForm) {
         return $http.post(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/close/' +
-          submissionId + '/version/'  + version);
+          submissionId + '/version/' + version, closeForm);
       },
-      reopenSubmission: function (submissionId, reopen) {
+      checkClosingReason: function (closeForm) {
+        return $http.post(
+          AppConstants.URLS.RESOURCE_PROVIDER + '/submission/close/reason', closeForm);
+      },
+      reopenSubmission: function (submissionId, submissionVersion, reopen) {
         return $http.post(
           AppConstants.URLS.RESOURCE_PROVIDER + '/submission/reopenSubmission/' +
-          submissionId, reopen);
+          submissionId + '/' + submissionVersion, reopen);
       },
       getDateAndPreviousReopenStatus: function (submissionId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +

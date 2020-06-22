@@ -1026,9 +1026,9 @@ public class CriterionResource {
         if (suitabilityDTO.getOfferId().equals(id)
           && StringUtils.isBlank(suitabilityDTO.getqExSuitabilityNotes())) {
           errors.add(new ValidationError(ValidationMessages.ERROR_FIELD,
-            ValidationMessages.PROJECT_MANDATORY_ERROR_MESSAGE));
+            ValidationMessages.MANDATORY_ERROR_MESSAGE));
           errors.add(new ValidationError(suitabilityDTO.getOfferId(),
-            ValidationMessages.PROJECT_MANDATORY_ERROR_MESSAGE));
+            ValidationMessages.MANDATORY_ERROR_MESSAGE));
         }
       }
       if (StringUtils.isNotBlank(suitabilityDTO.getqExSuitabilityNotes()) && (StringUtils
@@ -1262,7 +1262,7 @@ public class CriterionResource {
     @PathParam("submissionId") String submissionId, @PathParam("type") String type,
     @PathParam("all") Boolean all) {
     List<OfferDTO> offerCriterionDTOs =
-      criterionService.getExaminationSubmittentListWithCriteria(submissionId, type, all);
+      criterionService.getExaminationSubmittentListWithCriteria(submissionId, type, all, false);
     return Response.ok(offerCriterionDTOs).build();
   }
 

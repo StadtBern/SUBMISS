@@ -481,6 +481,14 @@ form .col-md-4 .checkbox-inline {
   min-width: 11em;
 }
 
+input[type="radio"] {
+  -webkit-filter: grayscale(100%);
+}
+
+input[type="checkbox"] {
+  -webkit-filter: grayscale(100%);
+}
+
 form .input-group-btn .btn {
   height: 28px;
   margin-right: 0;

@@ -24,6 +24,7 @@ import ch.bern.submiss.services.api.constants.AuditLevel;
 import ch.bern.submiss.services.api.constants.AuditMessages;
 import ch.bern.submiss.services.api.constants.CategorySD;
 import ch.bern.submiss.services.api.constants.DocumentProperties;
+import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.constants.ShortCode;
 import ch.bern.submiss.services.api.constants.TemplateConstants;
 import ch.bern.submiss.services.api.dto.AwardAssessDTO;
@@ -2624,6 +2625,8 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
         return changedSubbmitends;
       }
       return "changedWithNoWarnings";
+    } else if(!isChanged && !changedFormel.isEmpty()){
+      return changedFormel;
     } else {
       return "";
     }
@@ -2642,7 +2645,27 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
     String subFormelPreis = getFormelPreis(submission);
     String subFormelOperation = getOperatingCostFormula(submission, offers);
 
-    if (!formelPreis.equals(subFormelPreis) || !formelOperation.equals(subFormelOperation)) {
+    String preisCriteriumTitle
+      = importedSheet.getRow(HEADING_ROWNUM + 8).getCell(6).getStringCellValue();
+    String operatingCostCriteriumTitle
+      = importedSheet.getRow(HEADING_ROWNUM + 8).getCell(8).getStringCellValue();
+    boolean preisOrOperatingCriteriumTitleChanged = false;
+    if(!offers.isEmpty()){
+      for(OfferCriterionDTO criterion : offers.get(0).getOfferCriteria()){
+        if((criterion.getCriterion().getCriterionType()
+          .equals(LookupValues.PRICE_AWARD_CRITERION_TYPE)
+          && !preisCriteriumTitle.equals(criterion.getCriterion().getCriterionText()))
+        || (criterion.getCriterion().getCriterionType()
+          .equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)
+          && !operatingCostCriteriumTitle.equals(criterion.getCriterion().getCriterionText()))){
+          preisOrOperatingCriteriumTitleChanged = true;
+        }
+      }
+    }
+    // If price criterium title or operating costs criterium title changes, we want to show a
+    // warning and continue with the Import.
+    if (!formelPreis.equals(subFormelPreis) || !formelOperation.equals(subFormelOperation)
+      || preisOrOperatingCriteriumTitleChanged) {
       return WARNING_PREIS;
     }
     return "";
@@ -2712,7 +2735,8 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
       if (type.equals(SUITABILITY)) {
 
         List<OfferDTO> offers = criterionService
-          .getExaminationSubmittentListWithCriteria(submissionId, SUITABILITY, Boolean.TRUE);
+          .getExaminationSubmittentListWithCriteria(submissionId, SUITABILITY, Boolean.TRUE,
+            false);
 
         /// loop importedSheet against offer list .. to validate and extract values.
         // loop will executed row by row.
@@ -2943,7 +2967,8 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
       // Validate criterium text first
       if (!of.getCriterion().getCriterionText().equals(
-        getCellTitle(wb.getSheetAt(0), importRow.getCell(col + 1), DATA_STARTING_ROWNUM - 1))) {
+        getCellTitle(wb.getSheetAt(0), importRow.getCell(col + 1), DATA_STARTING_ROWNUM - 1))
+        && !of.getCriterion().getCriterionType().equals(LookupValues.PRICE_AWARD_CRITERION_TYPE)) {
         LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + GRADE + PARSING_PHRASE);
         throw new IOException(MALFORMED_CRITERIA);
       }
@@ -3010,7 +3035,9 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
       // validate imported cols
       if (!of.getCriterion().getCriterionText()
-        .equals(getCellTitle(wb.getSheetAt(0), cell, DATA_STARTING_ROWNUM - 1))) {
+          .equals(getCellTitle(wb.getSheetAt(0), cell, DATA_STARTING_ROWNUM - 1))
+        && !of.getCriterion().getCriterionType()
+          .equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)) {
         LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + GRADE + PARSING_PHRASE);
         throw new IOException(MALFORMED_CRITERIA);
       }
@@ -3100,6 +3127,11 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
             offerSublist, offerCriterionDTO);
         }
         awardCriterion.add(cl);
+        offerExists = true;
+      }else if(offerCriterionDTO.getCriterion().getCriterionType()
+        .equals(LookupValues.PRICE_AWARD_CRITERION_TYPE)
+        || offerCriterionDTO.getCriterion().getCriterionType()
+        .equals(LookupValues.OPERATING_COST_AWARD_CRITERION_TYPE)){
         offerExists = true;
       }
     }
@@ -3274,6 +3306,14 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
       CriterionLiteDTO cl = new CriterionLiteDTO();
       cl.setCriterionId(of.getId());
+
+      // Check for inconsistencies regarding the criterion title/text
+      if (!of.getCriterion().getCriterionText()
+        .equals(getCellTitle(importedSheet, importRow.getCell(col + 1), TITLE_ROWNUM))) {
+        LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + MUST_CRITERIA + PARSING_PHRASE);
+        throw new IOException(MALFORMED_CRITERIA);
+      }
+
       try {
         cl.setIsFulfilled(castFromFullfiled(cell.getStringCellValue()));
       } catch (Exception e) {
@@ -3320,15 +3360,15 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
       if (offerCriterionDTO.getCriterion().getCriterionType().equals(LookupValues.EVALUATED_CRITERION_TYPE)) {
 
-        // conisder parsing text here.
+        // consider parsing text here.
         CriterionLiteDTO cl = new CriterionLiteDTO();
         cl.setCriterionId(offerCriterionDTO.getId());
 
+        // Check for inconsistencies regarding the criterion title/text
         if (!offerCriterionDTO.getCriterion().getCriterionText()
           .equals(getCellTitle(importedSheet, importRow.getCell(col + 1), TITLE_ROWNUM))) {
           LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + RATED_CRITERIA + PARSING_PHRASE);
           throw new IOException(MALFORMED_CRITERIA);
-          // Checkpoint
         }
 
         // G
@@ -4227,7 +4267,19 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
           } else if (j > headerColumn && j < 4) {
             cell.setCellStyle(headersStyle);
           } else if (j > 3 && j == dataColumn) {
-            cell.setCellValue(offers.get(companyIndex).getExistsExclusionReasons());
+            if(offers.get(companyIndex).getCompanyName() != null  // Make sure it's not an empty offer
+              && (offers.get(companyIndex).getOffer().getSubmittent().getSubmissionId().getProcess()
+              .equals(Process.NEGOTIATED_PROCEDURE)
+            || offers.get(companyIndex).getOffer().getSubmittent().getSubmissionId().getProcess()
+              .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))){
+              if(offers.get(companyIndex).getProofStatus() == 0){
+                cell.setCellValue(TemplateConstants.YES);
+              }else {
+                cell.setCellValue(TemplateConstants.NO);
+              }
+            }else {
+              cell.setCellValue(offers.get(companyIndex).getExistsExclusionReasons());
+            }
             companyIndex++;
             dataColumn += 2;
           }
@@ -4240,7 +4292,12 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
           } else if (j > headerColumn && j < 4) {
             cell.setCellStyle(headersStyle);
           } else if (j > 3 && j == dataColumn) {
-            cell.setCellValue(offers.get(companyIndex).getFormalExaminationFulfilled());
+            if (offers.get(companyIndex).getProofStatus() == 1) {
+              cell.setCellValue(TemplateConstants.YES);
+            } else if (offers.get(companyIndex).getCompanyName() != null // Make sure it's not an empty offer
+              && offers.get(companyIndex).getProofStatus() == 0){
+              cell.setCellValue(TemplateConstants.NO);
+            }
             companyIndex++;
             dataColumn += 2;
           }
@@ -4253,7 +4310,17 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
           } else if (j > headerColumn && j < 4) {
             cell.setCellStyle(headersStyleBold);
           } else if (j > 3 && j == dataColumn) {
-            if (offers.get(companyIndex).getFormalExaminationFulfilled() != null) {
+            if (offers.get(companyIndex).getCompanyName() != null // Make sure it's not an empty offer
+              && (offers.get(companyIndex).getOffer().getSubmittent().getSubmissionId().getProcess()
+              .equals(Process.NEGOTIATED_PROCEDURE)
+              || offers.get(companyIndex).getOffer().getSubmittent().getSubmissionId().getProcess()
+              .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))) {
+              if(offers.get(companyIndex).getProofStatus() == 0){
+                cell.setCellValue(TemplateConstants.NO.toUpperCase());
+              }else {
+                cell.setCellValue(TemplateConstants.YES.toUpperCase());
+              }
+            }else if (offers.get(companyIndex).getFormalExaminationFulfilled() != null){
               cell.setCellValue(
                 offers.get(companyIndex).getFormalExaminationFulfilled().toUpperCase());
             }
@@ -5854,8 +5921,24 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
     row.getCell(titleColumn).setCellValue(
       "Status Prüfung / abgeschlossen am " + SubmissConverter.convertToSwissDate(new Date()));
     for (SuitabilityDocumentDTO offer : offers) {
-      row.getCell(datacolumn).setCellValue(
-        castToYesOrNo(offer.getOffer().getqExExaminationIsFulfilled()).toUpperCase());
+      if(offer.getCompanyName() != null // Make sure it's not an empty offer
+        && (offer.getOffer().getSubmittent().getSubmissionId().getProcess()
+          .equals(Process.NEGOTIATED_PROCEDURE)
+        || offer.getOffer().getSubmittent().getSubmissionId().getProcess()
+          .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))){
+        // For negotiated procedures the Status Prüfung / abgeschlossen am is the saved value of
+        // Prüfung erfüllt in Formelle Prüfung form, which is saved as the opposite boolean value
+        // of Ausschlussgründe gem. Art 24, ÖBV (getExistsExclusionReasons).
+        row.getCell(datacolumn).setCellValue(castToYesOrNo(
+          !offer.getOffer().getSubmittent().getExistsExclusionReasons()).toUpperCase());
+      }else if(offer.getCompanyName() != null // Make sure it's not an empty offer
+        && !offer.getOffer().getSubmittent().getSubmissionId().getProcess()
+          .equals(Process.NEGOTIATED_PROCEDURE)
+        && !offer.getOffer().getSubmittent().getSubmissionId().getProcess()
+          .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)){
+        row.getCell(datacolumn).setCellValue(
+          castToYesOrNo(offer.getOffer().getqExExaminationIsFulfilled()).toUpperCase());
+      }
       datacolumn += 2;
     }
 
@@ -9016,7 +9099,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
             // Suitability Notes
           } else if (i == notesCellNum && isTypeSuitability) {
             cell.setCellValue(
-              suitabilityOffers.get(companyIndex).getOffer().getqExSuitabilityNotes());
+              suitabilityOffers.get(companyIndex).getOffer().getqExSuitabilityNotes());//check
           }
           companyIndex++;
           dataColumn += 2;

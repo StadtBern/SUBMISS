@@ -128,11 +128,9 @@ public class SDDepartmentResource {
       return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
     }
     // If there are no validation errors, proceed with saving/updating the department history entry.
-    Set<ValidationError> optimisticLockErrors = sDDepartmentService.saveDepartmentEntry(
+    sDDepartmentService.saveDepartmentEntry(
       DepartmentHistoryFormMapper.INSTANCE.toDepartmentHistoryDTO(departmentHistoryForm));
-    return (optimisticLockErrors.isEmpty())
-      ? Response.ok().build()
-      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    return Response.ok().build();
   }
 
   /**

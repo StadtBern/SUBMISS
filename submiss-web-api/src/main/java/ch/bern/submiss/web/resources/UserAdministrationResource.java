@@ -190,7 +190,7 @@ public class UserAdministrationResource {
     }
 
     if (tenant != null) {
-      userDTO.setUsername(userName + "@" + tenant.getName());
+      userDTO.setUsername(userName + LookupValues.USER_NAME_SPECIAL_CHARACTER + tenant.getName());
     }
 
     /* Set mandatory websso attributes to user attributes. */
@@ -240,17 +240,15 @@ public class UserAdministrationResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response edit(@Valid UserForm form) {
     userAdministrationService.userSearchSecurityCheck();
+    // Check for optimistic lock errors
+    userAdministrationService
+      .editUserOptimisticLock(form.getId(), form.getOldGroupId(), form.getVersion(),
+        form.getFunctionVersion(),
+        form.getSecondaryDepartmentsVersion());
     // Check for validation errors
     Set<ValidationError> errors = validationEdit(form);
     if (!errors.isEmpty()) {
       return Response.status(Status.BAD_REQUEST).entity(errors).build();
-    }
-    // Check for optimistic lock errors
-    Set<ValidationError> optimisticLockErrors = userAdministrationService
-      .editUserOptimisticLock(form.getId(), form.getVersion(), form.getFunctionVersion(),
-        form.getSecondaryDepartmentsVersion());
-    if (!optimisticLockErrors.isEmpty()) {
-      return Response.status(Status.CONFLICT).entity(optimisticLockErrors).build();
     }
     // Proceed with editing user
     String email = userAdministrationService.editUser(UserFormMapper.INSTANCE.toUserDTO(form),

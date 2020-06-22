@@ -42,7 +42,6 @@ import com.eurodyn.qlack2.fuse.rules.api.RulesRuntimeService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -229,13 +228,6 @@ public class RuleServiceImpl extends BaseService implements RuleService {
     return sdService.getMasterListHistoryByCode(templateCodes);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.RuleService#retrieveProjectEmailTemplates(ch.bern.
-   * submiss.services.api.dto.SubmissionDTO, ch.bern.submiss.services.api.dto.CompanyDTO)
-   */
   @Override
   public List<EmailTemplateTenantDTO> retrieveProjectEmailTemplates(SubmissionDTO submissionDTO,
     CompanyDTO companyDTO) {
@@ -262,15 +254,26 @@ public class RuleServiceImpl extends BaseService implements RuleService {
     }
     templates.addAll(emailSevice.retrieveEmailTemplates(templateCodes));
 
-    // If user role is PL and one of the templates is Submittentenliste prüfen, remove it.
-    for (Iterator<EmailTemplateTenantDTO> iterator = templates.iterator(); iterator.hasNext(); ) {
-      EmailTemplateTenantDTO template = iterator.next();
-      if (template.getEmailTemplate().getShortCode().equals(TEMPLATE_SHORT_CODE.ET07.toString())
-        && getGroupName(getUser()).equals(Group.PL.getValue())) {
-        iterator.remove();
-        break;
-      }
-    }
+    templates.removeIf(emailTemplate ->
+      // If Eingabetermin 2 is null and one of the templates is Angebotsunterlagen Einladungsverfahren, remove it.
+      (emailTemplate.getEmailTemplate().getShortCode().equals(TEMPLATE_SHORT_CODE.ET01.toString())
+        && submissionDTO != null && submissionDTO.getSecondDeadline() == null)
+
+      // If Eingabetermin 2 is null and one of the templates is Angebotsunterlagen freihändig mit Konkurrenz, remove it.
+      || (emailTemplate.getEmailTemplate().getShortCode().equals(TEMPLATE_SHORT_CODE.ET02.toString())
+        && submissionDTO != null && submissionDTO.getSecondDeadline() == null)
+
+      // If Eingabetermin 2 is null and one of the templates is Angebotsunterlagen freihändig, remove it.
+      || (emailTemplate.getEmailTemplate().getShortCode().equals(TEMPLATE_SHORT_CODE.ET03.toString())
+        && submissionDTO != null && submissionDTO.getSecondDeadline() == null)
+
+      // If Eingabetermin 2 is null and one of the templates is Angebotsunterlagen selektives Verfahren, remove it.
+      || (emailTemplate.getEmailTemplate().getShortCode().equals(TEMPLATE_SHORT_CODE.ET04.toString())
+        && submissionDTO != null && submissionDTO.getSecondDeadline() == null)
+
+      // If user role is PL and one of the templates is Submittentenliste prüfen, remove it.
+      || (emailTemplate.getEmailTemplate().getShortCode().equals(TEMPLATE_SHORT_CODE.ET07.toString())
+        && getGroupName(getUser()).equals(Group.PL.getValue())));
 
     Collections.sort(templates, ComparatorUtil.sortEmailTemplateTenantsByDescription);
     return templates;

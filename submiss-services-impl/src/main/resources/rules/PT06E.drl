@@ -16,7 +16,7 @@ rule "PT06E"
 		$company: CompanyDTO()
 	if ($company.getAddress2() != null) do[address2]
 	else do[address2Empty]	
-	if ($submission.getLegalHearingTerminate().get(0) != null && $submission.getLegalHearingTerminate().get(0).getLastModifiedOn()) != null) do[exclusionDeadline]
+	if ($submission.getLegalHearingTerminate().get(0) != null && $submission.getLegalHearingTerminate().get(0).getUpdatedOn() != null) do[exclusionDeadline]
 	else do[exclusionDeadlineEmpty]
 	if ($submission.getDescription() != null) do[description]
 	else do[descriptionEmpty]
@@ -31,7 +31,7 @@ rule "PT06E"
 	then [address2Empty]	
 		placeholderMappings.put("f_company_address", $company.getAddress1());
 	then [exclusionDeadline]	
-		placeholderMappings.put("r_date", SubmissConverter.convertToSwissDate($submission.getLegalHearingTerminate().get(0).getLastModifiedOn()));
+		placeholderMappings.put("r_date", SubmissConverter.convertToSwissDate($submission.getLegalHearingTerminate().get(0).getUpdatedOn()));
 	then [exclusionDeadlineEmpty]	
 		placeholderMappings.put("r_date", "");
 	then [descriptionEmpty]	

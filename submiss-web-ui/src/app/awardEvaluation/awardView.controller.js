@@ -1267,16 +1267,29 @@
 
     /** Function to import award */
     function uploadFile(flow) {
-      AwardService.checkAwardOptimisticLock(vm.data.submission.id, vm.data.submission.pageRequestedOn)
+      let validFormat = false;
+      for (let k = 0; k < flow.files.length; k++) {
+        validFormat =  flow.files[k].name.split(".").pop().toLowerCase() === 'xlsx';
+        if (!validFormat) {
+          flow.cancel();
+          break;
+        }
+      }
+      if(validFormat) {
+        AwardService.checkAwardOptimisticLock(vm.data.submission.id,
+          vm.data.submission.pageRequestedOn)
         .success(function (response, status, headers) {
           flow.upload();
         }).error(function (response, status) {
           if (status === 409) { // Validation errors.
             $anchorScroll('page-title');
             QFormJSRValidation
-              .markErrors($scope, $scope.awardViewCtrl.awardForm, response);
+            .markErrors($scope, $scope.awardViewCtrl.awardForm, response);
           }
         });
+      } else {
+        openWindowError(AppConstants.IMPORT_ERROR, AppConstants.INVALID_FILE_TYPE);
+      }
     }
 
     function uploaded(flow) {

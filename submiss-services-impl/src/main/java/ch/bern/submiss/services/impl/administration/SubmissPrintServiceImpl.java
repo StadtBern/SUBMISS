@@ -360,7 +360,7 @@ public class SubmissPrintServiceImpl extends BaseService implements SubmissPrint
       data.put("ipPortPrinter", StringUtils.EMPTY);
     }
     UserDTO user = getUser();
-    String[] splitedUsernameParts = user.getUsername().split("@");
+    String[] splitedUsernameParts = user.getUsername().split(LookupValues.USER_NAME_SPECIAL_CHARACTER);
     data.put("userName", splitedUsernameParts[0]);
     data.put("documentName", addDoubleQuotes(filename));
     return data;

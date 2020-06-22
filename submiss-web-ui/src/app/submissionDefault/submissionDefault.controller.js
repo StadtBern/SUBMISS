@@ -317,26 +317,30 @@
         // if the current status is PROCEDURE_COMPLETED then submission
         // reopen button is displayed instead
         if (currentStatus !== vm.status.PROCEDURE_COMPLETED) {
-          // if the status is cancelled then display the button
-          if (currentStatus === vm.status.PROCEDURE_CANCELED) {
+          if (vm.data.submission.noAwardTender) {
             return true;
-          }
-          // for process NEGOTIATED_PROCEDURE check if status is after SUBMITTENT_LIST_CREATED
-          else if (vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE ||
-            vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION) {
-            return (currentStatus >= vm.status.SUBMITTENT_LIST_CREATED);
-            // for the rest of the processes check if status AWARD_NOTICES_CREATED is set more than 20 days ago
           } else {
-            // add the extra days for the check
-            if (statusAwardNoticesCreatedDate) {
-              var statusAwardNoticesCreatedDatePlus = new Date(statusAwardNoticesCreatedDate);
-              statusAwardNoticesCreatedDatePlus.setDate(statusAwardNoticesCreatedDatePlus.getDate() +
-                AppConstants.DAYS_TO_PERMIT_SUBMISSION_CLOSE);
-              return (new Date() > statusAwardNoticesCreatedDatePlus);
-            } else {
-              return false;
+            // if the status is cancelled then display the button
+            if (currentStatus === vm.status.PROCEDURE_CANCELED) {
+              return true;
             }
+            // for process NEGOTIATED_PROCEDURE check if status is after SUBMITTENT_LIST_CREATED
+            else if (vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE ||
+              vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION) {
+              return (currentStatus >= vm.status.SUBMITTENT_LIST_CREATED);
+              // for the rest of the processes check if status AWARD_NOTICES_CREATED is set more than 20 days ago
+            } else {
+              // add the extra days for the check
+              if (statusAwardNoticesCreatedDate) {
+                var statusAwardNoticesCreatedDatePlus = new Date(statusAwardNoticesCreatedDate);
+                statusAwardNoticesCreatedDatePlus.setDate(statusAwardNoticesCreatedDatePlus.getDate() +
+                  AppConstants.DAYS_TO_PERMIT_SUBMISSION_CLOSE);
+                return (new Date() > statusAwardNoticesCreatedDatePlus);
+              } else {
+                return false;
+              }
 
+            }
           }
         } else {
           return false;
@@ -385,54 +389,25 @@
 
     /**
      * Show a confirmation message for close submission and if the user
-     * confirms close the submission
+     * confirms close the submission (user can add a closing reason optionally)
      */
     function closeSubmission() {
-      var confirmationWindowInstance = $uibModal
-        .open({
-          template: '<div class="modal-header">' +
-            '<button type="button" class="close" aria-label="Close" ' +
-            'ng-click="submissionDefaultCtr.closeConfirmationWindow(\'nein\');"><span aria-hidden="true">&times;</span></button>' +
-            '<h4 class="modal-title">Verfahren manuell abschliessen</h4>' +
-            '</div>' +
-            '<div class="modal-body">' +
-            '<div class="row">' +
-            '<div class="col-md-12">' +
-            '<p> Möchten Sie die Submission wirklich abschliessen? </p>' +
-            '</div>' +
-            '</div>' +
-            '</div>' +
-            '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-primary" ng-click="submissionDefaultCtr.closeConfirmationWindow(\'ja\');">Ja</button>' +
-            '<button type="button" class="btn btn-default" ng-click="submissionDefaultCtr.closeConfirmationWindow(\'nein\');">Nein</button>' +
-            '</div>' + '</div>',
-          controllerAs: 'submissionDefaultCtr',
-          backdrop: 'static',
-          keyboard: false,
-          controller: function () {
-            var vm = this;
-            vm.closeConfirmationWindow = function (reason) {
-              confirmationWindowInstance.dismiss(reason);
-            };
-          }
-        });
-
-      return confirmationWindowInstance.result.then(function () {
-        // Modal Success Handler
-      }, function (response) { // Modal Dismiss Handler
-        if (response === 'ja') {
-          SubmissionService.closeSubmission($stateParams.id, vm.data.submission.version).success(function (data) {
-            $state.reload();
-          }).error(function (response, status) {
-            if (status === 400) { // Validation errors.
-              QFormJSRValidation.markErrors($scope,
-                $scope.submissionDefaultCtr.submissionDefaultForm, response);
-              vm.response = response;
-            }
-          });
-          return true;
-        } else {
-          return false;
+      var closeSubmissionModal = AppService.closeSubmissionModal();
+      return closeSubmissionModal.result.then(function (response) {
+        if (!angular.isUndefined(response)) {
+          var closeForm = {
+            closeReason: response
+          };
+          SubmissionService.closeSubmission($stateParams.id, vm.data.submission.version, closeForm)
+            .success(function (data) {
+              $state.reload();
+            }).error(function (response, status) {
+              if (status === 400) { // Validation errors.
+                QFormJSRValidation.markErrors($scope,
+                  $scope.submissionDefaultCtr.submissionDefaultForm, response);
+                vm.response = response;
+              }
+            });
         }
       });
     }
@@ -445,10 +420,16 @@
         if (!angular.isUndefined(response)) {
           var reopenForm = {};
           reopenForm.reopenReason = response;
-          SubmissionService.reopenSubmission($stateParams.id, reopenForm).success(
+          SubmissionService.reopenSubmission($stateParams.id, vm.data.submission.version, reopenForm).success(
             function (data) {
               $state.reload();
-            }).error(function (response, status) {});
+            }).error(function (response, status) {
+            if (status === 409) { // Validation errors.
+              QFormJSRValidation.markErrors($scope,
+                $scope.submissionDefaultCtr.submissionDefaultForm, response);
+              vm.response = response;
+            }
+          });
         }
       });
     }
@@ -457,7 +438,11 @@
     function selectiveSecondStageTabVisible() {
       if (vm.data.submission) {
         return (vm.data.submission.process === AppConstants.PROCESS.SELECTIVE &&
-          vm.currentStatus >= vm.status.SUITABILITY_AUDIT_COMPLETED_S);
+          vm.currentStatus >= vm.status.SUITABILITY_AUDIT_COMPLETED_S &&
+          !((AppService.getLoggedUser().userGroup.name === vm.group.DIR ||
+              AppService.getLoggedUser().userGroup.name === vm.group.PL) &&
+            vm.currentStatus >= vm.status.OFFER_OPENING_STARTED &&
+            vm.currentStatus < vm.status.OFFER_OPENING_CLOSED));
       }
       return false;
     }

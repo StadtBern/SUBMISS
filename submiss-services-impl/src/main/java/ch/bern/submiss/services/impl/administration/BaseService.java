@@ -13,19 +13,11 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.ops4j.pax.cdi.api.OsgiService;
-
+import ch.bern.submiss.services.api.constants.TenderStatus;
+import ch.bern.submiss.services.api.util.LookupValues;
+import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
+import ch.bern.submiss.services.api.util.LookupValues.WEBSSO_ATTRIBUTES;
+import ch.bern.submiss.services.impl.model.QDepartmentHistoryEntity;
 import com.eurodyn.qlack2.fuse.aaa.api.UserGroupService;
 import com.eurodyn.qlack2.fuse.aaa.api.UserService;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
@@ -36,12 +28,16 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
-
-import ch.bern.submiss.services.api.constants.TenderStatus;
-import ch.bern.submiss.services.api.util.LookupValues;
-import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
-import ch.bern.submiss.services.api.util.LookupValues.WEBSSO_ATTRIBUTES;
-import ch.bern.submiss.services.impl.model.QDepartmentHistoryEntity;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import org.ops4j.pax.cdi.api.OsgiService;
 
 /**
  * The Class BaseService.
@@ -141,6 +137,26 @@ public abstract class BaseService {
       }
     }
     return groupName;
+  }
+
+  /**
+   * Get the group id of the user.
+   *
+   * @param user the user
+   * @return The groupId.
+   */
+  protected String getGroupId(UserDTO user) {
+    LOGGER.log(Level.CONFIG, "Executing method getGroupId, Parameters: user {0}", user);
+    String id = null;
+    if (user != null) {
+      Set<String> groupIds = userGroupService.getUserGroupsIds(user.getId());
+      // in our system each user belongs to one group only
+      for (String groupId : groupIds) {
+        GroupDTO group = userGroupService.getGroupByID(groupId, true);
+        id = group.getId();
+      }
+    }
+    return id;
   }
 
   /**

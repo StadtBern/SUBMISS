@@ -263,23 +263,31 @@
               downloadProjectDocument(vm.templateForm);
             }
           } else if (vm.chosenTemplate.shortCode === AppConstants.VERTRAG) {
-            $uibModal
-              .open({
-                templateUrl: 'app/document/contract/generateContract.html',
-                controller: 'GenerateContractController',
-                controllerAs: 'generateContractCtrl',
-                backdrop: 'static',
-                keyboard: false,
-                resolve: {
-                  template: function () {
-                    return vm.templateForm;
-                  },
-                  submission: function () {
-                    return vm.submission;
-                  },
-                  createAndPrintDocument: function () {
-                    return vm.createAndPrintDocument;
-                  }
+            DocumentService.checkContractDocument(vm.submission.id)
+              .success(function (data) {
+                $uibModal
+                  .open({
+                    templateUrl: 'app/document/contract/generateContract.html',
+                    controller: 'GenerateContractController',
+                    controllerAs: 'generateContractCtrl',
+                    backdrop: 'static',
+                    keyboard: false,
+                    resolve: {
+                      template: function () {
+                        return vm.templateForm;
+                      },
+                      submission: function () {
+                        return vm.submission;
+                      },
+                      createAndPrintDocument: function () {
+                        return vm.createAndPrintDocument;
+                      }
+                    }
+                  });
+              }).error(function (response, status) {
+                if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST) {
+                  QFormJSRValidation.markErrors($scope,
+                    $scope.documentViewCtrl.template, response);
                 }
               });
           } else if ((vm.chosenTemplate.shortCode === AppConstants.BEKO_ANTRAG ||

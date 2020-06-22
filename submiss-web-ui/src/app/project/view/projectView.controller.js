@@ -149,8 +149,8 @@
             }
           });
       } else {
-        // toDO
         //Das System zeigt dem Benutzer die Startseite an.
+        $state.go('project.search', {});
       }
     }
 

@@ -18,14 +18,11 @@ package ch.bern.submiss.services.api.constants;
  */
 public enum AllowedFileTypes {
 
-  /** The doc. */
-  DOC,
+
   /** The docx. */
   DOCX,
   /** The pdf. */
   PDF,
-  /** The xls. */
-  XLS,
   /** The xlsx. */
   XLSX,
   /** The csv. */
@@ -48,8 +45,6 @@ public enum AllowedFileTypes {
   HTML,
   /** The mpp. */
   MPP,
-  /** The ppt. */
-  PPT,
   /** The pptx. */
   PPTX;
 

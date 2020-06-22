@@ -253,7 +253,7 @@ public class ProjectBean {
   }
 
   public void calculateSubmittentValues(SubmittentDTO submittent, Date deadline,
-    Process processType) {
+    Process processType, Boolean forEignungspruefungDoc) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method calculateSubmittentValues, Parameters: submittent: {0}, "
@@ -290,14 +290,21 @@ public class ProjectBean {
         }
       }
     }
+    boolean isNotNegotiatedProcedure = !processType.equals(Process.NEGOTIATED_PROCEDURE)
+      && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION);
     // If the calculated isProofProvided value of the main submittent is false then set the
     // formalExaminationFulfilled to false.
-    if (submittent.getCompanyId().getIsProofProvided() != null
-      && !submittent.getCompanyId().getIsProofProvided()) {
-      submittent.setFormalExaminationFulfilled(Boolean.FALSE);
-    } else {
-      submittent.setFormalExaminationFulfilled(Boolean.TRUE);
+    if(isNotNegotiatedProcedure){
+      // We don't want to ovewrite the saved value of FormalExaminationFulfilled for
+      // Negotiated Procedures
+      if (submittent.getCompanyId().getIsProofProvided() != null
+        && !submittent.getCompanyId().getIsProofProvided()) {
+        submittent.setFormalExaminationFulfilled(Boolean.FALSE);
+      } else {
+        submittent.setFormalExaminationFulfilled(Boolean.TRUE);
+      }
     }
+
     // Calculate the value isProofProvided for every joint venture of the specific submittent of
     // the current submission.
     if (!submittent.getJointVentures().isEmpty()) {
@@ -334,9 +341,18 @@ public class ProjectBean {
         }
         jointVenturesDTOs.add(jointVentureDTO);
         // If the calculated isProofProvided value of one of the joint ventures of the main
-        // submittent is false then set the formalExaminationFulfilled to false.
+        // submittent is false then set the formalExaminationFulfilled to false
         if (jointVentureDTO.getIsProofProvided() != null && !jointVentureDTO.getIsProofProvided()) {
-          submittent.setFormalExaminationFulfilled(Boolean.FALSE);
+          if(isNotNegotiatedProcedure){
+            // We don't want to ovewrite the saved value of FormalExaminationFulfilled for
+            // Negotiated Procedures
+            submittent.setFormalExaminationFulfilled(Boolean.FALSE);
+          }
+          // If called for Eignungsprüfung document we need to set
+          // Proof status of main Submittent to false.
+          if(forEignungspruefungDoc){
+            submittent.getCompanyId().setIsProofProvided(Boolean.FALSE);
+          }
         }
       }
       submittent.setJointVentures(jointVenturesDTOs);
@@ -375,9 +391,19 @@ public class ProjectBean {
         }
         subcontractorsDTOs.add(subcontractor);
         // If the calculated isProofProvided value of one of the subcontractors of the main
-        // submittent is false then set the formalExaminationFulfilled to false.
+        // submittent is false then set the formalExaminationFulfilled to false and Proof status of
+        // main Submittent to false.
         if (subcontractor.getIsProofProvided() != null && !subcontractor.getIsProofProvided()) {
-          submittent.setFormalExaminationFulfilled(Boolean.FALSE);
+          if(isNotNegotiatedProcedure){
+            // We don't want to ovewrite the saved value of FormalExaminationFulfilled for
+            // Negotiated Procedures
+            submittent.setFormalExaminationFulfilled(Boolean.FALSE);
+          }
+          // If called for Eignungsprüfung document we need to set
+          // Proof status of main Submittent to false.
+          if(forEignungspruefungDoc){
+            submittent.getCompanyId().setIsProofProvided(Boolean.FALSE);
+          }
         }
       }
       submittent.setSubcontractors(subcontractorsDTOs);
@@ -390,7 +416,8 @@ public class ProjectBean {
     if (submittent.getFormalExaminationFulfilled() != null
       && !submittent.getFormalExaminationFulfilled()
       && !processType.equals(Process.NEGOTIATED_PROCEDURE)
-      && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
+      && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)
+      && !forEignungspruefungDoc) {
       submittent.setExistsExclusionReasons(Boolean.TRUE);
     }
 

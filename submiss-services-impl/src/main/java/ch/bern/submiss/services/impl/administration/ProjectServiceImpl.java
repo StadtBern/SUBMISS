@@ -36,7 +36,6 @@ import ch.bern.submiss.services.api.dto.ProjectDTO;
 import ch.bern.submiss.services.api.dto.SearchDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.TenderDTO;
-import ch.bern.submiss.services.api.exceptions.AuthorisationException;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.DepartmentHistoryMapper;
@@ -64,6 +63,8 @@ import ch.bern.submiss.services.impl.model.QTenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.TenantEntity;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -74,8 +75,10 @@ import com.querydsl.sql.SQLExpressions;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +87,7 @@ import javax.inject.Singleton;
 import javax.transaction.Transactional;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiService;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
@@ -187,6 +191,13 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
    */
   @Inject
   private AuditBean audit;
+
+  /**
+   * The document service.
+   */
+  @OsgiService
+  @Inject
+  protected DocumentService documentService;
 
   @Override
   public ProjectDTO getProjectById(String id) {
@@ -337,7 +348,7 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
 
   @Override
   public List<TenderDTO> search(SearchDTO searchDTO, int page, int pageItems, String sortColumn,
-    String sortType) throws AuthorisationException {
+    String sortType) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method search, Parameters: searchDTO {0}, page: {1}, pageItems: {2}, "
@@ -579,6 +590,10 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
     ProjectEntity projectEntity = ProjectMapper.INSTANCE.toProject(project);
     if (project.getPmExternal() != null) {
       projectEntity.setPmExternal(em.find(CompanyEntity.class, project.getPmExternal().getId()));
+    }
+    if(projectEntity.getProjectNumber() != null
+      && projectEntity.getProjectNumber().trim().isEmpty()){
+      projectEntity.setProjectNumber(null);
     }
     if (project.getDepartment() != null) {
       DepartmentHistoryDTO departmentDTO =
@@ -837,11 +852,11 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
         + "project: {1}, searchDTO: {2}",
       new Object[]{entity, project, searchDTO});
 
-    /**
+    /*
      * Here we create the whereClause for the query during search. In most cases there is a need to
      * convert from history entities that we get from UI to entities that we have store in DB and
      * then check according to these values.
-     **/
+     */
 
     BooleanBuilder whereClause = new BooleanBuilder();
 
@@ -1021,14 +1036,14 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
       whereClause.and(entity.isServiceTender.isTrue());
     }
 
-    /**
+    /*
      * if checkbox Abgeschlossen(completed) is checked
      */
     if ((searchDTO.getCompleted() != null && searchDTO.getCompleted().equals(true))
       && (searchDTO.getRunning() == null || searchDTO.getRunning().equals(false))) {
       whereClause.and(entity.status.eq(TenderStatus.PROCEDURE_COMPLETED.getValue()));
     }
-    /**
+    /*
      * if checkbox Laufend(running)is checked
      */
     if ((searchDTO.getRunning() != null && searchDTO.getRunning().equals(true))
@@ -1037,7 +1052,7 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
         TenderStatus.PROCEDURE_COMPLETED.getValue()));
     }
 
-    /**
+    /*
      * if checkboxes Laufend(running) and Abgeschlossen(completed) are checked
      */
     if (searchDTO.getRunning() != null && searchDTO.getRunning().equals(true)
@@ -1091,7 +1106,28 @@ public class ProjectServiceImpl extends BaseService implements ProjectService {
         .fetch()));
     }
 
-    /** Apply filtering **/
+    if (searchDTO.getTenderCreationDate() != null) {
+      /* we have to compare date with timestamp,
+       * so in order to find the correct creation date of a tender
+       * we have to find the creation timestamp
+       * that is between the given tenderCreationDate and the following day
+       */
+      whereClause
+        .and(entity.createdOn.between(
+          // the given tenderCreationDate as a timestamp
+          new Timestamp(searchDTO.getTenderCreationDate().getTime()),
+          // the following day as a timestamp
+          new Timestamp(searchDTO.getTenderCreationDate().getTime() + 86400000)));
+    }
+
+    if (searchDTO.getDocumentTitle() != null) {
+      Map<String, String> attributes = new HashMap<>();
+      attributes.put("TITLE", searchDTO.getDocumentTitle());
+      List<String> nodes = documentService.findParentIdsByVersionAttributesLike(attributes);
+      whereClause.and(entity.id.in(nodes));
+    }
+
+    /* Apply filtering */
     if (searchDTO.getFilter() != null) {
       if (StringUtils.isNotBlank(searchDTO.getFilter().getObjectName())) {
         List<MasterListValueHistoryEntity> objectNameHistoryEntities =

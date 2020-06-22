@@ -749,8 +749,8 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
       // If submittent has Nachweis erbracht = Nein then check MUSS Criteria.
       if (s.getFormalExaminationFulfilled() != null && !s.getFormalExaminationFulfilled()) {
         if (offerCriterion.getCriterion().getCriterionType()
-          .equals(LookupValues.MUST_CRITERION_TYPE) && offerCriterion.getIsFulfilled() == null
-          || !offerCriterion.getIsFulfilled()) {
+          .equals(LookupValues.MUST_CRITERION_TYPE) && offerCriterion.getIsFulfilled() != null
+          && !offerCriterion.getIsFulfilled()) {
           addSubmittent(dtos, s, dto, level);
           break;
         }

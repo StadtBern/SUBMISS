@@ -36,6 +36,7 @@ import ch.bern.submiss.web.forms.AwardInfoFirstLevelForm;
 import ch.bern.submiss.web.forms.AwardInfoForm;
 import ch.bern.submiss.web.forms.AwardInfoOfferFirstLevelForm;
 import ch.bern.submiss.web.forms.AwardInfoOfferForm;
+import ch.bern.submiss.web.forms.CloseForm;
 import ch.bern.submiss.web.forms.ExaminationForm;
 import ch.bern.submiss.web.forms.LegalExclusionForm;
 import ch.bern.submiss.web.forms.LegalHearingExclusionForm;
@@ -1128,35 +1129,63 @@ public class SubmissionResource {
    * Closes the given submission.
    *
    * @param submissionId the submission UUID
+   * @param version      the submission version
+   * @param closeForm    the close form
    * @return empty response
    */
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/close/{submissionId}/version/{version}")
-  public Response closeSubmission(@PathParam("submissionId") String submissionId, @PathParam("version") Long version) {
-    Set<ValidationError> optimisticLockErrors = submissionService.updateSubmissionStatus(submissionId, version,
-      TenderStatus.PROCEDURE_COMPLETED.getValue(), AuditMessages.CLOSE_SUBMISSION.name(),
-      null, LookupValues.EXTERNAL_LOG);
+  public Response closeSubmission(@PathParam("submissionId") String submissionId,
+    @PathParam("version") Long version, @Valid CloseForm closeForm) {
+    Set<ValidationError> optimisticLockErrors = submissionService
+      .updateSubmissionStatus(submissionId, version,
+        TenderStatus.PROCEDURE_COMPLETED.getValue(), AuditMessages.CLOSE_SUBMISSION.name(),
+        closeForm.getCloseReason(), LookupValues.EXTERNAL_LOG);
     return (optimisticLockErrors.isEmpty())
       ? Response.ok().build()
       : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
   }
 
   /**
+   * Validation check for closing reason.
+   *
+   * @param closeForm    the close form
+   * @return empty response or validation error
+   */
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/close/reason")
+  public Response checkClosingReason(@Valid CloseForm closeForm) {
+    Set<ValidationError> validationErrors = new HashSet<>();
+    if (closeForm.getCloseReason() != null && closeForm.getCloseReason().length() > 100) {
+      validationErrors.add(new ValidationError(ValidationMessages.ERROR_FIELD,
+        ValidationMessages.REASON_GIVEN_MAX_ERROR_MESSAGE));
+      validationErrors.add(new ValidationError(REASON_GIVEN,
+        ValidationMessages.REASON_GIVEN_MAX_ERROR_MESSAGE));
+    }
+    return (validationErrors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
+  }
+
+  /**
    * Reopens the given submission.
    *
    * @param submissionId the submission UUID
-   * @param reopenForm the reopen form
+   * @param reopenForm   the reopen form
    * @return empty response
    */
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/reopenSubmission/{submissionId}")
+  @Path("/reopenSubmission/{submissionId}/{submissionVersion}")
   public Response reopenSubmission(@PathParam("submissionId") String submissionId,
-    @Valid ReopenForm reopenForm) {
-    submissionCloseService.reopenSubmission(submissionId, reopenForm.getReopenReason());
+    @PathParam("submissionVersion") Long submissionVersion, @Valid ReopenForm reopenForm) {
+    submissionCloseService
+      .reopenSubmission(submissionId, reopenForm.getReopenReason(), submissionVersion);
     return Response.ok().build();
   }
 

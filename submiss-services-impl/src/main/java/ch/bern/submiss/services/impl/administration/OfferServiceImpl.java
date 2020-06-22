@@ -1649,10 +1649,10 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       submissionId);
 
     return OfferDTOWithCriteriaMapper.INSTANCE
-      .toOfferDTO(new JPAQueryFactory(em)
-        .select(qOfferEntity).from(qOfferEntity).where(qOfferEntity.submittent.submissionId.id
-          .eq(submissionId).and(qOfferEntity.submittent.isApplicant.eq(Boolean.TRUE)))
-        .fetch());
+      .toOfferDTO(new JPAQueryFactory(em).selectDistinct(qOfferEntity).from(qOfferEntity)
+        .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
+          .and(qOfferEntity.submittent.isApplicant.isTrue()))
+        .orderBy(qOfferEntity.submittent.sortOrder.asc()).fetch());
   }
 
   @Override
@@ -1686,6 +1686,9 @@ public class OfferServiceImpl extends BaseService implements OfferService {
   @Override
   public void offerListSecurityCheck(String submissionId) {
     if (getGroupName(getUser()).equals(Group.DIR.getValue())
+      && compareCurrentVsSpecificStatus(
+      TenderStatus.fromValue(submissionService.getCurrentStatusOfSubmission(submissionId)),
+      TenderStatus.OFFER_OPENING_STARTED)
       && !compareCurrentVsSpecificStatus(
       TenderStatus.fromValue(submissionService.getCurrentStatusOfSubmission(submissionId)),
       TenderStatus.OFFER_OPENING_CLOSED)) {
@@ -1693,6 +1696,9 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         SecurityOperation.COMPANY_OFFERS_VIEW.getValue());
     }
     if (getGroupName(getUser()).equals(Group.PL.getValue())
+      && compareCurrentVsSpecificStatus(
+      TenderStatus.fromValue(submissionService.getCurrentStatusOfSubmission(submissionId)),
+      TenderStatus.OFFER_OPENING_STARTED)
       && !compareCurrentVsSpecificStatus(
       TenderStatus.fromValue(submissionService.getCurrentStatusOfSubmission(submissionId)),
       TenderStatus.OFFER_OPENING_CLOSED)

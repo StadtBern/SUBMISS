@@ -12,164 +12,148 @@
   -->
 
 <div class="row">
-	<div class="col-sm-12">
-		<h2 class="page-title">Benutzersuche</h2>
-	</div>
+  <div class="col-sm-12">
+    <h2 class="page-title">Benutzersuche</h2>
+  </div>
 </div>
 <div class="row">
-	<div class="card-box">
-		<form data-ng-submit="userSearchCtr.search()">
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label>Vorname</label> <input class="form-control" id="firstName"
-						data-ng-model="userSearchCtr.searchForm.firstName" type="text"
-						name="firstName">
-				</div>
+  <div class="card-box">
+    <form data-ng-submit="userSearchCtr.search()">
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label>Vorname</label> <input class="form-control" id="firstName"
+            data-ng-model="userSearchCtr.searchForm.firstName" type="text" name="firstName">
+        </div>
 
-				<div class="form-group">
-					<label>Nachname</label> <input class="form-control" id="lastName"
-						data-ng-model="userSearchCtr.searchForm.lastName" type="text"
-						name="lastName">
-				</div>
+        <div class="form-group">
+          <label>Nachname</label> <input class="form-control" id="lastName"
+            data-ng-model="userSearchCtr.searchForm.lastName" type="text" name="lastName">
+        </div>
 
-				<div class="form-group">
-					<label>E-Mail</label> <input class="form-control" id="email"
-						data-ng-model="userSearchCtr.searchForm.email" type="text"
-						name="email">
-				</div>
-				<div class="form-group">
-					<label>Aktiv</label> 
-					<select ui-select2="{allowClear: true}"
-						id="active" name="active"
-						ng-options="o.value as o.label for o in userSearchCtr.options"
-						data-ng-model="userSearchCtr.searchForm.active">
-						<option></option>
-					</select>
-				</div>
+        <div class="form-group">
+          <label>E-Mail</label> <input class="form-control" id="email" data-ng-model="userSearchCtr.searchForm.email"
+            type="text" name="email">
+        </div>
+        <div class="form-group">
+          <label>Aktiv</label>
+          <select ui-select2="{allowClear: true}" id="active" name="active"
+            ng-options="o.value as o.label for o in userSearchCtr.options"
+            data-ng-model="userSearchCtr.searchForm.active">
+            <option></option>
+          </select>
+        </div>
 
-			</div>
+      </div>
 
-			<div class="col-sm-12 col-md-6">
-				<div class="form-group">
-					<label for="roles">Rolle</label>
-					<ui-select name="role"
-						ng-model="userSearchCtr.searchForm.userGroup" theme="select2">
-					<ui-select-match allow-clear="true"> <span>
-						{{$select.selected.description}}</span> </ui-select-match> <ui-select-choices
-						repeat="item in (userSearchCtr.roles | filter: $select.search)">
-					<span ng-bind="item.description"></span> </ui-select-choices> </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="mandant">Mandant</label>
-					<!-- deactivate the drop down list in case only one tenant can be selected -->
-					<ui-select name="tenant" ng-disabled="userSearchCtr.tenants.length==1"
-                     ng-model="userSearchCtr.searchForm.tenant"
-                     ng-change="userSearchCtr.tenantChange(userSearchCtr.searchForm.tenant)"
-                     theme="select2">
+      <div class="col-sm-12 col-md-6">
+        <div class="form-group">
+          <label for="roles">Rolle</label>
+          <ui-select name="role" ng-model="userSearchCtr.searchForm.userGroup" theme="select2">
+            <ui-select-match allow-clear="true"> <span>
+                {{$select.selected.description}}</span> </ui-select-match>
+            <ui-select-choices repeat="item in (userSearchCtr.roles | filter: $select.search)">
+              <span ng-bind="item.description"></span> </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="mandant">Mandant</label>
+          <!-- deactivate the drop down list in case only one tenant can be selected -->
+          <ui-select name="tenant" ng-disabled="userSearchCtr.tenants.length==1"
+            ng-model="userSearchCtr.searchForm.tenant"
+            ng-change="userSearchCtr.tenantChange(userSearchCtr.searchForm.tenant)" theme="select2">
             <ui-select-match allow-clear="true">
-              <span ng-bind="$select.selected.name"></span> 
+              <span ng-bind="$select.selected.name"></span>
             </ui-select-match>
-            <ui-select-choices
-              repeat="item in (userSearchCtr.tenants | filter: $select.search | orderBy : 'name')">
+            <ui-select-choices repeat="item in (userSearchCtr.tenants | filter: $select.search | orderBy : 'name')">
               <span ng-bind="item.name"></span>
             </ui-select-choices>
           </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="abteilung">Abteilungen</label> 
-					<ui-select multiple id="department" name="department"
-                     ng-model="userSearchCtr.searchForm.secondaryDepartments"
-                     ng-change="userSearchCtr.departmentChange(userSearchCtr.searchForm.secondaryDepartments); userSearchCtr.checkForDepartmentsAndDirectorates()">
+        </div>
+        <div class="form-group">
+          <label for="abteilung">Abteilungen</label>
+          <ui-select multiple id="department" name="department" ng-model="userSearchCtr.searchForm.secondaryDepartments"
+            ng-change="userSearchCtr.departmentChange(userSearchCtr.searchForm.secondaryDepartments); userSearchCtr.checkForDepartmentsAndDirectorates()">
             <ui-select-match allow-clear="true">{{$item.name}} ({{$item.directorate.shortName}})</ui-select-match>
-            <ui-select-choices 
-                               repeat="item in userSearchCtr.departments | propsFilter: {name: $select.search} | orderBy:'name'">
+            <ui-select-choices
+              repeat="item in userSearchCtr.departments | propsFilter: {name: $select.search} | orderBy:'name'">
               {{item.name}} ({{item.directorate.shortName}})
             </ui-select-choices>
           </ui-select>
-					
-					
-					
-				</div>
-				<div class="form-group">
-					<label for="abteilung">Direktionen</label> 
-						<ui-select multiple id="directorate" name="directorate"
-                     ng-model="userSearchCtr.searchForm.directorates"
-                     ng-change="userSearchCtr.directorateChange(userSearchCtr.searchForm.directorates); userSearchCtr.checkForDepartmentsAndDirectorates()">
+
+
+
+        </div>
+        <div class="form-group">
+          <label for="abteilung">Direktionen</label>
+          <ui-select multiple id="directorate" name="directorate" ng-model="userSearchCtr.searchForm.directorates"
+            ng-change="userSearchCtr.directorateChange(userSearchCtr.searchForm.directorates); userSearchCtr.checkForDepartmentsAndDirectorates()">
             <ui-select-match allow-clear="true">{{$item.name}} </ui-select-match>
-            <ui-select-choices 
-                               repeat="item in userSearchCtr.directorates | propsFilter: {name: $select.search} | orderBy:'name'">
+            <ui-select-choices
+              repeat="item in userSearchCtr.directorates | propsFilter: {name: $select.search} | orderBy:'name'">
               {{item.name}}
             </ui-select-choices>
           </ui-select>
-						
-						
-				</div>
-				<div class="form-group">
-					<label>Registriert</label> 
-					<select ui-select2="{allowClear: true}"
-						id="registered" name="registered"
-						ng-options="o.value as o.label for o in userSearchCtr.options"
-						data-ng-model="userSearchCtr.searchForm.registered">
-						<option></option>
-					</select>
-				</div>
-			</div>
-			<div class="col-sm-12 btn-bar">
-				<button type="submit" class="btn btn-primary">Suchen</button>
-				<button type="button" class="btn btn-default"
-						data-ng-click="userSearchCtr.resetPage()">Zurücksetzen</button>
-			</div>
-		</form>
-	</div>
+
+
+        </div>
+        <div class="form-group">
+          <label>Registriert</label>
+          <select ui-select2="{allowClear: true}" id="registered" name="registered"
+            ng-options="o.value as o.label for o in userSearchCtr.options"
+            data-ng-model="userSearchCtr.searchForm.registered">
+            <option></option>
+          </select>
+        </div>
+      </div>
+      <div class="col-sm-12 btn-bar">
+        <button type="submit" class="btn btn-primary">Suchen</button>
+        <button type="button" class="btn btn-default" data-ng-click="userSearchCtr.resetPage()">Zurücksetzen</button>
+      </div>
+    </form>
+  </div>
 </div>
 <div class="row">
   <div class="col-sm-12">
-		<div>
-			<div>
-				<h2 class="page-title">Suchresultate</h2>
-			</div>
-		</div>
-		<div class="row" id="results">
-			<div class="card-box">
-				<div class="col-sm-12 ToolbarContainer"></div>
-				<div class="col-sm-12">
-					<div>
-						<div ng-table-pagination="userSearchCtr.tableParams"
-							template-url="'app/layout/pager.html'"></div>
-						<div class="table-responsive">
-							<table ng-table="userSearchCtr.tableParams"
-								template-pagination="custom/pager" class="table table-striped"
-								show-filter="true">
-								<tr ng-repeat="user in $data track by $index">
-									<td title="'Vorname'" sortable="'firstName'">{{user.firstName}}</td>
-									<td title="'Nachname'" sortable="'lastName'">{{user.lastName}}</td>
-									<td title="'E-Mail'" sortable="'email'">{{user.email}}</td>
-									<td title="'Rolle'" sortable="'role'">{{user.role}}</td>
-									<td title="'Mandant'" sortable="'tenantName'">{{user.tenantName}}</td>
-									<td title="'Direktion(en)'" sortable="'directoratesStr'">{{user.directoratesStr}}</td>
-									<td title="'Abteilung(en)'" sortable="'mainDepartmentStr'">{{user.mainDepartmentStr}}</td>
-									<td title="'Registriert'" sortable="'status'"><span
-										ng-if="user.status==3 || user.status==1">Registriert</span> <span
-										ng-if="user.status==0">Nicht registriert</span></td>
-									<td title="'Aktiv'" sortable="'status'"><span
-										ng-if="user.status == 3">Ja</span> <span
-										ng-if="user.status != 3">Nein</span></td>
-									<td title="'Aktion'" class="w90">
-										<div style="display: inline-block">
-											<button type="button" class="btn action btn-primary"
-												data-ng-click="userSearchCtr.editUser(user)"
-												data-ng-disabled="!user.editable"
-												title="Benutzer bearbeiten">
-												<span class="fa fa-pencil" aria-hidden="true"></span>
-											</button>
-										</div>
-									</td>
-								</tr>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div>
+      <div>
+        <h2 class="page-title">Suchresultate</h2>
+      </div>
+    </div>
+    <div class="row" id="results">
+      <div class="card-box">
+        <div class="col-sm-12 ToolbarContainer"></div>
+        <div class="col-sm-12">
+          <div>
+            <div ng-table-pagination="userSearchCtr.tableParams" template-url="'app/layout/pager.html'"></div>
+            <div class="table-responsive">
+              <table ng-table="userSearchCtr.tableParams" class="table table-striped" show-filter="true">
+                <tr ng-repeat="user in $data track by $index">
+                  <td title="'Vorname'" sortable="'firstName'">{{user.firstName}}</td>
+                  <td title="'Nachname'" sortable="'lastName'">{{user.lastName}}</td>
+                  <td title="'E-Mail'" sortable="'email'">{{user.email}}</td>
+                  <td title="'Rolle'" sortable="'role'">{{user.role}}</td>
+                  <td title="'Mandant'" sortable="'tenantName'">{{user.tenantName}}</td>
+                  <td title="'Direktion(en)'" sortable="'directoratesStr'">{{user.directoratesStr}}</td>
+                  <td title="'Abteilung(en)'" sortable="'mainDepartmentStr'">{{user.mainDepartmentStr}}</td>
+                  <td title="'Registriert'" sortable="'status'"><span
+                      ng-if="user.status==3 || user.status==1">Registriert</span> <span ng-if="user.status==0">Nicht
+                      registriert</span></td>
+                  <td title="'Aktiv'" sortable="'status'"><span ng-if="user.status == 3">Ja</span> <span
+                      ng-if="user.status != 3">Nein</span></td>
+                  <td title="'Aktion'" class="w90">
+                    <div style="display: inline-block">
+                      <button type="button" class="btn action btn-primary" data-ng-click="userSearchCtr.editUser(user)"
+                        data-ng-disabled="!user.editable" title="Benutzer bearbeiten">
+                        <span class="fa fa-pencil" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

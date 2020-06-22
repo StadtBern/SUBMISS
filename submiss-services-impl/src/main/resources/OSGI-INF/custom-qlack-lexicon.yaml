@@ -145,7 +145,8 @@ translations:
       - cpp_business_error_message: "Geschäft: Bitte geben Sie eine positive ganze Zahl ein."
         forceUpdate: true
       - cpp_preRemarks_error_message: "Vorbemerkungen: Der Wert darf maximal 1000 Zeichen lang sein."
-      - cpp_suitabilityAuditText_error_message: Das Textfeld der Eignungsprüfung darf maximal 500 Zeichen enthalten.
+      - cpp_suitabilityAuditText_error_message: Das Textfeld der Eignungsprüfung darf maximal 10000 Zeichen enthalten.
+        forceUpdate: true
       - cpp_reservation_error_message: "Vorbehalt: Der Wert darf maximal 1000 Zeichen lang sein."
       - cpp_freeTextField_error_message: Das Textfeld des Zuschlags darf maximal 1000 Zeichen enthalten.
       - cpp_reasonGiven_error_message: "Begründung: Der Wert darf maximal 10000 Zeichen lang sein."
@@ -200,12 +201,15 @@ translations:
       - no_legal_hearing_document_created: Das Rechtliche (Abbruch) Gehör wurde noch nicht erstellt, daher ist die Bearbeitung des Verfahrensabbruchs derzeit nicht möglich.
         forceUpdate: true
       - REGISTRATION_APPLICATION: Neuer Registrierungsantrag
-      - PROOF_REQUEST: Nachweisaufforderung gewünscht
+      - PROOF_REQUEST: Nachweisaufforderung gewünscht {{USER}}
+        forceUpdate: true
       - PROOF_REQUEST_PL_XY: Nachweisaufforderung für PL {{XY}} ausstehend
         forceUpdate: true
       - NOT_CLOSED_SUBMISSION: Nicht abgeschlossene Submission
-      - CHECK_TENDERLIST: Submittentenliste prüfen
-      - ILLEGAL_THRESHOLD: Unerlaubter Schwellenwert
+      - CHECK_TENDERLIST: Submittentenliste prüfen {{USER}}
+        forceUpdate: true
+      - ILLEGAL_THRESHOLD: Unerlaubter Schwellenwert {{USER}}
+        forceUpdate: true
       - SET_SURCHARGE_PDATE: Zuschlagspublikationsdatum setzen
       - offer_above_threshold_pl: Es wurde mindestens ein Submittent ausgewählt, bei dem die Offerte den Schwellenwert überschreitet.
         forceUpdate: true
@@ -309,10 +313,12 @@ translations:
       - formula_max_grade_error: Die eingegebene Formel kalkuliert mindestens eine Note die die Maximalnote überschreitet.
       - price_formula_max_grade_error: Die Preis Formel kalkuliert mindestens eine Note die die Maximalnote überschreitet.
       - op_cost_formula_max_grade_error: Die Betriebskosten Formel kalkuliert mindestens eine Note die die Maximalnote überschreitet.
-      - optimistic_lock: Sie können den Datensatz nicht mehr speichern, da die Daten bereits von einem anderer Benutzer bearbeitet und die von ihm vorgenommenen Änderungen gespeichert wurden.
+      - optimistic_lock: Sie können den Datensatz nicht mehr speichern, da die Daten bereits von einem anderen Benutzer bearbeitet und die von ihm vorgenommenen Änderungen gespeichert wurden.
+        forceUpdate: true
       - unsaved_cancellation_error_message: Bitte speichern Sie die Abbruch Maske des Rechtlichen Gehörs bevor Sie mit der Generierung weiterfortfahren.
       - content_max_size_message: "Inhaltstext: Der Wert darf maximal 10000 Zeichen lang sein."
-      - optimistic_lock_delete: Der Datensatz kann nicht gespeichert werden, da dieser bereits von einem anderen Benutzer gelöscht wurde.
+      - optimistic_lock_delete: Der Datensatz kann nicht gespeichert werden, da dieser bereits von einem anderen Benutzer gelöscht wurde. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
       - IMPORT: Bewertung importiert
       - formula_min_grade_error: Die eingegebene Formel kalkuliert mindestens eine Note kleiner als die Mindestnote.
       - price_formula_min_grade_error: Die Preis Formel kalkuliert mindestens eine Note kleiner als die Mindestnote.
@@ -335,3 +341,40 @@ translations:
       - companyNotes_length_error_message: "Allgemeine Bemerkungen: Der Wert darf maximal 1000 Zeichen lang sein."
         forceUpdate: true
       - companyAdminNotes_length_error_message: "Bemerkung FaBe: Der Wert darf maximal 1000 Zeichen lang sein."
+      - over_threshold_PL_message: "Das Verfahren ist gesperrt, da der Schwellenwert für freihändige Vergaben überschritten ist."
+      - checked_submittentenliste_PL_message: "Pendenz an FaBe zur Prüfung der Submittentenliste erfolgt am {{DATE}} durch {{USER}}."
+        forceUpdate: true
+      - reopen_after_verfugungen_message: "Achtung, die Verfügungen wurden bereits erstellt und müssen nach einer Wiederaufnahme und anschliessendem Abschluss nochmals erstellt werden!"
+        forceUpdate: true
+      - submission_deleted: Die ausgewählte Submission wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - project_deleted: Das ausgewählte Projekt wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - offer_deleted: Die ausgewählte Offerte wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - submittentDeleted: Der ausgewählte Submittent wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - criterionDeleted: Das ausgewählte Kriterium wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - subCriterionDeleted: Das ausgewählte Unterkriterium wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - examination_locked: Die Formelle/Eignungsprüfung wird von einem anderen Benutzer bearbeitet und ist demnach gesperrt. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - status_changed: Der Status wurde von einem anderen Benutzer geändert. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - legal_hearing_document_should_be_created: Das Rechtliche Gehör (Ausschluss) wurde für die ausgeschlossenen Firmen nicht erstellt.
+      - proof_document_should_be_created: Der Nachweisbrief wurde für die ausgeschlossenen Firmen nicht erstellt.
+      - award_locked: Der Zuschlagsbewertung wird von einem anderen Benutzer bearbeitet und ist demnach gesperrt. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - applicationDeleted: Die ausgewählte Bewerbung wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - applicantDeleted: Der ausgewählte Bewerber wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - task_completed: Die Pendenz wurde bereits von einem anderen Benutzer erledigt. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+        forceUpdate: true
+      - optimistic_lock_message: Sie können den Datensatz nicht mehr speichern, da die Daten bereits von einem anderen Benutzer bearbeitet und die von ihm vorgenommenen Änderungen gespeichert wurden. Bitte brechen Sie den Vorgang ab und aktualisieren Sie die Seite, um die Änderungen zu sehen.
+      - argeDeleted: Der ausgewählte ARGE wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+      - subcontractorDeleted: Der ausgewählte Subunternehmer wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+      - submission_not_found_message: Die Submission kann nicht gefunden werden, da sie entweder gelöscht wurde oder nicht existiert. Bitte gehen Sie zurück zur Suche, um einen neuen Suchvorgang zu starten.
+      - mime_type_does_not_match: Der Mime-Type passt nicht zur Dateiendung überein. Die Datei wird nicht hochgeladen.
+      - contract_document_error: Der Vertrag kann nicht erstellt werden, da kein Zuschlagsempfänger für diese Submission vorliegt.

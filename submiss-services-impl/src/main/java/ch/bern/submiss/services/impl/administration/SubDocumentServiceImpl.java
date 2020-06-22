@@ -128,7 +128,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1027,6 +1026,25 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     return createdDocumentIds;
   }
 
+  @Override
+  public Set<ValidationError> contractDocumentValidation(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method contractDocumentValidation, Parameters: submissionId: {0}",
+      submissionId);
+
+    Set<ValidationError> validationErrors = new HashSet<>();
+    List<SubmittentOfferDTO> offers =
+      submissionService.getCompaniesBySubmission(submissionId);
+    // check if there is no awarded submittent(s) to throw a validation error
+    if (templateBean.getAwardedNumber(offers) == 0) {
+      validationErrors.add(new ValidationError(ValidationMessages.CONTRACT_DOCUMENT_ERROR_FIELD,
+        ValidationMessages.CONTRACT_DOCUMENT_ERROR));
+    }
+
+    return validationErrors;
+  }
+
   /**
    * Update submission status.
    *
@@ -1249,7 +1267,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           documentService.getNodeByAttributes(LookupValues.TEMPLATE_FOLDER_ID, attributesMap);
 
         templateBean.replaceSubmissionCancelPlaceholders(submission, placeholders);
-        getOfferList(submission, offers);
+        getOfferListForCancel(submission, offers);
 
         for (SubmittentOfferDTO offer : offers) {
           documentDTO.setFilename(TEMPLATE_NAMES.VERFAHRENSABBRUCH.getValue()
@@ -1526,8 +1544,11 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         LinkedList<String> header = new LinkedList<>();
         List<LinkedHashMap<Map<String, String>, String>> content = new ArrayList<>();
 
-        if (submission.getProcess().equals(Process.SELECTIVE)) {
-          // In case of a selective process, instead of fetching the offers, get the applicants.
+        // Clear Submittent list when Selektiv process and status is not greater than
+        // OFFER_OPENING_STARTED.
+        if (submission.getProcess().equals(Process.SELECTIVE)
+          && !compareCurrentVsSpecificStatus(submission.getCurrentState(),
+          TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
           offers.clear();
           offers.addAll(submissionService.getApplicantsBySubmission(submission.getId()));
         }
@@ -1734,7 +1755,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
             }
             placeholders.put(DocumentPlaceholders.COPY_REFERENCE.getValue(),
               submission.getProject().getDepartment().getName());
-            getOfferList(submission, offers);
+            getOfferListForCancel(submission, offers);
             for (SubmittentOfferDTO offer : offers) {
               documentDTO.setFilename(Template.TEMPLATE_NAMES.RECHTLICHES_GEHOR_AB.getValue()
                 + offer.getSubmittent().getCompanyId().getCompanyName()
@@ -1789,7 +1810,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           List<SuitabilityDocumentDTO> suitabilityOffers = new ArrayList<>();
           List<OfferDTO> criterionOffers = criterionService
             .getExaminationSubmittentListWithCriteria(submission.getId(),
-              TemplateConstants.SUITABILITY, true);
+              TemplateConstants.SUITABILITY, true, true);
 
           // Clear Submittent list when Selektiv process and status is not greater than
           // OFFER_OPENING_STARTED.
@@ -1824,7 +1845,19 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
                   ComparatorUtil.offerCriteriaWithWeightings);
                 Collections.reverse(criterionOffer.getOfferCriteria());
                 suitabilityDTO.setOffer(criterionOffer);
-                suitabilityDTO.setOfferNotes(submittentOfferDTO.getOffer().getNotes());
+                if(criterionOffer.getSubmittent().getCompanyId().getIsProofProvided() != null
+                  && criterionOffer.getSubmittent().getCompanyId().getIsProofProvided()){
+                  suitabilityDTO.setProofStatus(1);
+                }else{
+                  suitabilityDTO.setProofStatus(0);
+                }
+                if(submission.getProcess().equals(Process.NEGOTIATED_PROCEDURE)
+                || submission.getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)){
+                  suitabilityDTO.setOfferNotes(submittentOfferDTO
+                    .getSubmittent().getFormalAuditNotes());
+                }else{
+                  suitabilityDTO.setOfferNotes(submittentOfferDTO.getOffer().getNotes());
+                }
                 suitabilityDTO.setOfferCriteria(criterionOffer.getOfferCriteria());
                 suitabilityDTO
                   .setMussCriterienSummary(templateBean.suitabilityDocMussSummary(criterionOffer));
@@ -1961,7 +1994,6 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     // Get the awarded applicants
     List<OfferDTO> notExcludedApplicants =
       offerService.retrieveOfferApplicants(documentDTO.getFolderId());
-    notExcludedApplicants.sort(Comparator.comparing(OfferDTO::getqExTotalGrade).reversed());
     // Get the awarded applicants table
     List<LinkedHashMap<Map<String, String>, Map<String, String>>> awardedApplicants = templateBean
       .replaceAwardedApplicantsPlaceholdersWithNames(notExcludedApplicants);
@@ -5159,10 +5191,22 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     List<SubmittentOfferDTO> offers =
       submissionService.getCompaniesBySubmission(documentDTO.getFolderId());
 
-    List<CompanyDTO> companies = submissionService.getUniqueSubmittentList(submission.getId());
+    // Clear Submittent list when Selektiv process and status is not greater than
+    // OFFER_OPENING_STARTED.
+    if (submission.getProcess().equals(Process.SELECTIVE)
+      && !compareCurrentVsSpecificStatus(submission.getCurrentState(),
+      TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
+      offers.clear();
+      offers.addAll(submissionService.getApplicantsBySubmission(submission.getId()));
+    }
 
-    getOfferList(submission, offers);
     templateBean.replaceSubmissionPlaceholders(placeholders, submission, offers);
+
+    List<CompanyDTO> companies = new ArrayList<>();
+
+    for (SubmittentOfferDTO offer : offers) {
+      companies.add(offer.getSubmittent().getCompanyId());
+    }
 
     if (template.getShortCode().equals(Template.SUBMITTENTENLISTE_POSTLISTE)) {
 
@@ -5237,7 +5281,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
    * @param submission the submission
    * @param offers the offers
    */
-  private void getOfferList(SubmissionDTO submission, List<SubmittentOfferDTO> offers) {
+  private void getOfferListForCancel(SubmissionDTO submission, List<SubmittentOfferDTO> offers) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getOfferList, Parameters: submission: {0}, "
@@ -5255,6 +5299,10 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     if (submission.getProcess().equals(Process.SELECTIVE)) {
       offers.addAll(submissionService.getApplicantsBySubmission(submission.getId()));
     }
+    // remove empty offers or excluded applicants
+    offers.removeIf(
+      submittentOfferDTO -> submittentOfferDTO.getOffer().getIsEmptyOffer() ||
+        Boolean.TRUE.equals(submittentOfferDTO.getOffer().getExcludedFirstLevel()));
   }
 
   /**
@@ -5497,9 +5545,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
   /**
    * Initialize signature reference person.
    *
-   * @param firstSignature the first signature
+   * @param firstSignature  the first signature
    * @param secondSignature the second signature
-   * @param placeholders the placeholders
+   * @param placeholders    the placeholders
    */
   private void initializeSignatureReferencePerson(SignatureProcessTypeEntitledDTO firstSignature,
     SignatureProcessTypeEntitledDTO secondSignature, Map<String, String> placeholders) {
@@ -5510,16 +5558,24 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       new Object[]{firstSignature, secondSignature, placeholders});
 
     if (firstSignature != null) {
-      placeholders.put("first_reference_name", firstSignature.getName());
-      placeholders.put("first_reference_function", firstSignature.getFunction());
+      placeholders.put("first_reference_name", (firstSignature.getName() != null)
+        ? firstSignature.getName()
+        : TemplateConstants.EMPTY_STRING);
+      placeholders.put("first_reference_function", (firstSignature.getFunction() != null)
+        ? firstSignature.getFunction()
+        : TemplateConstants.EMPTY_STRING);
     } else {
       placeholders.put("first_reference_name", TemplateConstants.EMPTY_STRING);
       placeholders.put("first_reference_function", TemplateConstants.EMPTY_STRING);
     }
 
     if (secondSignature != null) {
-      placeholders.put("second_reference_name", secondSignature.getName());
-      placeholders.put("second_reference_function", secondSignature.getFunction());
+      placeholders.put("second_reference_name", (secondSignature.getName() != null)
+        ? secondSignature.getName()
+        : TemplateConstants.EMPTY_STRING);
+      placeholders.put("second_reference_function", (secondSignature.getFunction() != null)
+        ? secondSignature.getFunction()
+        : TemplateConstants.EMPTY_STRING);
     } else {
       placeholders.put("second_reference_name", TemplateConstants.EMPTY_STRING);
       placeholders.put("second_reference_function", TemplateConstants.EMPTY_STRING);

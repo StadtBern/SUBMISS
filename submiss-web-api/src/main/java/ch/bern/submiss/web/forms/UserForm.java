@@ -99,6 +99,11 @@ public class UserForm extends AbstractForm {
   private Boolean groupChanged;
 
   /**
+   * The old group id of current user. Used to check for optimistic lock erros.
+   */
+  private String oldGroupId;
+
+  /**
    * flag indicating whether userAdminRight is changed or not, in order to update the security
    * resources.
    */
@@ -441,5 +446,13 @@ public class UserForm extends AbstractForm {
 
   public void setSecondaryDepartmentsVersion(Long secondaryDepartmentsVersion) {
     this.secondaryDepartmentsVersion = secondaryDepartmentsVersion;
+  }
+
+  public String getOldGroupId() {
+    return oldGroupId;
+  }
+
+  public void setOldGroupId(String oldGroupId) {
+    this.oldGroupId = oldGroupId;
   }
 }

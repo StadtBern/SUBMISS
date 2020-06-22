@@ -246,8 +246,10 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
 
       List<String> departmentIDs = new JPAQueryFactory(em)
         .select(qDepartmentHistoryEntity.departmentId.id).from(qDepartmentHistoryEntity)
-        .where(qDepartmentHistoryEntity.directorateEnity.id.in(directorateIds))
+        .where(qDepartmentHistoryEntity.directorateEnity.id.in(directorateIds),
+          qDepartmentHistoryEntity.toDate.isNull())
         .fetch();
+
       List<DepartmentEntity> departmentEntities = new JPAQueryFactory(em).select(qDepartmentEntity)
         .from(qDepartmentEntity).where(qDepartmentEntity.id.in(departmentIDs)).fetch();
       whereClause.and(qSubmissionEntity.project.department.in(departmentEntities));
@@ -340,9 +342,8 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
         + "pageItems: {2}, sortColumn: {3}, sortType: {4}",
       new Object[]{reportBaseDTO, pageItems, sortColumn, sortType});
 
-    JPAQuery<SubmissionEntity> query = new JPAQuery<>(em);
-    if (pageItems == -1 || pageItems == 0) {
-      query.select(submission).from(submission).rightJoin(submission.project, project)
+    JPAQuery<SubmissionEntity> query = new JPAQuery<>(em)
+      .select(submission).from(submission).rightJoin(submission.project, project)
       .rightJoin(submission.project.objectName, objectName)
       .rightJoin(objectName.masterListValueHistory, objectNameHistory)
       .rightJoin(submission.project.department, qDepartmentEntity)
@@ -351,18 +352,9 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
       .where(objectNameHistory.toDate.isNull(), qDepartmentHistoryEntity.toDate.isNull(),
         qDirectorateHistoryEntity.toDate.isNull(),
         getWhereClause(submission, reportBaseDTO, getSubmissionIds(reportBaseDTO)));
-    } else {
-      query.select(submission).from(submission).rightJoin(submission.project, project)
-          .rightJoin(submission.project.objectName, objectName)
-          .rightJoin(objectName.masterListValueHistory, objectNameHistory)
-          .rightJoin(submission.project.department, qDepartmentEntity)
-          .leftJoin(qDepartmentEntity.department, qDepartmentHistoryEntity)
-          .leftJoin(qDepartmentHistoryEntity.directorateEnity.directorate,
-              qDirectorateHistoryEntity)
-          .where(objectNameHistory.toDate.isNull(), qDepartmentHistoryEntity.toDate.isNull(),
-              qDirectorateHistoryEntity.toDate.isNull(),
-              getWhereClause(submission, reportBaseDTO, getSubmissionIds(reportBaseDTO)))
-          .offset((page - 1) * pageItems).limit(pageItems);
+
+    if (pageItems != -1 && pageItems != 0) {
+      query.offset((page - 1) * pageItems).limit(pageItems);
     }
 
     if (sortColumn != null) {

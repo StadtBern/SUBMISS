@@ -16,9 +16,13 @@ package ch.bern.submiss.services.impl.mappers;
 import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
 import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.dto.TenantDTO;
+import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,11 +43,11 @@ public abstract class UserDTOtoSubmissUserDTOMapper {
     if (userDto == null) {
       return null;
     }
-
+    SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
     SubmissUserDTO submissUserDto = new SubmissUserDTO();
     submissUserDto.setId(userDto.getId());
     submissUserDto.setVersion(userDto.getDbversion());
-    String[] splitedUsernameParts = userDto.getUsername().split("@");
+    String[] splitedUsernameParts = userDto.getUsername().split(LookupValues.USER_NAME_SPECIAL_CHARACTER);
     submissUserDto.setUsername(splitedUsernameParts[0]);
     submissUserDto.setStatus(userDto.getStatus());
     submissUserDto.setUserAdminRight(userAdminRight);
@@ -68,9 +72,14 @@ public abstract class UserDTOtoSubmissUserDTOMapper {
 
     if (userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()) != null
       && userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData() != null) {
-      submissUserDto
-        .setRegisteredDate(
+      submissUserDto.setRegisteredDate(
           userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData());
+      try {
+        submissUserDto.setRegisteredDateTimestamp(new Timestamp(df.parse(
+            userDto.getAttribute(USER_ATTRIBUTES.REGISTERED_DATE.getValue()).getData()).getTime()));
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
     }
 
     if (userDto.getAttribute(USER_ATTRIBUTES.FUNCTION.getValue()) != null
@@ -83,9 +92,14 @@ public abstract class UserDTOtoSubmissUserDTOMapper {
     }
     if (userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()) != null
       && userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData() != null) {
-      submissUserDto
-        .setDeactivationDate(
+      submissUserDto.setDeactivationDate(
           userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData());
+      try {
+        submissUserDto.setRegisteredDateTimestamp(new Timestamp(df.parse(
+          userDto.getAttribute(USER_ATTRIBUTES.DEACTIVATION_DATE.getValue()).getData()).getTime()));
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
     }
 
     if (groupDTOs != null) {

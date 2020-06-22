@@ -22,10 +22,10 @@
 	data-ng-submit="generateContractCtrl.generateContract()"
 	shows-validation-errors>
 	<div class="modal-body">
-		<div class="alert alert-danger"
-			ng-if="generateContractCtrl.requestForm.$invalid" role="alert">
-
-		</div>
+		<div class="alert alert-danger" ng-if="generateContractCtrl.requestForm.$invalid" role="alert">
+      <field-error form-element-name="contract_document_error_field" translate name="error"/>
+    </div>
+    <input name="contract_document_error_field" ng-hide="true" data-ng-model="fd">
 		<div class="form-group"
 			ng-if="generateContractCtrl.templates.length > 0">
 			<label for="template">Vertragsvorlage<span class="mandatory">*</span></label>

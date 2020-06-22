@@ -519,6 +519,12 @@ public class SubmissionDTO extends AbstractDTO {
   private Timestamp pageRequestedOn;
 
   /**
+   * The noAwardTender.
+   */
+  @JsonView(View.Internal.class)
+  private Boolean noAwardTender;
+
+  /**
    * Gets the report companies.
    *
    * @return the report companies
@@ -1980,6 +1986,14 @@ public class SubmissionDTO extends AbstractDTO {
    */
   public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
+  }
+
+  public Boolean getNoAwardTender() {
+    return noAwardTender;
+  }
+
+  public void setNoAwardTender(Boolean noAwardTender) {
+    this.noAwardTender = noAwardTender;
   }
 
   @Override

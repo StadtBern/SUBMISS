@@ -183,6 +183,15 @@
                 DL-Wettbewerb
               </label>
             </div>
+            <div class="col-sm-12">
+              <label class="checkbox-inline"> <input type="checkbox"
+                id="noAwardTender" name="noAwardTender"
+                ng-checked="submissionCreateCtr.submission.noAwardTender"
+                data-ng-model="submissionCreateCtr.submission.noAwardTender"
+                data-ng-disabled="submissionCreateCtr.noAwardCheckboxDisabled()">
+                Kein Zuschlag
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -216,7 +225,7 @@
             <span class="input-group-btn">
               <button class="btn btn-primary" type="button"
                 ng-if="submissionCreateCtr.submission.pmExternal.companyName != null"
-                data-ng-click="submissionCreateCtr.submission.pmExternal = null; submissionCreateCtr.moreThanOneError = false">
+                data-ng-click="submissionCreateCtr.deleteCompany()">
                 <span class="fa fa-trash"></span>
               </button>
               <button class="btn btn-primary" type="button" data-ng-click="submissionCreateCtr.addCompany()">
@@ -424,9 +433,9 @@
         <div class="col-sm-12 col-md-12 btn-bar">
           <button type="submit" class="btn btn-primary"
             data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
-											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED || !submissionCreateCtr.submissionForm.$dirty">Speichern</button>
+											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED || !(submissionCreateCtr.submissionForm.$dirty || submissionCreateCtr.pmExternalChanged)">Speichern</button>
           <button type="button" class="btn btn-default" data-dismiss="modal"
-            ng-click="submissionCreateCtr.closeWindow(submissionCreateCtr.submissionForm.$dirty)">Abbrechen</button>
+            ng-click="submissionCreateCtr.closeWindow()">Abbrechen</button>
         </div>
       </div>
     </fieldset>

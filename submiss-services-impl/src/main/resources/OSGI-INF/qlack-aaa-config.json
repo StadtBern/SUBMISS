@@ -39,10 +39,6 @@
 			"description":"Nachweisseanzeigen"
 		},
 		{
-			"name":"CompanyProofsView",
-			"description":"Nachweisseanzeigen"
-		},
-		{
 			"name":"CompanyUpdate",
 			"description":"Firmabearbeiten"
 		},
@@ -494,6 +490,18 @@
 			"name": "SelectiveTender.AwardEvaluationEdit",
 			"description": "Zuschlagsbewertung bearbeiten"
 		},
+    {
+      "name": "OpenTender.AwardEvaluationView",
+      "description": "Zuschlagsbewertung anzeigen"
+    },
+    {
+      "name": "InvitedTender.AwardEvaluationView",
+      "description": "Zuschlagsbewertung anzeigen"
+    },
+    {
+      "name": "SelectiveTender.AwardEvaluationView",
+      "description": "Zuschlagsbewertung anzeigen"
+    },
 		{
 			"name":"SuitabilityExecute",
 			"description":"Eignungsprüfung durchführen"
@@ -745,7 +753,15 @@
 		{
 			"name": "GenerateUsersExportReport",
 			"description": "Export der Benutzerübersicht"
-		}
+		},
+    {
+      "name": "NegotiatedTender.FormalAuditView",
+      "description": "FormellePrüfung"
+    },
+    {
+      "name": "NegotiatedCompetitionTender.FormalAuditView",
+      "description": "FormellePrüfung"
+    }
 	],
 	"groupHasOperations": [
 		{
@@ -976,6 +992,30 @@
 			"groupName": "Dir",
 			"operationName": "InvitedTender.FormalAuditView"
 		},
+    {
+      "groupName": "Admin",
+      "operationName": "NegotiatedTender.FormalAuditView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NegotiatedTender.FormalAuditView"
+    },
+    {
+      "groupName": "Dir",
+      "operationName": "NegotiatedTender.FormalAuditView"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NegotiatedCompetitionTender.FormalAuditView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NegotiatedCompetitionTender.FormalAuditView"
+    },
+    {
+      "groupName": "Dir",
+      "operationName": "NegotiatedCompetitionTender.FormalAuditView"
+    },
 		{
 			"groupName": "Admin",
 			"operationName": "SelectiveTender.AddCriterion"
@@ -1520,6 +1560,42 @@
 			"groupName": "PL",
 			"operationName": "SelectiveTender.AwardEvaluationEdit"
 		},
+    {
+      "groupName": "Admin",
+      "operationName": "OpenTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "SelectiveTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "InvitedTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "InvitedTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "OpenTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "SelectiveTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "Dir",
+      "operationName": "OpenTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "Dir",
+      "operationName": "SelectiveTender.AwardEvaluationView"
+    },
+    {
+      "groupName": "Dir",
+      "operationName": "InvitedTender.AwardEvaluationView"
+    },
 		{
 			"groupName": "Admin",
 			"operationName": "SuitabilityExecute"
@@ -1995,6 +2071,14 @@
 		{
 			"groupName": "Admin",
 			"operationName": "GenerateOperationsReport"
-		}
+		},
+    {
+      "groupName": "Admin",
+      "operationName": "GenerateUsersExportReport"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "UserOperationUserView"
+    }
 	]
 }

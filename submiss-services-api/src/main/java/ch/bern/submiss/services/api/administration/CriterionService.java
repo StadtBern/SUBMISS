@@ -244,9 +244,11 @@ public interface CriterionService {
    * @param submissionId the submission id
    * @param type the type
    * @param all the all
+   * @param forEignungspruefungDoc true if called for Eignungsprüfung document creation
    * @return the examination submittent list with criteria
    */
-  List<OfferDTO> getExaminationSubmittentListWithCriteria(String submissionId, String type, Boolean all);
+  List<OfferDTO> getExaminationSubmittentListWithCriteria(String submissionId, String type,
+    Boolean all, Boolean forEignungspruefungDoc);
   
   /**
    * Read submission evaluated criteria.

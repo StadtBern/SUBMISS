@@ -1802,8 +1802,15 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
         }
       }
     }
-    /* sort */
-    Collections.sort(tmpOfferEntities, ComparatorUtil.sortOfferEntitiesScore);
+    if(!compareCurrentVsSpecificStatus(submissionStatus,
+      TenderStatus.FORMAL_AUDIT_COMPLETED)){
+      // Until status FORMAL_AUDIT_COMPLETED offers have no score so ranking should be made
+      // with another Comparator
+      Collections.sort(tmpOfferEntities, ComparatorUtil.sortCompaniesByOfferEntities);
+    }else {
+      Collections.sort(tmpOfferEntities, ComparatorUtil.sortOfferEntitiesScore);
+    }
+
     /* inform rank field */
     for (OfferEntity offer : offerEntities) {
       if (tmpOfferEntities.contains(offer)) { // is not excluded
@@ -2164,7 +2171,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
 
   @Override
   public List<OfferDTO> getExaminationSubmittentListWithCriteria(String submissionId, String type,
-    Boolean all) {
+    Boolean all, Boolean forEignungspruefungDoc) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getOfferCriteria, Parameters: submissionId: {0}"
@@ -2174,12 +2181,19 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     List<OfferEntity> offers = null;
     SubmissionEntity submission = new JPAQueryFactory(em).select(qSubmissionEntity)
       .from(qSubmissionEntity).where(qSubmissionEntity.id.eq(submissionId)).fetchOne();
-    if (all && submission.getProcess().equals(Process.SELECTIVE)) {
+    TenderStatus submissionStatus = TenderStatus
+      .fromValue(submissionService.getCurrentStatusOfSubmission(submission.getId()));
+    if (all && submission.getProcess().equals(Process.SELECTIVE)
+      && (!forEignungspruefungDoc || (forEignungspruefungDoc
+      && !compareCurrentVsSpecificStatus(submissionStatus,
+      TenderStatus.AWARD_NOTICES_1_LEVEL_CREATED)))) {
       offers = new JPAQueryFactory(em).selectDistinct(qOfferEntity).from(qOfferEntity)
         .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
           .and(qOfferEntity.submittent.isApplicant.isTrue()))
         .orderBy(qOfferEntity.submittent.companyId.companyName.toLowerCase().asc()).fetch();
-    } else if (all && !submission.getProcess().equals(Process.SELECTIVE)) {
+    } else if (all && (!submission.getProcess().equals(Process.SELECTIVE)
+      || (submission.getProcess().equals(Process.SELECTIVE) && forEignungspruefungDoc
+      && !compareCurrentVsSpecificStatus(submissionStatus, TenderStatus.FORMAL_AUDIT_COMPLETED)))) {
       offers = new JPAQueryFactory(em).selectDistinct(qOfferEntity).from(qOfferEntity)
         .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
           .and(qOfferEntity.isEmptyOffer.isFalse()))
@@ -2206,26 +2220,44 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     List<OfferDTO> offerDTOs = OfferDTOWithCriteriaMapper.INSTANCE.toOfferDTO(offers);
     for (OfferDTO offer : offerDTOs) {
       if (((submission.getProcess().equals(Process.OPEN)
-        || submission.getProcess().equals(Process.INVITATION))
+        || submission.getProcess().equals(Process.INVITATION)
+        || submission.getProcess().equals(Process.NEGOTIATED_PROCEDURE)
+        || submission.getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))
         && !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submission.getStatus()),
         TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED))
-        || (submission.getProcess().equals(Process.SELECTIVE)
+        || (submission.getProcess().equals(Process.SELECTIVE) && !forEignungspruefungDoc
         && !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submission.getStatus()),
-        TenderStatus.SUITABILITY_AUDIT_COMPLETED_S))) {
+        TenderStatus.SUITABILITY_AUDIT_COMPLETED_S))
+        || (submission.getProcess().equals(Process.SELECTIVE) && forEignungspruefungDoc)){
         projectBean.calculateSubmittentValues(offer.getSubmittent(), deadline,
-          submission.getProcess());
+          submission.getProcess(), forEignungspruefungDoc);
       }
       if (submission.getProcess().equals(Process.SELECTIVE)) {
         FormalAuditEntity formalAuditEntity = new JPAQueryFactory(em).selectFrom(qFormalAuditEntity)
           .where(qFormalAuditEntity.submittent.id.eq(offer.getSubmittent().getId())).fetchOne();
         if (formalAuditEntity != null) {
-          offer.getSubmittent()
-            .setExistsExclusionReasons(formalAuditEntity.getExistsExclusionReasons());
+          if(!forEignungspruefungDoc || (forEignungspruefungDoc &&
+            !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submission.getStatus()),
+              TenderStatus.SUITABILITY_AUDIT_COMPLETED_S))){
+            offer.getSubmittent()
+              .setExistsExclusionReasons(formalAuditEntity.getExistsExclusionReasons());
+          }
           if (compareCurrentVsSpecificStatus(TenderStatus.fromValue(submission.getStatus()),
             TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
             offer.getSubmittent()
               .setFormalExaminationFulfilled(formalAuditEntity.getFormalExaminationFulfilled());
           }
+        }
+      }
+      // Formelle Prüfung erfüllt in Eignungsprüfung document is Ja only when Nachweisstatus is Ja
+      // and Ausschlussgründe gem. Art 24, ÖBV is Nein
+      if(forEignungspruefungDoc){
+        if(offer.getSubmittent().getExistsExclusionReasons() != null
+          && offer.getSubmittent().getCompanyId().getIsProofProvided()
+          && !offer.getSubmittent().getExistsExclusionReasons()){
+          offer.getSubmittent().setFormalExaminationFulfilled(true);
+        }else if(offer.getSubmittent().getExistsExclusionReasons() != null){
+          offer.getSubmittent().setFormalExaminationFulfilled(false);
         }
       }
       Collections.sort(offer.getOfferCriteria(), ComparatorUtil.offerCriteriaWithoutWeightings);

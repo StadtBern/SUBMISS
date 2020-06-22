@@ -456,6 +456,72 @@ public class ComparatorUtil {
       return -1;
     };
 
+  public static final Comparator<OfferEntity> sortCompaniesByOfferEntities =
+    (OfferEntity s1, OfferEntity s2) -> {
+    // Same as sortCompaniesByOffers Comparator but for OfferEntities
+      if (s1.getIsEmptyOffer() != null && s2.getIsEmptyOffer() != null) {
+        if (s1.getIsEmptyOffer().compareTo(s2.getIsEmptyOffer()) > 0) {
+          return 1;
+        } else if (s1.getIsEmptyOffer()
+          .compareTo(s2.getIsEmptyOffer()) < 0) {
+          return -1;
+        }
+      }
+      if (s1.getIsExcludedFromProcess() != null
+        && s2.getIsExcludedFromProcess() != null) {
+        if (s1.getIsExcludedFromProcess()
+          .compareTo(s2.getIsExcludedFromProcess()) > 0) {
+          return 1;
+        } else if (s1.getIsExcludedFromProcess()
+          .compareTo(s2.getIsExcludedFromProcess()) < 0) {
+          return -1;
+        }
+      }
+      if (s1.getIsPartOffer() != null && s2.getIsPartOffer() != null) {
+        if (s1.getIsPartOffer().compareTo(s2.getIsPartOffer()) > 0) {
+          return 1;
+        } else if (s1.getIsPartOffer().compareTo(s2.getIsPartOffer()) < 0) {
+          return -1;
+        }
+      }
+      /**
+       * Set var s1Amount and s2Amount for the case of null Compare the amounts
+       */
+      BigDecimal s1Amount = BigDecimal.ZERO;
+      BigDecimal s2Amount = BigDecimal.ZERO;
+
+      if (s1.getAmount() != null) {
+        s1Amount = s1.getAmount();
+      }
+      if (s2.getAmount() != null) {
+        s2Amount = s2.getAmount();
+      }
+
+      if (s1Amount.compareTo(s2Amount) > 0) {
+        return 1;
+      } else if (s1Amount.compareTo(s2Amount) < 0) {
+        return -1;
+
+      }
+
+      /**
+       * compare if amounts be equal to compare by name and order alphabetically
+       */
+      if (s1.getSubmittent().getCompanyId().getCompanyName() != null
+        && s2.getSubmittent().getCompanyId().getCompanyName() != null) {
+        if (s1.getSubmittent().getCompanyId().getCompanyName().toLowerCase()
+          .compareTo(s2.getSubmittent().getCompanyId().getCompanyName().toLowerCase())
+          > 0) {
+          return 1;
+        } else if (s1.getSubmittent().getCompanyId().getCompanyName().toLowerCase()
+          .compareTo(s2.getSubmittent().getCompanyId().getCompanyName().toLowerCase())
+          < 0) {
+          return -1;
+        }
+      }
+      return -1;
+    };
+
   /**
    * Sort list of company's proofs according to proofOrder value.
    */

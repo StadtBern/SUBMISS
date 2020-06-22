@@ -469,6 +469,12 @@ public class SubmissionEntity extends AbstractEntity {
   private Long submittentListCheckedOn;
 
   /**
+   * The noAwardTender.
+   */
+  @Column(name = "NO_AWARD_TENDER", nullable = false)
+  private Boolean noAwardTender;
+
+  /**
    * Gets the project.
    *
    * @return the project
@@ -1926,6 +1932,14 @@ public class SubmissionEntity extends AbstractEntity {
    */
   public void setUpdatedOn(Timestamp updatedOn) {
     this.updatedOn = updatedOn;
+  }
+
+  public Boolean getNoAwardTender() {
+    return noAwardTender;
+  }
+
+  public void setNoAwardTender(Boolean noAwardTender) {
+    this.noAwardTender = noAwardTender;
   }
 
   @Override

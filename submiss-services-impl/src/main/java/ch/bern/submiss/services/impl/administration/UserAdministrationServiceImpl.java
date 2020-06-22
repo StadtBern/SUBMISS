@@ -37,7 +37,6 @@ import ch.bern.submiss.services.api.util.LookupValues.USER_ATTRIBUTES;
 import ch.bern.submiss.services.api.util.LookupValues.USER_STATUS;
 import ch.bern.submiss.services.api.util.LookupValues.WEBSSO_ATTRIBUTES;
 import ch.bern.submiss.services.api.util.SubmissConverter;
-import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.UserDTOtoSubmissUserDTOMapper;
 import com.eurodyn.qlack2.fuse.aaa.api.OperationService;
 import com.eurodyn.qlack2.fuse.aaa.api.criteria.UserSearchCriteria;
@@ -46,7 +45,6 @@ import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.ResourceDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserAttributeDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.eurodyn.qlack2.util.sso.dto.SAMLAttributeDTO;
 import com.eurodyn.qlack2.util.sso.dto.WebSSOHolder;
 import java.io.ByteArrayOutputStream;
@@ -60,9 +58,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -195,6 +194,10 @@ public class UserAdministrationServiceImpl extends BaseService implements
       persistedUser.setAttribute(attrib);
 
       userService.updateUser(persistedUser, false);
+
+      // Call the handleUserHistory function to create the first user history entry.
+      userHistoryService.handleUserHistory(dto.getId(), getGroupByName(groupName).getId(),
+        dto.getStatus());
 
     } else {
       // Create new task when user registers.
@@ -1110,8 +1113,10 @@ public class UserAdministrationServiceImpl extends BaseService implements
       rangeDateUser.setUserGroup(userGroupService.getGroupByID(userHistoryDTO.getGroupId(), false));
       // Get the user start (registered) and end (deactivation) dates from the history entry.
       rangeDateUser.setRegisteredDate(extractDateWithoutTime(userHistoryDTO.getFromDate()));
+      rangeDateUser.setRegisteredDateTimestamp(userHistoryDTO.getFromDate());
       if (userHistoryDTO.getToDate() != null) {
         rangeDateUser.setDeactivationDate(extractDateWithoutTime(userHistoryDTO.getToDate()));
+        rangeDateUser.setDeactivationDateTimestamp(userHistoryDTO.getToDate());
       }
       // Get the start calculation date.
       Timestamp startCalculationDate;
@@ -1153,6 +1158,9 @@ public class UserAdministrationServiceImpl extends BaseService implements
     List<SubmissUserDTO> sbUserList = new ArrayList<>();
     List<SubmissUserDTO> dirUserList = new ArrayList<>();
 
+    // Remove or adjust Registered Days of entries that Registered or Deactivation dates overlap.
+    rangeDateUserList = removeOverlappingEntries(rangeDateUserList);
+
     // Split the rangeDateUserList into separate Lists depending on the user group.
     for(SubmissUserDTO userDTO : rangeDateUserList){
       if(userDTO.getUserGroup().getDescription().equals("Administration")){
@@ -1181,18 +1189,58 @@ public class UserAdministrationServiceImpl extends BaseService implements
     return mergedRangeDateUserList;
   }
 
+  /**
+   * Removes or adjusts Registered Days of entries that Registered or Deactivation dates overlap no
+   * matter the UserGroup.
+   *
+   * @param rangeDateUserList the rangeDateUser List
+   * @return the mergedRangeDate DTO List
+   */
+  private List<SubmissUserDTO> removeOverlappingEntries(List<SubmissUserDTO> rangeDateUserList) {
+    List<SubmissUserDTO> mergedRangeDateList = new ArrayList<>();
+    // Sort the list by Registered Date in desc order
+    rangeDateUserList
+      .sort(Comparator.comparing(SubmissUserDTO::getRegisteredDateTimestamp).reversed());
+    // The first entry in the list is the one we'll use to compare with the next one
+    SubmissUserDTO rangeDateUserToCompare = rangeDateUserList.get(0);
+    mergedRangeDateList.add(rangeDateUserList.get(0));
+    for (int i = 1; i < rangeDateUserList.size(); i++) {
+      // Check the Registered Date of previous entry with
+      // the Deactivation Date of the current one in list.
+      if (rangeDateUserList.get(i).getDeactivationDate()
+        .equals(rangeDateUserToCompare.getRegisteredDate())) {
+        // If Registered Date and Deactivation Date of the current one in list are not the same,
+        // add the entry to the list but subtract one day because it's already calculated
+        // in previous entry.
+        if (!rangeDateUserList.get(i).getRegisteredDate()
+          .equals(rangeDateUserList.get(i).getDeactivationDate())) {
+          rangeDateUserList.get(i)
+            .setRegisteredDays(rangeDateUserList.get(i).getRegisteredDays() - 1);
+          if (rangeDateUserList.get(i).getRegisteredDays() != 0) {
+            mergedRangeDateList.add(rangeDateUserList.get(i));
+          }
+        }
+      } else {
+        // If Registered Date and Deactivation Date of compared entries are not the same we
+        // add the entry to the list without any modifications.
+        mergedRangeDateList.add(rangeDateUserList.get(i));
+      }
+      // Current entry will be used for next iteration.
+      rangeDateUserToCompare = rangeDateUserList.get(i);
+    }
+    return mergedRangeDateList;
+  }
+
+  /**
+   * Merges all history entries of user and sums Registered days per UserGroup.
+   *
+   * @param rangeDateUserList the rangeDateUser List
+   * @return the mergedRangeDateUser DTO
+   */
   private SubmissUserDTO mergeRangeDatesByUserGroup(List<SubmissUserDTO> rangeDateUserList) {
     // Sort the list by Registered Date in asc order after converting date String
     // into Date.
-    SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
-    rangeDateUserList.sort((o1,o2) -> {
-      try {
-        return df.parse(o1.getRegisteredDate()).compareTo(df.parse(o2.getRegisteredDate()));
-      } catch (ParseException e) {
-        e.printStackTrace();
-      }
-      return 0;
-    });
+    rangeDateUserList.sort(Comparator.comparing(SubmissUserDTO::getRegisteredDateTimestamp));
     // The SubmissUserDTO which holds the merged history entries
     SubmissUserDTO mergedRangeDateUser = rangeDateUserList.get(0);
     // The first entry in the list is the one we'll use to compare with the next one
@@ -1208,16 +1256,21 @@ public class UserAdministrationServiceImpl extends BaseService implements
         // in mergedRangeDateUser to complete the merge of these entries.
         if (!rangeDateUserList.get(i).getRegisteredDate()
           .equals(rangeDateUserList.get(i).getDeactivationDate())) {
+          mergedRangeDateUser
+            .setDeactivationDateTimestamp(rangeDateUserList.get(i).getDeactivationDateTimestamp());
           mergedRangeDateUser.setDeactivationDate(rangeDateUserList.get(i).getDeactivationDate());
           mergedRangeDateUser.setRegisteredDays(
             mergedRangeDateUser.getRegisteredDays() + rangeDateUserList.get(i).getRegisteredDays()
               - 1);
         } else if (rangeDateUserList.get(i).getDeactivationDate() == null) {
+          mergedRangeDateUser.setDeactivationDateTimestamp(null);
           mergedRangeDateUser.setDeactivationDate(null);
         }
       } else {
         // If Registered Date and Deactivation Date of compared entries are not the same we
         // continue with the merge of Registered Days and set the new Deactivation Date.
+        mergedRangeDateUser
+          .setDeactivationDateTimestamp(rangeDateUserList.get(i).getDeactivationDateTimestamp());
         mergedRangeDateUser.setDeactivationDate(rangeDateUserList.get(i).getDeactivationDate());
         mergedRangeDateUser.setRegisteredDays(
           mergedRangeDateUser.getRegisteredDays() + rangeDateUserList.get(i).getRegisteredDays());
@@ -1394,12 +1447,12 @@ public class UserAdministrationServiceImpl extends BaseService implements
     List<UserDTO> userDTOs = userService.findUsers(userSearchCriteria);
     for (UserDTO userDTO : userDTOs) {
       try {
-        // Deactivate user if last login was 6 months ago.
+        // Deactivate user if last login was 1 year ago.
         if ((userDTO.getAttribute(USER_ATTRIBUTES.LOGIN_DATE.getValue()) != null
           && userDTO.getAttribute(USER_ATTRIBUTES.LOGIN_DATE.getValue()).getData() != null)
           && format.parse(userDTO.getAttribute(USER_ATTRIBUTES.LOGIN_DATE.getValue()).getData())
           .toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-          .isBefore(LocalDate.now().minusMonths(6))) {
+          .isBefore(LocalDate.now().minusMonths(12))) {
           // Set user status to inactive.
           userDTO.setStatus(USER_STATUS.DISABLED_APPROVED.getValue());
           // Update user deactivation date.
@@ -1487,24 +1540,21 @@ public class UserAdministrationServiceImpl extends BaseService implements
   }
 
   @Override
-  public Set<ValidationError> editUserOptimisticLock(String userId, Long userVersion,
+  public void editUserOptimisticLock(String userId, String oldGroupId, Long userVersion,
     Long functionVersion, Long secondaryDepartmentsVersion) {
 
     LOGGER.log(Level.CONFIG, "Executing method editUserOptimisticLock, Parameters: userId: {0}, "
-        + "userVersion: {1}",
-      new Object[]{userId, userVersion});
+        + "oldGroupId: {1}, userVersion: {2}, functionVersion: {3}, secondaryDepartmentsVersion: {4}",
+      new Object[]{userId, oldGroupId, userVersion, functionVersion, secondaryDepartmentsVersion});
 
-    Set<ValidationError> optimisticLockErrors = new HashSet<>();
     if (checkUserVersion(userId, userVersion)
+      || groupChangeOptimisticLock(userId, oldGroupId)
       || (functionVersion != null && USER_ATTRIBUTES.FUNCTION.getValue() != null
       && checkAttributeVersion(userId, functionVersion, USER_ATTRIBUTES.FUNCTION.getValue()))
       || checkAttributeVersion(userId, secondaryDepartmentsVersion,
       USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue())) {
-      optimisticLockErrors
-        .add(new ValidationError(ValidationMessages.OPTIMISTIC_LOCK_ERROR_FIELD,
-          ValidationMessages.OPTIMISTIC_LOCK));
+      throw new OptimisticLockException();
     }
-    return optimisticLockErrors;
   }
 
   /**
@@ -1531,6 +1581,17 @@ public class UserAdministrationServiceImpl extends BaseService implements
     String userAttribute) {
     Long dbVersion = userService.getUserById(userId).getAttribute(userAttribute).getDbversion();
     return !attributeVersion.equals(dbVersion);
+  }
+
+  /**
+   * Checks if oldGroupId is equal with current groupId in the db.
+   *
+   * @param userId     the userId
+   * @param oldGroupId the oldGroupId
+   * @return true/false
+   */
+  private boolean groupChangeOptimisticLock(String userId, String oldGroupId) {
+    return !getGroupId(userService.getUserById(userId)).equals(oldGroupId);
   }
 
   @Override

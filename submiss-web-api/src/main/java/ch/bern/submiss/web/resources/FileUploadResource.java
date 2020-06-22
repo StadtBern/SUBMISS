@@ -16,9 +16,11 @@ package ch.bern.submiss.web.resources;
 import ch.bern.submiss.services.api.constants.AllowedFileTypes;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import com.eurodyn.qlack2.fuse.fileupload.api.FileUpload;
+import com.eurodyn.qlack2.fuse.cm.api.VersionService;
 import com.eurodyn.qlack2.fuse.fileupload.rest.FileUploadRestTemplate;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.HashSet;
 import java.util.Set;
 import javax.inject.Inject;
@@ -53,6 +55,10 @@ public class FileUploadResource extends FileUploadRestTemplate {
   @OsgiService
   @Inject
   private FileUpload fileUpload;
+
+  @OsgiService
+  @Inject
+  private VersionService versionService;
 
   /**
    * Check chunk.
@@ -95,13 +101,18 @@ public class FileUploadResource extends FileUploadRestTemplate {
     Set<ValidationError> errors = new HashSet<>();
     try {
 
-      String filename = getFilename(body);
+      String filename = getAttachmentPart(body, "flowFilename");
+      Optional<Boolean> validMimeType = compareContentType(body, "file");
       filename = FilenameUtils.getExtension(filename);
 
-      if (AllowedFileTypes.fileAllowed(filename)) {
+      if (validMimeType.equals(Optional.of(Boolean.TRUE)) && AllowedFileTypes
+        .fileAllowed(filename)) {
         result = super.upload(fileUpload, body);
       } else {
-        errors.add(new ValidationError(null, ValidationMessages.INVALID_FILE_TYPE));
+        String validationMessage =
+          validMimeType.equals(Optional.of(Boolean.TRUE)) ? ValidationMessages.INVALID_FILE_TYPE
+            : ValidationMessages.INVALID_MIME_TYPE;
+        errors.add(new ValidationError(null, validationMessage));
       }
 
       if (!errors.isEmpty()) {
@@ -123,15 +134,51 @@ public class FileUploadResource extends FileUploadRestTemplate {
    * Gets the filename.
    *
    * @param body the body
+   * @param fieldName
    * @return the filename
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private String getFilename(MultipartBody body) throws IOException {
-    Attachment attachment = body.getAttachment("flowFilename");
+  private String getAttachmentPart(MultipartBody body, String fieldName) throws IOException {
+
+    Attachment attachment = body.getAttachment(fieldName);
     if (attachment != null) {
       return IOUtils.toString(attachment.getDataHandler().getInputStream());
     } else {
       return null;
+    }
+  }
+
+  /**
+   * The ContentType, an HTTP message header and its value is (generally) a MIME Type, is compared against the mime type
+   * of the file. The function getMimeType from Qlack which is using the apache tika library will be used for the comparison.
+   * These Values are almost the same, except for the file types CSV, msg, rtf and mpp.
+   * CSV files, apache tika returns text/plain and the ContentType application/vnd.ms-excel.
+   * msg files, apache tika returns application/vnd.ms-outlook and the ContentType application/octet-stream.
+   * mpp files, apache tika returns application/vnd.ms-project and the ContentType application/octet-stream.
+   * rtf files, apache tika returns application/rtf and the ContentType application/msword.
+   * So, for the mentioned file types we will compare mime type and content type against these values
+   * @param body
+   * @param fieldName
+   * @return
+   * @throws IOException
+   */
+  private Optional<Boolean> compareContentType(MultipartBody body, String fieldName) throws IOException {
+
+    Attachment attachment = body.getAttachment(fieldName);
+    if (attachment != null) {
+      final String mimeType = versionService.getMimeType(
+        org.apache.commons.io.IOUtils.toByteArray(attachment.getDataHandler().getInputStream()));
+      final String contentType = attachment.getDataHandler().getContentType();
+
+      return Optional.of(
+        mimeType.equals(contentType) || (mimeType.equals("text/plain") && contentType
+          .equals("application/vnd.ms-excel")) || (mimeType.equals("application/vnd.ms-outlook") && contentType
+          .equals("application/octet-stream")) || (mimeType.equals("application/vnd.ms-project") && contentType
+          .equals("application/octet-stream")) || (mimeType.equals("application/rtf") && contentType
+          .equals("application/msword"))
+      );
+    } else {
+      return Optional.empty();
     }
   }
 }

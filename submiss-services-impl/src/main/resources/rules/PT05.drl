@@ -31,7 +31,7 @@ rule "PT05"
 	then [commissionProcurementProposalReservation]
 		placeholderMappings.put("ba_restriction", "");
 	then [commissionProcurementProposalSuitabilityAuditText]
-		placeholderMappings.put("ba_process_exclusion", "");
+		placeholderMappings.put("ba_process_exclusion", "keiner");
 	then [commissionProcurementProposalBusiness]
 		placeholderMappings.put("ba_pro_business_type", "");
 	then [commissionProcurementProposalDateFill]

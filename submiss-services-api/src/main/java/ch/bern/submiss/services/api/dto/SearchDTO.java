@@ -22,84 +22,145 @@ import java.util.Set;
  */
 public class SearchDTO extends AbstractStammdatenDTO {
 
-  /** The object id. */
+  /**
+   * The object id.
+   */
   private String objectId;
 
-  /** The project names. */
+  /**
+   * The project names.
+   */
   private List<String> projectNames;
 
-  /** The procedure id. */
+  /**
+   * The procedure id.
+   */
   private String procedureId;
 
-  /** The departments I ds. */
+  /**
+   * The departments I ds.
+   */
   private List<String> departmentsIDs;
 
-  /** The directorates I ds. */
+  /**
+   * The directorates I ds.
+   */
   private List<String> directoratesIDs;
 
-  /** The work types. */
+  /**
+   * The work types.
+   */
   private Set<MasterListValueHistoryDTO> workTypes;
 
-  /** The description. */
+  /**
+   * The description.
+   */
   private String description;
 
-  /** The pm department name. */
+  /**
+   * The pm department name.
+   */
   private String pmDepartmentName;
 
-  /** The selective. */
+  /**
+   * The selective.
+   */
   private Boolean selective;
 
-  /** The open. */
+  /**
+   * The open.
+   */
   private Boolean open;
 
-  /** The invitation. */
+  /**
+   * The invitation.
+   */
   private Boolean invitation;
 
-  /** The negotiated procedure. */
+  /**
+   * The negotiated procedure.
+   */
   private Boolean negotiatedProcedure;
 
-  /** The negotiated procedure with competition. */
+  /**
+   * The negotiated procedure with competition.
+   */
   private Boolean negotiatedProcedureWithCompetition;
 
-  /** The negotiated procedure above threshold. */
+  /**
+   * The negotiated procedure above threshold.
+   */
   private Boolean negotiatedProcedureAboveThreshold;
 
-  /** The construction industry. */
+  /**
+   * The construction industry.
+   */
   private Boolean constructionIndustry;
 
-  /** The related trades. */
+  /**
+   * The related trades.
+   */
   private Boolean relatedTrades;
 
-  /** The supply contracts. */
+  /**
+   * The supply contracts.
+   */
   private Boolean supplyContracts;
 
-  /** The d L assignments. */
+  /**
+   * The d L assignments.
+   */
   private Boolean dLAssignments;
 
-  /** The is service tender. */
+  /**
+   * The is service tender.
+   */
   private Boolean isServiceTender;
 
-  /** The company name. */
+  /**
+   * The company name.
+   */
   private String companyName;
 
-  /** The running. */
+  /**
+   * The running.
+   */
   private Boolean running;
 
-  /** The completed. */
+  /**
+   * The completed.
+   */
   private Boolean completed;
 
-  /** The offer date from. */
+  /**
+   * The offer date from.
+   */
   private Date offerDateFrom;
 
-  /** The offer date until. */
+  /**
+   * The offer date until.
+   */
   private Date offerDateUntil;
 
-  /** The filter. */
+  /**
+   * The filter.
+   */
   private FilterDTO filter;
 
-  /** The excluded project. */
+  /**
+   * The excluded project.
+   */
   private String excludedProject;
 
+  /**
+   * The creation date of the tender.
+   */
+  private Date tenderCreationDate;
+
+  /**
+   * The document title.
+   */
+  private String documentTitle;
 
 
   /**
@@ -570,25 +631,36 @@ public class SearchDTO extends AbstractStammdatenDTO {
     this.excludedProject = excludedProject;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  public Date getTenderCreationDate() {
+    return tenderCreationDate;
+  }
+
+  public void setTenderCreationDate(Date tenderCreationDate) {
+    this.tenderCreationDate = tenderCreationDate;
+  }
+
+  public String getDocumentTitle() {
+    return documentTitle;
+  }
+
+  public void setDocumentTitle(String documentTitle) {
+    this.documentTitle = documentTitle;
+  }
+
   @Override
   public String toString() {
     return "SearchDTO [objectId=" + objectId + ", projectNames=" + projectNames + ", procedureId="
-        + procedureId + ", departmentsIDs=" + departmentsIDs + ", directoratesIDs="
-        + directoratesIDs + ", description=" + description + ", pmDepartmentName="
-        + pmDepartmentName + ", selective=" + selective + ", open=" + open + ", invitation="
-        + invitation + ", negotiatedProcedure=" + negotiatedProcedure
-        + ", negotiatedProcedureWithCompetition=" + negotiatedProcedureWithCompetition
-        + ", negotiatedProcedureAboveThreshold=" + negotiatedProcedureAboveThreshold
-        + ", constructionIndustry=" + constructionIndustry + ", relatedTrades=" + relatedTrades
-        + ", supplyContracts=" + supplyContracts + ", dLAssignments=" + dLAssignments
-        + ", isServiceTender=" + isServiceTender + ", companyName=" + companyName + ", running="
-        + running + ", completed=" + completed + ", offerDateFrom=" + offerDateFrom
-        + ", offerDateUntil=" + offerDateUntil + ", filter=" + filter + ", excludedProject="
-        + excludedProject + "]";
+      + procedureId + ", departmentsIDs=" + departmentsIDs + ", directoratesIDs="
+      + directoratesIDs + ", description=" + description + ", pmDepartmentName="
+      + pmDepartmentName + ", selective=" + selective + ", open=" + open + ", invitation="
+      + invitation + ", negotiatedProcedure=" + negotiatedProcedure
+      + ", negotiatedProcedureWithCompetition=" + negotiatedProcedureWithCompetition
+      + ", negotiatedProcedureAboveThreshold=" + negotiatedProcedureAboveThreshold
+      + ", constructionIndustry=" + constructionIndustry + ", relatedTrades=" + relatedTrades
+      + ", supplyContracts=" + supplyContracts + ", dLAssignments=" + dLAssignments
+      + ", isServiceTender=" + isServiceTender + ", companyName=" + companyName + ", running="
+      + running + ", completed=" + completed + ", offerDateFrom=" + offerDateFrom
+      + ", offerDateUntil=" + offerDateUntil + ", filter=" + filter + ", excludedProject="
+      + excludedProject + "]";
   }
 }

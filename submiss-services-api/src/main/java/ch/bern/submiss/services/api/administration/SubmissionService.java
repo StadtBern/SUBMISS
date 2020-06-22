@@ -211,13 +211,12 @@ public interface SubmissionService {
    * @param version       the version
    * @param status        the status
    * @param description   the description
-   * @param reopenReason  the reopen reason
+   * @param reason        the  reason
    * @param internalValue the internal value
    * @return
    */
   Set<ValidationError> updateSubmissionStatus(String submissionId, Long version, String status,
-    String description,
-    String reopenReason, String internalValue);
+    String description, String reason, String internalValue);
 
   /**
    * This method reopens the offer process of the submission.

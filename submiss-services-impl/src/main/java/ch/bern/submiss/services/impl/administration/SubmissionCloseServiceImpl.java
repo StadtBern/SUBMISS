@@ -208,20 +208,17 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
     return (isAboveThreshold != null && isAboveThreshold.intValue() >= LookupValues.ONE_INT);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionCloseService#reopenSubmission(java.lang.
-   * String, java.lang.String)
-   */
   @Override
-  public void reopenSubmission(String submissionId, String reopenReason) {
+  public void reopenSubmission(String submissionId, String reopenReason, Long submissionVersion) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method reopenSubmission, Parameters: submissionId: {0}, "
-        + "reopenReason: {1}",
-      new Object[]{submissionId, reopenReason});
+        + "reopenReason: {1}, submissionVersion: {2}",
+      new Object[]{submissionId, reopenReason, submissionVersion});
+
+    // Check for OptimisticLockException
+    submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
+
     // get the 3 last statuses of the submission in order to discover if the submission was
     // cancelled (could be cancelled and reopened or cancelled, closed and reopened)
     // and if yes get its status before cancellation
@@ -249,10 +246,11 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
       }
     }
 
-    if (!isCancelled) {
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
+
+    if (!isCancelled && Boolean.FALSE.equals(submissionEntity.getNoAwardTender())) {
       // in this case the status to return to depends on the process type of the submission
       // and on whether the submission is above threshold (for certain process types)
-      SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
       if (submissionEntity.getProcess().equals(Process.OPEN)
         || submissionEntity.getProcess().equals(Process.INVITATION)
         || submissionEntity.getProcess().equals(Process.SELECTIVE)
@@ -279,6 +277,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
       }
     }
     // the remaining cases are negotiated process (+ with competition)
+    // or no award tenders
     // with status before the status to return to,
     // so returning to the status before closure (previousStatus)
 

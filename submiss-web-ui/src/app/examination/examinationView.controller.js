@@ -1024,7 +1024,17 @@
 
     /** Function to import criteria */
     function uploadFile(flow) {
-      ExaminationService.checkExaminationOptimisticLock(vm.data.submission.id, vm.data.submission.pageRequestedOn, vm.data.submission.version)
+      let validFormat = false;
+      for (let k = 0; k < flow.files.length; k++) {
+        validFormat =  flow.files[k].name.split(".").pop().toLowerCase() === 'xlsx';
+        if (!validFormat) {
+          flow.cancel();
+          break;
+        }
+      }
+      if(validFormat) {
+        ExaminationService.checkExaminationOptimisticLock(vm.data.submission.id,
+          vm.data.submission.pageRequestedOn, vm.data.submission.version)
         .success(function (response, status, headers) {
           flow.upload();
         }).error(function (response, status) {
@@ -1034,6 +1044,9 @@
               $scope.examinationViewCtrl.examinationForm, response);
           }
         });
+      } else {
+        openWindowError(AppConstants.IMPORT_ERROR, AppConstants.INVALID_FILE_TYPE);
+      }
     }
 
     /** Function to export criteria */

@@ -44,6 +44,9 @@
       controller: "CompanyViewController",
       controllerAs: "companyViewCtr",
       templateUrl: "app/company/view/companyView.html",
+      data: {
+        isPublic: false
+      },
       params: {
         id: null,
         name: name

@@ -313,6 +313,10 @@
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER +
           '/document/getPermittedDocumentsForUpload/' + folderId + '/' +
           isProjectPart, fileNames);
+      },
+      checkContractDocument: function (submissionId) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
+          '/document/contract/' + submissionId);
       }
     };
   }

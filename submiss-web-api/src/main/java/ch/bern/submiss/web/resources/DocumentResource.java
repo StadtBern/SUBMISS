@@ -54,6 +54,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiService;
 
@@ -180,7 +181,7 @@ public class DocumentResource {
     Set<ValidationError> errors = validation(documentForm);
     List<String> createdDocumentIds;
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
 
     DocumentDTO documentDTO = new DocumentDTO();
@@ -214,7 +215,6 @@ public class DocumentResource {
       documentDTO.setSecondSignature(documentForm.getSecondSignature());
     }
     createdDocumentIds = documentService.createDocumentFromTemplate(documentDTO);
-
     return Response.ok(createdDocumentIds).build();
   }
 
@@ -896,5 +896,23 @@ public class DocumentResource {
     } else {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
+  }
+
+  /**
+   * Checks for Vertrag (Contract) documents validation.
+   *
+   * @param submissionId the submissionId
+   * @return the response
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/contract/{submissionId}")
+  public Response checkContractDocument(@PathParam("submissionId") String submissionId) {
+    // Validation for Vertrag (Contract) documents
+    Set<ValidationError> errors = documentService.contractDocumentValidation(submissionId);
+    return (errors.isEmpty())
+      ? Response.ok().build()
+      : Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
   }
 }

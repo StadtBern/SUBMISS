@@ -1150,4 +1150,16 @@ public class ValidationMessages {
    * The Constant SUBMISSION_NOT_FOUND.
    */
   public static final String SUBMISSION_NOT_FOUND = "submission_not_found_message";
+
+  public static final String INVALID_MIME_TYPE = "mime_type_does_not_match";
+
+  /**
+   * The Constant CONTRACT_DOCUMENT_ERROR.
+   */
+  public static final String CONTRACT_DOCUMENT_ERROR = "contract_document_error";
+
+  /**
+   * The Constant CONTRACT_DOCUMENT_ERROR_FIELD.
+   */
+  public static final String CONTRACT_DOCUMENT_ERROR_FIELD = "contract_document_error_field";
 }

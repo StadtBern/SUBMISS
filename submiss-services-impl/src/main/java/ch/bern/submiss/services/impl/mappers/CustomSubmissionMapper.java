@@ -165,6 +165,7 @@ public abstract class CustomSubmissionMapper {
     submissionEntity.setCustomOperatingCostFormula(dto.getCustomOperatingCostFormula());
     submissionEntity.setVersion(dto.getVersion());
     submissionEntity.setUpdatedOn(dto.getUpdatedOn());
+    submissionEntity.setNoAwardTender(dto.getNoAwardTender());
 
     return submissionEntity;
   }
@@ -272,6 +273,7 @@ public abstract class CustomSubmissionMapper {
     submissionDTO.setLegalHearingTerminate(entityToLegalHearingTerminateDTO(entity));
     submissionDTO.setCustomPriceFormula(entity.getCustomPriceFormula());
     submissionDTO.setCustomOperatingCostFormula(entity.getCustomOperatingCostFormula());
+    submissionDTO.setNoAwardTender(entity.getNoAwardTender());
     
     setSD(entity, submissionDTO, activeSd, historySd,activeDepartments,historyDepartments,activeDirectorates,historyDirectorates);
     return submissionDTO;

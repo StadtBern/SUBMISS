@@ -105,6 +105,8 @@
       /* check if group, userAdminRight and secondary departments are changed and update the according flags
        */
       vm.user.groupChanged = (group !== vm.user.userGroup);
+      // hold the initial groupId to check for optimistic lock errors
+      vm.user.oldGroupId = group.id;
       vm.user.userAdminRightChanged = (userAdminRight !==
         vm.user.userAdminRight);
       vm.user.secDeptsChanged = (secondaryDepartments !==

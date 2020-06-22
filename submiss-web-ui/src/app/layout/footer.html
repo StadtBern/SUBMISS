@@ -19,11 +19,6 @@
           <li><a ng-click="footerCtrl.showImpressumModal()">Impressum</a></li>
           <li><a ng-click="footerCtrl.showContactModal()">Kontakt</a></li>
         </ul>
-        <ul class="footer-links pull-right">
-          <li>{{ footerCtrl.getAppVersion() }}</li>
-          <li ng-if="footerCtrl.getCommitId()"> - </li>
-          <li>{{ footerCtrl.getCommitId() | limitTo: 5 }}</li>
-        </ul>
       </div>
     </div>
   </div>

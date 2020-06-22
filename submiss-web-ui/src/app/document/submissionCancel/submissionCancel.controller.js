@@ -332,9 +332,14 @@
           var reopenForm = {
             reopenReason: response
           };
-          SubmissionService.reopenSubmission($stateParams.id, reopenForm)
+          SubmissionService.reopenSubmission($stateParams.id, vm.submissionCancel.submission.version, reopenForm)
             .success(function (data) {
               $state.reload();
+            }).error(function (response, status) {
+              if (status === 409) { // Validation errors.
+                QFormJSRValidation.markErrors($scope,
+                  $scope.submissionCancelCtrl.submissionCancelHtmlForm, response);
+              }
             });
         }
       });

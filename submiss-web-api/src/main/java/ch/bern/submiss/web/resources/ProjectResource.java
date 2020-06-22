@@ -99,7 +99,7 @@ public class ProjectResource {
   @Path("/search/{page}/{pageItems}/{sortColumn}/{sortType}")
   public Response search(SearchForm searchForm, @PathParam("page") int page,
     @PathParam("pageItems") int pageItems, @PathParam("sortColumn") String sortColumn,
-    @PathParam("sortType") String sortType) throws AuthorisationException {
+    @PathParam("sortType") String sortType) {
     SearchDTO searchDTO = SearchMapper.INSTANCE.toSearchDTO(searchForm);
     List<TenderDTO> tenderDTOList =
         projectService.search(searchDTO, page, pageItems, sortColumn, sortType);

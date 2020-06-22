@@ -29,11 +29,10 @@
     StammdatenService, QFormJSRValidation, editProject, project,
     $uibModalInstance, $uibModal, $transitions,
     AppService, AppConstants, $filter) {
-    const vm = this;
     /***********************************************************************
      * Local variables.
      **********************************************************************/
-
+    const vm = this;
     /***********************************************************************
      * Exported variables.
      **********************************************************************/
@@ -78,6 +77,7 @@
     ];
     vm.moreThanOneError = false;
     vm.secProjectEdit = false;
+    vm.pmExternalChanged = false;
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
@@ -89,6 +89,7 @@
     vm.project = project;
     vm.editProject = editProject;
     vm.addCompany = addCompany;
+    vm.deleteCompany = deleteCompany;
     vm.hasStatusAfterOfferOpeningClosed = hasStatusAfterOfferOpeningClosed;
     vm.errorFieldFocus = errorFieldFocus;
     // Activating the controller.
@@ -98,7 +99,7 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      ProjectService.loadProjectEdit()
+      ProjectService.loadProjectEdit($stateParams.id)
         .success(function (data, status) {
           if (status === 403) { // Security checks.
             $uibModalInstance.close();
@@ -163,6 +164,7 @@
           vm.companyList = [];
           vm.companyList = response;
           if (vm.companyList !== null) {
+            vm.pmExternalChanged = true;
             for (var i = 0; i < vm.companyList.length; i++) {
               vm.project.pmExternal = vm.companyList[i];
             }
@@ -171,8 +173,14 @@
       }
     }
 
-    function closeWindow(dirtyflag) {
-      if (dirtyflag) {
+    function deleteCompany() {
+      vm.project.pmExternal = null;
+      vm.moreThanOneError = false;
+      vm.pmExternalChanged = true;
+    }
+
+    function closeWindow() {
+      if (vm.projectForm.$dirty || vm.pmExternalChanged) {
         var closeProjectEditModal = $uibModal.open({
           template: '<div class="modal-header">' +
             '<button type="button" class="close" aria-label="Close" ng-click="$close()"><span aria-hidden="true">&times;</span></button>' +

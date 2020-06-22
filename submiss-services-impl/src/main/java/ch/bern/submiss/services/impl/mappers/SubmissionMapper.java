@@ -159,6 +159,7 @@ public abstract class SubmissionMapper {
     submissionEntity.setSubmittentListCheckedOn(dto.getSubmittentListCheckedOn());
     submissionEntity.setVersion(dto.getVersion());
     submissionEntity.setUpdatedOn(dto.getUpdatedOn());
+    submissionEntity.setNoAwardTender(dto.getNoAwardTender());
 
     return submissionEntity;
   }

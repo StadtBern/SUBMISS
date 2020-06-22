@@ -18,13 +18,15 @@ rule "RU007"
 		$company: CompanyDTO()
 		if ($offer.getExclusionReason() != null) do[exclusionReason]
 		else do[exclusionReasonEmpty]
+		if ($offer.getExclusionReasonFirstLevel() != null) do[exclusionReasonFirstLevel]
+    else do[exclusionReasonFirstLevelEmpty]
 		if ($company.getAddress2() != null) do[address2]
 		else do[address2Empty]
 		if ($offer.getOperatingCostNotes() != null) do[operNotes]
 		else do[operNotesEmpty]
 		if ($offer.getOperatingCostsAmount() != null) do[operAmount]
 		else do[operAmountEmpty]
-        if ($offer.getAmount() != null) do[netAmount]
+    if ($offer.getAmount() != null) do[netAmount]
 		else do[netAmountEmpty]
 		if ($offer.getOfferDate() != null) do[offerDate]
 		else do[offerDateEmpty]
@@ -81,6 +83,10 @@ rule "RU007"
 		placeholderMappings.put("v2_reason_exclusion", $offer.getExclusionReason());
 	then [exclusionReasonEmpty]
 		placeholderMappings.put("v2_reason_exclusion", "");
+	then [exclusionReasonFirstLevel]
+  	placeholderMappings.put("first_level_exclusion_reason", $offer.getExclusionReasonFirstLevel());
+  then [exclusionReasonFirstLevelEmpty]
+  	placeholderMappings.put("first_level_exclusion_reason", "");
 	then [address2]
 		placeholderMappings.put("f_company_address", $company.getAddress1() + "\\n" + $company.getAddress2());
 	then [address2Empty]	

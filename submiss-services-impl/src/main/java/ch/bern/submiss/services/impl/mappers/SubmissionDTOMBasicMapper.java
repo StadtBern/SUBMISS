@@ -153,6 +153,7 @@ public abstract class SubmissionDTOMBasicMapper {
     submissionDTO.setCreatedBy(entity.getCreatedBy());
     submissionDTO.setCreatedOn(entity.getCreatedOn());
     submissionDTO.setUpdatedOn(entity.getUpdatedOn());
+    submissionDTO.setNoAwardTender(entity.getNoAwardTender());
 
     return submissionDTO;
   

@@ -98,7 +98,7 @@
           <span class="input-group-btn">
             <button class="btn btn-primary" type="button"
               ng-if="projectUpdateCtr.project.pmExternal.companyName != null"
-              data-ng-click="projectUpdateCtr.project.pmExternal = null; projectUpdateCtr.moreThanOneError = false">
+              data-ng-click="projectUpdateCtr.deleteCompany()">
               <span class="fa fa-trash"></span>
             </button>
             <button class="btn btn-primary" type="button" data-ng-click="projectUpdateCtr.addCompany()">
@@ -141,9 +141,9 @@
       </div>
     </div>
     <div class="col-sm-12 col-md-6">
-      <button type="submit" class="btn btn-primary" ng-disabled="!projectUpdateCtr.projectForm.$dirty">Speichern</button>
+      <button type="submit" class="btn btn-primary" ng-disabled="!(projectUpdateCtr.projectForm.$dirty || projectUpdateCtr.pmExternalChanged)">Speichern</button>
       <button type="button" class="btn btn-default" data-dismiss="modal"
-        ng-click="projectUpdateCtr.closeWindow(projectUpdateCtr.projectForm.$dirty)">Abbrechen</button>
+        ng-click="projectUpdateCtr.closeWindow()">Abbrechen</button>
     </div>
   </div>
 </form>

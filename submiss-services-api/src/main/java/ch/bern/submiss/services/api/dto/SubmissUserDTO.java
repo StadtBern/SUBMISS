@@ -14,6 +14,7 @@
 package ch.bern.submiss.services.api.dto;
 
 import com.eurodyn.qlack2.fuse.aaa.api.dto.GroupDTO;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -65,6 +66,11 @@ public class SubmissUserDTO extends AbstractDTO {
    * The registered date.
    */
   private String registeredDate;
+
+  /**
+   * The registered date Timestamp.
+   */
+  private Timestamp registeredDateTimestamp;
 
   /**
    * The department.
@@ -130,6 +136,11 @@ public class SubmissUserDTO extends AbstractDTO {
    * The deactivation date.
    */
   private String deactivationDate;
+
+  /**
+   * The deactivation date Timestamp.
+   */
+  private Timestamp deactivationDateTimestamp;
 
   /**
    * The function.
@@ -345,6 +356,24 @@ public class SubmissUserDTO extends AbstractDTO {
   }
 
   /**
+   * Gets the registeredDate Timestamp.
+   *
+   * @return the registeredDate Timestamp
+   */
+  public Timestamp getRegisteredDateTimestamp() {
+    return registeredDateTimestamp;
+  }
+
+  /**
+   * Sets the registeredDate Timestamp.
+   *
+   * @param registeredDateTimestamp the new registeredDate Timestamp
+   */
+  public void setRegisteredDateTimestamp(Timestamp registeredDateTimestamp) {
+    this.registeredDateTimestamp = registeredDateTimestamp;
+  }
+
+  /**
    * Gets the permitted operations.
    *
    * @return the permitted operations
@@ -504,6 +533,24 @@ public class SubmissUserDTO extends AbstractDTO {
    */
   public void setDeactivationDate(String deactivationDate) {
     this.deactivationDate = deactivationDate;
+  }
+
+  /**
+   * Gets the deactivation date Timestamp.
+   *
+   * @return the deactivation date Timestamp
+   */
+  public Timestamp getDeactivationDateTimestamp() {
+    return deactivationDateTimestamp;
+  }
+
+  /**
+   * Sets the deactivation date Timestamp.
+   *
+   * @param deactivationDateTimestamp the new deactivation date Timestamp
+   */
+  public void setDeactivationDateTimestamp(Timestamp deactivationDateTimestamp) {
+    this.deactivationDateTimestamp = deactivationDateTimestamp;
   }
 
   /**

@@ -25,7 +25,7 @@
 
   /** @ngInject */
   function ProjectSearchController($scope, $location, $anchorScroll, $state,
-    ProjectService, StammdatenService, SubmissionService, NgTableParams, $filter, $locale,
+    ProjectService, CompanyService, StammdatenService, SubmissionService, NgTableParams, $filter, $locale,
     AppService, AppConstants, QFormJSRValidation) {
     const vm = this;
     /***********************************************************************
@@ -40,6 +40,7 @@
     vm.searchForm = {};
     vm.searchForm.offerDateFrom = null;
     vm.searchForm.offerDateUntil = null;
+    vm.searchForm.tenderCreationDate = null;
     vm.tenders = {};
     vm.objects = [];
     vm.procedures = [];
@@ -100,8 +101,10 @@
     vm.objectValue = objectValue;
     vm.openOfferDateFrom = openOfferDateFrom;
     vm.openOfferDateUntil = openOfferDateUntil;
+    vm.openErstellungsdatum = openErstellungsdatum;
     vm.openSubmissionDeadlineFilter = openSubmissionDeadlineFilter;
     vm.loadMore = loadMore;
+    vm.getCompanyNames = getCompanyNames;
 
     // Activating the controller.
     activate();
@@ -199,7 +202,8 @@
     //Function that searches for Tenders
     function search() {
       if (angular.isUndefined(vm.searchForm.offerDateFrom) ||
-        angular.isUndefined(vm.searchForm.offerDateUntil)) {
+        angular.isUndefined(vm.searchForm.offerDateUntil) ||
+        angular.isUndefined(vm.searchForm.tenderCreationDate)) {
         vm.invalidDate = true;
       } else {
         vm.invalidDate = false;
@@ -376,10 +380,20 @@
       vm.openOfferDateUntil.opened = !vm.openOfferDateUntil.opened;
     }
 
+    function openErstellungsdatum() {
+      vm.openErstellungsdatum.opened = !vm.openErstellungsdatum.opened;
+    }
+
     function openSubmissionDeadlineFilter() {
       vm.openSubmissionDeadlineFilter.opened = !vm.openSubmissionDeadlineFilter.opened;
       vm.divTableHeight = AppService.adjustTableHeight(results,
         vm.openSubmissionDeadlineFilter.opened);
+    }
+
+    function getCompanyNames(query) {
+      return CompanyService.getCompanyNames(query, false).then(function (response) {
+        return response.data;
+      });
     }
   }
 })();

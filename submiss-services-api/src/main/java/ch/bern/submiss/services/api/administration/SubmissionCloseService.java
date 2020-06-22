@@ -49,8 +49,9 @@ public interface SubmissionCloseService {
    *
    * @param submissionId the id of the submission to be checked
    * @param reopenReason the reopen reason given by the user
+   * @param submissionVersion the submission version
    */
-  void reopenSubmission(String submissionId, String reopenReason);
+  void reopenSubmission(String submissionId, String reopenReason, Long submissionVersion);
 
   /**
    * Gets the date status AWARD_NOTICES_CREATED is set, if it is one of the two last statuses of the submission,

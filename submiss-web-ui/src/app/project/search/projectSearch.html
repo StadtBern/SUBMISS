@@ -113,8 +113,9 @@
         <h4>Suche nach Submittent</h4>
         <div class="form-group">
           <label>Firmenname</label>
-          <input class="form-control" id="firmenname" placeholder="" type="text"
-            data-ng-model="projectSearchCtr.searchForm.companyName">
+          <input id="companyName" type="text" ng-model="projectSearchCtr.searchForm.companyName"
+            uib-typeahead="company for company in projectSearchCtr.getCompanyNames($viewValue)" typeahead-min-length="3"
+            typeahead-wait-ms="500" autocomplete="off" class="form-control">
         </div>
         <div class="form-group">
           <div class="row">
@@ -239,15 +240,21 @@
 
               <div class="form-group">
                 <label for="documententitel">Dokumententitel</label>
-                <input class="form-control" id="beschreibung" placeholder="" type="text">
+                <input class="form-control" id="documentTitle" placeholder="" type="text"
+                  data-ng-model="projectSearchCtr.searchForm.documentTitle">
               </div>
 
-              <label class="" for="erstellungsdatum">Erstellungsdatum</label>
+              <label class="" for="tenderCreationDate">Erstellungsdatum</label>
               <div class="input-group">
-                <input class="form-control datepicker" id="von" placeholder="" type="text"
-                  data-date-format='dd.mm.yyyy'>
-                <span class="input-group-addon">
-                  <span class="fa fa-calendar" aria-hidden="true"></span>
+                <input class="form-control datepicker" id="tenderCreationDate" type="text"
+                  uib-datepicker-popup="dd.MM.yyyy" name="tenderCreationDate"
+                  is-open="projectSearchCtr.openErstellungsdatum.opened"
+                  data-ng-model="projectSearchCtr.searchForm.tenderCreationDate"
+                  ng-click="projectSearchCtr.openErstellungsdatum()">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-click="projectSearchCtr.openErstellungsdatum()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
                 </span>
               </div>
             </div>

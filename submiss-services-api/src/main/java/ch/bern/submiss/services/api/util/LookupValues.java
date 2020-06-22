@@ -29,6 +29,9 @@ public class LookupValues {
   /* Used as input for all operation performed not by a user, but by the system */
   public static final String SYSTEM = "SYSTEM";
 
+  /* The special character that splits the username with Tenant name */
+  public static final String USER_NAME_SPECIAL_CHARACTER = "###";
+
   /* The lexicon groups into which KAVModern IPS translations are held */
   public static final String DEFAULT_LEXICON_GROUP = "default";
 

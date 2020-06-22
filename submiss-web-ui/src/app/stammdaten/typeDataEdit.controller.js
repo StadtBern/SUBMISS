@@ -376,7 +376,7 @@
             $state.reload();
           }
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
@@ -393,7 +393,7 @@
             $state.reload();
           }
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
           }
@@ -409,7 +409,7 @@
             $state.reload();
           }
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
           }
@@ -423,7 +423,7 @@
             $state.reload();
           }
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
@@ -440,7 +440,7 @@
             $state.reload();
           }
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
           }
@@ -465,7 +465,7 @@
             $state.reload();
           }
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
@@ -521,7 +521,7 @@
           vm.dirtyFlag = true;
           vm.invalidImageMessageVisible = false;
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             vm.invalidImageMessageVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);
@@ -634,7 +634,7 @@
         } else if (vm.entry.active === 0) {
           vm.entry.active = false;
         }
-        if (status === 400) {
+        if (status === 400 || status === 409) {
           vm.errorFieldsVisible = true;
           QFormJSRValidation.markErrors($scope,
             $scope.editForm, response);

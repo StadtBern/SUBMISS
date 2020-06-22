@@ -26,18 +26,20 @@ import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
-import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.DepartmentHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.DepartmentToTypeDataMapper;
+import ch.bern.submiss.services.impl.mappers.DirectorateMapper;
 import ch.bern.submiss.services.impl.mappers.TenantMapper;
 import ch.bern.submiss.services.impl.model.DepartmentEntity;
 import ch.bern.submiss.services.impl.model.DepartmentHistoryEntity;
+import ch.bern.submiss.services.impl.model.DirectorateEntity;
 import ch.bern.submiss.services.impl.model.QDepartmentHistoryEntity;
 import ch.bern.submiss.services.impl.model.QDirectorateEntity;
 import ch.bern.submiss.services.impl.model.QDirectorateHistoryEntity;
+import ch.bern.submiss.services.impl.model.QSignatureEntity;
 import ch.bern.submiss.services.impl.model.SignatureEntity;
+import ch.bern.submiss.services.impl.model.SignatureProcessTypeEntitledEntity;
 import ch.bern.submiss.services.impl.model.SignatureProcessTypeEntity;
-import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -45,13 +47,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
@@ -392,13 +393,12 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
   }
 
   @Override
-  public Set<ValidationError> saveDepartmentEntry(DepartmentHistoryDTO departmentHistoryDTO) {
+  public void saveDepartmentEntry(DepartmentHistoryDTO departmentHistoryDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method saveDepartmentEntry, Parameters: departmentHistoryDTO: {0}",
       departmentHistoryDTO);
 
-    Set<ValidationError> error = new HashSet<>();
     DepartmentHistoryEntity departmentHistEntity;
     // Check if an old entry is updated or a new entry is created.
     if (StringUtils.isBlank(departmentHistoryDTO.getId())) {
@@ -415,7 +415,9 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
         TenantMapper.INSTANCE.toTenant(usersService.getUserById(getUser().getId()).getTenant()));
       // Assign the department entity to the department history entity.
       departmentHistEntity.setDepartmentId(departmentEntity);
-
+      // if new Department is created an associated Signature must be created
+      createSignature(departmentHistEntity);
+      // Create audit log
       auditLog(departmentEntity.getId(), AuditEvent.CREATE.name(), null);
     } else {
       // In case of updating an old entry, find the entry and set the current date to the toDate
@@ -423,11 +425,16 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       departmentHistEntity = em.find(DepartmentHistoryEntity.class, departmentHistoryDTO.getId());
       // If the current version is 1, then return an optimisticLockErrorField
       if (departmentHistEntity.getVersion() == 1) {
-        error.add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
-        return error;
+        throw new OptimisticLockException();
       }
       departmentHistEntity.setToDate(new Timestamp(new Date().getTime()));
       em.merge(departmentHistEntity);
+      // Update the associated signature if directorate is changed
+      if (!departmentHistEntity.getDirectorateEnity().getId()
+        .equals(departmentHistoryDTO.getDirectorate().getDirectorateId().getId())) {
+        updateSignature(departmentHistoryDTO.getDepartmentId().getId(), DirectorateMapper.INSTANCE
+          .toDirectorate(departmentHistoryDTO.getDirectorate().getDirectorateId()));
+      }
       // Now that the old entry is added to the history, create its new instance.
       departmentHistEntity =
         DepartmentHistoryMapper.INSTANCE.toDepartmentHistory(departmentHistoryDTO);
@@ -437,7 +444,7 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       departmentHistEntity.setFromDate(new Timestamp(new Date().getTime()));
       // Set null to toDate property.
       departmentHistEntity.setToDate(null);
-
+      // Create audit log
       auditLog(departmentHistEntity.getDepartmentId().getId(), AuditEvent.UPDATE.name(), null);
     }
     // Save the new entry.
@@ -448,30 +455,61 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
     cacheBean.updateHistoryDepartmentList(
       DepartmentHistoryMapper.INSTANCE
         .toDepartmentHistoryDTO(departmentHistEntity, cacheBean.getActiveDirectorateHistorySD()));
-    // if new Department is created an associated Signature must be created
-    if (StringUtils.isBlank(departmentHistoryDTO.getId())) {
-      // creating new Signature
-      SignatureEntity sE = new SignatureEntity();
-      sE.setDirectorate(departmentHistEntity.getDirectorateEnity());
-      sE.setDepartment(departmentHistEntity.getDepartmentId());
-      em.persist(sE);
+  }
 
-      List<Process> processTypeList = new ArrayList<>();
-      processTypeList.add(Process.NEGOTIATED_PROCEDURE);
-      processTypeList.add(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION);
-      processTypeList.add(Process.INVITATION);
-      processTypeList.add(Process.OPEN);
-      processTypeList.add(Process.SELECTIVE);
+  /**
+   * Creates the associated signature.
+   *
+   * @param departmentHistEntity the departmentHistEntity
+   */
+  private void createSignature(DepartmentHistoryEntity departmentHistEntity) {
 
-      // creating SignProcessType Entities for each process type
-      for (Process p : processTypeList) {
-        SignatureProcessTypeEntity sTe = new SignatureProcessTypeEntity();
-        sTe.setProcess(p);
-        sTe.setSignature(sE);
-        em.persist(sTe);
-      }
+    LOGGER.log(Level.CONFIG,
+      "Executing method createSignature, Parameters: departmentHistEntity: {0}",
+      departmentHistEntity);
+
+    SignatureEntity sE = new SignatureEntity();
+    sE.setDirectorate(departmentHistEntity.getDirectorateEnity());
+    sE.setDepartment(departmentHistEntity.getDepartmentId());
+    em.persist(sE);
+
+    List<Process> processTypeList = new ArrayList<>();
+    processTypeList.add(Process.NEGOTIATED_PROCEDURE);
+    processTypeList.add(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION);
+    processTypeList.add(Process.INVITATION);
+    processTypeList.add(Process.OPEN);
+    processTypeList.add(Process.SELECTIVE);
+
+    // creating SignatureProcessType and SignatureProcessTypeEntitled Entities for each process type
+    for (Process p : processTypeList) {
+      SignatureProcessTypeEntity sTe = new SignatureProcessTypeEntity();
+      sTe.setProcess(p);
+      sTe.setSignature(sE);
+      em.persist(sTe);
+      SignatureProcessTypeEntitledEntity signatureProcessTypeEntitledEntity = new SignatureProcessTypeEntitledEntity();
+      signatureProcessTypeEntitledEntity.setProcessType(sTe);
+      em.persist(signatureProcessTypeEntitledEntity);
     }
-    return error;
+  }
+
+  /**
+   * Updates the associated signature.
+   * @param departmentId the departmentId
+   * @param directorateEntity the directorateEntity
+   */
+  private void updateSignature(String departmentId, DirectorateEntity directorateEntity) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method updateSignature, Parameters: departmentId: {0}, "
+        + "directorateEntity: {1}",
+      new Object[]{departmentId, directorateEntity});
+
+    QSignatureEntity qSignatureEntity = QSignatureEntity.signatureEntity;
+    SignatureEntity signatureEntity = new JPAQueryFactory(em).selectFrom(qSignatureEntity)
+      .where(qSignatureEntity.department.id.eq(departmentId))
+      .fetchOne();
+    signatureEntity.setDirectorate(directorateEntity);
+    em.merge(signatureEntity);
   }
 
   @Override

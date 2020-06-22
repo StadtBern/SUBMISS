@@ -80,8 +80,8 @@
       loadProjectCreate: function () {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectCreate');
       },
-      loadProjectEdit: function () {
-        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectEdit');
+      loadProjectEdit: function (projectId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectEdit/' + projectId);
       },
       loadProjectDetails: function (projectId) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/project/loadProjectDetails/' + projectId);

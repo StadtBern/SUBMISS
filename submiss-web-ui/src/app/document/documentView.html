@@ -32,6 +32,10 @@
           role="alert">
           <field-error form-element-name="templateNotSelectedError" translate name="error"></field-error>
         </div>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.template.contract_document_error_field.$invalid"
+          role="alert">
+          <field-error form-element-name="contract_document_error_field" translate name="error"></field-error>
+        </div>
         <div class="alert alert-danger" ng-if="documentViewCtrl.uploadError != null" role="alert" translate>
           {{documentViewCtrl.uploadError}}</div>
         <div class="alert alert-danger" ng-if="documentViewCtrl.showError" role="alert" translate>
@@ -50,6 +54,7 @@
         </div>
 
         <input name="templateNotSelectedError" ng-hide="true" data-ng-model="fd"></input>
+        <input name="contract_document_error_field" ng-hide="true" data-ng-model="fd"></input>
 
         <div class="col-sm-12 col-md-12 section-card-item">
           <div class="form-group">

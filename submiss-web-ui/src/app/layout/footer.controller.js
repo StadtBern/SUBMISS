@@ -24,20 +24,18 @@
     .controller('FooterController', FooterController);
 
   /** @ngInject */
-  function FooterController($scope, AppService, $uibModal, UsersService) {
+  function FooterController($scope, AppService, $uibModal, UsersService, $interval) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
     var vm = this;
-    var appVersionInfo;
+    let backEndPinged = 0;
     /***********************************************************************
      * Exported variables.
      **********************************************************************/
     /***********************************************************************
      * Exported functions.
      **********************************************************************/
-    vm.getAppVersion = getAppVersion;
-    vm.getCommitId = getCommitId;
     vm.showContactModal = showContactModal;
     vm.showImpressumModal = showImpressumModal;
     /** Activating the controller. */
@@ -46,10 +44,6 @@
      * Controller activation.
      **********************************************************************/
     function activate() {
-      AppService.getAppVersionInfo()
-        .then(function success(response) {
-          appVersionInfo = response;
-        })
     }
     /***********************************************************************
      * $scope destroy.
@@ -58,13 +52,6 @@
     /***********************************************************************
      * Functions.
      **********************************************************************/
-    function getAppVersion() {
-      return appVersionInfo ? appVersionInfo['git.build.version'] : '';
-    }
-
-    function getCommitId() {
-      return appVersionInfo ? appVersionInfo['git.commit.id'] : '';
-    }
 
     function showContactModal() {
       $uibModal.open({
@@ -81,5 +68,28 @@
         controllerAs: 'footerImpressumCtrl'
       });
     }
+
+    // After 30 minutes of idle time the Web Application Firewall will log out the user
+    // So we will ping the back end, every 15 minutes (900000 milis)
+    // After 8 hours ( 32 quarters ) stop pinging.
+    // Submiss redirects to the login and back to requested page where the interval will start over again
+    let stopTime = $interval( function pingBackEnd() {
+      AppService.pingBackEnd().then(function (response) {
+        backEndPinged ++;
+        if ( backEndPinged === 33 ){
+          stopTimer();
+        }
+      })
+    }, 900000);
+
+
+     function stopTimer() {
+      if (angular.isDefined(stopTime)) {
+        $interval.cancel(stopTime);
+        stopTime = undefined;
+        backEndPinged = 0;
+      }
+    }
+
   }
 })();

@@ -108,10 +108,11 @@ import ch.bern.submiss.services.impl.model.SubmittentProofProvidedEntity;
 import ch.bern.submiss.services.impl.model.TenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import com.eurodyn.qlack2.fuse.aaa.api.dto.UserDTO;
-import com.eurodyn.qlack2.fuse.auditing.api.dto.AuditLogDTO;
 import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.fuse.cm.api.VersionService;
 import com.eurodyn.qlack2.fuse.cm.api.dto.FolderDTO;
 import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
+import com.eurodyn.qlack2.fuse.cm.api.dto.VersionDTO;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
@@ -120,11 +121,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -300,6 +301,11 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    */
   @Inject
   private DocumentService documentService;
+  /**
+   * The version service.
+   */
+  @Inject
+  protected VersionService versionService;
   /**
    * The criterion service.
    */
@@ -1650,14 +1656,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
 
   @Override
   public Set<ValidationError> updateSubmissionStatus(String submissionId, Long version,
-    String status, String description,
-    String reopenReason, String internalValue) {
+    String status, String description, String reason, String internalValue) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSubmissionStatus, Parameters: submissionId: {0}, status: {1}, "
-        + "description: {2}, reopenReason: {3}, "
-        + "internalValue: {4}",
-      new Object[]{submissionId, status, description, reopenReason, internalValue});
+        + "description: {2}, reason: {3}, internalValue: {4}",
+      new Object[]{submissionId, status, description, reason, internalValue});
 
     Set<ValidationError> optimisticLockErrors = new HashSet<>();
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
@@ -1666,7 +1670,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         ValidationMessages.OPTIMISTIC_LOCK));
       return optimisticLockErrors;
     }
-    updateSubmissionStatus(submissionEntity, status, description, reopenReason, internalValue,
+    updateSubmissionStatus(submissionEntity, status, description, reason, internalValue,
       getUserId());
     return optimisticLockErrors;
   }
@@ -1719,7 +1723,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     // If no issue has been found, check if proof documents need to be generated for the 2nd level
     // selective process.
     if (messages.isEmpty() && submissionEntity.getProcess().equals(Process.SELECTIVE)) {
-      generateProofDocuments(id, !messages.isEmpty(), messages, submissionEntity);
+      shouldProofDocumentsBeGenerated(id, !messages.isEmpty(), messages, submissionEntity);
     }
 
     if (messages.isEmpty()) {
@@ -1871,9 +1875,10 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       }
     }
 
-    // If generateProofDocuments returns false then we shouldn't change existsExclusionReasons to false in case it is true.
-    existsExclusionReasons |= generateProofDocuments(submissionId, existsExclusionReasons, results,
-      submissionEntity);
+    // If generateProofDocuments returns false then we shouldn't change
+    // existsExclusionReasons to false in case it is true.
+    existsExclusionReasons |= shouldProofDocumentsBeGenerated(submissionId,
+      existsExclusionReasons, results, submissionEntity);
 
     List<CriterionDTO> criterionDTOs =
       criterionService.readSubmissionEvaluatedCriteria(submissionId);
@@ -2133,48 +2138,41 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   }
 
   /**
-   * Generate proof documents.
+   * Check if proof documents should be generated for each Submittent.
    *
    * @param id                     the id
    * @param existsExclusionReasons the exists exclusion reasons
    * @param results                the results
    * @param submissionEntity       the submission entity
-   * @return true, if successful
+   * @return true, if proof documents should be generated.
    */
-  private boolean generateProofDocuments(String id, boolean existsExclusionReasons,
+  private boolean shouldProofDocumentsBeGenerated(String id, boolean existsExclusionReasons,
     List<String> results, SubmissionEntity submissionEntity) {
     QCompanyEntity qCompanyEntitySubcontractors = new QCompanyEntity("subcontractors");
     QCompanyEntity qCompanyEntityjointVentures = new QCompanyEntity("jointVentures");
 
     // Retrieve unique submittent. For example, when submittent A (ARGE B, Sub C) exists twice,
     // generate only one Nachweisbrief for this submittent.
-    List<SubmittentEntity> submittents = new JPAQueryFactory(em).selectFrom(qSubmittentEntity)
-      .leftJoin(qSubmittentEntity.jointVentures, qCompanyEntityjointVentures)
-      .leftJoin(qSubmittentEntity.subcontractors, qCompanyEntitySubcontractors)
-      .where((qSubmittentEntity.submissionId.id.eq(id))
-        .and(qSubmittentEntity.offer.excludedFirstLevel.isFalse()
-          .or(qSubmittentEntity.offer.excludedFirstLevel.isNull())))
-      .groupBy(qSubmittentEntity.companyId, qCompanyEntitySubcontractors,
-        qCompanyEntityjointVentures).fetch();
+    List<SubmittentEntity> submittents = getUniqueSubmittents(id, qCompanyEntitySubcontractors,
+      qCompanyEntityjointVentures);
     Set<SubmittentEntity> submittentSet = new HashSet<>(submittents);
+
     // Retrieve Nachweisbrief templateId.
-    MasterListValueHistoryEntity template = new JPAQueryFactory(em)
-      .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-      .where(qMasterListValueHistoryEntity.shortCode.eq(Template.NACHWEISBRIEF_PT)
-        .and(qMasterListValueHistoryEntity.tenant.id
-          .eq(usersService.getUserById(getUser().getId()).getTenant().getId()))
-        .and(qMasterListValueHistoryEntity.toDate.isNull()))
-      .fetchOne();
+    MasterListValueHistoryEntity template = getNachweisbriefTemplate(Template.NACHWEISBRIEF_PT);
 
     // if documentShoulBeCreated has not been set to true yet, iterate through subcontractors.
     // subcontractors have different template.
-    MasterListValueHistoryEntity templateSub = new JPAQueryFactory(em)
-      .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-      .where(qMasterListValueHistoryEntity.shortCode.eq(Template.NACHWEISBRIEF_SUB)
-        .and(qMasterListValueHistoryEntity.tenant.id
-          .eq(usersService.getUserById(getUser().getId()).getTenant().getId()))
-        .and(qMasterListValueHistoryEntity.toDate.isNull()))
-      .fetchOne();
+    MasterListValueHistoryEntity templateSub = getNachweisbriefTemplate(
+      Template.NACHWEISBRIEF_SUB);
+
+    // Retrieve submission recent statuses needed for Selektiv Stage 2 checks later on
+    List<TenderStatusHistoryDTO> allRecentStatuses = new ArrayList<>();
+    if (submissionEntity.getProcess().equals(Process.SELECTIVE)
+      && submissionEntity.getStatus().equals(TenderStatus.FORMAL_EXAMINATION_STARTED.getValue())) {
+      allRecentStatuses = tenderStatusHistoryService
+        .getSubmissionStatuses(submissionEntity.getId());
+    }
+
     for (SubmittentEntity submittent : submittentSet) {
       if (submittent.getOffer().getIsEmptyOffer() == null
         || !submittent.getOffer().getIsEmptyOffer()) {
@@ -2182,13 +2180,15 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
           && !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submissionEntity.getStatus()),
           TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
           if ((submittent.getIsApplicant() != null && submittent.getIsApplicant())
-            && isProofDocumentRequired(submittent, submissionEntity, template, templateSub)) {
+            && isProofDocumentRequired(submittent, submissionEntity, template,
+              templateSub, allRecentStatuses)) {
             existsExclusionReasons = true;
             results.add(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED);
             break;
           }
         } else {
-          if (isProofDocumentRequired(submittent, submissionEntity, template, templateSub)) {
+          if (isProofDocumentRequired(submittent, submissionEntity, template,
+            templateSub, allRecentStatuses)) {
             existsExclusionReasons = true;
             results.add(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED);
             break;
@@ -2197,6 +2197,28 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       }
     }
     return existsExclusionReasons;
+  }
+
+  private MasterListValueHistoryEntity getNachweisbriefTemplate(String nachweisbriefTemplate) {
+    return new JPAQueryFactory(em)
+      .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+      .where(qMasterListValueHistoryEntity.shortCode.eq(nachweisbriefTemplate)
+        .and(qMasterListValueHistoryEntity.tenant.id
+          .eq(usersService.getUserById(getUser().getId()).getTenant().getId()))
+        .and(qMasterListValueHistoryEntity.toDate.isNull()))
+      .fetchOne();
+  }
+
+  private List<SubmittentEntity> getUniqueSubmittents(String id,
+    QCompanyEntity qCompanyEntitySubcontractors, QCompanyEntity qCompanyEntityjointVentures) {
+    return new JPAQueryFactory(em).selectFrom(qSubmittentEntity)
+        .leftJoin(qSubmittentEntity.jointVentures, qCompanyEntityjointVentures)
+        .leftJoin(qSubmittentEntity.subcontractors, qCompanyEntitySubcontractors)
+        .where((qSubmittentEntity.submissionId.id.eq(id))
+          .and(qSubmittentEntity.offer.excludedFirstLevel.isFalse()
+            .or(qSubmittentEntity.offer.excludedFirstLevel.isNull())))
+        .groupBy(qSubmittentEntity.companyId, qCompanyEntitySubcontractors,
+          qCompanyEntityjointVentures).fetch();
   }
 
   /**
@@ -2849,15 +2871,16 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * This method checks if Nachweisbrief document should be generated before the close of the
    * examination procedure.
    *
-   * @param submittent       the submittent
-   * @param submissionEntity the submission entity
-   * @param template         the template
-   * @param templateSub      the template sub
+   * @param submittent          the submittent
+   * @param submissionEntity    the submission entity
+   * @param template            the template
+   * @param templateSub         the template sub
+   * @param allRecentStatuses   all recent statuses of Submission
    * @return true, if is proof document required
    */
   private boolean isProofDocumentRequired(SubmittentEntity submittent,
     SubmissionEntity submissionEntity, MasterListValueHistoryEntity template,
-    MasterListValueHistoryEntity templateSub) {
+    MasterListValueHistoryEntity templateSub, List<TenderStatusHistoryDTO> allRecentStatuses) {
 
     LOGGER.log(Level.CONFIG, "Executing method isProofDocumentRequired, "
         + "Parameters: submittent: {0}, "
@@ -2877,13 +2900,13 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     companies.addAll(submittent.getJointVentures());
     for (CompanyEntity jointVentures : companies) {
       if (setDocumentShouldBeCreated(jointVentures, submittent.getId(),
-        template, submissionEntity.getId(), deadline)) {
+        template, submissionEntity.getId(), deadline, allRecentStatuses)) {
         return true;
       }
     }
     for (CompanyEntity subcontractors : submittent.getSubcontractors()) {
       if (setDocumentShouldBeCreated(subcontractors, submittent.getId(),
-        templateSub, submissionEntity.getId(), deadline)) {
+        templateSub, submissionEntity.getId(), deadline, allRecentStatuses)) {
         return true;
       }
     }
@@ -2893,15 +2916,17 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * This method set a boolean value to true if the Nachweisbrief document should be created.
    *
-   * @param companyEntity the company entity
-   * @param submittentId  the submittent id
-   * @param template      the template
-   * @param submissionId  the submission id
-   * @param deadline      the deadline
+   * @param companyEntity     the company entity
+   * @param submittentId      the submittent id
+   * @param template          the template
+   * @param submissionId      the submission id
+   * @param deadline          the deadline
+   * @param allRecentStatuses all recent statuses of Submission
    * @return true, if successful
    */
   private boolean setDocumentShouldBeCreated(CompanyEntity companyEntity, String submittentId,
-    MasterListValueHistoryEntity template, String submissionId, Date deadline) {
+    MasterListValueHistoryEntity template, String submissionId, Date deadline,
+    List<TenderStatusHistoryDTO> allRecentStatuses) {
 
     HashMap<String, String> attributesMap = new HashMap<>();
     boolean documentShoulBeCreated = false;
@@ -2914,16 +2939,65 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     boolean requiredProofDocument =
       subDocumentService.createProofDocument(deadline, companyProofDTOs);
 
-    attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(),
-      template.getMasterListValueId().getId());
-    attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentId);
-    attributesMap.put(DocumentAttributes.TENANT_ID.name(), template.getTenant().getId());
-    attributesMap.put(DocumentAttributes.COMPANY_ID.name(), companyEntity.getId());
-    if (requiredProofDocument
-      && documentService.getNodeByAttributes(submissionId, attributesMap).isEmpty()) {
-      documentShoulBeCreated = true;
+    if (requiredProofDocument) {
+      attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(),
+        template.getMasterListValueId().getId());
+      attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentId);
+      attributesMap.put(DocumentAttributes.TENANT_ID.name(), template.getTenant().getId());
+      attributesMap.put(DocumentAttributes.COMPANY_ID.name(), companyEntity.getId());
+
+      VersionDTO latestNachweisbrief = versionService
+        .getFileLatestVersionByNodeAttributes(submissionId, attributesMap);
+      if (latestNachweisbrief == null) {
+        documentShoulBeCreated = true;
+      }
+      SubmissionDTO submissionDTO = getSubmissionById(submissionId);
+      if (submissionDTO != null && latestNachweisbrief != null
+        && submissionDTO.getProcess().equals(Process.SELECTIVE)
+        && submissionDTO.getStatus().equals(TenderStatus.FORMAL_EXAMINATION_STARTED.getValue())) {
+        if(checkNachweisbriefCreationDate(
+          Date.from(Instant.ofEpochMilli(latestNachweisbrief.getLastModifiedOn())),
+          companyProofDTOs, allRecentStatuses)){
+          documentShoulBeCreated = true;
+        }
+      }
     }
     return documentShoulBeCreated;
+  }
+
+  /**
+   * This method checks whether a new Nachweisbrief document should be created again for the
+   * Selektiv process during Formal Examination, in case previous one was asked before Offer Opening
+   * starts.
+   *
+   * @param nachweisbriefCreationDate the Nachweisbrief creation date
+   * @param companyProofDTOs          the companyProofDTOs list
+   * @param allRecentStatuses         all recent statuses of Submission
+   * @return true, if Nachweisbrief was created before Offer Opening starts
+   */
+  private boolean checkNachweisbriefCreationDate(Date nachweisbriefCreationDate,
+    List<CompanyProofDTO> companyProofDTOs, List<TenderStatusHistoryDTO> allRecentStatuses) {
+    Date awardNoticesFirstLevelDate = null;
+    Boolean nachweiseModifiedAfterNachweisbrief = false;
+    for (TenderStatusHistoryDTO status : allRecentStatuses) {
+      if (status.getStatusId().equals(TenderStatus.AWARD_NOTICES_1_LEVEL_CREATED.getValue())) {
+        awardNoticesFirstLevelDate = status.getOnDate();
+        break;
+      }
+    }
+    for (CompanyProofDTO companyProofDto : companyProofDTOs) {
+      if (companyProofDto.getModDate() != null
+        && nachweisbriefCreationDate.before(companyProofDto.getModDate())) {
+        nachweiseModifiedAfterNachweisbrief = true;
+        break;
+      }
+    }
+    if (nachweiseModifiedAfterNachweisbrief
+      && awardNoticesFirstLevelDate != null
+      && nachweisbriefCreationDate.before(awardNoticesFirstLevelDate)) {
+      return true;
+    }
+    return false;
   }
 
   /*
@@ -3812,7 +3886,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         }
       }
       projectBean.calculateSubmittentValues(
-        submittentDTO, deadline, processType);
+        submittentDTO, deadline, processType, false);
     }
     /*if (deadline != null) {
       projectBean.calculateSubmittentValues(
@@ -4046,13 +4120,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     return submittentDTOs;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#submissionCancelNavigation(java.
-   * lang.String)
-   */
   @Override
   public boolean submissionCancelNavigation(String submissionId) {
 
@@ -4075,9 +4142,14 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       templateId.getMasterListValueId().getId());
     attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(), "CANCELATION");
     for (SubmittentEntity submittentEntity : submissionEntity.getSubmittents()) {
-      attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentEntity.getId());
-      if (documentService.getNodeByAttributes(submissionEntity.getId(), attributesMap).isEmpty()) {
-        return false;
+      // do not check empty offers and excluded applicants
+      if (Boolean.FALSE.equals(submittentEntity.getOffer().getIsEmptyOffer()) &&
+        Boolean.FALSE.equals(submittentEntity.getOffer().getExcludedFirstLevel())) {
+        attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentEntity.getId());
+        if (documentService.getNodeByAttributes(submissionEntity.getId(), attributesMap)
+          .isEmpty()) {
+          return false;
+        }
       }
     }
     return true;
@@ -4182,13 +4254,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         .from(qSubmissionEntity).where(qSubmissionEntity.id.eq(submissionId)).fetchOne());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#getSubmittentListEmails(java.lang
-   * .String)
-   */
   @Override
   public List<String> getSubmittentListEmails(String submissionId) {
 
@@ -4196,8 +4261,17 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       "Executing method getSubmittentListEmails, Parameters: submissionId: {0}",
       submissionId);
 
-    List<SubmittentEntity> submittents = new JPAQueryFactory(em).selectDistinct(qSubmittentEntity)
-      .from(qSubmittentEntity).where(qSubmittentEntity.submissionId.id.eq(submissionId)).fetch();
+    // Fetch all submittents who are either submittents by default, or are applicants who have
+    // not been excluded from the process.
+    List<SubmittentEntity> submittents = new JPAQueryFactory(em).select(qOfferEntity.submittent)
+      .from(qOfferEntity)
+      .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
+        .and((qOfferEntity.submittent.isApplicant.eq(Boolean.TRUE)
+          .and(qOfferEntity.excludedFirstLevel.eq(Boolean.FALSE)))
+          .or(qOfferEntity.submittent.isApplicant.eq(Boolean.FALSE))
+          .or(qOfferEntity.submittent.isApplicant.isNull())))
+      .fetch();
+
     List<String> emailList = new ArrayList<>();
     for (SubmittentEntity submittent : submittents) {
       if (!emailList.contains(submittent.getCompanyId().getCompanyEmail())) {

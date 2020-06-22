@@ -65,7 +65,6 @@ public abstract class SubmissTaskDTOMapper {
 
       taskDTO.setWorkType(taskDTO.getSubmission().getWorkType().getValue1() + LookupValues.SPACE
         + taskDTO.getSubmission().getWorkType().getValue2());
-
     }
     if (taskEntity.getUserAssigned() != null && users.get(taskEntity.getUserAssigned()) != null) {
       UserDTO user = users.get(taskEntity.getUserAssigned());
@@ -96,6 +95,12 @@ public abstract class SubmissTaskDTOMapper {
       taskDTO.setLastName(
         users.get(taskEntity.getCreatedBy()).getAttribute(USER_ATTRIBUTES.LASTNAME.getValue())
           .getData() + LookupValues.RIGHT_PARENTHESIS);
+    }
+    if(taskDTO.getObjectName() == null){
+      taskDTO.setObjectName(StringUtils.EMPTY);
+    }
+    if(taskDTO.getWorkType() == null){
+      taskDTO.setWorkType(StringUtils.EMPTY);
     }
   }
 }

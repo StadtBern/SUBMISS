@@ -350,6 +350,7 @@
 
       UNDEFINED: "undefined",
       IMPORT_ERROR: "Import Fehlermeldung",
+      INVALID_FILE_TYPE: "Dieser Dateityp wird vom System nicht unterstützt",
       REOPEN_MESSAGE_START: "Wiederaufnahme am ",
       AND: " und ",
       REOPEN_MESSAGE_END_CANCEL: " nach Verfahrensabbruch",

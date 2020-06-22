@@ -207,22 +207,25 @@
 
     }
 
-    // Function to insert in a list only the offers of the submittents that
+    // Function to insert in a list only the not empty offers of the submittents that
     // are not excluded
     function readActiveSubmittents(offers) {
       for (var i = 0; i < offers.length; i++) {
-        if (offers[i].offer.qExExaminationIsFulfilled &&
-          (offers[i].submittent.submissionId.process === 'INVITATION' ||
-            (offers[i].submittent.submissionId.process === 'OPEN' && !offers[i].submittent.submissionId.isServiceTender))) {
-          vm.activeSubmittents.push(offers[i]);
-        } else if (offers[i].submittent.submissionId.process === 'OPEN' &&
-          offers[i].submittent.submissionId.isServiceTender) {
-          if (!offers[i].offer.isExcludedFromProcess) {
+        // check if offer is not an empty offer first
+        if (!offers[i].offer.isEmptyOffer) {
+          if (offers[i].offer.qExExaminationIsFulfilled &&
+            (offers[i].submittent.submissionId.process === 'INVITATION' ||
+              (offers[i].submittent.submissionId.process === 'OPEN' && !offers[i].submittent.submissionId.isServiceTender))) {
             vm.activeSubmittents.push(offers[i]);
-          }
-        } else {
-          if (!offers[i].submittent.existsExclusionReasons) {
-            vm.activeSubmittents.push(offers[i]);
+          } else if (offers[i].submittent.submissionId.process === 'OPEN' &&
+            offers[i].submittent.submissionId.isServiceTender) {
+            if (!offers[i].offer.isExcludedFromProcess) {
+              vm.activeSubmittents.push(offers[i]);
+            }
+          } else {
+            if (!offers[i].submittent.existsExclusionReasons) {
+              vm.activeSubmittents.push(offers[i]);
+            }
           }
         }
       }

@@ -229,6 +229,8 @@
       <!-- Map generic exceptions to provide an appropriate Response code -->
       <bean id="GenericExceptionMapper"
         class="com.eurodyn.qlack2.util.rest.mapper.GenericExceptionMapper"/>
+      <bean id="ResponseServerFilter"
+        class="ch.bern.submiss.web.filter.ResponseServerFilter"/>
 
       <!-- A configurable Jackson provider -->
       <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
