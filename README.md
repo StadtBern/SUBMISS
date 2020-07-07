@@ -35,6 +35,9 @@ One healthy social atmosphere is very important to us, wherefore we rate our Cod
 
 * **European Dynamics S.A.** - *Initial work* - [eurodyn](https://github.com/eurodyn)
 
+See also the list of [contributors](https://github.com/StadtBern/SUBMISS/graphs/contributors)
+ who participated in this project.
+
 ## License
 
 This project is licensed under the European Union Public Licence - see the [license](LICENSE.md) file for details.
