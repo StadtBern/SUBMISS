@@ -1,13 +1,21 @@
 # Submiss
 
-eProcurement system for managing tenders
+e-Procurement system for managing tenders
 
 ## Getting Started
 
-The Submiss web application supports the tendering processes of the procurement department of the City of Bern.
-It includes all steps from the creation of new project and assigned tenders to the contract generation.
-Submiss is a multi-tenant application used by the City of Bern and the Canton of Bern.
-These two tenants share the same company database in Submiss.
+Submiss is a web-based software solution of the Procurement Office (City of Bern) for recording, organizing and processing all procurement procedures of the City of Bern.
+It offers role-based access to the project and company data for internal employees, as well as access to the company part by external third parties.
+
+Submiss includes the following:
+* Digital execution (step by step) of the tender procedures: Open, Selective, Invitation, Negotiation and Competition
+* Documentation of the process steps
+* Generation and printing of all process relevant documents and contracts
+* Company directory with master data and proof management
+* Access to company data for third parties
+* Generation of various reports
+* Task list and audit logs
+* Master data and user administration
 
 ## Built With
 
