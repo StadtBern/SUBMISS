@@ -29,7 +29,7 @@ Submiss includes the following:
 * Bower
 * MariaDB 10.x
 
-###Development Environment Setup
+### Development Environment Setup
 This section provides instructions on how to setup your development environment.
 
 #### Security Integration
@@ -231,15 +231,6 @@ This command will start Karaf.
 ## Built With
 
 * [Maven](https://maven.apache.org/) - Dependency Management
-
-## Quick Build
-
-* JDK 1.8.x
-* Maven 3.x
-
-```
-mvn clean install -DskipTests
-```
 
 ## Contributing Guidelines
 
