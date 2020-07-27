@@ -17,18 +17,13 @@ Submiss includes the following:
 * Task list and audit logs
 * Master data and user administration
 
+## Installation
+
+Please refer to the [Installation](INSTALLATION.md) instructions for more information on installation and operation.
+
 ## Built With
 
 * [Maven](https://maven.apache.org/) - Dependency Management
-
-## Quick Build
-
-* JDK 1.8.x
-* Maven 3.x
-
-```
-mvn clean install -DskipTests
-```
 
 ## Contributing Guidelines
 
