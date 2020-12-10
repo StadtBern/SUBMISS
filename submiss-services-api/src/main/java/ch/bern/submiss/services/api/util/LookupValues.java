@@ -137,6 +137,9 @@ public class LookupValues {
   public static final String RIGHT_PARENTHESIS = ")";
   public static final String LAUFENDES_BESCHWERDENVERFAHREN = "Laufendes Beschwerdeverfahren";
   public static final String PRINT_COMMAND = "IN1";
+  public static final String PASSWORD_ENCRYPTED = "****";
+  public static final String NUMBER_FORMAT = "#,##0.00";
+  public static final String TOTAL_VERFAHREN = "Total Verfahren";
 
   public static final int MAX_REASON_TEXT_LENGTH = 10000;
 
@@ -195,6 +198,232 @@ public class LookupValues {
 
   /* Double Quotes */
   public static final String DOUBLEQUOTE = "\"";
+
+  public static final String AUDIT_PROJECT_QUERY =
+    "SELECT a.id                                                                           AS id,\n"
+      + "       union_select.tender_description                                                AS tender_description,\n"
+      + "       concat(uafirst.data, ' ', ualast.data)                                         AS userName,\n"
+      + "       a.short_description                                                            AS shortDescription,\n"
+      + "       (CASE\n"
+      + "            WHEN (locate('{{XY}}', ld.value) > 0)\n"
+      + "                THEN replace(ld.value, '{{XY}}', substring_index(a.opt2, '[#]', -(1)))\n"
+      + "            ELSE ld.value END)                                                        AS translation,\n"
+      + "       from_unixtime(floor((a.created_on / 1000)))                                    AS createdOn,\n"
+      + "       (CASE\n"
+      + "            WHEN (union_select.id IS NOT NULL)\n"
+      + "                THEN concat_ws(' ', mlvh.VALUE1, mlvh.VALUE2)\n"
+      + "            ELSE substring_index(substring_index(a.opt2, '[#]', 2), '[#]', -(1)) END) AS objectName,\n"
+      + "       (CASE\n"
+      + "            WHEN (union_select.id IS NOT NULL)\n"
+      + "                THEN union_select.projectName\n"
+      + "            ELSE substring_index(a.opt2, '[#]', 1) END)                               AS projectName,\n"
+      + "       (CASE\n"
+      + "            WHEN (union_select.id IS NOT NULL)\n"
+      + "                THEN concat_ws(' ', mlvh1.VALUE1, mlvh1.VALUE2)\n"
+      + "            ELSE substring_index(substring_index(a.opt2, '[#]', 3), '[#]', -(1)) END)\n"
+      + "                                                                                      AS workType,\n"
+      + "       a.opt1                                                                         AS reason,\n"
+      + "       (CASE\n"
+      + "            WHEN (union_select.id IS NOT NULL) THEN union_select.tenant_id\n"
+      + "            ELSE substring_index(substring_index(a.opt2, '[#]', -(2)), '[#]', 1) END) AS tenant_id,\n"
+      + "       a.reference_id                                                                 AS reference_id,\n"
+      + "       a.opt2                                                                         AS additionalInfo,\n"
+      + "       substring_index(a.opt2, '[#]', -(1))                                           AS resource_key\n"
+      + "\n"
+      + "FROM ((((((((((al_audit a JOIN aaa_user u ON ((u.id = a.prin_session_id)))\n"
+      + "    JOIN aaa_user_attributes uafirst ON ((uafirst.user_id = u.id)))\n"
+      + "    JOIN aaa_user_attributes ualast ON ((ualast.user_id = u.id)))\n"
+      + "    LEFT JOIN (SELECT t.id                   AS id,\n"
+      + "                      t.DESCRIPTION          AS tender_description,\n"
+      + "                      p.FK_OBJECT            AS object,\n"
+      + "                      t.FK_HISTORY_WORK_TYPE AS workType,\n"
+      + "                      p.FK_TENANT            AS tenant_id,\n"
+      + "                      p.NAME                 AS projectName\n"
+      + "               FROM SUB_TENDER AS t\n"
+      + "                        JOIN\n"
+      + "                    SUB_PROJECT AS p ON (p.ID = t.FK_PROJECT)\n"
+      + "               UNION\n"
+      + "               SELECT p.id        AS id,\n"
+      + "                      NULL        AS tender_description,\n"
+      + "                      p.FK_OBJECT AS object,\n"
+      + "                      NULL        AS workType,\n"
+      + "                      p.FK_TENANT AS tenant,\n"
+      + "                      p.NAME      AS projectName\n"
+      + "               FROM SUB_PROJECT AS p) union_select ON ((union_select.id = a.reference_id)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE mlv ON ((mlv.ID = union_select.object)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE_HISTORY mlvh ON ((mlvh.FK_MASTER_LIST_VALUE = mlv.ID)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE mlv1 ON ((mlv1.ID = union_select.workType)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE_HISTORY mlvh1 ON ((mlvh1.FK_MASTER_LIST_VALUE = mlv1.ID)))\n"
+      + "    JOIN lex_key lk ON ((a.short_description = lk.name)))\n"
+      + "         JOIN lex_data ld ON ((lk.id = ld.key_id)))\n"
+      + "\n"
+      + "WHERE ((a.opt3 = '1') AND a.level_id IN (SELECT al_audit_level.id\n"
+      + "                                         FROM al_audit_level\n"
+      + "                                         WHERE (al_audit_level.name = 'PROJECT_LEVEL'))\n"
+      + "    AND (ualast.name = 'LASTNAME') AND (uafirst.name = 'FIRSTNAME') AND isnull(mlvh1.TO_DATE) AND\n"
+      + "       isnull(mlvh.TO_DATE))";
+
+  public static final String AUDIT_COUNT_PROJECT_QUERY =
+    "SELECT COUNT(*)\n"
+      + "\n"
+      + "FROM ((((((((((al_audit a JOIN aaa_user u ON ((u.id = a.prin_session_id)))\n"
+      + "    JOIN aaa_user_attributes uafirst ON ((uafirst.user_id = u.id)))\n"
+      + "    JOIN aaa_user_attributes ualast ON ((ualast.user_id = u.id)))\n"
+      + "    LEFT JOIN (SELECT t.id                   AS id,\n"
+      + "                      t.DESCRIPTION          AS tender_description,\n"
+      + "                      p.FK_OBJECT            AS object,\n"
+      + "                      t.FK_HISTORY_WORK_TYPE AS workType,\n"
+      + "                      p.FK_TENANT            AS tenant_id,\n"
+      + "                      p.NAME                 AS projectName\n"
+      + "               FROM SUB_TENDER AS t\n"
+      + "                        JOIN\n"
+      + "                    SUB_PROJECT AS p ON (p.ID = t.FK_PROJECT)\n"
+      + "               UNION\n"
+      + "               SELECT p.id        AS id,\n"
+      + "                      NULL        AS tender_description,\n"
+      + "                      p.FK_OBJECT AS object,\n"
+      + "                      NULL        AS workType,\n"
+      + "                      p.FK_TENANT AS tenant,\n"
+      + "                      p.NAME      AS projectName\n"
+      + "               FROM SUB_PROJECT AS p) union_select ON ((union_select.id = a.reference_id)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE mlv ON ((mlv.ID = union_select.object)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE_HISTORY mlvh ON ((mlvh.FK_MASTER_LIST_VALUE = mlv.ID)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE mlv1 ON ((mlv1.ID = union_select.workType)))\n"
+      + "    LEFT JOIN SUB_MASTER_LIST_VALUE_HISTORY mlvh1 ON ((mlvh1.FK_MASTER_LIST_VALUE = mlv1.ID)))\n"
+      + "    JOIN lex_key lk ON ((a.short_description = lk.name)))\n"
+      + "         JOIN lex_data ld ON ((lk.id = ld.key_id)))\n"
+      + "\n"
+      + "WHERE ((a.opt3 = '1') AND a.level_id IN (SELECT al_audit_level.id\n"
+      + "                                         FROM al_audit_level\n"
+      + "                                         WHERE (al_audit_level.name = 'PROJECT_LEVEL'))\n"
+      + "    AND (ualast.name = 'LASTNAME') AND (uafirst.name = 'FIRSTNAME') AND isnull(mlvh1.TO_DATE) AND\n"
+      + "       isnull(mlvh.TO_DATE))";
+
+  public static final String AUDIT_COMPANY_QUERY =
+    "SELECT a.id                                   AS id,\n"
+      + "       concat(uafirst.data, ' ', ualast.data) AS userName,\n"
+      + "       a.short_description                    AS shortDescription,\n"
+      + "       (CASE\n"
+      + "            WHEN (locate('{{XY}}', ld.value) > 0)\n"
+      + "                THEN replace(ld.value, '{{XY}}', substring_index(a.opt2, '[#]', -(1)))\n"
+      + "            ELSE ld.value END)                AS translation,\n"
+      + "       from_unixtime(floor((a.created_on / 1000)))\n"
+      + "                                              AS createdOn,\n"
+      + "       (CASE\n"
+      + "            WHEN isnull((SELECT company.ID\n"
+      + "                         FROM SUB_COMPANY company\n"
+      + "                         WHERE (company.ID = a.reference_id)))\n"
+      + "                THEN substring_index(a.opt2, '[#]', 1)\n"
+      + "            ELSE c.COMPANY_NAME END)          AS companyName,\n"
+      + "       (CASE\n"
+      + "            WHEN isnull((SELECT company.ID\n"
+      + "                         FROM SUB_COMPANY company\n"
+      + "                         WHERE (company.ID = a.reference_id)))\n"
+      + "                THEN substring_index(substring_index(a.opt2, '[#]', 2), '[#]', -(1))\n"
+      + "            ELSE c.PROOF_STATUS_FABE END)     AS proofStatusFabe,\n"
+      + "       substring_index(a.opt2, '[#]', -(1))\n"
+      + "                                              AS resource_key,\n"
+      + "       (CASE\n"
+      + "            WHEN (a.short_description = 'PROOF_REQUEST') THEN (SELECT aaa_user_attributes.data\n"
+      + "                                                               FROM (aaa_user\n"
+      + "                                                                        JOIN aaa_user_attributes\n"
+      + "                                                                             ON ((aaa_user_attributes.user_id = aaa_user.id)))\n"
+      + "                                                               WHERE ((aaa_user_attributes.name = 'TENANT') AND\n"
+      + "                                                                      (aaa_user.id = a.prin_session_id)))\n"
+      + "            ELSE NULL END)\n"
+      + "                                              AS tenant_id\n"
+      + "\n"
+      + "FROM ((((((al_audit a LEFT JOIN SUB_COMPANY c ON ((c.ID = a.reference_id)))\n"
+      + "    JOIN aaa_user u ON ((u.id = a.prin_session_id)))\n"
+      + "    JOIN aaa_user_attributes uafirst ON ((uafirst.user_id = u.id)))\n"
+      + "    JOIN aaa_user_attributes ualast ON ((ualast.user_id = u.id)))\n"
+      + "    JOIN lex_key lk ON ((a.short_description = lk.name)))\n"
+      + "         JOIN lex_data ld ON ((lk.id = ld.key_id)))\n"
+      + "\n"
+      + "WHERE ((a.opt3 = '1') AND a.level_id\n"
+      + "    IN (SELECT al_audit_level.id\n"
+      + "        FROM al_audit_level\n"
+      + "        WHERE (al_audit_level.name = 'COMPANY_LEVEL')) AND (ualast.name = 'LASTNAME') AND\n"
+      + "       (uafirst.name = 'FIRSTNAME'))";
+
+  public static final String AUDIT_COUNT_COMPANY_QUERY =
+    "SELECT COUNT(*)\n"
+      + "\n"
+      + "FROM ((((((al_audit a LEFT JOIN SUB_COMPANY c ON ((c.ID = a.reference_id)))\n"
+      + "    JOIN aaa_user u ON ((u.id = a.prin_session_id)))\n"
+      + "    JOIN aaa_user_attributes uafirst ON ((uafirst.user_id = u.id)))\n"
+      + "    JOIN aaa_user_attributes ualast ON ((ualast.user_id = u.id)))\n"
+      + "    JOIN lex_key lk ON ((a.short_description = lk.name)))\n"
+      + "         JOIN lex_data ld ON ((lk.id = ld.key_id)))\n"
+      + "\n"
+      + "WHERE ((a.opt3 = '1') AND a.level_id\n"
+      + "    IN (SELECT al_audit_level.id\n"
+      + "        FROM al_audit_level\n"
+      + "        WHERE (al_audit_level.name = 'COMPANY_LEVEL')) AND (ualast.name = 'LASTNAME') AND\n"
+      + "       (uafirst.name = 'FIRSTNAME'))";
+
+  public static final String AUDIT_USERNAME = "concat(uafirst.data, ' ', ualast.data)";
+
+  public static final String AUDIT_TRANSLATION = "(CASE\n"
+    + "            WHEN (locate('{{XY}}', ld.value) > 0)\n"
+    + "                THEN replace(ld.value, '{{XY}}', substring_index(a.opt2, '[#]', -(1)))\n"
+    + "            ELSE ld.value END)";
+
+  public static final String AUDIT_CREATED_ON = "from_unixtime(floor((a.created_on / 1000)))";
+
+  public static final String AUDIT_OBJECT_NAME = "(CASE\n"
+    + "            WHEN (union_select.id IS NOT NULL)\n"
+    + "                THEN concat_ws(' ', mlvh.VALUE1, mlvh.VALUE2)\n"
+    + "            ELSE substring_index(substring_index(a.opt2, '[#]', 2), '[#]', -(1)) END)";
+
+  public static final String AUDIT_PROJECT_NAME = "(CASE\n"
+    + "            WHEN (union_select.id IS NOT NULL)\n"
+    + "                THEN union_select.projectName\n"
+    + "            ELSE substring_index(a.opt2, '[#]', 1) END)";
+
+  public static final String AUDIT_WORKTYPE = "(CASE\n"
+    + "            WHEN (union_select.id IS NOT NULL)\n"
+    + "                THEN concat_ws(' ', mlvh1.VALUE1, mlvh1.VALUE2)\n"
+    + "            ELSE substring_index(substring_index(a.opt2, '[#]', 3), '[#]', -(1)) END)";
+
+  public static final String AUDIT_TENDER_DESCRIPTION = "union_select.tender_description";
+
+  public static final String AUDIT_REASON = "a.opt1";
+
+  public static final String AUDIT_PROJECT_TENANT_ID = "(CASE\n"
+    + "            WHEN (union_select.id IS NOT NULL) THEN union_select.tenant_id\n"
+    + "            ELSE substring_index(substring_index(a.opt2, '[#]', -(2)), '[#]', 1) END)";
+
+  public static final String AUDIT_COMPANY_TENANT_ID = "(CASE\n"
+    + "            WHEN (a.short_description = 'PROOF_REQUEST') THEN (SELECT aaa_user_attributes.data\n"
+    + "                                                               FROM (aaa_user\n"
+    + "                                                                        JOIN aaa_user_attributes\n"
+    + "                                                                             ON ((aaa_user_attributes.user_id = aaa_user.id)))\n"
+    + "                                                               WHERE ((aaa_user_attributes.name = 'TENANT') AND\n"
+    + "                                                                      (aaa_user.id = a.prin_session_id)))\n"
+    + "            ELSE NULL END)";
+
+  public static final String AUDIT_PROOF_STATUS_FABE = "(CASE\n"
+    + "            WHEN isnull((SELECT company.ID\n"
+    + "                         FROM SUB_COMPANY company\n"
+    + "                         WHERE (company.ID = a.reference_id)))\n"
+    + "                THEN substring_index(substring_index(a.opt2, '[#]', 2), '[#]', -(1))\n"
+    + "            ELSE c.PROOF_STATUS_FABE END)";
+
+  public static final String AUDIT_COMPANY_NAME = "(CASE\n"
+    + "            WHEN isnull((SELECT company.ID\n"
+    + "                         FROM SUB_COMPANY company\n"
+    + "                         WHERE (company.ID = a.reference_id)))\n"
+    + "                THEN substring_index(a.opt2, '[#]', 1)\n"
+    + "            ELSE c.COMPANY_NAME END)";
+
+  public static final String AUDIT_AND_QUERY = " AND ";
+
+  public static final String AUDIT_OR_QUERY = " OR ";
+
+  public static final String AUDIT_ORDER_BY_QUERY = " ORDER BY ";
+
+
 
   /**
    * The Constant submissStatuses contains all statuses in the order specified in the workflows

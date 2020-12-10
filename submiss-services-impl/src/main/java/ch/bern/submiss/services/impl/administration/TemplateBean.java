@@ -3406,7 +3406,7 @@ public class TemplateBean extends BaseService {
    * @param process the process
    * @return the translated process
    */
-  private String getTranslatedProcess(Process process) {
+  public String getTranslatedProcess(Process process) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getTranslatedProcess, Parameters: process: {0}",
@@ -3434,6 +3434,42 @@ public class TemplateBean extends BaseService {
         break;
     }
     return processName;
+  }
+
+  /**
+   * Gets the translated procedure.
+   *
+   * @param process the process
+   * @return the translated procedure
+   */
+  public String getTranslatedProcedure(Process process) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getTranslatedProcedure, Parameters: process: {0}",
+      process);
+
+    String procedureName;
+    switch (process.getValue()) {
+      case "SelectiveTender":
+        procedureName = "Selektiv";
+        break;
+      case "OpenTender":
+        procedureName = "Offen";
+        break;
+      case "InvitedTender":
+        procedureName = "Einladung";
+        break;
+      case "NegotiatedTender":
+        procedureName = "Freihändig";
+        break;
+      case "NegotiatedCompetitionTender":
+        procedureName = "Freihändig mit Konkurrenz";
+        break;
+      default:
+        procedureName = StringUtils.EMPTY;
+        break;
+    }
+    return procedureName;
   }
 
   /**

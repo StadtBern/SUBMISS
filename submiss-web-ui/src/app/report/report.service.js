@@ -52,10 +52,6 @@
       validateOperationForm: function (report) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/report/validateOperationForm', report);
       },
-      proceedOrNotToResults: function (report) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
-          '/report/proceedOrNotToResults', report);
-      },
       generateOperationReport: function (report, page, pageItems, sortColumn, sortType) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/report/operationGenerate/' + page + '/' + pageItems + '/' + sortColumn + '/' + sortType, report);
       },
@@ -66,9 +62,6 @@
             'Accept': 'application/octet-stream'
           }
         });
-      },
-      proceedOrNotToOperationResults: function (report) {
-        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/report/proceedOrNotToOperationResults', report);
       },
       getOperationReportCalculationResults: function (report) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/report/operation/results', report);

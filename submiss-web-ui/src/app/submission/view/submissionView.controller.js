@@ -109,6 +109,8 @@
     function readSubmission(id) {
       SubmissionService.readSubmission(id).success(function (data) {
         vm.data.submission = data;
+        $rootScope.projectName = vm.data.submission.project.projectName;
+        $rootScope.selectedProjectId = vm.data.submission.project.id;
         vm.secFormalAuditView = AppService.isOperationPermitted(AppConstants.OPERATION.FORMAL_AUDIT_VIEW, vm.data.submission.process);
       }).error(function (response, status) {});
     }

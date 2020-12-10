@@ -18,7 +18,7 @@
 </div>
 <div class="row">
   <div id='errorScroll' class="card-box ">
-    <form name="reportViewCtr.htmlReportForm" data-ng-submit="reportViewCtr.getGekOResultsnumber()">
+    <form name="reportViewCtr.htmlReportForm" data-ng-submit="reportViewCtr.getGekoResultsNumber()">
       <div class="alert alert-danger" ng-if="reportViewCtr.areErrorsPresent('GeKo')" role="alert">
         <ul ng-if="reportViewCtr.isInValidDate()">
           <li>
@@ -111,28 +111,47 @@
       </div>
       <div class="col-sm-12 col-md-6">
         <div class="form-group">
-          <label for="directorates">Direktion</label> <select ui-select2="{allowClear: true}" multiple id="directorates"
-            data-ng-model="reportViewCtr.reportForm.directorates" data-placeholder="Mehrfachauswahl möglich"
-            ng-change="reportViewCtr.directorateChange()">
-            <option ng-repeat="directorate in reportViewCtr.directorates" value="{{directorate.id}}">
-              {{directorate.name}}</option>
-          </select>
+          <label for="directorates">Direktion</label>
+          <ui-select multiple id="directorates" name="directorates" ng-model="reportViewCtr.reportForm.directorates"
+            ng-change="reportViewCtr.directorateChange()" theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item.name}}</ui-select-match>
+            <ui-select-choices
+              repeat="directorate.id as directorate in (reportViewCtr.directorates | filter: {name: $select.search})"
+              value="{{directorate.id}}">
+              <div ng-bind-html="directorate.name"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group">
-          <label for="object">Objekt</label> <select ui-select2="{allowClear: true}" multiple id="objects"
-            data-ng-model="reportViewCtr.reportForm.objects" data-placeholder="Mehrfachauswahl möglich"
-            ng-change="reportViewCtr.objectChange()">
-            <option ng-repeat="object in reportViewCtr.objects  track by $index" value="{{object.id}}">{{object.value1}}
-            </option>
-          </select>
+          <label for="objects">Objekt</label>
+          <ui-select multiple id="objects" name="objects" ng-model="reportViewCtr.reportForm.objects"
+            ng-change="reportViewCtr.objectChange()" theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">
+              {{$item.value1 + ' ' + reportViewCtr.objectValue($item.value2)}}
+            </ui-select-match>
+            <ui-select-choices
+              repeat="object.id as object in (reportViewCtr.objects | propsFilter: {value1: $select.search, value2: $select.search}) track by $index"
+              value="{{object.id}}">
+              <div ng-bind-html="object.value1 + ' ' + reportViewCtr.objectValue(object.value2)">
+              </div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group">
-          <label for="workTypes">Arbeitsgattung</label> <select ui-select2="{allowClear: true}" multiple id="workTypes"
-            data-ng-model="reportViewCtr.reportForm.workTypes" data-placeholder="Mehrfachauswahl möglich"
-            ng-options="workType.value1 + ' ' + workType.value2 for workType in reportViewCtr.workTypes">
-          </select>
+          <label for="workTypes">Arbeitsgattung</label>
+          <ui-select multiple id="workTypes" name="workTypes" ng-model="reportViewCtr.reportForm.workTypes"
+            theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">
+              {{$item.value1 + ' ' + $item.value2}}
+            </ui-select-match>
+            <ui-select-choices
+              repeat="workType as workType in (reportViewCtr.workTypes | propsFilter: {value1: $select.search, value2: $select.search})"
+              value="{{workType}}">
+              <div ng-bind-html="workType.value1 + ' ' +workType.value2"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group">
@@ -347,49 +366,75 @@
 
 
         <div class="form-group">
-          <label for="reasonFreeAward">Freihandvergabe</label> <select ui-select2="{allowClear: true}" multiple
-            id="reasonFreeAward" data-ng-model="reportViewCtr.reportForm.reasonFreeAwards"
-            data-placeholder="Mehrfachauswahl möglich">
-            <option ng-repeat="reasonFreeAward in reportViewCtr.reasonFreeAwards track by $index"
-              value="{{reasonFreeAward.id}}">{{reasonFreeAward.value1}}
-              {{reportViewCtr.objectValue(reasonFreeAward.value2)}}</option>
-          </select>
+          <label for="reasonFreeAwards">Freihandvergabe</label>
+          <ui-select multiple id="reasonFreeAwards" name="reasonFreeAwards"
+            ng-model="reportViewCtr.reportForm.reasonFreeAwards" theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">
+              {{$item.value1 + ' ' + reportViewCtr.objectValue($item.value2)}}
+            </ui-select-match>
+            <ui-select-choices
+              repeat="reasonFreeAward.id as reasonFreeAward in (reportViewCtr.reasonFreeAwards | propsFilter: {value1: $select.search, value2: $select.search}) track by $index"
+              value="{{reasonFreeAward.id}}">
+              <div ng-bind-html="reasonFreeAward.value1 + ' '
+                  + reportViewCtr.objectValue(reasonFreeAward.value2)">
+              </div>
+            </ui-select-choices>
+          </ui-select>
         </div>
       </div>
       <div class="col-sm-12 col-md-6">
 
         <div class="form-group">
-          <label for="department">Abteilung</label> <select ui-select2="{allowClear: true}" multiple id="departments"
-            data-ng-model="reportViewCtr.reportForm.departments" data-placeholder="Mehrfachauswahl möglich">
-            <option ng-repeat="department in reportViewCtr.departments track by $index" value="{{department.id}}">
-              {{department.name}}</option>
-          </select>
+          <label for="departments">Abteilung</label>
+          <ui-select multiple id="departments" name="departments" ng-model="reportViewCtr.reportForm.departments"
+            theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item.name}}</ui-select-match>
+            <ui-select-choices
+              repeat="department.id as department in (reportViewCtr.departments | filter: {name: $select.search}) track by $index"
+              value="{{department.id}}">
+              <div ng-bind-html="department.name"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group">
-          <label for="project">Projektname</label> <select ui-select2="{allowClear: true}" multiple id="projects"
-            data-ng-model="reportViewCtr.reportForm.projects" data-placeholder="Mehrfachauswahl möglich"
-            ng-change="reportViewCtr.projectChange()">
-            <option ng-repeat="project in reportViewCtr.projects track by $index" value="{{project.id}}">
-              {{project.projectName}}</option>
-          </select>
+          <label for="projects">Projektname</label>
+          <ui-select multiple id="projects" name="projects" ng-model="reportViewCtr.reportForm.projects"
+            ng-change="reportViewCtr.projectChange()" theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item.projectName}}
+            </ui-select-match>
+            <ui-select-choices
+              repeat="project.id as project in (reportViewCtr.projects | filter: {projectName: $select.search}) track by $index"
+              value="{{project.id}}">
+              <div ng-bind-html="project.projectName"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group">
-          <label for="procedures">Verfahren</label> <select ui-select2="{allowClear: true}" multiple id="procedures"
-            data-ng-model="reportViewCtr.reportForm.procedures" data-placeholder="Mehrfachauswahl möglich">
-            <option data-ng-repeat="procedure in reportViewCtr.procedures" value="{{procedure.value}}">
-              {{procedure.label}}</option>
-          </select>
+          <label for="procedures">Verfahren</label>
+          <ui-select multiple id="procedures" name="procedures" ng-model="reportViewCtr.reportForm.procedures"
+            theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item.label}}</ui-select-match>
+            <ui-select-choices
+              repeat="procedure.value as procedure in (reportViewCtr.procedures | filter: $select.search)"
+              value="{{procedure.value}}">
+              <div ng-bind-html="procedure.label"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group" style="margin-bottom:12px;">
-          <label for="gatt">GATT / WTO</label>
-          <select ui-select2="{allowClear: true}" id="gattWto" name="gattWto"
-            data-ng-model="reportViewCtr.reportForm.gattWto" data-placeholder="Bitte auswählen"
-            data-ng-options="o.value as o.label for o in reportViewCtr.options" translate>
-            <option></option>
-          </select>
+          <label for="gattWto">GATT / WTO</label>
+          <ui-select name="gattWto" id="gattWto" ng-model="reportViewCtr.reportForm.gattWto" theme="select2">
+            <ui-select-match allow-clear="true" placeholder="Bitte auswählen">
+              <span ng-bind="$select.selected.label"></span>
+            </ui-select-match>
+            <ui-select-choices repeat="gattWto.value as gattWto in (reportViewCtr.options | filter: $select.search)"
+              translate>
+              <span ng-bind="gattWto.label"></span>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
         <div class="form-group">
@@ -592,14 +637,20 @@
         </div>
 
         <div class="form-group">
-          <label for="cancelationreason">Verfahrensabbruch</label> <select ui-select2="{allowClear: true}" multiple
-            id="cancelationreasons" data-ng-model="reportViewCtr.reportForm.cancelationreasons"
-            data-placeholder="Mehrfachauswahl möglich">
-            <option ng-repeat="cancelationreason in reportViewCtr.cancelationreasons track by $index"
-              value="{{cancelationreason.id}}">{{cancelationreason.value1}}
-              {{reportViewCtr.objectValue(cancelationreason.value2)}}</option>
-
-          </select>
+          <label for="cancelationreasons">Verfahrensabbruch</label>
+          <ui-select multiple id="cancelationreasons" name="cancelationreasons"
+            ng-model="reportViewCtr.reportForm.cancelationreasons" theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">
+              {{$item.value1 + ' ' + reportViewCtr.objectValue($item.value2)}}
+            </ui-select-match>
+            <ui-select-choices
+              repeat="cancelationreason.id as cancelationreason in (reportViewCtr.cancelationreasons | propsFilter: {value1: $select.search, value2: $select.search}) track by $index"
+              value="{{cancelationreason.id}}">
+              <div ng-bind-html="cancelationreason.value1 + ' '
+                  + reportViewCtr.objectValue(cancelationreason.value2)">
+              </div>
+            </ui-select-choices>
+          </ui-select>
         </div>
       </div>
 

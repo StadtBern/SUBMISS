@@ -15,6 +15,9 @@ package ch.bern.submiss.services.impl.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityResult;
+import javax.persistence.FieldResult;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 
 /**
@@ -22,6 +25,19 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "VW_AUDIT_COMPANY")
+@SqlResultSetMapping(name = "SubmissAuditCompanyMapping",
+  entities = @EntityResult(entityClass = SubmissAuditCompanyEntity.class,
+    fields = {
+      @FieldResult(name = "id", column = "id"),
+      @FieldResult(name = "userName", column = "userName"),
+      @FieldResult(name = "shortDescription", column = "shortDescription"),
+      @FieldResult(name = "createdOn", column = "createdOn"),
+      @FieldResult(name = "resourceKey", column = "resource_key"),
+      @FieldResult(name = "translation", column = "translation"),
+      @FieldResult(name = "tenantId", column = "tenant_id"),
+      @FieldResult(name = "companyName", column = "companyName"),
+      @FieldResult(name = "proofStatusFabe", column = "proofStatusFabe")
+    }))
 public class SubmissAuditCompanyEntity extends SubmissAuditEntity {
 
   /** The company name. */

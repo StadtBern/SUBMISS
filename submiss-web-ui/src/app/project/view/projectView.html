@@ -86,8 +86,8 @@
               <dd>{{projectViewCtr.data.project.department.directorate.name}}</dd>
               <dt>Abteilung</dt>
               <dd>{{projectViewCtr.data.project.department.name}}</dd>
-              <dt>intern/extern</dt>
-              <dd>{{projectViewCtr.data.project.department.internalString}}</dd>
+              <dt>Intern/Extern</dt>
+              <dd>{{projectViewCtr.data.project.department.internal ? 'Intern' : 'Extern'}}</dd>
               <br>
               <dt>Projektbemerkung</dt>
               <dd class="preline">{{projectViewCtr.data.project.notes}}</dd>
@@ -108,7 +108,7 @@
               <dd ng-if="projectViewCtr.data.project.loanApproval" translate>
                 {{projectViewCtr.data.project.loanApproval}}</dd>
               <dd ng-if="!projectViewCtr.data.project.loanApproval"></dd>
-              <dt>GATT / WTO</dt>
+              <dt>GATT/WTO</dt>
               <dd ng-if="projectViewCtr.data.project.gattWto == true" translate>{{projectViewCtr.data.project.gattWto}}
               </dd>
               <dd ng-if="projectViewCtr.data.project.gattWto == false" translate>{{projectViewCtr.data.project.gattWto}}

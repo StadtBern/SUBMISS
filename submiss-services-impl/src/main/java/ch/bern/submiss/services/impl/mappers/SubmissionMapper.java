@@ -160,6 +160,7 @@ public abstract class SubmissionMapper {
     submissionEntity.setVersion(dto.getVersion());
     submissionEntity.setUpdatedOn(dto.getUpdatedOn());
     submissionEntity.setNoAwardTender(dto.getNoAwardTender());
+    submissionEntity.setPassingApplicants(dto.getPassingApplicants());
 
     return submissionEntity;
   }

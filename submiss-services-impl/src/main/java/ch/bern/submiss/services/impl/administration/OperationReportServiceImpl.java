@@ -15,6 +15,7 @@ package ch.bern.submiss.services.impl.administration;
 
 import ch.bern.submiss.services.api.administration.OfferService;
 import ch.bern.submiss.services.api.administration.OperationReportService;
+import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.administration.SubmissionCancelService;
 import ch.bern.submiss.services.api.administration.TenderStatusHistoryService;
 import ch.bern.submiss.services.api.constants.Process;
@@ -33,6 +34,7 @@ import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.LookupValues.GEKO_CRITERIA;
 import ch.bern.submiss.services.api.util.SubmissConverter;
+import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.CustomSubmissionMapper;
 import ch.bern.submiss.services.impl.mappers.GeKoResultMapper;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
@@ -86,6 +88,7 @@ import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
@@ -214,6 +217,11 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
    */
   @Inject
   private SubmissionCancelService submissionCancelService;
+  /**
+   * The Sd service.
+   */
+  @Inject
+  private SDService sDService;
 
   @Override
   public BooleanBuilder getWhereClause(QSubmissionEntity qSubmissionEntity,
@@ -885,6 +893,16 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     List<SubmissionDTO> submissionDTOs = CustomSubmissionMapper.INSTANCE.toCustomSubmissionDTOList(
       submissionentities, activeSd, historySd, activeDepartments, historyDepartments,
       activeDirectorates, historyDirectorates);
+
+    /*
+     * If user searches with specific directorate the query should retrieve submissions with projects
+     * that belong in departments of selected directorate(s), because there is no direct
+     * mapping from project to directorate (only to department). To avoid finding old projects with
+     * departments that have changed directorate in the results, we filter the query
+     * results to keep only the directorate of the lastest department history entry for each submission.
+     */
+    submissionDTOs = filterWithDirectorate(operationReportDTO, submissionDTOs);
+
     List<GeKoResultDTO> geKoResultDTOs =
       GeKoResultMapper.INSTANCE.submissionDTOtoGeKoResultDTO(submissionDTOs);
     for (GeKoResultDTO geKoResultDTO : geKoResultDTOs) {
@@ -916,6 +934,34 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       }
     }
     return geKoResultDTOs;
+  }
+
+  /**
+   * Filter the query results with directorates.
+   *
+   * @param reportDTO         the Operation Report DTO
+   * @param submissionDTOList the submissionDTOList
+   * @return the submissionDTOList
+   */
+  protected List<SubmissionDTO> filterWithDirectorate(OperationReportDTO reportDTO,
+    List<SubmissionDTO> submissionDTOList) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method filterWithDirectorate, Parameters: reportDTO: {0}, submissionDTOList: {1}",
+      new Object[]{reportDTO, submissionDTOList});
+
+    if (checkIfNotEmpty(reportDTO.getDirectorates())) {
+      List<String> directorateIds = new JPAQueryFactory(em)
+        .select(qDirectorateHistoryEntity.directorateId.id).from(qDirectorateHistoryEntity)
+        .where(qDirectorateHistoryEntity.id.in(reportDTO.getDirectorates()),
+          qDirectorateHistoryEntity.toDate.isNull()).fetch();
+
+      submissionDTOList = submissionDTOList.stream().filter(submissionDTO ->
+        directorateIds.contains(
+          submissionDTO.getProject().getDepartment().getDirectorate().getDirectorateId().getId()))
+        .collect(Collectors.toList());
+    }
+    return submissionDTOList;
   }
 
   /**
@@ -1937,12 +1983,6 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       .from(qTenderStatusHistoryEntity).where(predicate).fetch();
   }
 
-  /**
-   * Validate the errors.
-   *
-   * @param operationReportDTO the operationReportDTO
-   * @return the list with the errors
-   */
   @Override
   public Set<ValidationError> validate(OperationReportDTO operationReportDTO) {
 
@@ -1950,6 +1990,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       "Executing method validate, Parameters: operationReportDTO: {0}",
       operationReportDTO);
 
+    // Security check for operation report
     operationReportSecurityCheck();
 
     Set<ValidationError> errors = new HashSet<>();
@@ -1957,7 +1998,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
 
       // Check for future dates
       if (isFutureDate(operationReportDTO.getStartDate(), operationReportDTO.getEndDate())) {
-        errors.add(new ValidationError("futureDateErrorField", LookupValues.FUTURE_ERROR));
+        errors.add(new ValidationError(ValidationMessages.FUTURE_DATE_ERROR_FIELD, LookupValues.FUTURE_ERROR));
       }
       if (isFutureDate(operationReportDTO.getPublicationDateAwardFrom(),
         operationReportDTO.getPublicationDateAwardTo())) {
@@ -2016,7 +2057,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       // Check for earlier end date than start date
       if (isEndDateBeforeStartDate(operationReportDTO.getStartDate(),
         operationReportDTO.getEndDate())) {
-        errors.add(new ValidationError("startDateAfterEndDateErrorField",
+        errors.add(new ValidationError(ValidationMessages.START_DATE_AFTER_END_DATE_ERROR_FIELD,
           LookupValues.END_DATE_BEFORE_START_DATE_ERROR));
       }
       if (isEndDateBeforeStartDate(operationReportDTO.getPublicationDateAwardFrom(),
@@ -2805,16 +2846,19 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     // Document data font
     XSSFFont dataFont = setFontStyle(workbook, SANS_SERIF, FONT_SIZE_SMALL, false);
 
-    // Document data style
-    CellStyle dataStyle = setDataStyle(workbook, dataFont);
+    // Document data style for text
+    CellStyle dataStyleText = setDataStyle(workbook, dataFont, null);
+
+    // Document data style for numbers
+    CellStyle dataStyleNumbers = setDataStyle(workbook, dataFont, "###0.00");
 
     // i is counting the rows
     for (int i = 0; i < geKoResults.size(); i++) {
       Row row = sheet.createRow(startingIndex + i);
       // add data for default columns
-      insertDefaultColumnData(i, geKoResults, row, dataStyle);
+      insertDefaultColumnData(i, geKoResults, row, dataStyleText);
       // add data for selected columns
-      insertSelectedColumnData(i, geKoMaxColsDetails, geKoResults, row, dataStyle);
+      insertSelectedColumnData(i, geKoMaxColsDetails, geKoResults, row, dataStyleText, dataStyleNumbers);
     }
   }
 
@@ -2881,14 +2925,19 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
         case 6:
           if (geKoResults.get(i).getProcess() != null) {
             String value;
-            if (geKoResults.get(i).getProcess().toString().equals(OPEN)) {
-              value = "O";
-            } else if (geKoResults.get(i).getProcess().toString().equals(SELECTIVE)) {
-              value = "S";
-            } else if (geKoResults.get(i).getProcess().toString().equals(INVITATION)) {
-              value = "E";
-            } else {
-              value = "F";
+            switch (geKoResults.get(i).getProcess().toString()) {
+              case OPEN:
+                value = "O";
+                break;
+              case SELECTIVE:
+                value = "S";
+                break;
+              case INVITATION:
+                value = "E";
+                break;
+              default:
+                value = "F";
+                break;
             }
             cell.setCellValue(value);
           }
@@ -2902,19 +2951,20 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   /**
    * Inserting the data to selected columns.
    *
-   * @param i the index i
+   * @param i                  the index i
    * @param geKoMaxColsDetails the geKoMaxColsDetails
-   * @param geKoResults the geKoResults
-   * @param row the row
-   * @param dataStyle the dataStyle
+   * @param geKoResults        the geKoResults
+   * @param row                the row
+   * @param dataStyleText      the dataStyleText
+   * @param dataStyleNumbers   the dataStyleNumbers
    */
   private void insertSelectedColumnData(int i, Map<String, Object> geKoMaxColsDetails,
-    List<GeKoResultDTO> geKoResults, Row row, CellStyle dataStyle) {
+    List<GeKoResultDTO> geKoResults, Row row, CellStyle dataStyleText, CellStyle dataStyleNumbers) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method insertSelectedColumnData, Parameters: i: {0}, "
-        + "geKoMaxColsDetails: {1}, geKoResults: {2}, row: {3}, dataStyle: {4}",
-      new Object[]{i, geKoMaxColsDetails, geKoResults, row, dataStyle});
+        + "geKoMaxColsDetails: {1}, geKoResults: {2}, row: {3}, dataStyleText: {4}",
+      new Object[]{i, geKoMaxColsDetails, geKoResults, row, dataStyleText});
 
     // The number of maxCols in the document
     int maxCols = (int) geKoMaxColsDetails.get(MAXCOLS);
@@ -2925,7 +2975,12 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       // k is counting the selected columns
       for (int k = 0; k < selectedCols.length; k++) {
         Cell cell = row.createCell(7 + k);
-        cell.setCellStyle(dataStyle);
+        // For soSum, fSum and eSum use the cell style for numbers
+        if (selectedCols[k] == 19 || selectedCols[k] == 20 || selectedCols[k] == 21) {
+          cell.setCellStyle(dataStyleNumbers);
+        } else {
+          cell.setCellStyle(dataStyleText);
+        }
 
         switch (selectedCols[k]) {
           case 7:
@@ -3001,17 +3056,17 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
             break;
           case 19:
             if (geKoResults.get(i).getSoSum() != null) {
-              cell.setCellValue(geKoResults.get(i).getSoSum());
+              cell.setCellValue(geKoResults.get(i).getSoCalculation().doubleValue());
             }
             break;
           case 20:
             if (geKoResults.get(i).geteSum() != null) {
-              cell.setCellValue(geKoResults.get(i).geteSum());
+              cell.setCellValue(geKoResults.get(i).geteCalculation().doubleValue());
             }
             break;
           case 21:
             if (geKoResults.get(i).getfSum() != null) {
-              cell.setCellValue(geKoResults.get(i).getfSum());
+              cell.setCellValue(geKoResults.get(i).getfCalculation().doubleValue());
             }
             break;
           case 22:
@@ -3157,16 +3212,17 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
   /**
    * Set the data style.
    *
-   * @param workbook the workbook
-   * @param dataFont the dataFont
+   * @param workbook   the workbook
+   * @param dataFont   the dataFont
+   * @param dataFormat the dataFormat
    * @return the dataStyle
    */
-  private CellStyle setDataStyle(XSSFWorkbook workbook, XSSFFont dataFont) {
+  private CellStyle setDataStyle(XSSFWorkbook workbook, XSSFFont dataFont, String dataFormat) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method setDataStyle, Parameters: workbook: {0}, "
-        + "dataFont: {1}",
-      new Object[]{workbook, dataFont});
+        + "dataFont: {1}, dataFormat: {2}",
+      new Object[]{workbook, dataFont, dataFormat});
 
     CellStyle dataStyle = workbook.createCellStyle();
     dataStyle.setLocked(false);
@@ -3174,6 +3230,11 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     dataStyle.setVerticalAlignment(VerticalAlignment.TOP);
     dataStyle.setWrapText(true);
     dataStyle.setFont(dataFont);
+
+    if (StringUtils.isNotBlank(dataFormat)) {
+      DataFormat format = workbook.createDataFormat();
+      dataStyle.setDataFormat(format.getFormat(dataFormat));
+    }
 
     return dataStyle;
   }
@@ -3204,6 +3265,26 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
 
     security.isPermittedOperationForUser(getUserId(),
       SecurityOperation.GENERATE_OPERATIONS_REPORT.getValue(), null);
+  }
+
+  @Override
+  public Long proceedToOperationResults(OperationReportDTO operationReportDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method proceedToOperationResults, Parameters: operationReportDTO: {0}",
+      operationReportDTO);
+
+    Long results = null;
+    if (operationReportDTO != null) {
+      Long operationReportResults = getNumberOfOperationReportResults(operationReportDTO);
+      Long maximumResults = sDService.getReportMaximumResultsValue();
+      if (operationReportResults == 0) {
+        results = operationReportResults;
+      } else if (operationReportResults > maximumResults) {
+        results = maximumResults;
+      }
+    }
+    return results;
   }
 }
 

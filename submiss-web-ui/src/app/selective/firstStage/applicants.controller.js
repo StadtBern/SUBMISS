@@ -126,6 +126,8 @@
     function readSubmission(submissionId) {
       SubmissionService.readSubmission(submissionId).success(function (data) {
         vm.submission = data;
+        $rootScope.projectName = vm.submission.project.projectName;
+        $rootScope.selectedProjectId = vm.submission.project.id;
       }).error(function (response, status) {
 
       });

@@ -438,10 +438,13 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     if (examinationDTO.getSubmissionId() != null) {
       SubmissionEntity submissionEntity =
         em.find(SubmissionEntity.class, examinationDTO.getSubmissionId());
-      // Set minimum and maximum grade.
+
       if (submissionEntity != null) {
+        // Set minimum and maximum grade.
         submissionEntity.setMaxGrade(examinationDTO.getMaxGrade());
         submissionEntity.setMinGrade(examinationDTO.getMinGrade());
+        // Set the number of passing applicants to the 2nd stage of Selective tender
+        submissionEntity.setPassingApplicants(examinationDTO.getPassingApplicants());
       }
     }
     if (!examinationDTO.getCriterion().isEmpty()) {

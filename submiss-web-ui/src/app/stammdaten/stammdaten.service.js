@@ -158,10 +158,10 @@
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/directorate/getAllDirectoratesByUserTenant/');
       },
       updateSignature: function (signature) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/updateSignature/', signature);
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/updateSignature', signature);
       },
       updateSignatureCopies: function (signature) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/updateSignatureCopies/', signature);
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/updateSignatureCopies', signature);
       },
       uploadSelectedImage: function (uploadedImageId) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/sd/uploadSelectedImage/' + uploadedImageId);

@@ -43,7 +43,8 @@
               <li translate>
                 not_rounded_grade</li>
             </ul>
-            <field-error ng-if="suitabilityAuditCtrl.evidenceForm.errorField.$invalid" form-element-name="errorField" translate name="error"></field-error>
+            <field-error ng-if="suitabilityAuditCtrl.evidenceForm.errorField.$invalid" form-element-name="errorField"
+              translate name="error"></field-error>
             <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
           </div>
           <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
@@ -52,7 +53,7 @@
         <div class="col-sm-12 ToolbarContainer">
           <div class="btn-toolbar pull-left role=" toolbar"="">
             <button type="button" class="btn btn-primary" ng-show="!tableform.$visible"
-              ng-click="suitabilityAuditCtrl.cancelButton(suitabilityAuditCtrl.evidenceForm.$dirty,true)"><span
+              ng-click="suitabilityAuditCtrl.cancelButton(suitabilityAuditCtrl.evidenceForm.$dirty, true)"><span
                 class="fa fa-reply" aria-hidden="true"></span> Zurück</button>
           </div>
           <div class="btn-toolbar pull-right role=">

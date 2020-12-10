@@ -418,6 +418,14 @@ public class CriterionResource {
         ValidationMessages.EVALUATED_CRITERION_WEIGHTING_LIMIT));
     }
     if (examination != null) {
+      // The number of passing applicants should not be less than 0 or greater than the number of total applicants.
+      if (examination.getPassingApplicants() != null && (examination.getPassingApplicants() <= 0
+        || examination.getPassingApplicants() > examination.getTotalApplicants())) {
+        errors.add(new ValidationError(ValidationMessages.PASSING_APPLICANTS,
+          ValidationMessages.PASSING_APPLICANTS_ERROR_MESSAGE));
+        errors.add(new ValidationError(ValidationMessages.PASSING_APPLICANTS_ERROR_FIELD,
+          ValidationMessages.PASSING_APPLICANTS_ERROR_MESSAGE));
+      }
       // max grade should not be less than 0 or greater than 5.
       if (examination.getMaxGrade() != null && (examination.getMaxGrade().doubleValue() <= 0
         || examination.getMaxGrade().doubleValue() > 5)) {

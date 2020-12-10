@@ -26,29 +26,40 @@
         <h4>Suche nach Projekt</h4>
         <div class="form-group">
           <label for="objectName">Objektname</label>
-          <select ui-select2="{allowClear: true}" id="objectName" data-ng-model="projectSearchCtr.searchForm.objectId"
-            ng-change="projectSearchCtr.objectChange()" data-placeholder="Bitte auswählen">
-            <option></option>
-            <option ng-repeat="object in projectSearchCtr.objects" value="{{object.id}}">{{object.value1}}
-              {{projectSearchCtr.objectValue(object.value2)}}</option>
-          </select>
+          <ui-select name="objectName" id="objectName" autofocus placeholder="Bitte auswählen"
+            ng-model="projectSearchCtr.searchForm.objectId" ng-change="projectSearchCtr.objectChange()" theme="select2">
+            <ui-select-match allow-clear="true" placeholder="Bitte auswählen">
+              <span>{{$select.selected.value1}}</span>
+            </ui-select-match>
+            <ui-select-choices repeat="object.id as object in (projectSearchCtr.objects | filter: {value1: $select.search})">
+              <div ng-bind-html="object.value1"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
         <div class="form-group">
           <label for="projectNames">Projektname</label>
-          <select ui-select2="{allowClear: true}" multiple id="projectNames"
-            data-ng-model="projectSearchCtr.searchForm.projectNames" data-placeholder="Mehrfachauswahl möglich">
-            <option ng-repeat="projectName in projectSearchCtr.projects" value="{{projectName}}">{{projectName}}
-            </option>
-          </select>
+          <ui-select multiple id="projectNames" name="projectNames" ng-model="projectSearchCtr.searchForm.projectNames"
+            theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item}}
+            </ui-select-match>
+            <ui-select-choices repeat="projectName in (projectSearchCtr.projects | filter: $select.search)"
+              value={{projectName}}>
+              <div ng-bind-html="projectName"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
         <div class="form-group">
-          <label for="procedure">Verfahrensleitung</label>
-          <select ui-select2="{allowClear: true}" id="procedure" data-ng-model="projectSearchCtr.searchForm.procedureId"
-            data-placeholder="Bitte auswählen">
-            <option></option>
-            <option ng-repeat="procedure in projectSearchCtr.procedures" value="{{procedure.id}}">{{procedure.value1}}
-            </option>
-          </select>
+          <label for="procedures">Verfahrensleitung</label>
+          <ui-select id="procedures" name="procedures" ng-model="projectSearchCtr.searchForm.procedureId"
+            theme="select2">
+            <ui-select-match allow-clear="true" placeholder="Bitte auswählen">
+              <span ng-bind="$select.selected.value1"></span>
+            </ui-select-match>
+            <ui-select-choices
+              repeat="procedure.id as procedure in (projectSearchCtr.procedures | filter: {value1: $select.search})">
+              <div ng-bind-html="procedure.value1"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
 
       </div>
@@ -96,12 +107,18 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="" for="companyWorkTypes">Arbeitsgattung</label>
-          <select ui-select2="{allowClear: true}" multiple id="companyWorkTypes"
-            data-ng-model="projectSearchCtr.searchForm.workTypes" data-placeholder="Mehrfachauswahl möglich"
-            ng-options="workType.value1 + ' ' + workType.value2 for workType in projectSearchCtr.workTypes">
-            <option></option>
-          </select>
+          <label for="workTypes">Arbeitsgattung</label>
+          <ui-select multiple id="workTypes" name="workTypes" ng-model="projectSearchCtr.searchForm.workTypes"
+            theme="select2">
+            <ui-select-match placeholder="Mehrfachauswahl möglich">
+              {{$item.value1 + ' ' + $item.value2}}
+            </ui-select-match>
+            <ui-select-choices
+              repeat="workType as workType in (projectSearchCtr.workTypes | propsFilter: {value1: $select.search, value2: $select.search})"
+              value="{{workType}}">
+              <div ng-bind-html="workType.value1 + ' ' + workType.value2"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
         <div class="form-group">
           <label>Beschreibung</label>
@@ -164,21 +181,31 @@
             <div class="col-sm-12 col-md-4">
               <div class="form-group">
                 <label for="directorates">Direktion</label>
-                <select ui-select2="{allowClear: true}" multiple id="directorates"
-                  data-ng-model="projectSearchCtr.searchForm.directoratesIDs"
-                  ng-change="projectSearchCtr.directorateChange()" data-placeholder="Mehrfachauswahl möglich">
-                  <option ng-repeat="directorate in projectSearchCtr.directorates" value="{{directorate.id}}">
-                    {{directorate.name}}</option>
-                </select>
+                <ui-select multiple id="directorates" name="directorates"
+                  ng-model="projectSearchCtr.searchForm.directoratesIDs"
+                  ng-change="projectSearchCtr.directorateChange()" theme="select2">
+                  <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item.name}}
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="directorate.id as directorate in (projectSearchCtr.directorates | filter: {name: $select.search})"
+                    value="{{directorate.id}}">
+                    <div ng-bind-html="directorate.name"></div>
+                  </ui-select-choices>
+                </ui-select>
               </div>
               <div class="form-group">
                 <label for="departments">Abteilung</label>
-                <select ui-select2="{allowClear: true}" multiple id="departments"
-                  data-ng-model="projectSearchCtr.searchForm.departmentsIDs"
-                  ng-change="projectSearchCtr.departmentChange()" data-placeholder="Mehrfachauswahl möglich">
-                  <option ng-repeat="department in projectSearchCtr.departments" value="{{department.id}}">
-                    {{department.name}}</option>
-                </select>
+                <ui-select multiple id="departments" name="departments"
+                  ng-model="projectSearchCtr.searchForm.departmentsIDs" ng-change="projectSearchCtr.departmentChange()"
+                  theme="select2">
+                  <ui-select-match placeholder="Mehrfachauswahl möglich">{{$item.name}}
+                  </ui-select-match>
+                  <ui-select-choices
+                    repeat="department.id as department in projectSearchCtr.departments | filter: {name: $select.search}"
+                    value="{{department.id}}">
+                    <div ng-bind-html="department.name"></div>
+                  </ui-select-choices>
+                </ui-select>
               </div>
             </div>
             <div class="col-sm-12 col-md-4">

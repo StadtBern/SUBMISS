@@ -118,10 +118,10 @@
 
     /** Function to set breadcrumb parent */
     function setParent(rootScope) {
-      if (rootScope.$previousState === 'projectSubmissionsView' || rootScope.$previousState === 'project.view') {
+      if (rootScope.$previousState === 'projectSubmissionsView' || rootScope.$previousState === 'project.view'
+        || rootScope.$previousState === 'project.search' || !rootScope.$previousState) {
         return 'project.view';
-      } else if (rootScope.$previousState === 'project.search' ||
-        !rootScope.$previousState) {
+      } else {
         return 'project.search';
       }
     }

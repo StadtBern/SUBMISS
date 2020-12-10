@@ -35,6 +35,9 @@ public class SignatureCopyDTO {
 	/** The signature process type. */
 	private SignatureProcessTypeDTO signatureProcessType;
 
+  /** The sort Number. */
+  private Integer sortNumber;
+
 	/**
 	 * Gets the id.
 	 *
@@ -130,4 +133,11 @@ public class SignatureCopyDTO {
 		this.signatureProcessType = signatureProcessType;
 	}
 
+  public Integer getSortNumber() {
+    return sortNumber;
+  }
+
+  public void setSortNumber(Integer sortNumber) {
+    this.sortNumber = sortNumber;
+  }
 }

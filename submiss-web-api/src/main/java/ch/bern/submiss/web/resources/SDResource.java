@@ -614,25 +614,19 @@ public class SDResource {
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/updateSignature/")
+  @Path("/updateSignature")
   public Response updateSignature(SignatureProcessTypeDTO signatureProcessTypeDTO) {
-    Set<ValidationError> optimisticLockErrors =
-      sDService.updateSignatureProcessEntitled(signatureProcessTypeDTO);
-    return (optimisticLockErrors.isEmpty())
-      ? Response.ok().build()
-      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    sDService.updateSignatureProcessEntitled(signatureProcessTypeDTO);
+    return Response.ok().build();
   }
 
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("/updateSignatureCopies/")
+  @Path("/updateSignatureCopies")
   public Response updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
-    Set<ValidationError> optimisticLockErrors =
-      sDService.updateSignatureCopies(signatureProcessTypeDTO);
-    return (optimisticLockErrors.isEmpty())
-      ? Response.ok().build()
-      : Response.status(Response.Status.BAD_REQUEST).entity(optimisticLockErrors).build();
+    sDService.updateSignatureCopies(signatureProcessTypeDTO);
+    return Response.ok().build();
   }
 
   /** Function to validate the type settings */

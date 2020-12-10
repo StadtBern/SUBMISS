@@ -475,6 +475,12 @@ public class SubmissionEntity extends AbstractEntity {
   private Boolean noAwardTender;
 
   /**
+   * The number of passing applicants to the 2nd stage of Selektiv.
+   */
+  @Column(name = "PASSING_APPLICANTS")
+  private Integer passingApplicants;
+
+  /**
    * Gets the project.
    *
    * @return the project
@@ -1940,6 +1946,14 @@ public class SubmissionEntity extends AbstractEntity {
 
   public void setNoAwardTender(Boolean noAwardTender) {
     this.noAwardTender = noAwardTender;
+  }
+
+  public Integer getPassingApplicants() {
+    return passingApplicants;
+  }
+
+  public void setPassingApplicants(Integer passingApplicants) {
+    this.passingApplicants = passingApplicants;
   }
 
   @Override

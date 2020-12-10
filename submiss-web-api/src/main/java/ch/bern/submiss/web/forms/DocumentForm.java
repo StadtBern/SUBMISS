@@ -13,13 +13,12 @@
 
 package ch.bern.submiss.web.forms;
 
+import ch.bern.submiss.services.api.dto.SignatureCopyDTO;
+import ch.bern.submiss.services.api.dto.SignatureProcessTypeEntitledDTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import ch.bern.submiss.services.api.dto.SignatureProcessTypeEntitledDTO;
 
 /**
  * The Class DocumentForm.
@@ -84,6 +83,11 @@ public class DocumentForm {
   
   /** The second signature. */
   private SignatureProcessTypeEntitledDTO secondSignature;
+
+  /**
+   * The signature copies.
+   */
+  private List<SignatureCopyDTO> signatureCopies;
 
   /**
    * Gets the tenant id.
@@ -428,5 +432,11 @@ public class DocumentForm {
     this.secondSignature = secondSignature;
   }
 
- 
+  public List<SignatureCopyDTO> getSignatureCopies() {
+    return signatureCopies;
+  }
+
+  public void setSignatureCopies(List<SignatureCopyDTO> signatureCopies) {
+    this.signatureCopies = signatureCopies;
+  }
 }

@@ -175,10 +175,10 @@
     function setParent(rootScope) {
       if (rootScope.$previousState === 'projectSubmissionsView' ||
         rootScope.$previousState === 'projectSubmissionsView.from.Offers' ||
-        rootScope.$previousState === 'project.view') {
+        rootScope.$previousState === 'project.view' || !rootScope.$previousState
+        || rootScope.$previousState === 'project.search') {
         return 'project.view';
-      } else if (!rootScope.$previousState || rootScope.$previousState ===
-        'project.search') {
+      } else {
         return 'project.search';
       }
     }

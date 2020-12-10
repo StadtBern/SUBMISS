@@ -712,7 +712,6 @@
             });
           }
         }).error(function (response, status) {
-        console.log("error");
       });
     }
 

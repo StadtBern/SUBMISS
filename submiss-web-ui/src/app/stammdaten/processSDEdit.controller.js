@@ -63,7 +63,6 @@
         StammdatenService.getProccessDataEntryById(vm.entryId)
           .success(function (data) {
             vm.typeDataEntry = data;
-            console.log(vm.typeDataEntry);
             vm.editValue = vm.typeDataEntry.value;
           });
       }

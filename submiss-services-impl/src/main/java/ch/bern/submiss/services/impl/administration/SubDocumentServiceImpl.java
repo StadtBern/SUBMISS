@@ -68,6 +68,7 @@ import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.OfferCriterionDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.ProofHistoryDTO;
+import ch.bern.submiss.services.api.dto.SignatureCopyDTO;
 import ch.bern.submiss.services.api.dto.SignatureProcessTypeEntitledDTO;
 import ch.bern.submiss.services.api.dto.SubmissUserDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
@@ -85,20 +86,15 @@ import ch.bern.submiss.services.impl.mappers.DirectorateHistoryMapper;
 import ch.bern.submiss.services.impl.mappers.DocumentMapper;
 import ch.bern.submiss.services.impl.mappers.SubmittentDTOMapper;
 import ch.bern.submiss.services.impl.model.CompanyEntity;
-import ch.bern.submiss.services.impl.model.DepartmentHistoryEntity;
 import ch.bern.submiss.services.impl.model.DirectorateHistoryEntity;
 import ch.bern.submiss.services.impl.model.DocumentDeadlineEntity;
 import ch.bern.submiss.services.impl.model.LegalHearingExclusionEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.QCompanyEntity;
-import ch.bern.submiss.services.impl.model.QDepartmentHistoryEntity;
 import ch.bern.submiss.services.impl.model.QDirectorateHistoryEntity;
 import ch.bern.submiss.services.impl.model.QDocumentDeadlineEntity;
 import ch.bern.submiss.services.impl.model.QMasterListValueHistoryEntity;
-import ch.bern.submiss.services.impl.model.QSignatureCopyEntity;
 import ch.bern.submiss.services.impl.model.QSubmittentEntity;
-import ch.bern.submiss.services.impl.model.SignatureCopyEntity;
-import ch.bern.submiss.services.impl.model.SignatureProcessTypeEntitledEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
 import ch.bern.submiss.services.impl.model.SubmittentEntity;
 import ch.bern.submiss.services.impl.model.TenantEntity;
@@ -1861,7 +1857,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
                 suitabilityDTO.setOfferCriteria(criterionOffer.getOfferCriteria());
                 suitabilityDTO
                   .setMussCriterienSummary(templateBean.suitabilityDocMussSummary(criterionOffer));
-                if (suitabilityDTO.getOffer().getSubmittent().getExistsExclusionReasons() != null
+                if (suitabilityDTO.getOffer().getSubmittent().getExistsExclusionReasons() == null){
+                  suitabilityDTO.setExistsExclusionReasons(TemplateConstants.EMPTY_STRING);
+                } else if (suitabilityDTO.getOffer().getSubmittent().getExistsExclusionReasons() != null
                   && suitabilityDTO.getOffer().getSubmittent().getExistsExclusionReasons()) {
                   suitabilityDTO.setExistsExclusionReasons(TemplateConstants.YES);
                 } else {
@@ -2794,7 +2792,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     versionDTO.getAttributes().put(DocumentAttributes.IS_PROJECT_DOCUMENT.name(),
       String.valueOf(documentDTO.isProjectDocument()));
     versionDTO.getAttributes().put(DocumentAttributes.DEPARTMENT.name(),
-      getDocumentDeparmtent(documentDTO));
+      getDocumentDepartment(documentDTO));
 
     if (generated) {
       versionDTO.getAttributes().put(DocumentAttributes.DOCUMENT_CREATION_TYPE.name(),
@@ -2877,7 +2875,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     versionDTO.getAttributes().put(DocumentAttributes.IS_PROJECT_DOCUMENT.name(),
       String.valueOf(documentDTO.isProjectDocument()));
     versionDTO.getAttributes().put(DocumentAttributes.DEPARTMENT.name(),
-      getDocumentDeparmtent(documentDTO));
+      getDocumentDepartment(documentDTO));
 
     CreateFileAndVersionStatusDTO createFileAndVersionStatusDTO = documentService
       .createFileAndVersion(file, versionDTO, templateByteArray, getUserFullName(), null);
@@ -2955,7 +2953,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     versionDTO.getAttributes().put(DocumentAttributes.IS_PROJECT_DOCUMENT.name(),
       String.valueOf(documentDTO.isProjectDocument()));
     versionDTO.getAttributes().put(DocumentAttributes.DEPARTMENT.name(),
-      getDocumentDeparmtent(documentDTO));
+      getDocumentDepartment(documentDTO));
 
     CreateFileAndVersionStatusDTO fileAndVersion = documentService.createFileAndVersion(file,
       versionDTO, templateByteArray, getUserFullName(), null);
@@ -3843,16 +3841,16 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
   }
 
   /**
-   * if document is generated in projectPart department value is the submission Department else it's
+   * if document is generated in projectPart department value is the submission department else it's
    * the department of the user that generates the document.
    *
    * @param documentDTO the document DTO
-   * @return the document deparmtent
+   * @return the document department
    */
-  private String getDocumentDeparmtent(DocumentDTO documentDTO) {
+  private String getDocumentDepartment(DocumentDTO documentDTO) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method getDocumentDeparmtent, Parameters: documentDTO: {0}",
+      "Executing method getDocumentDepartment, Parameters: documentDTO: {0}",
       documentDTO);
 
     if (documentDTO.isProjectDocument()) {
@@ -5505,7 +5503,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
   /**
    * Sets the signature.
    *
-   * @param documentDTO the document DTO
+   * @param documentDTO  the document DTO
    * @param placeholders the placeholders
    */
   private void setSignature(DocumentDTO documentDTO, Map<String, String> placeholders) {
@@ -5515,31 +5513,43 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         + "placeholders: {1}",
       new Object[]{documentDTO, placeholders});
 
-    QDepartmentHistoryEntity qDepartment = QDepartmentHistoryEntity.departmentHistoryEntity;
-    DepartmentHistoryDTO departmentHistoryDTO = null;
-    if (documentDTO.getFirstSignature() != null) {
-      SignatureProcessTypeEntitledEntity firstSignatureEntity = em
-        .find(SignatureProcessTypeEntitledEntity.class, documentDTO.getFirstSignature().getId());
+    // Get all active department history dtos from cacheBean
+    Map<String, DepartmentHistoryDTO> departmentHistoryDTOs =
+      cacheBean.getActiveDepartmentHistorySD();
 
-      // Set department reference of the first inserted Unterschriftsberechtigter.
-      DepartmentHistoryDTO firstDepartment = DepartmentHistoryMapper.INSTANCE
-        .toDepartmentHistoryDTO(new JPAQueryFactory(em).select(qDepartment).from(qDepartment)
-          .where(qDepartment.departmentId.id
-            .eq(firstSignatureEntity.getProcessType().getSignature().getDepartment().getId())
-            .and(qDepartment.toDate.isNull()))
-          .fetchOne(), cacheBean.getActiveDirectorateHistorySD());
-      if (firstSignatureEntity.getDepartment() != null) {
-        Map<String, DepartmentHistoryDTO> departmentHistoryDTOs =
-          cacheBean.getActiveDepartmentHistorySD();
-        departmentHistoryDTO =
-          departmentHistoryDTOs.get(firstSignatureEntity.getDepartment().getId());
-      }
-      templateBean.setUserAttributesPlaceholders(firstDepartment, firstDepartment.getDirectorate(),
-        placeholders, departmentHistoryDTO);
-      initializeSignatureCopy(placeholders, firstSignatureEntity);
-    }
+    initializeSignatureReferenceDepartment(documentDTO, placeholders, departmentHistoryDTOs);
+    initializeSignatureCopy(placeholders, documentDTO.getSignatureCopies(), departmentHistoryDTOs);
     initializeSignatureReferencePerson(documentDTO.getFirstSignature(),
       documentDTO.getSecondSignature(), placeholders);
+  }
+
+  /**
+   * Initialize the signature department.
+   *
+   * @param documentDTO           the documentDTO
+   * @param placeholders          the placeholders
+   * @param departmentHistoryDTOs the departmentHistoryDTOs
+   */
+  private void initializeSignatureReferenceDepartment(DocumentDTO documentDTO,
+    Map<String, String> placeholders, Map<String, DepartmentHistoryDTO> departmentHistoryDTOs) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method initializeSignatureReferenceDepartment, Parameters: "
+        + "documentDTO: {0}, placeholders: {1}, departmentHistoryDTOs: {2}",
+      new Object[]{documentDTO, placeholders, departmentHistoryDTOs});
+
+    DepartmentHistoryDTO projectDepartment = departmentHistoryDTOs
+      .get(getDocumentDepartment(documentDTO));
+    DepartmentHistoryDTO signatureDepartment = null;
+    // Find the signature department for the reference placeholders
+    if (documentDTO.getFirstSignature() != null
+      && documentDTO.getFirstSignature().getDepartment() != null) {
+      signatureDepartment = departmentHistoryDTOs
+        .get(documentDTO.getFirstSignature().getDepartment().getId());
+    }
+    templateBean
+      .setUserAttributesPlaceholders(projectDepartment, projectDepartment.getDirectorate(),
+        placeholders, signatureDepartment);
   }
 
   /**
@@ -5558,66 +5568,68 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       new Object[]{firstSignature, secondSignature, placeholders});
 
     if (firstSignature != null) {
-      placeholders.put("first_reference_name", (firstSignature.getName() != null)
-        ? firstSignature.getName()
-        : TemplateConstants.EMPTY_STRING);
-      placeholders.put("first_reference_function", (firstSignature.getFunction() != null)
-        ? firstSignature.getFunction()
-        : TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.FIRST_REFERENCE_NAME.getValue(),
+        (firstSignature.getName() != null)
+          ? firstSignature.getName()
+          : TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.FIRST_REFERENCE_FUNCTION.getValue(),
+        (firstSignature.getFunction() != null)
+          ? firstSignature.getFunction()
+          : TemplateConstants.EMPTY_STRING);
     } else {
-      placeholders.put("first_reference_name", TemplateConstants.EMPTY_STRING);
-      placeholders.put("first_reference_function", TemplateConstants.EMPTY_STRING);
+      placeholders
+        .put(DocumentPlaceholders.FIRST_REFERENCE_NAME.getValue(), TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.FIRST_REFERENCE_FUNCTION.getValue(),
+        TemplateConstants.EMPTY_STRING);
     }
 
     if (secondSignature != null) {
-      placeholders.put("second_reference_name", (secondSignature.getName() != null)
-        ? secondSignature.getName()
-        : TemplateConstants.EMPTY_STRING);
-      placeholders.put("second_reference_function", (secondSignature.getFunction() != null)
-        ? secondSignature.getFunction()
-        : TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.SECOND_REFERENCE_NAME.getValue(),
+        (secondSignature.getName() != null)
+          ? secondSignature.getName()
+          : TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.SECOND_REFERENCE_FUNCTION.getValue(),
+        (secondSignature.getFunction() != null)
+          ? secondSignature.getFunction()
+          : TemplateConstants.EMPTY_STRING);
     } else {
-      placeholders.put("second_reference_name", TemplateConstants.EMPTY_STRING);
-      placeholders.put("second_reference_function", TemplateConstants.EMPTY_STRING);
+      placeholders
+        .put(DocumentPlaceholders.SECOND_REFERENCE_NAME.getValue(), TemplateConstants.EMPTY_STRING);
+      placeholders.put(DocumentPlaceholders.SECOND_REFERENCE_FUNCTION.getValue(),
+        TemplateConstants.EMPTY_STRING);
     }
   }
 
   /**
    * Initialize signature copy.
    *
-   * @param placeholders the placeholders
-   * @param firstSignatureEntity the first signature entity
+   * @param placeholders          the placeholders
+   * @param signatureCopies       the signature copies
+   * @param departmentHistoryDTOs the departmentHistoryDTOs
    */
   private void initializeSignatureCopy(Map<String, String> placeholders,
-    SignatureProcessTypeEntitledEntity firstSignatureEntity) {
+    List<SignatureCopyDTO> signatureCopies,
+    Map<String, DepartmentHistoryDTO> departmentHistoryDTOs) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method initializeSignatureCopy, Parameters: firstSignatureEntity: {0}, "
-        + "placeholders: {1}",
-      new Object[]{firstSignatureEntity, placeholders});
+      "Executing method initializeSignatureCopy, Parameters: placeholders: {0}, "
+        + "signatureCopies: {1}, departmentHistoryDTOs: {2}",
+      new Object[]{placeholders, signatureCopies, departmentHistoryDTOs});
 
-    QSignatureCopyEntity qSignatureCopy = QSignatureCopyEntity.signatureCopyEntity;
-    QDepartmentHistoryEntity qDepartment = QDepartmentHistoryEntity.departmentHistoryEntity;
-
-    // Kopie
-    List<SignatureCopyEntity> copies =
-      new JPAQueryFactory(em).select(qSignatureCopy).from(qSignatureCopy)
-        .where(qSignatureCopy.processType.eq(firstSignatureEntity.getProcessType())).fetch();
-    StringBuilder copyPlaceholder = new StringBuilder();
-
-    for (SignatureCopyEntity copy : copies) {
-      // Check if Kopie department exists.
-      if (copy.getDepartment() != null) {
-        DepartmentHistoryEntity copyDepartment = new JPAQueryFactory(em).select(qDepartment)
-          .from(qDepartment).where(qDepartment.departmentId.id.eq(copy.getDepartment().getId())
-            .and(qDepartment.toDate.isNull()))
-          .fetchOne();
-        copyPlaceholder.append(copyDepartment.getName()).append(", ");
+    if (signatureCopies != null && !signatureCopies.isEmpty()) {
+      StringBuilder copyPlaceholder = new StringBuilder();
+      for (SignatureCopyDTO signatureCopy : signatureCopies) {
+        // Check if copy department exists.
+        if (signatureCopy.getDepartment() != null) {
+          DepartmentHistoryDTO copyDepartment = departmentHistoryDTOs
+            .get(signatureCopy.getDepartment().getId());
+          copyPlaceholder.append(copyDepartment.getName()).append(", ");
+        }
       }
-    }
-    if (copyPlaceholder.length() > 1) {
       placeholders.put(DocumentPlaceholders.COPY_REFERENCE.getValue(),
-        copyPlaceholder.substring(0, copyPlaceholder.length() - 2));
+        (copyPlaceholder.length() > 1)
+          ? copyPlaceholder.substring(0, copyPlaceholder.length() - 2)
+          : TemplateConstants.EMPTY_STRING);
     } else {
       placeholders.put(DocumentPlaceholders.COPY_REFERENCE.getValue(),
         TemplateConstants.EMPTY_STRING);
@@ -5758,13 +5770,10 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       departments.add(department);
     }
     // and subdepartments
-    if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-      && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-      List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-        .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split("\\s*,\\s*"));
-      for (String secondaryDepartmentId : secondaryDepartmentIds) {
-        departments.add(secondaryDepartmentId);
-      }
+    List<String> secondaryDepartmentIds = usersService
+      .getAllSecondaryDepartments(userDTO);
+    for (String secondaryDepartmentId : secondaryDepartmentIds) {
+      departments.add(secondaryDepartmentId);
     }
     return departments;
   }

@@ -13,33 +13,6 @@
 
 package ch.bern.submiss.services.impl.administration;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.ops4j.pax.cdi.api.OsgiService;
-import org.ops4j.pax.cdi.api.OsgiServiceProvider;
-
-import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
-import com.eurodyn.qlack2.fuse.cm.api.VersionService;
-import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import ch.bern.submiss.services.api.administration.ReportBaseService;
 import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
@@ -61,6 +34,29 @@ import ch.bern.submiss.services.impl.model.QSubmissionEntity;
 import ch.bern.submiss.services.impl.model.QSubmittentEntity;
 import ch.bern.submiss.services.impl.model.QTenderStatusHistoryEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
+import com.eurodyn.qlack2.fuse.cm.api.DocumentService;
+import com.eurodyn.qlack2.fuse.cm.api.VersionService;
+import com.eurodyn.qlack2.fuse.cm.api.dto.NodeDTO;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.ops4j.pax.cdi.api.OsgiService;
+import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
  * The Class ReportBaseServiceImpl.
@@ -276,7 +272,7 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
       "Executing method checkIfNotEmpty, Parameters: list: {0}",
       list);
 
-    return list != null && CollectionUtils.isNotEmpty(list);
+    return CollectionUtils.isNotEmpty(list);
   }
 
   /**
@@ -523,7 +519,7 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
    * @param procedure the procedure
    * @return the procedure name
    */
-  private String getProcedureName(String procedure) {
+  public String getProcedureName(String procedure) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getProcedureName, Parameters: procedure: {0}",
@@ -558,7 +554,7 @@ public class ReportBaseServiceImpl extends BaseService implements ReportBaseServ
    * @param procedure the procedure
    * @return the procedure
    */
-  private Process getProcedure(String procedure) {
+  public Process getProcedure(String procedure) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getProcedure, Parameters: procedure: {0}",

@@ -1,4 +1,3 @@
-
 <!--
   ~  Submiss, eProcurement system for managing tenders
   ~  Copyright (C) 2019 Stadt Bern
@@ -13,435 +12,384 @@
   -->
 
 <div class="row">
-	<div class="col-sm-12">
-		<h2 class="page-title">Firma eröffnen</h2>
-	</div>
+  <div class="col-sm-12">
+    <h2 class="page-title">Firma eröffnen</h2>
+  </div>
 </div>
 <div class="row">
-	<div class="card-box">
-		<form name="companyCreateCtr.companyForm"
-			data-ng-submit="companyCreateCtr.save()" id="companyForm"
-			shows-validation-errors>
-			<div class="col-sm-12">
-				<div class="alert alert-danger"
-					ng-if="companyCreateCtr.areErrorsPresent()" role="alert">
-					<field-error form-element-name="errorField" translate name="error"></field-error>
-					<field-error form-element-name="companyFaxErrorFieldMax" translate></field-error>
-					<field-error form-element-name="companyFaxErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="uniqueTelephoneErrorField" translate></field-error>
-					<field-error form-element-name="emailFormatErrorField" translate></field-error>
-					<field-error form-element-name="companyAdminNotesErrorField" translate></field-error>
-					<field-error form-element-name="companyNoteAdminErrorField" translate></field-error>
-					<field-error form-element-name="companyNotesErrorField" translate></field-error>
-					<field-error form-element-name="companyTelErrorFieldMax" translate></field-error>
-					<field-error form-element-name="companyTelErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyOriginIndicationErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyNameErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyAddress1ErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyAddress2ErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyPostCodeErrorField" translate></field-error>
-					<field-error form-element-name="emailMaxSizeErrorField" translate></field-error>
-					<field-error form-element-name="companyWebsiteErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyNewVatErrorFieldInvalid" translate></field-error>
-					<field-error form-element-name="companyLocationErrorFieldInvalid" translate></field-error>
-					<ul ng-if="companyCreateCtr.invalidDate">
-						<li><field-error translate>invalid_date_error_message</field-error></li>
-					</ul>
-					
-				</div>
-				<input name="errorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyFaxErrorFieldMax" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyFaxErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>				
-				<input name="uniqueTelephoneErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="emailFormatErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyAdminNotesErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyNoteAdminErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyNotesErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyTelErrorFieldMax" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyTelErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyOriginIndicationErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyNameErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyAddress1ErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyAddress2ErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyPostCodeErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="emailMaxSizeErrorField" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyWebsiteErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyNewVatErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="companyLocationErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
-				<input name="invalidDate" ng-hide="true" data-ng-model="fd"></input>
-			</div>
-			<div class="col-sm-12 col-md-4">
-				<div class="form-group">
-					<label for="companyName">Firmenname<span class="mandatory">*</span></label>
-					<input class="form-control" id="companyName" autofocus
-						data-ng-model="companyCreateCtr.company.companyName"
-						placeholder="" type="text" name="companyName">
-				</div>
-				<div class="form-group">
-					<label for="address1">Adresszeile 1<span class="mandatory">*</span></label>
-					<input class="form-control" id="address1"
-						data-ng-model="companyCreateCtr.company.address1" placeholder=""
-						type="text" name="companyAddress1">
-				</div>
-				<div class="form-group">
-					<label for="address2">Adresszeile 2</label> <input
-						class="form-control" id="address2"
-						data-ng-model="companyCreateCtr.company.address2" placeholder=""
-						type="text" name="address2">
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12 col-md-4">
-							<label for="postCode">PLZ<span class="mandatory">*</span></label>
-							<input class="form-control" id="postCode"
-								data-ng-model="companyCreateCtr.company.postCode" placeholder=""
-								type="text" name="companyPostCode">
-						</div>
-						<div class="col-sm-12 col-md-8">
-							<label for="location">Ort<span class="mandatory">*</span></label>
-							<input class="form-control" id="location"
-								data-ng-model="companyCreateCtr.company.location" placeholder=""
-								type="text" name="companyLocation">
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="country">Land<span class="mandatory">*</span></label>
-					<ui-select name="countryName" id="country"	ng-change="companyCreateCtr.onChangeTel()"
-				       ng-model="companyCreateCtr.company.country" theme="select2">
-					<ui-select-match allow-clear="true"> 
-						<span>{{$select.selected.countryName}}</span> 
-					</ui-select-match> 
-					<ui-select-choices repeat="item in (companyCreateCtr.countries | filter: {countryName: $select.search, 'active': true}) track by item.id">
-						<span ng-bind="item.countryName"></span> 
-					</ui-select-choices> </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="companyTel">Telefon<span class="mandatory">*</span></label>
-					<input 	class="form-control"  
-							id="companyTel"
-						 	ng-value="companyCreateCtr.company.country.telPrefix"
-						 	ng-model="companyCreateCtr.company.companyTel"
-						 	type="text"
-						 	name="companyTel">
-				</div>
-				<div class="form-group">
-					<label for="companyFax">Fax</label> <input class="form-control"
-						id="companyFax"	
-						ng-value="companyCreateCtr.company.country.telPrefix"
-						ng-model="companyCreateCtr.company.companyFax"
-						type="text" name="companyFax">
-				</div>
-				<div class="form-group">
-					<label for="companyEmail">Email<span class="mandatory">*</span></label>
-					<input class="form-control" id="companyEmail"
-						data-ng-model="companyCreateCtr.company.companyEmail"
-						placeholder="" type="text" name="companyEmail">
-				</div>
-				<div class="form-group">
-					<label for="companyWeb">Webseite</label>
-					<div class="input-group">
-						<span class="input-group-addon" id="basic-addon1">http://</span> <input
-							type="text" id="companyWeb"
-							data-ng-model="companyCreateCtr.company.companyWeb"
-							name="companyWeb" class="form-control" placeholder=""
-							aria-describedby="">
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-4">
-				<div class="form-group whiteBg">
-					<label for="branch">Zweigniederlassung</label>
-					<div class="input-group">
-				  		<ui-select multiple id="branches" name="companyBranches" ng-model="companyCreateCtr.company.branches">
-					    	<ui-select-match allow-clear="true">{{$item.companyName}}</ui-select-match>
-					    	<ui-select-choices repeat="item in companyCreateCtr.company.branches">{{item.companyName}}</ui-select-choices>
-				  		</ui-select>
-				  		<span class="input-group-btn">
-							<button class="btn btn-primary" type="button"
-								data-ng-model="companyCreateCtr.company.branches"
-								data-ng-click="companyCreateCtr.addCompany()">
-								<span class="fa fa-search"></span>
-							</button>
-						</span>
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12" ng-if="companyCreateCtr.secMainTenantBeschaffungswesenEdit">
-							<label class="checkbox-inline"> <input type="checkbox"
-								id="consultAdmin"
-								data-ng-model="companyCreateCtr.company.consultAdmin"
-								name="consultAdmin"> Rücksprache mit der Fachstelle
-								Beschaffungswesen
-						</div>
-						<div class="col-sm-12">	
-							</label> <label class="checkbox-inline"> <input type="checkbox"
-								id="consultKaio"
-								data-ng-model="companyCreateCtr.company.consultKaio"
-								name="consultKaio"> Rücksprache mit KAIO / FaBe
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="newVatId">U-ID (neue MwSt-ID)</label> <input
-						class="form-control"
-						data-ng-model="companyCreateCtr.company.newVatId" id="newVatId"
-						placeholder="" type="text" name="newVatId">
-				</div>
-				<div class="form-group">
-					<label for="workTypes">Arbeitsgattungen<span class="mandatory" ng-if="companyCreateCtr.company.workTypes==null">*</span> </label>
-                       <ui-select multiple id="workTypes" name="companyWorkTypes" ng-model="companyCreateCtr.company.workTypes">
-					    <ui-select-match allow-clear="true">{{$item.value1 +'&nbsp;'+ $item.value2}}</ui-select-match>
-					    <ui-select-choices ui-disable-choice="item.id == companyCreateCtr.company.workTypes.id" 
-					    repeat="item in companyCreateCtr.workTypes  | propsFilter: {value1: $select.search, value2: $select.search}">
-					      {{item.value1 +'&nbsp;'+ item.value2}}
-					    </ui-select-choices>
-				  </ui-select>
-				</div>
-				<div class="form-group">
-					<label for="originIndication">Herkunftsangabe<span class="mandatory">*</span></label> <input
-						class="form-control"
-						ng-init="companyCreateCtr.company.originIndication='SD'"
-						data-ng-model="companyCreateCtr.company.originIndication"
-						id="originIndication" placeholder="" type="text" name="infoOrigin">
-				</div>
-				<div class="form-group" 
-				ng-class="{'has-error': !companyCreateCtr.companyForm.modificationDate.$valid || companyCreateCtr.invalidModificationDate}"
-				>
-					<label for="modificationDate">Änderungsdatum<span class="mandatory">*</span></label>
-					<div class="input-group">
-						<input class="form-control datepicker" id="modificationDate"
-							type="text" uib-datepicker-popup="dd.MM.yyyy"
-							is-open="companyCreateCtr.openModificationDate.opened"
-							data-ng-model="companyCreateCtr.company.modificationDate"
-							ng-click="companyCreateCtr.openModificationDate()"
-							name="modificationDate" id="modificationDate"> <span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-										data-ng-click="companyCreateCtr.openModificationDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-					</div>
-				</div>
+  <div class="card-box">
+    <form name="companyCreateCtr.companyForm" data-ng-submit="companyCreateCtr.save()" id="companyForm"
+      shows-validation-errors>
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="companyCreateCtr.areErrorsPresent()" role="alert">
+          <field-error form-element-name="errorField" translate name="error"></field-error>
+          <field-error form-element-name="companyFaxErrorFieldMax" translate></field-error>
+          <field-error form-element-name="companyFaxErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="uniqueTelephoneErrorField" translate></field-error>
+          <field-error form-element-name="emailFormatErrorField" translate></field-error>
+          <field-error form-element-name="companyAdminNotesErrorField" translate></field-error>
+          <field-error form-element-name="companyNoteAdminErrorField" translate></field-error>
+          <field-error form-element-name="companyNotesErrorField" translate></field-error>
+          <field-error form-element-name="companyTelErrorFieldMax" translate></field-error>
+          <field-error form-element-name="companyTelErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyOriginIndicationErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyNameErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyAddress1ErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyAddress2ErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyPostCodeErrorField" translate></field-error>
+          <field-error form-element-name="emailMaxSizeErrorField" translate></field-error>
+          <field-error form-element-name="companyWebsiteErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyNewVatErrorFieldInvalid" translate></field-error>
+          <field-error form-element-name="companyLocationErrorFieldInvalid" translate></field-error>
+          <ul ng-if="companyCreateCtr.invalidDate">
+            <li>
+              <field-error translate>invalid_date_error_message</field-error>
+            </li>
+          </ul>
 
-				<div class="form-group">
-					<label for="zahl">Mitarbeitendenzahl</label> <input
-						class="form-control" readonly="readonly"
-						value={{companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)}}
-						id="zahl" placeholder="" type="text">
-				</div>
-				<div class="form-group">
-					<label>Lernendenfaktor</label> <input
-						class="form-control" readonly="readonly"
-						value="{{companyCreateCtr.apprenticeFactor(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen,companyCreateCtr.company.numberOfTrainees) | number: 3}}"
-						id="apprenticeFactor" type="text">
-				</div>
-				<div class="form-group">
-					<label>Faktor 50+</label> <input
-						class="form-control" readonly="readonly"
-						ng-value="companyCreateCtr.fiftyPlusFactor(companyCreateCtr.company.fiftyPlusColleagues, companyCreateCtr.company.numberOfMen, companyCreateCtr.company.numberOfWomen) | number: 3"
-						id="fiftyPlusFactor" type="text">
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-4">
-				<div class="form-group">
-					<label for="numberOfWomen">Anzahl Frauen</label> <input
-						class="form-control" id="numberOfWomen"
-						data-ng-model="companyCreateCtr.company.numberOfWomen"
-						ng-change="companyCreateCtr.changeCheckboxValue()"
-						placeholder="0" type="number" name="numberOfWomen">
-				</div>
-				<div class="form-group">
-					<label for="numberOfMen">Anzahl Männer</label> <input
-						class="form-control" id="numberOfMen"
-						data-ng-model="companyCreateCtr.company.numberOfMen"
-						ng-change="companyCreateCtr.changeCheckboxValue()"
-						placeholder="0" type="number" name="numberOfMen">
-				</div>
-				<div class="form-group">
-					<label for="zahl">Anzahl Mitarbeitende 50+</label> <input
-						class="form-control"
-						ng-model="companyCreateCtr.company.fiftyPlusColleagues"
-						placeholder="0"
-						id="fiftyPlusColleagues" type="number">
-				</div>
-				<div class="form-group">
-					<label for="numberOfTrainees">Anzahl Lernende</label> <input
-						class="form-control"
-						data-ng-model="companyCreateCtr.company.numberOfTrainees"
-						id="numberOfTrainees" placeholder="0" type="number">
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-6 noLabel">
-							<label class="checkbox-inline"> <input type="checkbox"
-							    data-ng-change="companyCreateCtr.company.logibDate = ''"
-								data-ng-model="companyCreateCtr.company.logIb" id="logIb"
-								disabled
-								ng-checked="companyCreateCtr.logib.workerNumber <= companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
-								&& companyCreateCtr.logib.womenNumber<=companyCreateCtr.company.numberOfWomen && companyCreateCtr.logib.menNumber<=companyCreateCtr.company.numberOfMen"
-								name="logIb"> Logib-pflichtig
-							</label>
-						</div>
-						<div class="col-sm-6" 
-						ng-class="{'has-error': !companyCreateCtr.companyForm.logibDate.$valid || companyCreateCtr.invalidLogibDate}"
-						>
-							<label for="logibDate">Logibnachweis</label>
-							<div class="input-group">
-								<input class="form-control datepicker" id="logibDate"
-									type="text" uib-datepicker-popup="dd.MM.yyyy"
-									is-open="companyCreateCtr.openLogibDate.opened"
-									data-ng-model="companyCreateCtr.company.logibDate"
-									ng-click="companyCreateCtr.openLogibDate()" name="logibDate"
-									ng-disabled="(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
+        </div>
+        <input name="errorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyFaxErrorFieldMax" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyFaxErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="uniqueTelephoneErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="emailFormatErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyAdminNotesErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyNoteAdminErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyNotesErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyTelErrorFieldMax" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyTelErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyOriginIndicationErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyNameErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyAddress1ErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyAddress2ErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyPostCodeErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="emailMaxSizeErrorField" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyWebsiteErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyNewVatErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="companyLocationErrorFieldInvalid" ng-hide="true" data-ng-model="fd"></input>
+        <input name="invalidDate" ng-hide="true" data-ng-model="fd"></input>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="form-group">
+          <label for="companyName">Firmenname<span class="mandatory">*</span></label>
+          <input class="form-control" id="companyName" autofocus data-ng-model="companyCreateCtr.company.companyName"
+            placeholder="" type="text" name="companyName">
+        </div>
+        <div class="form-group">
+          <label for="address1">Adresszeile 1<span class="mandatory">*</span></label>
+          <input class="form-control" id="address1" data-ng-model="companyCreateCtr.company.address1" placeholder=""
+            type="text" name="companyAddress1">
+        </div>
+        <div class="form-group">
+          <label for="address2">Adresszeile 2</label> <input class="form-control" id="address2"
+            data-ng-model="companyCreateCtr.company.address2" placeholder="" type="text" name="address2">
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12 col-md-4">
+              <label for="postCode">PLZ<span class="mandatory">*</span></label>
+              <input class="form-control" id="postCode" data-ng-model="companyCreateCtr.company.postCode" placeholder=""
+                type="text" name="companyPostCode">
+            </div>
+            <div class="col-sm-12 col-md-8">
+              <label for="location">Ort<span class="mandatory">*</span></label>
+              <input class="form-control" id="location" data-ng-model="companyCreateCtr.company.location" placeholder=""
+                type="text" name="companyLocation">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="country">Land<span class="mandatory">*</span></label>
+          <ui-select name="countryName" id="country" ng-change="companyCreateCtr.onChangeTel()"
+            ng-model="companyCreateCtr.company.country" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span>{{$select.selected.countryName}}</span>
+            </ui-select-match>
+            <ui-select-choices
+              repeat="item in (companyCreateCtr.countries | filter: {countryName: $select.search, 'active': true}) track by item.id">
+              <span ng-bind="item.countryName"></span>
+            </ui-select-choices>
+          </ui-select>
+        </div>
+        <div class="form-group">
+          <label for="companyTel">Telefon<span class="mandatory">*</span></label>
+          <input class="form-control" id="companyTel" ng-value="companyCreateCtr.company.country.telPrefix"
+            ng-model="companyCreateCtr.company.companyTel" type="text" name="companyTel">
+        </div>
+        <div class="form-group">
+          <label for="companyFax">Fax</label> <input class="form-control" id="companyFax"
+            ng-value="companyCreateCtr.company.country.telPrefix" ng-model="companyCreateCtr.company.companyFax"
+            type="text" name="companyFax">
+        </div>
+        <div class="form-group">
+          <label for="companyEmail">Email<span class="mandatory">*</span></label>
+          <input class="form-control" id="companyEmail" data-ng-model="companyCreateCtr.company.companyEmail"
+            placeholder="" type="text" name="companyEmail">
+        </div>
+        <div class="form-group">
+          <label for="companyWeb">Webseite</label>
+          <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1">http://</span> <input type="text" id="companyWeb"
+              data-ng-model="companyCreateCtr.company.companyWeb" name="companyWeb" class="form-control" placeholder=""
+              aria-describedby="">
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="form-group whiteBg">
+          <label for="branch">Zweigniederlassung</label>
+          <div class="input-group">
+            <ui-select multiple id="branches" name="companyBranches" ng-model="companyCreateCtr.company.branches">
+              <ui-select-match allow-clear="true">{{$item.companyName}}</ui-select-match>
+              <ui-select-choices repeat="item in companyCreateCtr.company.branches">{{item.companyName}}
+              </ui-select-choices>
+            </ui-select>
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button" data-ng-model="companyCreateCtr.company.branches"
+                data-ng-click="companyCreateCtr.addCompany()">
+                <span class="fa fa-search"></span>
+              </button>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12" ng-if="companyCreateCtr.secMainTenantBeschaffungswesenEdit">
+              <label class="checkbox-inline"> <input type="checkbox" id="consultAdmin"
+                  data-ng-model="companyCreateCtr.company.consultAdmin" name="consultAdmin"> Rücksprache mit der
+                Fachstelle
+                Beschaffungswesen
+            </div>
+            <div class="col-sm-12">
+              </label> <label class="checkbox-inline"> <input type="checkbox" id="consultKaio"
+                  data-ng-model="companyCreateCtr.company.consultKaio" name="consultKaio"> Rücksprache mit KAIO / FaBe
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="newVatId">U-ID (neue MwSt-ID)</label> <input class="form-control"
+            data-ng-model="companyCreateCtr.company.newVatId" id="newVatId" placeholder="" type="text" name="newVatId">
+        </div>
+        <div class="form-group">
+          <label for="workTypes">Arbeitsgattungen<span class="mandatory"
+              ng-if="companyCreateCtr.company.workTypes==null">*</span> </label>
+          <ui-select multiple id="workTypes" name="companyWorkTypes" ng-model="companyCreateCtr.company.workTypes">
+            <ui-select-match allow-clear="true">{{$item.value1 +'&nbsp;'+ $item.value2}}</ui-select-match>
+            <ui-select-choices ui-disable-choice="item.id == companyCreateCtr.company.workTypes.id"
+              repeat="item in companyCreateCtr.workTypes  | propsFilter: {value1: $select.search, value2: $select.search}">
+              {{item.value1 +'&nbsp;'+ item.value2}}
+            </ui-select-choices>
+          </ui-select>
+        </div>
+
+        <div class="form-group">
+          <label for="originIndication">Herkunftsangabe<span class="mandatory">*</span></label> <input
+            class="form-control" ng-init="companyCreateCtr.company.originIndication='SD'"
+            data-ng-model="companyCreateCtr.company.originIndication" id="originIndication" placeholder="" type="text"
+            name="infoOrigin">
+        </div>
+
+        <div class="form-group"
+          ng-class="{'has-error': !companyCreateCtr.companyForm.modificationDate.$valid || companyCreateCtr.invalidModificationDate}">
+          <label for="modificationDate">Änderungsdatum<span class="mandatory">*</span></label>
+          <div class="input-group">
+            <input class="form-control datepicker" id="modificationDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+              is-open="companyCreateCtr.openModificationDate.opened"
+              data-ng-model="companyCreateCtr.company.modificationDate"
+              ng-click="companyCreateCtr.openModificationDate()" name="modificationDate" id="modificationDate"> <span
+              class="input-group-btn">
+              <button class="btn btn-default" type="button" data-ng-click="companyCreateCtr.openModificationDate()">
+                <span class="fa fa-calendar"></span>
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="zahl">Mitarbeitendenzahl</label> <input class="form-control" readonly="readonly"
+            value={{companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)}}
+            id="zahl" placeholder="" type="text">
+        </div>
+        <div class="form-group">
+          <label>Lernendenfaktor</label> <input class="form-control" readonly="readonly"
+            value="{{companyCreateCtr.apprenticeFactor(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen,companyCreateCtr.company.numberOfTrainees) | number: 3}}"
+            id="apprenticeFactor" type="text">
+        </div>
+        <div class="form-group">
+          <label>Faktor 50+</label> <input class="form-control" readonly="readonly"
+            ng-value="companyCreateCtr.fiftyPlusFactor(companyCreateCtr.company.fiftyPlusColleagues, companyCreateCtr.company.numberOfMen, companyCreateCtr.company.numberOfWomen) | number: 3"
+            id="fiftyPlusFactor" type="text">
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-4">
+        <div class="form-group">
+          <label for="numberOfWomen">Anzahl Frauen</label> <input class="form-control" id="numberOfWomen"
+            data-ng-model="companyCreateCtr.company.numberOfWomen" ng-change="companyCreateCtr.changeCheckboxValue()"
+            placeholder="0" type="number" name="numberOfWomen">
+        </div>
+        <div class="form-group">
+          <label for="numberOfMen">Anzahl Männer</label> <input class="form-control" id="numberOfMen"
+            data-ng-model="companyCreateCtr.company.numberOfMen" ng-change="companyCreateCtr.changeCheckboxValue()"
+            placeholder="0" type="number" name="numberOfMen">
+        </div>
+        <div class="form-group">
+          <label for="zahl">Anzahl Mitarbeitende 50+</label> <input class="form-control"
+            ng-model="companyCreateCtr.company.fiftyPlusColleagues" placeholder="0" id="fiftyPlusColleagues"
+            type="number">
+        </div>
+        <div class="form-group">
+          <label for="numberOfTrainees">Anzahl Lernende</label> <input class="form-control"
+            data-ng-model="companyCreateCtr.company.numberOfTrainees" id="numberOfTrainees" placeholder="0"
+            type="number">
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-6 noLabel">
+              <label class="checkbox-inline"> <input type="checkbox"
+                  data-ng-change="companyCreateCtr.company.logibDate = ''"
+                  data-ng-model="companyCreateCtr.company.logIb" id="logIb" disabled
+                  ng-checked="companyCreateCtr.logib.workerNumber <= companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
+								&& companyCreateCtr.logib.womenNumber<=companyCreateCtr.company.numberOfWomen && companyCreateCtr.logib.menNumber<=companyCreateCtr.company.numberOfMen" name="logIb">
+                Logib-pflichtig
+              </label>
+            </div>
+            <div class="col-sm-6"
+              ng-class="{'has-error': !companyCreateCtr.companyForm.logibDate.$valid || companyCreateCtr.invalidLogibDate}">
+              <label for="logibDate">Logibnachweis</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="logibDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  is-open="companyCreateCtr.openLogibDate.opened" data-ng-model="companyCreateCtr.company.logibDate"
+                  ng-click="companyCreateCtr.openLogibDate()" name="logibDate"
+                  ng-disabled="(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 								    || companyCreateCtr.logib.womenNumber>companyCreateCtr.company.numberOfWomen || companyCreateCtr.logib.menNumber>companyCreateCtr.company.numberOfMen)"
-								    ng-change="companyCreateCtr.company.logIb=true"> <span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-									ng-disabled="(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
+                  ng-change="companyCreateCtr.company.logIb=true"> <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"
+                    ng-disabled="(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 								    || companyCreateCtr.logib.womenNumber>companyCreateCtr.company.numberOfWomen || companyCreateCtr.logib.menNumber>companyCreateCtr.company.numberOfMen)"
-										data-ng-click="companyCreateCtr.openLogibDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-							<!-- /input-group -->
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-6 noLabel">
-							<label class="checkbox-inline"> <input type="checkbox"
-							    data-ng-change="companyCreateCtr.company.logibKmuDate = ''"
-								data-ng-model="companyCreateCtr.company.logIbARGIB"
-								disabled							
-								ng-checked="companyCreateCtr.logibArgib.workerNumber <= companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
+                    data-ng-click="companyCreateCtr.openLogibDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-6 noLabel">
+              <label class="checkbox-inline"> <input type="checkbox"
+                  data-ng-change="companyCreateCtr.company.logibKmuDate = ''"
+                  data-ng-model="companyCreateCtr.company.logIbARGIB" disabled ng-checked="companyCreateCtr.logibArgib.workerNumber <= companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 								&& companyCreateCtr.logibArgib.womenNumber <= companyCreateCtr.company.numberOfWomen && companyCreateCtr.logibArgib.menNumber <= companyCreateCtr.company.numberOfMen
 								&& (companyCreateCtr.logib.workerNumber > companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 								|| companyCreateCtr.logib.womenNumber > companyCreateCtr.company.numberOfWomen || companyCreateCtr.logib.menNumber > companyCreateCtr.company.numberOfMen)
-								|| companyCreateCtr.company.logIbArgib==false"
-								id="logIbARGIB" value="" name="logIbARGIB">
-								Logib-pflichtig ARGIB
-							</label>
-						</div>
-						<div class="col-sm-6" 
-						ng-class="{'has-error': !companyCreateCtr.companyForm.logibKmuDate.$valid || companyCreateCtr.invalidLogibKmuDate}"
-						>
-							<label for="logibKmuDate">Logibnachweis ARGIB</label>
-							<div class="input-group">
-								<input class="form-control datepicker" id="logibKmuDate"
-									type="text" uib-datepicker-popup="dd.MM.yyyy"
-									is-open="companyCreateCtr.openLogibKmuDate.opened"
-									data-ng-model="companyCreateCtr.company.logibKmuDate"
-									ng-click="companyCreateCtr.openLogibKmuDate()"
-									data-ng-disabled="!(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
+								|| companyCreateCtr.company.logIbArgib==false" id="logIbARGIB" value="" name="logIbARGIB">
+                Logib-pflichtig ARGIB
+              </label>
+            </div>
+            <div class="col-sm-6"
+              ng-class="{'has-error': !companyCreateCtr.companyForm.logibKmuDate.$valid || companyCreateCtr.invalidLogibKmuDate}">
+              <label for="logibKmuDate">Logibnachweis ARGIB</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="logibKmuDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  is-open="companyCreateCtr.openLogibKmuDate.opened"
+                  data-ng-model="companyCreateCtr.company.logibKmuDate" ng-click="companyCreateCtr.openLogibKmuDate()"
+                  data-ng-disabled="!(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 									|| companyCreateCtr.logib.womenNumber>companyCreateCtr.company.numberOfWomen || companyCreateCtr.logib.menNumber>companyCreateCtr.company.numberOfMen)
 									|| (companyCreateCtr.logibArgib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 									|| companyCreateCtr.logibArgib.womenNumber>companyCreateCtr.company.numberOfWomen || companyCreateCtr.logibArgib.menNumber>companyCreateCtr.company.numberOfMen)
-									|| companyCreateCtr.company.logIbArgib==false"
-                                    ng-change="companyCreateCtr.company.logIbARGIB=true"
-									name="logibKmuDate"> <span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-									data-ng-disabled="!(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
+									|| companyCreateCtr.company.logIbArgib==false" ng-change="companyCreateCtr.company.logIbARGIB=true"
+                  name="logibKmuDate"> <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-disabled="!(companyCreateCtr.logib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 									|| companyCreateCtr.logib.womenNumber>companyCreateCtr.company.numberOfWomen || companyCreateCtr.logib.menNumber>companyCreateCtr.company.numberOfMen)
 									|| (companyCreateCtr.logibArgib.workerNumber>companyCreateCtr.numberOfColleagues(companyCreateCtr.company.numberOfMen,companyCreateCtr.company.numberOfWomen)
 									|| companyCreateCtr.logibArgib.womenNumber>companyCreateCtr.company.numberOfWomen || companyCreateCtr.logibArgib.menNumber>companyCreateCtr.company.numberOfMen)
-									|| companyCreateCtr.company.logIbArgib==false"
-										data-ng-click="companyCreateCtr.openLogibKmuDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-							<!-- /input-group -->
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12 col-md-6">
-							<label for="ilo">ILO</label> <select
-								ui-select2="{allowClear: true}" id="ilo"
-								data-ng-model="companyCreateCtr.company.ilo"
-								data-placeholder="Keine Auswahl" name="ilo"
-								ng-options="ilo.value1 for ilo in companyCreateCtr.ilo">
-								<option></option>
-							</select>
-						</div>
-						<div class="col-sm-12 col-md-6" 
-						ng-class="{'has-error': !companyCreateCtr.companyForm.iloDate.$valid || companyCreateCtr.invalidIloDate}"
-						>
-							<label for=iloDate>ILO Datum</label>
-							<div class="input-group">
-								<input class="form-control datepicker" id="iloDate" type="text"
-									uib-datepicker-popup="dd.MM.yyyy"
-									is-open="companyCreateCtr.openIloDate.opened"
-									data-ng-model="companyCreateCtr.company.iloDate"
-									ng-click="companyCreateCtr.openIloDate()" name="iloDate"
-									ng-disabled="!companyCreateCtr.company.ilo">
-								<span class="input-group-btn">
-									<button class="btn btn-default" type="button"
-									data-ng-disabled="!companyCreateCtr.company.ilo"
-										data-ng-click="companyCreateCtr.openIloDate()">
-										<span class="fa fa-calendar"></span>
-									</button>
-								</span>
-							</div>
-							<!-- /input-group -->
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col-sm-12">
-							<label class="checkbox-inline"> <input type="checkbox"
-								data-ng-model="companyCreateCtr.company.tlp" id="tlp">
-								Partnerfirma (TLP)
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="zustand">Zustand</label>
-					<div class="row">
-						<div class="col-sm-12">
-							<label class="checkbox-inline"> <input id="archived"
-								type="checkbox"
-								ng-init="companyCreateCtr.company.archived=false"
-								data-ng-model="companyCreateCtr.company.archived"
-								name="archived"> Firma archiviert
-							</label>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-12">
-				<div class="form-group" ng-if="companyCreateCtr.secMainTenantBemerkungFabeEdit">
-					<label for="bemerkung">Bemerkung FaBe</label>
-					<textarea class="form-control"
-						data-ng-model="companyCreateCtr.company.noteAdmin" id="AdminNotes"
-						name="companyAdminNotes" rows="3"></textarea>
-				</div>
-				<div class="form-group">
-					<label for="allbemerkung">Allgemeine Bemerkungen</label>
-					<textarea class="form-control"
-						data-ng-model="companyCreateCtr.company.notes" id="notes"
-						name="companyNotes" rows="3"></textarea>
-				</div>
-			</div>
-			<div class="col-sm-12 col-md-12 btn-bar">
-				<button type="submit" class="btn btn-primary"
-					data-ng-disabled="!companyCreateCtr.companyForm.$dirty">Speichern
-				</button>
-				<button type="button" class="btn btn-default"
-				ng-click="companyCreateCtr.resetPage(companyCreateCtr.companyForm.$dirty)">Abbrechen</button>
-				<div ng-if="companyCreateCtr.companyForm.$dirty">
-					<input ng-hide="true" type="checkbox"
-						data-ng-model="companyCreateCtr.dirtyFlag"
-						ng-init="companyCreateCtr.dirtyFlag=true">
-				</div>
-			</div>
-		</form>
-	</div>
+									|| companyCreateCtr.company.logIbArgib==false" data-ng-click="companyCreateCtr.openLogibKmuDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12 col-md-6">
+              <label for="ilo">ILO</label>
+              <ui-select name="ilo" id="ilo" ng-model="companyCreateCtr.company.ilo" theme="select2">
+                <ui-select-match allow-clear="true" placeholder="Keine Auswahl">
+                  <span ng-bind="$select.selected.value1"></span>
+                </ui-select-match>
+                <ui-select-choices repeat="ilo in (companyCreateCtr.ilo | filter: {value1: $select.search})" translate>
+                  <span ng-bind="ilo.value1"></span>
+                </ui-select-choices>
+              </ui-select>
+            </div>
+            <div class="col-sm-12 col-md-6"
+              ng-class="{'has-error': !companyCreateCtr.companyForm.iloDate.$valid || companyCreateCtr.invalidIloDate}">
+              <label for=iloDate>ILO Datum</label>
+              <div class="input-group">
+                <input class="form-control datepicker" id="iloDate" type="text" uib-datepicker-popup="dd.MM.yyyy"
+                  is-open="companyCreateCtr.openIloDate.opened" data-ng-model="companyCreateCtr.company.iloDate"
+                  ng-click="companyCreateCtr.openIloDate()" name="iloDate" ng-disabled="!companyCreateCtr.company.ilo">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" data-ng-disabled="!companyCreateCtr.company.ilo"
+                    data-ng-click="companyCreateCtr.openIloDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+            <div class="col-sm-12">
+              <label class="checkbox-inline"> <input type="checkbox" data-ng-model="companyCreateCtr.company.tlp"
+                  id="tlp">
+                Partnerfirma (TLP)
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="zustand">Zustand</label>
+          <div class="row">
+            <div class="col-sm-12">
+              <label class="checkbox-inline"> <input id="archived" type="checkbox"
+                  ng-init="companyCreateCtr.company.archived=false" data-ng-model="companyCreateCtr.company.archived"
+                  name="archived"> Firma archiviert
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12">
+        <div class="form-group" ng-if="companyCreateCtr.secMainTenantBemerkungFabeEdit">
+          <label for="bemerkung">Bemerkung FaBe</label>
+          <textarea class="form-control" data-ng-model="companyCreateCtr.company.noteAdmin" id="AdminNotes"
+            name="companyAdminNotes" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="allbemerkung">Allgemeine Bemerkungen</label>
+          <textarea class="form-control" data-ng-model="companyCreateCtr.company.notes" id="notes" name="companyNotes"
+            rows="3"></textarea>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-12 btn-bar">
+        <button type="submit" class="btn btn-primary" data-ng-disabled="!companyCreateCtr.companyForm.$dirty">Speichern
+        </button>
+        <button type="button" class="btn btn-default"
+          ng-click="companyCreateCtr.resetPage(companyCreateCtr.companyForm.$dirty)">Abbrechen</button>
+        <div ng-if="companyCreateCtr.companyForm.$dirty">
+          <input ng-hide="true" type="checkbox" data-ng-model="companyCreateCtr.dirtyFlag"
+            ng-init="companyCreateCtr.dirtyFlag=true">
+        </div>
+      </div>
+    </form>
+  </div>
 </div>

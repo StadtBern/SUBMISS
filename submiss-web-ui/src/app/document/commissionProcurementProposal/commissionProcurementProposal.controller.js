@@ -359,7 +359,6 @@
               // Close the commission procurement proposal.
               vm2.closeCommissionProcurementProposal = function (response) {
                 if (response) {
-                  console.log(response)
                   CommissionProcurementProposalService.closeCommissionProcurementProposal(vm.submission.id, vm.submission.version)
                     .success(function (data) {
                       defaultReload();

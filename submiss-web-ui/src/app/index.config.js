@@ -104,7 +104,6 @@
             "response": function (response) {
               if (response && angular.isString(response.data) &&
                 response.data.indexOf('SAMLRequest') >= 0) {
-                console.log("SAMLREquest");
                 $cookies.remove(AppConstants.SECURITY.SSO_COOKIE_NAME);
                 $cookies.remove('RelayState');
                 $cookies.put(AppConstants.SECURITY.REDIRECT_TO_COOKIE_NAME,

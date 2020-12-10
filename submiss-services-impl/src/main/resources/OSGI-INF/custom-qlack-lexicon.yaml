@@ -378,3 +378,5 @@ translations:
       - submission_not_found_message: Die Submission kann nicht gefunden werden, da sie entweder gelöscht wurde oder nicht existiert. Bitte gehen Sie zurück zur Suche, um einen neuen Suchvorgang zu starten.
       - mime_type_does_not_match: Der Mime-Type passt nicht zur Dateiendung überein. Die Datei wird nicht hochgeladen.
       - contract_document_error: Der Vertrag kann nicht erstellt werden, da kein Zuschlagsempfänger für diese Submission vorliegt.
+      - passing_applicants_error_message: Die Anzahl darf nicht kleiner 0 oder grösser als die Anzahl der teilnehmenden Bewerber sein.
+      - mail_with_huge_content: Der E-Mail-Entwurf konnte aufgrund der hohen Zeichenanzahl (maximal 2000 Zeichen) nicht vollständig befüllt werden. Bitte kopieren Sie den Textentwurf aus der Vertragsvorlage manuell in den geöffneten E-Mail-Entwurf.

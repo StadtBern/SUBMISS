@@ -1162,4 +1162,20 @@ public class ValidationMessages {
    * The Constant CONTRACT_DOCUMENT_ERROR_FIELD.
    */
   public static final String CONTRACT_DOCUMENT_ERROR_FIELD = "contract_document_error_field";
+
+  /**
+   * The Constant FUTURE_DATE_ERROR_FIELD.
+   */
+  public static final String FUTURE_DATE_ERROR_FIELD = "futureDateErrorField";
+
+  /**
+   * The Constant START_DATE_AFTER_END_DATE_ERROR_FIELD.
+   */
+  public static final String START_DATE_AFTER_END_DATE_ERROR_FIELD = "startDateAfterEndDateErrorField";
+
+  public static final String PASSING_APPLICANTS = "passingApplicants";
+
+  public static final String PASSING_APPLICANTS_ERROR_FIELD = "passingApplicantsErrorField";
+
+  public static final String PASSING_APPLICANTS_ERROR_MESSAGE = "passing_applicants_error_message";
 }

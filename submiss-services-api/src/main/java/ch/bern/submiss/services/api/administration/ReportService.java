@@ -15,7 +15,9 @@ package ch.bern.submiss.services.api.administration;
 
 import ch.bern.submiss.services.api.dto.ReportDTO;
 import ch.bern.submiss.services.api.dto.ReportResultsDTO;
+import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -32,12 +34,12 @@ public interface ReportService {
   byte[] generateReport(ReportResultsDTO reportResults);
 
   /**
-   * Search.
+   * Gets the report results.
    *
    * @param reportDTO the report DTO
    * @return the report results DTO
    */
-  ReportResultsDTO search(ReportDTO reportDTO);
+  ReportResultsDTO getReportResults(ReportDTO reportDTO);
   
   /**
    * Gets the report file name.
@@ -67,4 +69,23 @@ public interface ReportService {
    * Security check for Report.
    */
   void reportSecurityCheck();
+
+  /**
+   * Checks the report results number in order to proceed with generating the report.
+   * If report results are greater than maximum results
+   * returns the maximum results
+   * else returns NULL.
+   *
+   * @param reportDTO the reportDTO
+   * @return the results
+   */
+  Long proceedToResults(ReportDTO reportDTO);
+
+  /**
+   * Report validation.
+   *
+   * @param reportDTO the reportDTO
+   * @return the error
+   */
+  Set<ValidationError> validate(ReportDTO reportDTO);
 }

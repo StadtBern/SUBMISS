@@ -537,27 +537,23 @@ public class UserAdministrationServiceImpl extends BaseService implements
           directorateFound = true;
         }
       }
-      if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-        && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-        // check if secondary departments exists in search criteria
-        List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-          .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split(SPLIT_REGEX));
+      List<String> secondaryDepartmentIds = getAllSecondaryDepartments(userDTO);
 
-        for (String secondaryDepartmentId : secondaryDepartmentIds) {
-          secondaryDepartments
-            .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
-          if (secDepIdsToSearch.contains(secondaryDepartmentId)) {
-            // change the value of initialised flag if department exists in user attributes
-            departmentFound = true;
-          }
-        }
-        for (DepartmentHistoryDTO department : secondaryDepartments) {
-          if (directorateIdsToSearch.contains(department.getDirectorate().getId())) {
-            // change the value of initialised flag if directorate exists in user attributes
-            directorateFound = true;
-          }
+      for (String secondaryDepartmentId : secondaryDepartmentIds) {
+        secondaryDepartments
+          .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
+        if (secDepIdsToSearch.contains(secondaryDepartmentId)) {
+          // change the value of initialised flag if department exists in user attributes
+          departmentFound = true;
         }
       }
+      for (DepartmentHistoryDTO department : secondaryDepartments) {//here
+        if (directorateIdsToSearch.contains(department.getDirectorate().getId())) {
+          // change the value of initialised flag if directorate exists in user attributes
+          directorateFound = true;
+        }
+      }
+
       // departments of the search criteria are found
       if (status.equals(LookupValues.SEARCH_USER_STATUS.DEPARTMENT_NO_DIR.getValue())
         && departmentFound) {
@@ -674,15 +670,11 @@ public class UserAdministrationServiceImpl extends BaseService implements
         mainDepartment = sDDepartmentService.getDepartmentHistByDepartmentId(
           userDTO.getAttribute(USER_ATTRIBUTES.SAML_DEPARTMENT.getValue()).getData());
       }
-      if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-        && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-        List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-          .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split(SPLIT_REGEX));
+      List<String> secondaryDepartmentIds = getAllSecondaryDepartments(userDTO);
 
-        for (String secondaryDepartmentId : secondaryDepartmentIds) {
-          secondaryDepartments
-            .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
-        }
+      for (String secondaryDepartmentId : secondaryDepartmentIds) {
+        secondaryDepartments
+          .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
       }
 
       // Update Firstname, Lastname, E-Mail if are different in DB from SAML token.
@@ -1510,16 +1502,12 @@ public class UserAdministrationServiceImpl extends BaseService implements
           .getTenantById(userDTO.getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData());
       }
 
-      if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-        && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-        List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-          .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split(SPLIT_REGEX));
+      List<String> secondaryDepartmentIds = getAllSecondaryDepartments(userDTO);
 
-        for (String secondaryDepartmentId : secondaryDepartmentIds) {
+      for (String secondaryDepartmentId : secondaryDepartmentIds) {
           secondaryDepartments
             .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
         }
-      }
 
       // Finds if the user has user view right, in order to inform the according flag
       Boolean userAdminRight = security.isPermitted(userDTO.getId(),
@@ -1552,7 +1540,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
       || (functionVersion != null && USER_ATTRIBUTES.FUNCTION.getValue() != null
       && checkAttributeVersion(userId, functionVersion, USER_ATTRIBUTES.FUNCTION.getValue()))
       || checkAttributeVersion(userId, secondaryDepartmentsVersion,
-      USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue())) {
+      USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + 1)) {
       throw new OptimisticLockException();
     }
   }
@@ -1611,4 +1599,27 @@ public class UserAdministrationServiceImpl extends BaseService implements
     security.isPermittedOperationForUser(getUserId(),
       SecurityOperation.USER_OPERATION_USER_VIEW.getValue(), null);
   }
+
+  @Override
+  public List<String> getAllSecondaryDepartments(UserDTO userDTO) {
+    List<String> secondaryDepartmentIds = new ArrayList<>();
+    boolean found = true;
+    int dirCounter = 1;
+    while (found) {
+      if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + dirCounter)
+        != null
+        && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + dirCounter)
+        .getData() != null) {
+        // check if secondary departments exists in search criteria
+        secondaryDepartmentIds.addAll(Arrays.asList(userDTO
+          .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + dirCounter).getData()
+          .split(SPLIT_REGEX)));
+        dirCounter++;
+      } else {
+        found = false;
+      }
+    }
+    return secondaryDepartmentIds;
+  }
+
 }

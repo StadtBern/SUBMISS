@@ -26,6 +26,7 @@
             uib-typeahead="company for company in companySearchCtr.getCompanyNames($viewValue)" typeahead-min-length="3"
             typeahead-wait-ms="500" autocomplete="off" class="form-control">
         </div>
+
         <div class="form-group">
           <label>PLZ</label> <input id="postCode" type="text" ng-model="companySearchCtr.searchForm.postCode"
             class="form-control">
@@ -35,46 +36,58 @@
             uib-typeahead="location for location in companySearchCtr.getCompanyLocations($viewValue)"
             typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" class="form-control">
         </div>
+
         <div class="form-group">
-          <label for="country">Land</label> <select ui-select2="{allowClear: true}" id="country"
-            data-ng-model="companySearchCtr.searchForm.countryId" data-placeholder="Keine Auswahl">
-            <option></option>
-            <option ng-repeat="country in companySearchCtr.countries " value="{{country.id}}">{{country.countryName}}
-            </option>
-          </select>
+          <label for="country">Land</label>
+          <ui-select name="country" id="country" ng-model="companySearchCtr.searchForm.countryId" theme="select2">
+            <ui-select-match allow-clear="true" placeholder="Keine Auswahl">
+              <span ng-bind="$select.selected.countryName"></span>
+            </ui-select-match>
+            <ui-select-choices repeat="country.id as country in (companySearchCtr.countries | filter: {countryName: $select.search})" translate>
+              <span ng-bind="country.countryName"></span>
+            </ui-select-choices>
+          </ui-select>
         </div>
       </div>
+
       <div class="col-sm-12 col-md-4">
         <div class="form-group">
           <label>Telefon</label> <input id="companyTel" type="text" ng-model="companySearchCtr.searchForm.companyTel"
             class="form-control">
         </div>
+
         <div class="form-group">
-          <label for="companyWorkTypes">Arbeitsgattung</label> <select ui-select2="{allowClear: true}" multiple
-            id="companyWorkTypes" data-ng-model="companySearchCtr.searchForm.workTypes"
-            data-placeholder="Mehrfachauswahl möglich"
-            ng-options="workType.value1 + ' ' + workType.value2 for workType in companySearchCtr.workTypes">
-            <option></option>
-          </select>
+          <label for="workTypes">Arbeitsgattung</label>
+          <ui-select multiple id="workTypes" name="workTypes" ng-model="companySearchCtr.searchForm.workTypes" theme="select2">
+            <ui-select-match allow-clear="true" placeholder="Mehrfachauswahl möglich">{{$item.value1 +'&nbsp;'+ $item.value2}}</ui-select-match>
+            <ui-select-choices repeat="workType in (companySearchCtr.workTypes | propsFilter: {value1: $select.search, value2: $select.search})" value="{{workType}}">
+              <div ng-bind-html="workType.value1 + '&nbsp;' + workType.value2"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
+
         <div class="form-group">
           <label for="logibStatus">Logib</label>
           <ui-select name="logibStatus" id="logibStatus" ng-model="companySearchCtr.searchForm.logibStatus"
             theme="select2">
             <ui-select-match allow-clear="true"> <span ng-bind="$select.selected.title"></span> </ui-select-match>
-            <ui-select-choices repeat="item.id as item in (companySearchCtr.logibStatuses| filter: $select.search)">
-              <span ng-bind="item.title"></ui-select-choices>
+            <ui-select-choices repeat="item.id as item in (companySearchCtr.logibStatuses | filter: $select.search)">
+              <span ng-bind="item.title"></span></ui-select-choices>
           </ui-select>
         </div>
 
         <div class="form-group">
-          <label for="ilo">ILO</label> <select ui-select2="{allowClear: true}" id="ilo"
-            data-ng-model="companySearchCtr.searchForm.ilo" data-placeholder="Keine Auswahl" name="ilo"
-            ng-options="ilo.value1 for ilo in companySearchCtr.ilo">
-            <option></option>
-          </select>
+          <label for="ilo">ILO</label>
+          <ui-select name="ilo" id="ilo" ng-model="companySearchCtr.searchForm.ilo" theme="select2">
+            <ui-select-match allow-clear="true" placeholder="Keine Auswahl">
+              <span ng-bind="$select.selected.value1"></span>
+            </ui-select-match>
+            <ui-select-choices repeat="ilo in (companySearchCtr.ilo | filter: {value1: $select.search})"> <span ng-bind="ilo.value1"></span>
+            </ui-select-choices>
+          </ui-select>
         </div>
       </div>
+
       <div class="col-sm-12 col-md-4">
         <div class="form-group">
           <div class="row">
@@ -86,12 +99,14 @@
             </div>
           </div>
         </div>
+
         <div class="form-group">
           <label>Bemerkungen</label>
           <textarea id="notes" rows="3" type="text" ng-model="companySearchCtr.searchForm.notes"
             uib-typeahead="companyTel for companyTel in companySearchCtr.getCompanyNotes($viewValue)"
             typeahead-min-length="3" typeahead-wait-ms="500" autocomplete="off" class="form-control"></textarea>
         </div>
+
         <div class="form-group noLabel">
           <div class="row">
             <div class="col-sm-12">
@@ -101,6 +116,7 @@
             </div>
           </div>
         </div>
+
         <div class="form-group">
           <label for="proofStatus">Nachweisstatus</label>
           <ui-select name="proofStatus" id="proofStatus" ng-model="companySearchCtr.searchForm.proofStatus"
@@ -111,6 +127,7 @@
           </ui-select>
         </div>
       </div>
+
       <div class="col-sm-12 col-md-12 btn-bar">
         <button type="submit" class="btn btn-primary">Suchen</button>
         <button type="button" class="btn btn-default"
@@ -119,6 +136,8 @@
     </form>
   </div>
 </div>
+
+
 <div class="row">
   <div class="col-sm-12">
     <h2 class="page-title">Suchresultate</h2>

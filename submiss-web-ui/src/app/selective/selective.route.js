@@ -54,12 +54,7 @@
         ncyBreadcrumb: {
           label: '{{formalAuditCtrl.data.submission.workType.value1}} {{formalAuditCtrl.data.submission.workType.value2}}',
           parent: function ($rootScope) {
-            if ($rootScope.$previousState === 'projectSubmissionsView' || $rootScope.$previousState === 'project.view') {
-              return 'project.view';
-            } else if ($rootScope.$previousState === 'project.search' ||
-              !$rootScope.$previousState) {
-              return 'project.search'
-            }
+            return setParent($rootScope);
           }
         }
       })
@@ -76,5 +71,15 @@
           isPublic: false
         }
       });
+
+    /** Function to set breadcrumb parent */
+    function setParent(rootScope) {
+      if (rootScope.$previousState === 'projectSubmissionsView' || rootScope.$previousState === 'project.view'
+        || rootScope.$previousState === 'project.search' || !rootScope.$previousState) {
+        return 'project.view';
+      } else {
+        return 'project.search';
+      }
+    }
   }
 })();

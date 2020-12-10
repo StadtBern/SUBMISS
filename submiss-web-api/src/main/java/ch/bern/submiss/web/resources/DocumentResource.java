@@ -214,6 +214,9 @@ public class DocumentResource {
     if (documentForm.getSecondSignature() != null) {
       documentDTO.setSecondSignature(documentForm.getSecondSignature());
     }
+    if (documentForm.getSignatureCopies() != null && !documentForm.getSignatureCopies().isEmpty()) {
+      documentDTO.setSignatureCopies(documentForm.getSignatureCopies());
+    }
     createdDocumentIds = documentService.createDocumentFromTemplate(documentDTO);
     return Response.ok(createdDocumentIds).build();
   }

@@ -96,9 +96,6 @@
     }
 
     function save() {
-      for (var i = 0; i < vm.signatureProcessTypeEntitled.length; i++) {
-        vm.signatureProcessTypeEntitled[i].sortNumber = i;
-      }
       vm.signature.signatureProcessTypeEntitled = vm.signatureProcessTypeEntitled;
       StammdatenService.updateSignature(vm.signature)
         .success(function () {
@@ -109,7 +106,7 @@
             reload: true
           });
         }).error(function (response, status) {
-          if (status === 400) {
+          if (status === 400 || status === 409) {
             vm.errorFieldsVisible = true;
             QFormJSRValidation.markErrors($scope,
               $scope.editForm, response);

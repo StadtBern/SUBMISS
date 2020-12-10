@@ -75,6 +75,7 @@
     vm.status = AppConstants.STATUS;
     vm.invalidNavigation = false;
     vm.signatures = [];
+    vm.signatureCopies = [];
     vm.departments = [];
     vm.createAndPrintDocument = false;
     vm.submissionCancelTabActive = false;
@@ -181,6 +182,7 @@
         .success(function (data) {
           if (data !== '') {
             vm.signatures = data.signatureProcessTypeEntitled;
+            vm.signatureCopies = data.signatureCopies;
           }
         });
     }
@@ -237,6 +239,9 @@
           if (vm.signatures != null &&
             vm.signatures.length === 1) {
             vm.templateForm.firstSignature = vm.signatures[0];
+          }
+          if (vm.signatureCopies !== null) {
+            vm.templateForm.signatureCopies = vm.signatureCopies;
           }
           // Check if the user has requested or not a new version.
           // set these values to false. It shows that the template is derived from user input.

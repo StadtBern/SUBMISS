@@ -75,6 +75,9 @@ public abstract class BaseService {
   @Inject
   protected SecurityBean security;
 
+  @Inject
+  private UserAdministrationServiceImpl userAdministrationService;
+
   /**
    * The q department history entity.
    */
@@ -200,13 +203,10 @@ public abstract class BaseService {
       departmentIds.add(userDTO.getAttribute(USER_ATTRIBUTES.SAML_DEPARTMENT.getValue()).getData());
     }
     // and secondary departments
-    if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-      && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-      List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-        .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split("\\s*,\\s*"));
-      for (String secondaryDepartmentId : secondaryDepartmentIds) {
-        departmentIds.add(secondaryDepartmentId);
-      }
+    List<String> secondaryDepartmentIds = userAdministrationService
+      .getAllSecondaryDepartments(userDTO);
+    for (String secondaryDepartmentId : secondaryDepartmentIds) {
+      departmentIds.add(secondaryDepartmentId);
     }
     return departmentIds;
   }

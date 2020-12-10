@@ -49,7 +49,7 @@
               <td title="'Projekt'" filter="{ 'projectName' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
                 sortable="'projectName'">{{logs.projectName}}</td>
               <td title="'Arbeitsgattung'" filter="{ 'workType' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
-                sortable="'workType'">{{logs.workType}}</td>
+                sortable="'workType'">{{logs.workType}}, {{logs.tenderDescription}}</td>
               <td title="'Begründung'" filter="{ 'reason' : 'text'}" ng-if="auditViewCtrl.levelIdOption ==='PROJECT_LEVEL'"
                 sortable="'reason'">{{logs.reason}}</td>
             </tr>

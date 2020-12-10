@@ -281,6 +281,7 @@ public class SubmissionResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public Response getSubmissionById(@PathParam("id") String id) {
+    submissionService.submissionViewSecurityCheck(id);
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(id);
     if (submissionDTO == null) {
       throw new OptimisticLockException(ValidationMessages.SUBMISSION_NOT_FOUND);

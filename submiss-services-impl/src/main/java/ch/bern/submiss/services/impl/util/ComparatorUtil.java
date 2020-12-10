@@ -20,12 +20,14 @@ import ch.bern.submiss.services.api.dto.CompanyProofDTO;
 import ch.bern.submiss.services.api.dto.CriterionDTO;
 import ch.bern.submiss.services.api.dto.EmailAttributesDTO;
 import ch.bern.submiss.services.api.dto.EmailTemplateTenantDTO;
+import ch.bern.submiss.services.api.dto.ExclusionReasonDTO;
 import ch.bern.submiss.services.api.dto.LegalHearingExclusionDTO;
 import ch.bern.submiss.services.api.dto.MasterListDTO;
 import ch.bern.submiss.services.api.dto.MasterListTypeDataDTO;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.OfferCriterionDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
+import ch.bern.submiss.services.api.dto.SignatureCopyDTO;
 import ch.bern.submiss.services.api.dto.SignatureProcessTypeEntitledDTO;
 import ch.bern.submiss.services.api.dto.SubcriterionDTO;
 import ch.bern.submiss.services.api.dto.SubmissionOverviewDTO;
@@ -849,11 +851,16 @@ public class ComparatorUtil {
       m1.getAddedDescription().toLowerCase().compareTo(m2.getAddedDescription().toLowerCase());
 
   /**
-   * The Constant SortNumberComparator.
+   * The Constant SignatureComparator.
    */
-  public static final Comparator<SignatureProcessTypeEntitledDTO> SortNumberComparator = (
-    SignatureProcessTypeEntitledDTO s1,
-    SignatureProcessTypeEntitledDTO s2) -> s1.getSortNumber().compareTo(s2.getSortNumber());
+  public static final Comparator<SignatureProcessTypeEntitledDTO> SignatureComparator = Comparator
+    .comparing(SignatureProcessTypeEntitledDTO::getSortNumber);
+
+  /**
+   * The Constant SignatureCopyComparator.
+   */
+  public static final Comparator<SignatureCopyDTO> SignatureCopyComparator = Comparator
+    .comparing(SignatureCopyDTO::getSortNumber);
 
   /**
    * Comparator to sort email attributes by send type.
@@ -1034,6 +1041,18 @@ public class ComparatorUtil {
         }
       }
       return -1;
+    };
+
+  /**
+   * Comparator to sort LegalHearingExclusionDTOs by their Lit.
+   */
+  public static final Comparator<ExclusionReasonDTO> sortLegalHearingExclusionDTOsByLit =
+    (ExclusionReasonDTO s1, ExclusionReasonDTO s2) -> {
+        String substr1 = s1.getExclusionReason().getValue1()
+          .substring(s1.getExclusionReason().getValue1().length()-1);
+        String substr2 = s2.getExclusionReason().getValue1()
+          .substring(s2.getExclusionReason().getValue1().length()-1);
+        return substr1.compareTo(substr2);
     };
 
   /**

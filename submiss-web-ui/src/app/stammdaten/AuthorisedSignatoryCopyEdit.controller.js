@@ -103,8 +103,8 @@
 
     function save() {
       vm.signature.signatureCopies = vm.signatureCopies;
-      StammdatenService.updateSignatureCopies(vm.signature).success(
-        function () {
+      StammdatenService.updateSignatureCopies(vm.signature)
+        .success(function () {
           $uibModalInstance.close();
           $state.go('stammdaten.authorisedSignatory', {
             directorate: directorate
@@ -112,12 +112,12 @@
             reload: true
           });
         }).error(function (response, status) {
-        if (status === 400) {
-          vm.errorFieldsVisible = true;
-          QFormJSRValidation.markErrors($scope,
-            $scope.editForm, response);
-        }
-      });
+          if (status === 400 || status === 409) {
+            vm.errorFieldsVisible = true;
+            QFormJSRValidation.markErrors($scope,
+              $scope.editForm, response);
+          }
+        });
     }
 
     function closeModal() {

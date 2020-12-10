@@ -117,7 +117,11 @@ public enum DocumentPlaceholders {
   E_CRITERION_POINTS("e_criterion_points"),
   COPY_REFERENCE("copy_reference"),
   DOCUMENT_TITLE("doc_title"),
-  R_DIRECTORATE_SHORT("r_directorate_short");
+  R_DIRECTORATE_SHORT("r_directorate_short"),
+  FIRST_REFERENCE_NAME("first_reference_name"),
+  FIRST_REFERENCE_FUNCTION("first_reference_function"),
+  SECOND_REFERENCE_NAME("second_reference_name"),
+  SECOND_REFERENCE_FUNCTION("second_reference_function");
   
   private String value;
 

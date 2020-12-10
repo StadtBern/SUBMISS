@@ -214,6 +214,11 @@ public class DocumentDTO {
   private SignatureProcessTypeEntitledDTO secondSignature;
 
   /**
+   * The signature copies.
+   */
+  private List<SignatureCopyDTO> signatureCopies;
+
+  /**
    * The dept amount action.
    */
   private String deptAmountAction;
@@ -945,11 +950,14 @@ public class DocumentDTO {
     this.deptAmountAction = deptAmountAction;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.lang.Object#toString()
-   */
+  public List<SignatureCopyDTO> getSignatureCopies() {
+    return signatureCopies;
+  }
+
+  public void setSignatureCopies(List<SignatureCopyDTO> signatureCopies) {
+    this.signatureCopies = signatureCopies;
+  }
+
   @Override
   public String toString() {
     return "DocumentDTO [id=" + id + ", title=" + title + ", tenantId=" + tenantId + ", filename="

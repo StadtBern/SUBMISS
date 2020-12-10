@@ -151,18 +151,15 @@ public interface SDService {
    * Update signature process entitled.
    *
    * @param signatureProcessTypeDTO the signature process type DTO
-   * @return the optimistic lock error
    */
-  Set<ValidationError> updateSignatureProcessEntitled(
-    SignatureProcessTypeDTO signatureProcessTypeDTO);
+  void updateSignatureProcessEntitled(SignatureProcessTypeDTO signatureProcessTypeDTO);
 
   /**
    * Update signature copies.
    *
    * @param signatureProcessTypeDTO the signature process type DTO
-   * @return the optimistic lock error
    */
-  Set<ValidationError> updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO);
+  void updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO);
 
   /**
    * Uploads image.

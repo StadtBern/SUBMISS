@@ -78,7 +78,9 @@
 	      <div class="col-sm-4 pull-left">
 	        <div class="btn-toolbar pull-right" role="toolbar">
 	          <button ng-click="companyProofsCtr.requestProofs()"
-	            ng-disabled="companyProofsCtr.data.company.proofStatus === 1"
+                    ng-disabled="companyProofsCtr.data.company.proofStatus === 1
+                      || (companyProofsCtr.data.company.proofStatus !== 1
+                          && companyProofsCtr.data.companyTask.id !== null)"
 	            ng-show="companyProofsCtr.secProofVerificationRequest == true;" type="submit"
 	            class="btn btn-primary">Nachweisaufforderung gewünscht</button>
 	        </div>

@@ -228,6 +228,7 @@
       vm.examination.submissionId = $stateParams.id;
       vm.examination.pageRequestedOn = vm.data.submission.pageRequestedOn;
       vm.examination.submissionVersion = vm.data.submission.version;
+      vm.examination.totalApplicants = vm.offers.length;
       AppService.setPaneShown(true);
       ExaminationService.updateExamination(vm.examination)
         .success(function (data) {
@@ -328,9 +329,11 @@
           if (vm.data.submission.minGrade !== null) {
             vm.examination.minGrade = vm.data.submission.minGrade;
           }
-
           if (vm.data.submission.maxGrade !== null) {
             vm.examination.maxGrade = vm.data.submission.maxGrade;
+          }
+          if (vm.data.submission.passingApplicants !== null) {
+            vm.examination.passingApplicants = vm.data.submission.passingApplicants;
           }
           vm.submittents = vm.data.submission.submittents;
           // Check if the process type is selective.

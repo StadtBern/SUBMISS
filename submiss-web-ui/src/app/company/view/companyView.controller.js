@@ -110,7 +110,8 @@
         var name = (data.firstName != null && data.lastName != null) ? data.firstName + ' ' + data.lastName : null;
         vm.data.companyTask = {
           createdOn: data.createdOn,
-          createdBy: name
+          createdBy: name,
+          id : data.id
         };
       }).error(function (response, status) {});
     }
@@ -240,12 +241,15 @@
       vm.taskCreateForm.taskType = AppConstants.TASK_TYPES[1];
       vm.taskCreateForm.submittentIDs = [];
       vm.taskCreateForm.submittentIDs.push(vm.data.company.id);
-
+      AppService.setPaneShown(true);
       TasksService.createTask(vm.taskCreateForm).success(
           function (data) {
+            AppService.setPaneShown(false);
             $state.reload();
           })
-        .error(function (response, status) {});
+        .error(function (response, status) {
+          AppService.setPaneShown(false);
+        });
     }
 
     function sendMailModal() {

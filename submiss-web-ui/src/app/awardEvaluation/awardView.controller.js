@@ -164,6 +164,8 @@
       SubmissionService.readSubmission(id)
         .success(function (data) {
           vm.data.submission = data;
+          $rootScope.projectName = vm.data.submission.project.projectName;
+          $rootScope.selectedProjectId = vm.data.submission.project.id;
           vm.submittents = vm.data.submission.submittents;
           hasOfferOpeningBeenClosedBefore(vm.data.submission.id);
           vm.secAddOperatingCostAwardCriterion = AppService.isOperationPermitted(AppConstants.OPERATION.ADD_OPERATING_COST_AWARD_CRITERION, vm.data.submission.process);

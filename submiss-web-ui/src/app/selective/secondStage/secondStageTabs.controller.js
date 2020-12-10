@@ -86,6 +86,8 @@
     function readSubmission(submissionId) {
       SubmissionService.readSubmission(submissionId).success(function (data) {
         vm.submission = data;
+        $rootScope.projectName = vm.submission.project.projectName;
+        $rootScope.selectedProjectId = vm.submission.project.id;
         vm.secFormalAuditView = AppService.isOperationPermitted(AppConstants.OPERATION.FORMAL_AUDIT_VIEW, vm.submission.process);
         hasOfferOpeningBeenClosedBefore(vm.submission.id);
       });

@@ -83,6 +83,7 @@ public class SubmissionForm extends AbstractForm {
   private String customOperatingCostFormula;
   private Boolean isGekoEntryByManualAward;
   private Boolean noAwardTender;
+  private Integer passingApplicants;
 
   public ProjectForm getProject() {
     return project;
@@ -563,6 +564,14 @@ public class SubmissionForm extends AbstractForm {
 
   public void setNoAwardTender(Boolean noAwardTender) {
     this.noAwardTender = noAwardTender;
+  }
+
+  public Integer getPassingApplicants() {
+    return passingApplicants;
+  }
+
+  public void setPassingApplicants(Integer passingApplicants) {
+    this.passingApplicants = passingApplicants;
   }
 
   @Override

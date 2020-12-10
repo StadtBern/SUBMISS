@@ -525,6 +525,12 @@ public class SubmissionDTO extends AbstractDTO {
   private Boolean noAwardTender;
 
   /**
+   * The number of passing applicants to the 2nd stage of Selektiv.
+   */
+  @JsonView(View.Internal.class)
+  private Integer passingApplicants;
+
+  /**
    * Gets the report companies.
    *
    * @return the report companies
@@ -1994,6 +2000,14 @@ public class SubmissionDTO extends AbstractDTO {
 
   public void setNoAwardTender(Boolean noAwardTender) {
     this.noAwardTender = noAwardTender;
+  }
+
+  public Integer getPassingApplicants() {
+    return passingApplicants;
+  }
+
+  public void setPassingApplicants(Integer passingApplicants) {
+    this.passingApplicants = passingApplicants;
   }
 
   @Override

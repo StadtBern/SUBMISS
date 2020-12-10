@@ -68,17 +68,39 @@ public abstract class UserFormMapper {
       dto.setAttribute(
           new UserAttributeDTO(USER_ATTRIBUTES.REGISTERED.getValue(), form.getRegistered()));
     }
+    int userAttributeCounter = 1;
     if (form.getSecondaryDepartments() != null && !form.getSecondaryDepartments().isEmpty()) {
+      int depsCounter = 0;
       for (DepartmentHistoryForm department : form.getSecondaryDepartments()) {
-        departmentIdCommaSeparatedValue.append(department.getDepartmentId().getId());
-        departmentIdCommaSeparatedValue.append(",");
+        // We should split departments in blocks of 27 max due to limitation of 1024 characters
+        // and create separate attribute for each block
+        if (depsCounter <= 26 && department.getDepartmentId() != null) {
+          departmentIdCommaSeparatedValue.append(department.getDepartmentId().getId());
+          departmentIdCommaSeparatedValue.append(",");
+          depsCounter++;
+        } else {
+          dto.setAttribute(
+            new UserAttributeDTO(
+              USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + userAttributeCounter,
+              departmentIdCommaSeparatedValue.substring(0,
+                departmentIdCommaSeparatedValue.length() - 1)));
+          departmentIdCommaSeparatedValue.setLength(0);
+          userAttributeCounter++;
+          departmentIdCommaSeparatedValue.append(department.getDepartmentId().getId());
+          departmentIdCommaSeparatedValue.append(",");
+          depsCounter = 1;
+        }
       }
-      String secondaryDepartments = departmentIdCommaSeparatedValue.substring(0,
-          departmentIdCommaSeparatedValue.length() - 1);
-      dto.setAttribute(
-          new UserAttributeDTO(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue(), secondaryDepartments));
+      if (!departmentIdCommaSeparatedValue.toString().isEmpty()) {
+        dto.setAttribute(
+          new UserAttributeDTO(
+            USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + userAttributeCounter,
+            departmentIdCommaSeparatedValue.substring(0,
+              departmentIdCommaSeparatedValue.length() - 1)));
+      }
     } else {
-      dto.setAttribute(new UserAttributeDTO(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue(), null));
+      dto.setAttribute(new UserAttributeDTO(
+        USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + userAttributeCounter, null));
     }
     if (form.getFunction() != null) {
       dto.setAttribute(

@@ -235,4 +235,6 @@ public interface UserAdministrationService {
    * Security check for UserEdit.
    */
   void userSearchSecurityCheck();
+
+  List<String> getAllSecondaryDepartments(UserDTO userDTO);
 }

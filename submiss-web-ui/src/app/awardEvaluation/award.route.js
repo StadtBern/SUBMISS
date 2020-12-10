@@ -57,17 +57,7 @@
       ncyBreadcrumb: {
         label: '{{awardViewCtrl.data.submission.workType.value1}} {{awardViewCtrl.data.submission.workType.value2}}',
         parent: function ($rootScope) {
-          var returnVal;
-          if ($rootScope.$previousState === 'projectSubmissionsView' ||
-            $rootScope.$previousState ===
-            'projectSubmissionsView.from.Offers' ||
-            $rootScope.$previousState === PROJECTVIEW) {
-            returnVal = PROJECTVIEW;
-          } else if ($rootScope.$previousState === PROJECTSEARCH ||
-            !$rootScope.$previousState) {
-            returnVal = PROJECTSEARCH;
-          }
-          return returnVal;
+          return setParent($rootScope);
         }
       }
     });
@@ -86,19 +76,22 @@
       ncyBreadcrumb: {
         label: '{{awardCriteriaAssessCtrl.data.submission.workType.value1}} {{awardCriteriaAssessCtrl.data.submission.workType.value2}}',
         parent: function ($rootScope) {
-          var returnVal;
-          if ($rootScope.$previousState === 'projectSubmissionsView' ||
-            $rootScope.$previousState ===
-            'projectSubmissionsView.from.Offers' ||
-            $rootScope.$previousState === PROJECTVIEW) {
-            returnVal = PROJECTVIEW;
-          } else if ($rootScope.$previousState === PROJECTSEARCH ||
-            !$rootScope.$previousState) {
-            returnVal = PROJECTSEARCH;
-          }
-          return returnVal;
+          return setParent($rootScope);
         }
       }
     });
+
+    /** Function to set breadcrumb parent */
+    function setParent(rootScope) {
+      if (rootScope.$previousState === 'projectSubmissionsView'
+        ||rootScope.$previousState === 'projectSubmissionsView.from.Offers'
+        || rootScope.$previousState === PROJECTVIEW
+        || rootScope.$previousState === PROJECTSEARCH
+        || !rootScope.$previousState) {
+        return PROJECTVIEW;
+      } else {
+        return PROJECTSEARCH;
+      }
+    }
   }
 })();

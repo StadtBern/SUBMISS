@@ -55,9 +55,11 @@ rule "RU001"
   || (($isVerfahren_SELECTIVE)
   && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("50"))
 	&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("60")))
-	|| (($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION || $isVerfahren_SELECTIVE)
-    && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("140"))
-  	&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("150"))))) do[PT07]
+	|| (($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION)
+    && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("140")))
+  || ($isVerfahren_SELECTIVE
+      && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("140"))
+    	&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("150"))))) do[PT07]
 	if ($isRole_admin && !$isTenant_KB && ((($isVerfahren_SELECTIVE || $isVerfahren_OPEN) && !$isServiceTender) || $isVerfahren_INVITATION) && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80"))
 	&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("120"))) do[PT08]
 	if ($isRole_admin && $isTenant_SB && ($isVerfahren_SELECTIVE || $isVerfahren_OPEN) && $isServiceTender && ($indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))

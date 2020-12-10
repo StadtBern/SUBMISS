@@ -44,6 +44,9 @@ public class AuditFilterForm {
   /** The reason. */
   private String reason;
 
+  /** The tender description. */
+  private String tenderDescription;
+
   /**
    * Gets the user name.
    *
@@ -218,12 +221,14 @@ public class AuditFilterForm {
     this.reason = reason;
   }
 
+  public String getTenderDescription() {
+    return tenderDescription;
+  }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  public void setTenderDescription(String tenderDescription) {
+    this.tenderDescription = tenderDescription;
+  }
+
   @Override
   public String toString() {
     return "AuditFilterFOrm [username=" + userName + ", description=" + shortDescription

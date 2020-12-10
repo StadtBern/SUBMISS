@@ -202,17 +202,36 @@ public class UserAdministrationResource {
     // Also, the SAML department, if exists and has not been updated by the user, is stored in
     // secondary departments.
     StringBuilder departmentIdCommaSeparatedValue = new StringBuilder();
+    int userAttributeCounter = 1;
     if (form.getSecondaryDepartments() != null && !form.getSecondaryDepartments().isEmpty()) {
+      int depsCounter = 0;
       for (DepartmentHistoryForm departmentF : form.getSecondaryDepartments()) {
-        if (departmentF.getDepartmentId() != null) {
+        // We should split departments in blocks of 27 max due to limitation of 1024 characters
+        // and create separate attribute for each block
+        if (depsCounter <= 26 && departmentF.getDepartmentId() != null) {
           departmentIdCommaSeparatedValue.append(departmentF.getDepartmentId().getId());
           departmentIdCommaSeparatedValue.append(",");
+          depsCounter++;
+        } else {
+          attr.add(
+            new UserAttributeDTO(
+              USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + userAttributeCounter,
+              departmentIdCommaSeparatedValue.substring(0,
+                departmentIdCommaSeparatedValue.length() - 1)));
+          departmentIdCommaSeparatedValue.setLength(0);
+          userAttributeCounter++;
+          departmentIdCommaSeparatedValue.append(departmentF.getDepartmentId().getId());
+          departmentIdCommaSeparatedValue.append(",");
+          depsCounter = 1;
         }
       }
-      String secondaryDepartments = departmentIdCommaSeparatedValue.substring(0,
-        departmentIdCommaSeparatedValue.length() - 1);
-      attr.add(
-        new UserAttributeDTO(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue(), secondaryDepartments));
+      if (!departmentIdCommaSeparatedValue.toString().isEmpty()) {
+        attr.add(
+          new UserAttributeDTO(
+            USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + userAttributeCounter,
+            departmentIdCommaSeparatedValue.substring(0,
+              departmentIdCommaSeparatedValue.length() - 1)));
+      }
     }
 
     if (form.getFunction() != null) {
@@ -449,7 +468,6 @@ public class UserAdministrationResource {
    * Validation create.
    *
    * @param form the form
-   * @param samlDepartment the saml department
    * @return the sets the
    */
   private Set<ValidationError> validationCreate(UserRegistrationForm form) {

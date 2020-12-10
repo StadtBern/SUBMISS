@@ -41,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import org.ops4j.pax.cdi.api.OsgiService;
 
 /**
@@ -83,11 +84,7 @@ public class ReportResource {
   public Response generateReport(ReportForm reportForm) {
     ReportDTO reportDTO = ReportMapper.INSTANCE.toReportDTO(reportForm);
     if (reportDTO != null) {
-      ReportResultsDTO reportResults = reportService.search(reportDTO);
-      reportResults.setTotalizationBy(reportDTO.getTotalizationBy());
-      reportResults.setStartDate(reportDTO.getStartDate());
-      reportResults.setEndDate(reportDTO.getEndDate());
-      reportResults.setSearchedCompanies(reportDTO.getCompanies());
+      ReportResultsDTO reportResults = reportService.getReportResults(reportDTO);
       byte[] content = reportService.generateReport(reportResults);
 
       ResponseBuilder response = Response.ok(content);
@@ -179,7 +176,7 @@ public class ReportResource {
   }
 
   /**
-   * Validate form.
+   * Validate the report.
    *
    * @param reportForm the report form
    * @return the response
@@ -189,14 +186,20 @@ public class ReportResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/validateForm")
   public Response validateForm(ReportForm reportForm) {
-    reportService.reportSecurityCheck();
-    Set<ValidationError> errors = validation(reportForm);
+    ReportDTO reportDTO = ReportMapper.INSTANCE.toReportDTO(reportForm);
+    Set<ValidationError> errors = reportService.validate(reportDTO);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    return Response.ok().build();
+    return Response.ok(reportService.proceedToResults(reportDTO)).build();
   }
 
+  /**
+   * Validate the operation report.
+   *
+   * @param operationReportForm the operationReportForm
+   * @return the response
+   */
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -206,93 +209,14 @@ public class ReportResource {
       .toOperationReportDTO(operationReportForm);
     Set<ValidationError> errors = operationReportService.validate(operationReportDTO);
     if (!errors.isEmpty()) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      return Response.status(Status.BAD_REQUEST).entity(errors).build();
     }
-    return Response.ok().build();
-  }
-
-
-  /**
-   * Validation.
-   *
-   * @param reportForm the report form
-   * @return the sets the
-   */
-  private Set<ValidationError> validation(ReportForm reportForm) {
-    Set<ValidationError> errors = new HashSet<>();
-    if (reportForm != null) {
-      Date today = new Date();
-      if (reportForm.getStartDate() != null && reportForm.getStartDate().after(today)
-        || reportForm.getEndDate() != null && reportForm.getEndDate().after(today)) {
-        errors.add(new ValidationError("futureDateErrorField",
-          ValidationMessages.DATE_IN_THE_FUTURE_ERROR_MESSAGE));
-      }
-      if (reportForm.getStartDate() != null && reportForm.getEndDate() != null
-        && reportForm.getStartDate().after(reportForm.getEndDate())) {
-        errors.add(new ValidationError("startDateAfterEndDateErrorField",
-          ValidationMessages.START_DATE_AFTER_END_DATE_ERROR_MESSAGE));
-      }
-    }
-    return errors;
-  }
-
-
-  /**
-   * Proceed or not to results.
-   *
-   * @param reportForm the report form
-   * @return the long
-   */
-  @POST
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/proceedOrNotToResults")
-  public Long proceedOrNotToResults(ReportForm reportForm) {
-    ReportDTO reportDTO = ReportMapper.INSTANCE.toReportDTO(reportForm);
-    if (reportDTO != null) {
-      if (reportService.getNumberOfResultsByReport(reportDTO) <= sDService
-        .getReportMaximumResultsValue()) {
-        return null;
-      } else {
-        return sDService.getReportMaximumResultsValue();
-      }
-    } else {
-      return null;
-    }
+    return Response.ok(operationReportService.proceedToOperationResults(operationReportDTO))
+      .build();
   }
 
   /**
-   * Proceed or not to operation results.
-   *
-   * @param reportForm the report form
-   * @return the long
-   */
-  @POST
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/proceedOrNotToOperationResults")
-  public Long proceedOrNotToOperationResults(OperationReportForm reportForm) {
-    OperationReportDTO opReportDTO =
-      OperationReportMapper.INSTANCE.toOperationReportDTO(reportForm);
-    if (opReportDTO != null) {
-      Long results = operationReportService.getNumberOfOperationReportResults(opReportDTO);
-      Long maximumResults = sDService.getReportMaximumResultsValue();
-      if (results <= maximumResults) {
-        if (results == 0) {
-          return results;
-        } else {
-          return null;
-        }
-      } else {
-        return maximumResults;
-      }
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Run security check before loading Operation Report values from Stammdaten.
+   * Run security check before loading Report values from Stammdaten.
    *
    * @return the response
    */

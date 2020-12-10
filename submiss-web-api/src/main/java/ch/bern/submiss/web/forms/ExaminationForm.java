@@ -27,6 +27,8 @@ public class ExaminationForm {
   private Long submissionVersion;
   private List<CriterionForm> criterion;
   private Timestamp pageRequestedOn;
+  private Integer passingApplicants;
+  private Integer totalApplicants;
 
   public BigDecimal getMinGrade() {
     return minGrade;
@@ -74,5 +76,21 @@ public class ExaminationForm {
 
   public void setSubmissionVersion(Long submissionVersion) {
     this.submissionVersion = submissionVersion;
+  }
+
+  public Integer getPassingApplicants() {
+    return passingApplicants;
+  }
+
+  public void setPassingApplicants(Integer passingApplicants) {
+    this.passingApplicants = passingApplicants;
+  }
+
+  public Integer getTotalApplicants() {
+    return totalApplicants;
+  }
+
+  public void setTotalApplicants(Integer totalApplicants) {
+    this.totalApplicants = totalApplicants;
   }
 }

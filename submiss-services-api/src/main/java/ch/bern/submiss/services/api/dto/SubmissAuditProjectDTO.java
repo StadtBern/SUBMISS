@@ -13,8 +13,8 @@
 
 package ch.bern.submiss.services.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import ch.bern.submiss.services.api.util.View;
+import com.fasterxml.jackson.annotation.JsonView;
 
 /**
  * The Class SubmissAuditProjectDTO.
@@ -24,6 +24,10 @@ public class SubmissAuditProjectDTO extends SubmissAuditDTO {
   /** The objectName. */
   @JsonView(View.Public.class)
   private String objectName;
+
+  /** The tender description. */
+  @JsonView(View.Public.class)
+  private String tenderDescription;
 
   /** The projectName. */
   @JsonView(View.Public.class)
@@ -131,5 +135,13 @@ public class SubmissAuditProjectDTO extends SubmissAuditDTO {
    */
   public void setTaskResource(String taskResource) {
     this.taskResource = taskResource;
+  }
+
+  public String getTenderDescription() {
+    return tenderDescription;
+  }
+
+  public void setTenderDescription(String tenderDescription) {
+    this.tenderDescription = tenderDescription;
   }
 }

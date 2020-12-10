@@ -47,9 +47,9 @@
                || examinationViewCtrl.examinationForm.noExaminationDocumentField.$invalid
                || examinationViewCtrl.examinationForm.proofInconsistenciesField.$invalid
                || examinationViewCtrl.examinationForm.optimisticLockErrorField.$invalid
-               || examinationViewCtrl.examinationForm.deletedByAnotherUserErrorField.$invalid"
-               role="alert"
-               id="ErrorAnchor">
+               || examinationViewCtrl.examinationForm.deletedByAnotherUserErrorField.$invalid
+               || examinationViewCtrl.examinationForm.passingApplicantsErrorField.$invalid" role="alert"
+            id="ErrorAnchor">
             <field-error form-element-name="generalErrorField" translate name="error"></field-error>
             <field-error form-element-name="criterionErrorField" translate name="error"></field-error>
             <field-error form-element-name="subcriterionErrorField" translate name="error"></field-error>
@@ -67,6 +67,7 @@
             <field-error form-element-name="proofInconsistenciesField" translate name="error"></field-error>
             <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
             <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
+            <field-error form-element-name="passingApplicantsErrorField" translate name="error"></field-error>
           </div>
           <div id='mandatoryFieldsEmpty' class="col-sm-12">
             <div class="alert alert-danger" role="alert"
@@ -95,6 +96,7 @@
           <input name="proofInconsistenciesField" ng-hide="true" data-ng-model="fd">
           <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd">
           <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd">
+          <input name="passingApplicantsErrorField" ng-hide="true" data-ng-model="fd">
           <div role="tabpanel" class="tab-pane">
             <div class="col-sm-12 ToolbarContainer">
               <label ng-if="examinationViewCtrl.data.submission.examinationLockedBy"><span>Export durch
@@ -196,34 +198,50 @@
             </div>
           </div>
 
-          <div class="col-sm-12 col-md-6 abstand3">
-            <div class="form-group zuschlag">
-              <label for="minGrade">Mindestnote</label><span class="mandatory"
-                ng-if="examinationViewCtrl.isMindestnoteAndMaximalnoteMandatory()">*</span> <input class="form-control"
-                id="minGrade" name="minGrade" data-ng-model="examinationViewCtrl.examination.minGrade" data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
-								                  || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
-								                  || examinationViewCtrl.isFormDisabled()" type="number" step=".01"
-                ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
-                ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
-                ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
-                ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+          <div class="col-sm-12 col-md-12 abstand3">
+            <div class="col-sm-12 col-md-6">
+              <div class="form-group zuschlag">
+                <label for="minGrade">Mindestnote</label><span class="mandatory"
+                  ng-if="examinationViewCtrl.isMindestnoteAndMaximalnoteMandatory()">*</span> <input
+                  class="form-control" id="minGrade" name="minGrade"
+                  data-ng-model="examinationViewCtrl.examination.minGrade" data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
+                                    || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+                                    || examinationViewCtrl.isFormDisabled()" type="number" step=".01"
+                  ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+              </div>
+
+              <div class="form-group zuschlag" ng-if="examinationViewCtrl.isProcessSelective">
+                <label for="passingApplicants">Anzahl der Bewerber</label>
+                <input class="form-control" id="passingApplicants" name="passingApplicants"
+                  data-ng-model="examinationViewCtrl.examination.passingApplicants" data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
+                                    || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+                                    || examinationViewCtrl.isFormDisabled()" type="number" step="1"
+                  ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+              </div>
             </div>
 
-          </div>
-          <div class="col-sm-12 col-md-6">
-            <div class="form-group zuschlag">
-              <label for="maxGrade">Maximalnote</label><span class="mandatory"
-                ng-if="examinationViewCtrl.isMindestnoteAndMaximalnoteMandatory()">*</span> <input class="form-control"
-                id="maxGrade" name="maxGrade" data-ng-model="examinationViewCtrl.examination.maxGrade" data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
-								                  || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
-								                  || examinationViewCtrl.isFormDisabled()" type="number" step=".01"
-                ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
-                ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
-                ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
-                ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+            <div class="col-sm-12 col-md-6">
+              <div class="form-group zuschlag">
+                <label for="maxGrade">Maximalnote</label><span class="mandatory"
+                  ng-if="examinationViewCtrl.isMindestnoteAndMaximalnoteMandatory()">*</span> <input
+                  class="form-control" id="maxGrade" name="maxGrade"
+                  data-ng-model="examinationViewCtrl.examination.maxGrade" data-ng-disabled="examinationViewCtrl.data.submission.examinationIsLocked || !examinationViewCtrl.secFormalAuditEdit
+                                    || examinationViewCtrl.currentStatus >= examinationViewCtrl.status.SUITABILITY_AUDIT_COMPLETED
+                                    || examinationViewCtrl.isFormDisabled()" type="number" step=".01"
+                  ng-change="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-blur="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-keyup="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)"
+                  ng-keydown="examinationViewCtrl.validateNumberInputForMinus(examinationViewCtrl.examinationForm)">
+              </div>
             </div>
           </div>
-          <div class="col-sm-12 col-md-12 btn-bar"></div>
+
           <div class="col-sm-12">
             <div class="panel-group" role="tablist" aria-multiselectable="true">
               <div accordion-group class="panel panel-default">

@@ -21,25 +21,25 @@
 
   angular // eslint-disable-line no-undef
     .module("submiss.tasks")
-    .controller("TasksViewController", TasksViewController).filter(
-      'customUserDateFilter',
-      function ($filter) {
-        return function (values, dateValue, createdOn) {
-          var filtered = [];
-          if (typeof values != 'undefined' && typeof dateValue != 'undefined') {
-            angular.forEach(values, function (value) {
-              if (createdOn) {
-                if (value.createdOn != null && $filter('date')(value.createdOn,
-                    'dd.MM.yyyy').indexOf($filter('date')(dateValue, 'dd.MM.yyyy')) >=
-                  0) {
-                  filtered.push(value);
-                }
+    .controller("TasksViewController", TasksViewController)
+    .filter('customUserDateFilter', function ($filter) {
+      return function (values, dateValue, createdOn) {
+        var filtered = [];
+        if (typeof values != 'undefined' && typeof dateValue != 'undefined') {
+          angular.forEach(values, function (value) {
+            if (createdOn) {
+              if (value.createdOn != null && $filter('date')(value.createdOn,
+                  'dd.MM.yyyy').indexOf($filter('date')(dateValue, 'dd.MM.yyyy')) >=
+                0) {
+                filtered.push(value);
               }
-            });
-          }
-          return filtered;
+            }
+          });
         }
-      }).filter("customDescriptionFilter", function ($filter) {
+        return filtered;
+      }
+    })
+    .filter('customDescriptionFilter', function ($filter) {
       return function (values, filterObj) {
         var filtered = [];
         if (typeof values != 'undefined' && typeof filterObj != 'undefined') {
@@ -48,8 +48,8 @@
               var translatedTest = $filter('translate')(value.description,
                 filterObj);
               translatedTest = translatedTest.replace('XY',
-                value.userAutoAssigned);
-              if (translatedTest.indexOf(filterObj.description) > -1) {
+                value.userAutoAssigned).toLowerCase();
+              if (translatedTest.indexOf(filterObj.description.toLowerCase()) > -1) {
                 filtered.push(value);
               }
             }

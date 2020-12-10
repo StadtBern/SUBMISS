@@ -236,22 +236,33 @@
         </div>
 
         <div class="form-group">
-          <label for="constructionPermit">Baubewilligung</label> <select ui-select2="{allowClear: true}"
-            id="constructionPermit" name="constructionPermit"
-            data-ng-model="submissionCreateCtr.submission.constructionPermit" disabled>
-            <option></option>
-            <option value="EXISTING" translate>EXISTING</option>
-            <option value="PENDING" translate>PENDING</option>
-            <option value="NON_EXISTING" translate>NON_EXISTING</option>
-          </select>
+          <label for="constructionPermit">Baubewilligung</label>
+          <ui-select name="constructionPermit" id="constructionPermit"
+                     ng-model="submissionCreateCtr.submission.constructionPermit"
+                     ng-disabled="true" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span ng-bind="$select.selected.label"></span>
+            </ui-select-match>
+            <ui-select-choices
+              repeat="constructionPermit.value as constructionPermit in submissionCreateCtr.constructionPermitOptions">
+              <span ng-bind="constructionPermit.label"></span>
+            </ui-select-choices>
+          </ui-select>
         </div>
         <div class="form-group">
-          <label for="loanApproval">Kreditbewilligung</label> <select ui-select2="{allowClear: true}" id="loanApproval"
-            name="loanApproval" data-ng-model="submissionCreateCtr.submission.loanApproval" disabled>
-            <option></option>
-            <option value="EXISTING">vorhanden</option>
-            <option value="PENDING">ausstehend</option>
-          </select>
+          <label for="loanApproval">Kreditbewilligung</label>
+          <ui-select name="loanApproval" id="loanApproval"
+                     ng-model="submissionCreateCtr.submission.loanApproval"
+                     ng-disabled="true" theme="select2">
+            <ui-select-match allow-clear="true">
+              <span ng-bind="$select.selected.label"></span>
+            </ui-select-match>
+            <ui-select-choices
+              repeat="loanApproval.value as loanApproval in submissionCreateCtr.loanApprovalOptions"
+              translate>
+              <span ng-bind="loanApproval.label"></span>
+            </ui-select-choices>
+          </ui-select>
         </div>
         <div class="form-group"
           ng-class="{'has-error': !submissionCreateCtr.submissionForm.publicationDateAward.$valid || submissionCreateCtr.invalidPublicationDateAward}">

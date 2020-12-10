@@ -585,21 +585,12 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
 
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SubmissionService#getSubmissionById(java.lang.
-   * String)
-   */
   @Override
   public SubmissionDTO getSubmissionById(String id) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method getSubmissionById, Parameters: id: {0}",
       id);
-
-    security.isPermittedOperationForUser(getUserId(),
-      SecurityOperation.TENDER_VIEW.getValue(), id);
 
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, id);
     SubmissionDTO submissionDTO = SubmissionDTOMBasicMapper.INSTANCE
@@ -2075,7 +2066,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED.getValue(),
         AuditMessages.SUITABILITY_AUDIT_CLOSE.name(), null, LookupValues.EXTERNAL_LOG,
         getUserId());
-      updateIsExcludedFromProcess(OfferDTOWithCriteriaMapper.INSTANCE.toOffer(offerDTOs));
+      updateIsExcludedFromProcess(OfferDTOWithCriteriaMapper.INSTANCE.toOffer(offerDTOs), null);
     }
     if (submissionEntity.getProcess().equals(Process.SELECTIVE) && submissionEntity.getStatus()
       .compareTo(TenderStatus.FORMAL_EXAMINATION_SUITABILITY_AUDIT_STARTED.getValue()) == 0) {
@@ -2109,7 +2100,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
             getUserId());
         }
       }
-      updateIsExcludedFromProcess(OfferDTOWithCriteriaMapper.INSTANCE.toOffer(offerDTOs));
+      updateIsExcludedFromProcess(OfferDTOWithCriteriaMapper.INSTANCE.toOffer(offerDTOs), submissionEntity.getPassingApplicants());
     }
     Date deadline = null;
     if (submissionEntity.getProcess().equals(Process.SELECTIVE)) {
@@ -2224,13 +2215,17 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /**
    * Update is excluded from process.
    *
-   * @param offerEntities the offer entities
+   * @param offerEntities     the offer entities
+   * @param passingApplicants the number of passing applicants to the 2nd stage of Selektiv
    */
-  private void updateIsExcludedFromProcess(List<OfferEntity> offerEntities) {
+  private void updateIsExcludedFromProcess(List<OfferEntity> offerEntities, Integer passingApplicants) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method updateIsExcludedFromProcess, Parameters: offerCriterionEntities: {0}",
-      offerEntities);
+      "Executing method updateIsExcludedFromProcess, Parameters: offerCriterionEntities: {0}, "
+        + "passingApplicants: {1}",
+      new Object[]{offerEntities, passingApplicants});
+
+    int countApplicants = 0;
 
     for (OfferEntity offerEntity : offerEntities) {
       if ((offerEntity.getSubmittent().getExistsExclusionReasons() != null
@@ -2261,6 +2256,18 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         // to false.
         offerEntity.setExcludedFirstLevel(Boolean.FALSE);
         em.merge(offerEntity);
+      }
+      // If process is Selektiv we should also check the number of passing applicants.
+      // If passingApplicants is not null we have to count the applicants who pass to the 2nd stage.
+      // If the applicants who pass to the 2nd stage are greater than the number of passing applicants
+      // we pass the applicants who match the number of passing applicants and exclude the rest.
+      if (offerEntity.getSubmittent().getSubmissionId().getProcess().equals(Process.SELECTIVE)
+        && offerEntity.getExcludedFirstLevel().equals(Boolean.FALSE) && passingApplicants != null) {
+        countApplicants++;
+        if (countApplicants > passingApplicants) {
+          offerEntity.setExcludedFirstLevel(Boolean.TRUE);
+          em.merge(offerEntity);
+        }
       }
       // If offer is excluded, set award offer criteria score and grade to null.
       for (OfferCriterionEntity offerCriterionEntity : offerEntity.getOfferCriteria()) {

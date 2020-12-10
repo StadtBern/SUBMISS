@@ -80,6 +80,29 @@
       value: true,
       label: 'Ja'
     }];
+    vm.constructionPermitOptions = [{
+      value: "PENDING",
+      label: 'ausstehend'
+    },
+      {
+        value: "NON_EXISTING",
+        label: 'nicht relevant'
+      },
+      {
+        value: "EXISTING",
+        label: 'vorhanden'
+      }
+    ];
+
+    vm.loanApprovalOptions = [{
+      value: "PENDING",
+      label: 'ausstehend'
+    },
+      {
+        value: "EXISTING",
+        label: 'vorhanden'
+      }
+    ];
     vm.moreThanOneError = false;
     vm.publicationDateDirectAwardEnabled = false;
     vm.pmExternalChanged = false;

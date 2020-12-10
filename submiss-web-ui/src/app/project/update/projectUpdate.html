@@ -117,31 +117,46 @@
           data-ng-model="projectUpdateCtr.project.notes" rows="1"></textarea>
       </div>
       <div class="form-group">
-        <label for="constructionPermit">Baubewilligung</label><select ui-select2="{allowClear: true}"
-          id="constructionPermit" name="constructionPermit" data-ng-model="projectUpdateCtr.project.constructionPermit"
-          data-ng-disabled="!projectUpdateCtr.secProjectEdit"
-          data-ng-options="o.value as o.label for o in projectUpdateCtr.constructionPermitOptions" translate>
-          <option></option>
-        </select>
+        <label for="constructionPermit">Baubewilligung</label>
+        <ui-select name="constructionPermit" id="constructionPermit"
+          ng-model="projectUpdateCtr.project.constructionPermit" ng-disabled="!projectUpdateCtr.secProjectEdit"
+          theme="select2">
+          <ui-select-match allow-clear="true">
+            <span ng-bind="$select.selected.label"></span>
+          </ui-select-match>
+          <ui-select-choices
+            repeat="constructionPermit.value as constructionPermit in (projectUpdateCtr.constructionPermitOptions | filter: $select.search)">
+            <span ng-bind="constructionPermit.label"></span>
+          </ui-select-choices>
+        </ui-select>
       </div>
       <div class="form-group">
-        <label for="loanApproval">Kreditbewilligung</label> <select ui-select2="{allowClear: true}" id="gattWto"
-          name="loanApproval" data-ng-model="projectUpdateCtr.project.loanApproval"
-          data-ng-disabled="!projectUpdateCtr.secProjectEdit"
-          data-ng-options="o.value as o.label for o in projectUpdateCtr.loanApprovalOptions" translate>
-          <option></option>
-        </select>
+        <label for="loanApproval">Kreditbewilligung</label>
+        <ui-select name="loanApproval" id="loanApproval" ng-model="projectUpdateCtr.project.loanApproval"
+          ng-disabled="!projectUpdateCtr.secProjectEdit" theme="select2">
+          <ui-select-match allow-clear="true">
+            <span ng-bind="$select.selected.label"></span>
+          </ui-select-match>
+          <ui-select-choices repeat="loanApproval.value as loanApproval in (projectUpdateCtr.loanApprovalOptions | filter: $select.search)">
+            <span ng-bind="loanApproval.label"></span>
+          </ui-select-choices>
+        </ui-select>
       </div>
       <div class="form-group">
-        <label for="gatt">GATT / WTO</label> <select ui-select2="{allowClear: true}" id="gattWto" name="gattWto"
-          data-ng-model="projectUpdateCtr.project.gattWto" data-ng-disabled="!projectUpdateCtr.secProjectEdit"
-          data-ng-options="o.value as o.label for o in projectUpdateCtr.options" translate>
-          <option></option>
-        </select>
+        <label for="gattWto">GATT / WTO</label>
+        <ui-select name="gattWto" id="gattWto" ng-model="projectUpdateCtr.project.gattWto" theme="select2">
+          <ui-select-match allow-clear="true">
+            <span ng-bind="$select.selected.label"></span>
+          </ui-select-match>
+          <ui-select-choices repeat="gattWto.value as gattWto in (projectUpdateCtr.options | filter: $select.search)">
+            <span ng-bind="gattWto.label"></span>
+          </ui-select-choices>
+        </ui-select>
       </div>
     </div>
     <div class="col-sm-12 col-md-6">
-      <button type="submit" class="btn btn-primary" ng-disabled="!(projectUpdateCtr.projectForm.$dirty || projectUpdateCtr.pmExternalChanged)">Speichern</button>
+      <button type="submit" class="btn btn-primary"
+        ng-disabled="!(projectUpdateCtr.projectForm.$dirty || projectUpdateCtr.pmExternalChanged)">Speichern</button>
       <button type="button" class="btn btn-default" data-dismiss="modal"
         ng-click="projectUpdateCtr.closeWindow()">Abbrechen</button>
     </div>

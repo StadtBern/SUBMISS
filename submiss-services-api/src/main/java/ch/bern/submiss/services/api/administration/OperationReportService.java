@@ -85,4 +85,16 @@ public interface OperationReportService {
    * Security check for Operation Report.
    */
   void operationReportSecurityCheck();
+
+  /**
+   * Checks the operation report results number in order to proceed with generating the report.
+   * If report results are greater than maximum results
+   * returns the maximum results,
+   * if report results are 0 returns 0
+   * else returns NULL.
+   *
+   * @param operationReportDTO the operationReportDTO
+   * @return the results
+   */
+  Long proceedToOperationResults(OperationReportDTO operationReportDTO);
 }

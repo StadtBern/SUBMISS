@@ -50,6 +50,10 @@ public class SignatureCopyEntity {
   @Column(name = "CREATE_ON")
   private Timestamp createdOn;
 
+  /** The sort number. */
+  @Column(name = "SORTNUMBER")
+  private Integer sortNumber;
+
   /**
    * Gets the id.
    *
@@ -122,15 +126,16 @@ public class SignatureCopyEntity {
     this.createdOn = createdOn;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  public Integer getSortNumber() {
+    return sortNumber;
+  }
+
+  public void setSortNumber(Integer sortNumber) {
+    this.sortNumber = sortNumber;
+  }
+
   @Override
   public String toString() {
     return "SignatureCopyEntity [id=" + id + ", createdOn=" + createdOn + "]";
   }
-
-
 }

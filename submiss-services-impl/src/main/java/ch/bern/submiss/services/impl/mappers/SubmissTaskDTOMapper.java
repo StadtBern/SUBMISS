@@ -66,7 +66,9 @@ public abstract class SubmissTaskDTOMapper {
       taskDTO.setWorkType(taskDTO.getSubmission().getWorkType().getValue1() + LookupValues.SPACE
         + taskDTO.getSubmission().getWorkType().getValue2());
     }
-    if (taskEntity.getUserAssigned() != null && users.get(taskEntity.getUserAssigned()) != null) {
+
+    if (taskEntity.getUserAssigned() != null && users != null
+      && users.get(taskEntity.getUserAssigned()) != null) {
       UserDTO user = users.get(taskEntity.getUserAssigned());
       taskDTO.setUserAssigned(
         user.getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() +
@@ -76,7 +78,7 @@ public abstract class SubmissTaskDTOMapper {
       taskDTO.setUserAssigned(StringUtils.EMPTY);
     }
 
-    if (taskEntity.getUserAutoAssigned() != null
+    if (taskEntity.getUserAutoAssigned() != null && users != null
       && users.get(taskEntity.getUserAutoAssigned()) != null) {
       taskDTO.setUserAutoAssigned(users.get(taskEntity.getUserAutoAssigned())
         .getAttribute(USER_ATTRIBUTES.FIRSTNAME.getValue()).getData() +
@@ -96,10 +98,12 @@ public abstract class SubmissTaskDTOMapper {
         users.get(taskEntity.getCreatedBy()).getAttribute(USER_ATTRIBUTES.LASTNAME.getValue())
           .getData() + LookupValues.RIGHT_PARENTHESIS);
     }
-    if(taskDTO.getObjectName() == null){
+
+    if (taskDTO.getObjectName() == null) {
       taskDTO.setObjectName(StringUtils.EMPTY);
     }
-    if(taskDTO.getWorkType() == null){
+
+    if (taskDTO.getWorkType() == null) {
       taskDTO.setWorkType(StringUtils.EMPTY);
     }
   }

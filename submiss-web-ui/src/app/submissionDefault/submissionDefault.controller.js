@@ -358,7 +358,7 @@
     /** Function to determine if the submission close button should be activated */
     function disableSubmissionCloseButton() {
       if (vm.secTenderClose) {
-        return canCloseReopenSubmission();
+        return disableCloseReopenSubmissionButtons();
       } else {
         return true;
       }
@@ -367,7 +367,7 @@
     /** Function to determine if the submission reopen button should be activated */
     function disableSubmissionReopenButton() {
       if (vm.secTenderReopen) {
-        return canCloseReopenSubmission();
+        return disableCloseReopenSubmissionButtons();
       } else {
         return true;
       }
@@ -375,13 +375,12 @@
 
     /** Function to determine if the user, which already has permission to close/reopen submission set,
      *  can close/reopen the submission */
-    function canCloseReopenSubmission() {
-      // PL can close the submission only if the process is NEGOTIATED_PROCEDURE
-      // below threshold
+    function disableCloseReopenSubmissionButtons() {
       if (AppService.getLoggedUser().userGroup.name === AppConstants.GROUP.PL) {
-        return !((vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE ||
-            vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION) &&
-          (isOfferAboveThreshold == null || !isOfferAboveThreshold));
+        return (vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE &&
+          isOfferAboveThreshold)
+        ||(vm.data.submission.process === AppConstants.PROCESS.NEGOTIATED_PROCEDURE_WITH_COMPETITION &&
+          vm.data.submission.aboveThreshold !== null && vm.data.submission.aboveThreshold);
       } else {
         return false;
       }

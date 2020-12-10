@@ -14,6 +14,7 @@
 package ch.bern.submiss.services.impl.administration;
 
 import ch.bern.submiss.services.api.administration.SubmissionService;
+import ch.bern.submiss.services.api.administration.UserAdministrationService;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import com.eurodyn.qlack2.fuse.aaa.api.UserService;
 import java.util.ArrayList;
@@ -129,6 +130,9 @@ public class SecurityBean{
 
   @Inject
   private SubmissionService submissionService;
+
+  @Inject
+  private UserAdministrationService userAdministrationService;
 
   /**
    * Verify that the given user has the necessary access rights to perform the given operation, if
@@ -324,13 +328,10 @@ public class SecurityBean{
         resources.add(directorate);
       }
       // and subdirectorates
-      if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-        && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-        List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-          .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split("\\s*,\\s*"));
-        for (String secondaryDepartmentId : secondaryDepartmentIds) {
-          resources.add(secondaryDepartmentId);
-        }
+      List<String> secondaryDepartmentIds = userAdministrationService
+        .getAllSecondaryDepartments(userDTO);
+      for (String secondaryDepartmentId : secondaryDepartmentIds) {
+        resources.add(secondaryDepartmentId);
       }
       for (String resource : resources) {
         // get directorate id from department id
@@ -359,14 +360,12 @@ public class SecurityBean{
         resources.add(department);
       }
       // and subdepartments
-      if (userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()) != null
-        && userDTO.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData() != null) {
-        List<String> secondaryDepartmentIds = Arrays.asList(userDTO
-          .getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getData().split("\\s*,\\s*"));
-        for (String secondaryDepartmentId : secondaryDepartmentIds) {
-          resources.add(secondaryDepartmentId);
-        }
+      List<String> secondaryDepartmentIds = userAdministrationService
+        .getAllSecondaryDepartments(userDTO);
+      for (String secondaryDepartmentId : secondaryDepartmentIds) {
+        resources.add(secondaryDepartmentId);
       }
+
       for (String resource : resources) {
         // find or create resource
         ResourceDTO resourceDTO =
@@ -1141,8 +1140,8 @@ public class SecurityBean{
 
   /**
    *  @param userId
+   * @param operation
    * @param resourceId
-   * @param resource
    */
   private void isResourcePermittedForUser(String userId, String operation,
     String resourceId) {

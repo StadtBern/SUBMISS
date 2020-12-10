@@ -2644,11 +2644,14 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
     String subFormelPreis = getFormelPreis(submission);
     String subFormelOperation = getOperatingCostFormula(submission, offers);
-
+    String operatingCostCriteriumTitle = "";
     String preisCriteriumTitle
       = importedSheet.getRow(HEADING_ROWNUM + 8).getCell(6).getStringCellValue();
-    String operatingCostCriteriumTitle
-      = importedSheet.getRow(HEADING_ROWNUM + 8).getCell(8).getStringCellValue();
+    if(importedSheet
+      .getRow(HEADING_ROWNUM + 8).getCell(8) != null){
+      operatingCostCriteriumTitle
+        = importedSheet.getRow(HEADING_ROWNUM + 8).getCell(8).getStringCellValue();
+    }
     boolean preisOrOperatingCriteriumTitleChanged = false;
     if(!offers.isEmpty()){
       for(OfferCriterionDTO criterion : offers.get(0).getOfferCriteria()){
@@ -9099,7 +9102,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
             // Suitability Notes
           } else if (i == notesCellNum && isTypeSuitability) {
             cell.setCellValue(
-              suitabilityOffers.get(companyIndex).getOffer().getqExSuitabilityNotes());//check
+              suitabilityOffers.get(companyIndex).getOffer().getqExSuitabilityNotes());
           }
           companyIndex++;
           dataColumn += 2;

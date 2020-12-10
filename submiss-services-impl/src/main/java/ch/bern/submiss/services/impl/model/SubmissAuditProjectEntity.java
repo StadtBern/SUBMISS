@@ -15,6 +15,9 @@ package ch.bern.submiss.services.impl.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityResult;
+import javax.persistence.FieldResult;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 
 /**
@@ -22,11 +25,32 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "VW_AUDIT_PROJECT")
+@SqlResultSetMapping(name = "SubmissAuditProjectMapping",
+entities = @EntityResult(entityClass = SubmissAuditProjectEntity.class,
+fields = {
+  @FieldResult(name = "id", column = "id"),
+  @FieldResult(name = "userName", column = "userName"),
+  @FieldResult(name = "shortDescription", column = "shortDescription"),
+  @FieldResult(name = "createdOn", column = "createdOn"),
+  @FieldResult(name = "resourceKey", column = "resource_key"),
+  @FieldResult(name = "translation", column = "translation"),
+  @FieldResult(name = "tenantId", column = "tenant_id"),
+  @FieldResult(name = "objectName", column = "objectName"),
+  @FieldResult(name = "tenderDescription", column = "tender_description"),
+  @FieldResult(name = "projectName", column = "projectName"),
+  @FieldResult(name = "workType", column = "workType"),
+  @FieldResult(name = "reason", column = "reason"),
+  @FieldResult(name = "referenceId", column = "reference_id")
+}))
 public class SubmissAuditProjectEntity extends SubmissAuditEntity {
 
   /** The object name. */
   @Column(name = "objectName")
   private String objectName;
+
+  /** The tender description. */
+  @Column(name = "tender_description")
+  private String tenderDescription;
 
   /** The project name. */
   @Column(name = "projectName")
@@ -136,6 +160,11 @@ public class SubmissAuditProjectEntity extends SubmissAuditEntity {
     this.referenceId = referenceId;
   }
 
+  public String getTenderDescription() {
+    return tenderDescription;
+  }
 
-
+  public void setTenderDescription(String tenderDescription) {
+    this.tenderDescription = tenderDescription;
+  }
 }

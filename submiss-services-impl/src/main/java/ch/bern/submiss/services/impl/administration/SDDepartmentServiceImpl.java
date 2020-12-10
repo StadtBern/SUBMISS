@@ -172,7 +172,8 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
 
     DepartmentHistoryEntity departmentHistory =
       new JPAQueryFactory(em).select(departmentHistoryEntity).from(departmentHistoryEntity)
-        .where(departmentHistoryEntity.departmentId.id.eq(departmentId)).fetchFirst();
+        .where(departmentHistoryEntity.departmentId.id.eq(departmentId)
+          .and(departmentHistoryEntity.toDate.isNull())).fetchFirst();
     return DepartmentHistoryMapper.INSTANCE
       .toDepartmentHistoryDTO(departmentHistory, cacheBean.getActiveDirectorateHistorySD());
   }
@@ -227,11 +228,6 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
       .toDepartmentHistoryDTO(departmentHistory, cacheBean.getActiveDirectorateHistorySD());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see ch.bern.submiss.services.api.administration.SDDepartmentService#readAll()
-   */
   @Override
   public List<DepartmentHistoryDTO> readAll() {
 
@@ -239,7 +235,8 @@ public class SDDepartmentServiceImpl extends BaseService implements SDDepartment
 
     JPAQuery<DepartmentHistoryEntity> query = new JPAQuery<>(em);
     List<DepartmentHistoryEntity> departmentHistoryEntities = query.select(departmentHistoryEntity)
-      .from(departmentHistoryEntity).orderBy(departmentHistoryEntity.name.asc()).fetch();
+      .from(departmentHistoryEntity).where(departmentHistoryEntity.toDate.isNull())
+      .orderBy(departmentHistoryEntity.name.asc()).fetch();
 
     return DepartmentHistoryMapper.INSTANCE
       .toDepartmentHistoryDTO(departmentHistoryEntities, cacheBean.getActiveDirectorateHistorySD());

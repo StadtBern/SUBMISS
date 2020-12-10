@@ -93,10 +93,14 @@
       ncyBreadcrumb: {
         label: '{{submissionViewCtr.data.submission.workType.value1}} {{submissionViewCtr.data.submission.workType.value2}}',
         parent: function ($rootScope) {
-          if ($rootScope.$previousState === 'projectSubmissionsView' || $rootScope.$previousState === 'projectSubmissionsView.from.Offers' ||
-            $rootScope.$previousState === 'project.view') {
+          if ($rootScope.$previousState === 'projectSubmissionsView'
+            || $rootScope.$previousState
+            === 'projectSubmissionsView.from.Offers'
+            || $rootScope.$previousState === 'project.view'
+            || $rootScope.$previousState === 'project.search'
+            || !$rootScope.$previousState) {
             return 'project.view';
-          } else if ($rootScope.$previousState === 'project.search' || !$rootScope.$previousState) {
+          } else{
             return 'project.search';
           }
         }

@@ -327,20 +327,20 @@
       var fLabel = 'F-Aufträge exkl.MWST';
 
       if (isColumnSelected(soLabel)) {
-        amount = 'SO-Aufträge exkl.MWST' + ': ' + formatAmount(vm.soSum);
+        amount = 'SO-Aufträge exkl.MWST' + ': ' + vm.reportResults.soSum;
       }
       if (isColumnSelected(eLabel)) {
         if (isColumnSelected(soLabel)) {
-          amount = amount + '		' + eLabel + ': ' + formatAmount(vm.eSum);
+          amount = amount + '		' + eLabel + ': ' + vm.reportResults.eSum;
         } else {
-          amount = eLabel + ': ' + formatAmount(vm.eSum);
+          amount = eLabel + ': ' + vm.reportResults.eSum;
         }
       }
       if (isColumnSelected(fLabel)) {
         if (isColumnSelected(soLabel) || isColumnSelected(eLabel)) {
-          amount = amount + '		' + fLabel + ': ' + formatAmount(vm.fSum);
+          amount = amount + '		' + fLabel + ': ' + vm.reportResults.fSum;
         } else {
-          amount = fLabel + ': ' + formatAmount(vm.fSum);
+          amount = fLabel + ': ' + vm.reportResults.fSum;
         }
       }
       vm.amount = amount;

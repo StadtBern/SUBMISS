@@ -37,6 +37,8 @@ import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.Template;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.CompanyDTO;
+import ch.bern.submiss.services.api.dto.ExclusionReasonDTO;
+import ch.bern.submiss.services.api.dto.LegalHearingExclusionDTO;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.ProcedureHistoryDTO;
@@ -74,6 +76,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -181,6 +184,12 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    */
   @Inject
   private AuditBean audit;
+
+  /**
+   * The Legal Hearing Terminate Service Impl.
+   */
+  @Inject
+  private LegalHearingTerminateImpl legalHearingTerminateImpl;
 
   /*
    * (non-Javadoc)
@@ -939,8 +948,8 @@ public class OfferServiceImpl extends BaseService implements OfferService {
 
     // Initialize the commission procurement proposal values.
     SubmissionEntity submissionEntity = initializeCommissionProcurementProposalValues(
-      submissionId);
-    updateTresholdAndGeko(submissionEntity, offerEntities);
+      submissionId, offerEntities);
+
     em.merge(submissionEntity);
     // Use submission id from offers to update submission status.
     submissionService.updateSubmissionStatus(submissionId,
@@ -1000,7 +1009,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       em.merge(offer);
     }
     // Initialize the commission procurement proposal values.
-    em.merge(initializeCommissionProcurementProposalValues(submissionId));
+    em.merge(initializeCommissionProcurementProposalValues(submissionId, null));
     // Update submission status.
     submissionService.updateSubmissionStatus(submissionId,
       TenderStatus.AWARD_EVALUATION_CLOSED.getValue(),
@@ -1011,8 +1020,10 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    * Initialize submission values for the commission procurement proposal.
    *
    * @param submissionId the submission id
+   * @param offerEntities the offer entities
    */
-  private SubmissionEntity initializeCommissionProcurementProposalValues(String submissionId) {
+  private SubmissionEntity initializeCommissionProcurementProposalValues(String submissionId,
+    List<OfferEntity> offerEntities) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method initializeCommissionProcurementProposalValues, Parameters: "
@@ -1038,13 +1049,19 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         submissionDTO.setCommissionProcurementProposalReservation(
           CommissionProcurementProposalReservation.RESERVATION_NONE.getValue());
       }
-      if (submissionDTO.getAboveThreshold() != null
-        && (submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE)
-        || submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))
-        && submissionDTO.getAboveThreshold()) {
-        // Initializing the commission procurement proposal pre-remarks value.
-        submissionDTO.setCommissionProcurementProposalPreRemarks(
-          submissionDTO.getReasonFreeAward().getValue2());
+      if (submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE)
+        || submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
+        if (offerEntities != null) {
+          // First we have to check if offer is above Threshold
+          updateTresholdAndGeko(submissionDTO, offerEntities);
+        }
+        if (submissionDTO.getAboveThreshold() != null && submissionDTO.getAboveThreshold()) {
+          // Initializing the commission procurement proposal pre-remarks value.
+          submissionDTO.setCommissionProcurementProposalPreRemarks(
+            submissionDTO.getReasonFreeAward().getValue2());
+        }
+      } else {
+        submissionDTO.setCommissionProcurementProposalPreRemarks("Keine");
       }
       // Initializing reason given value of submission.
       if (submissionDTO.getIsServiceTender() != null && submissionDTO.getIsServiceTender()) {
@@ -1057,23 +1074,62 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       // Initializing the suitability audit text value.
       String suitabilityAuditText = "";
       List<OfferDTO> offerDTOs = getOffersBySubmission(submissionId);
+      // Fetch the LegalHearingExclusionDTOs that contain the Exclusion Reasons
+      List<LegalHearingExclusionDTO> legalHearingExclusionDTOs
+        = legalHearingTerminateImpl.getExcludedSubmittents(submissionId);
       if (submissionDTO.getProcess().equals(Process.SELECTIVE)) {
         // In case of selective process.
+        offerloop:
         for (OfferDTO offerDTO : offerDTOs) {
+          for (LegalHearingExclusionDTO legalHearingExclusionDto : legalHearingExclusionDTOs) {
+            if (offerDTO.getSubmittent().getExistsExclusionReasons() != null
+              && offerDTO.getSubmittent().getExistsExclusionReasons()
+              && legalHearingExclusionDto.getSubmittent().getId()
+              .equals(offerDTO.getSubmittent().getId())) {
+              suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText,
+                legalHearingExclusionDto);
+              // If a legalHearingExclusionDto exists for this offer we need to continue with the
+              // next offer since the suitabilityAuditText is already created for this offer.
+              continue offerloop;
+            }
+          }
+          // If no legalHearingExclusionDTOs exist for this offer we still need to check for
+          // Nachweise nicht erbracht and MUSS-Kriterien nicht erfüllt as exclusion reasons.
           if (offerDTO.getSubmittent().getExistsExclusionReasons() != null
             && offerDTO.getSubmittent().getExistsExclusionReasons()) {
-            suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText);
+            suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText, null);
           }
         }
-
       } else {
         // In case of any other process.
+        offerloop:
         for (OfferDTO offerDTO : offerDTOs) {
-          if (offerDTO.getqExExaminationIsFulfilled() != null
-            && !offerDTO.getqExExaminationIsFulfilled()) {
-            suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText);
+          for (LegalHearingExclusionDTO legalHearingExclusionDto : legalHearingExclusionDTOs) {
+            if (((offerDTO.getqExExaminationIsFulfilled() != null && !offerDTO
+              .getqExExaminationIsFulfilled())
+              || (submissionDTO.getProcess().equals(Process.NEGOTIATED_PROCEDURE) || submissionDTO
+              .getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))
+              && offerDTO.getSubmittent().getExistsExclusionReasons() != null
+              && offerDTO.getSubmittent().getExistsExclusionReasons())
+              && legalHearingExclusionDto.getSubmittent().getId()
+              .equals(offerDTO.getSubmittent().getId())) {
+              suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText,
+                legalHearingExclusionDto);
+              // If a legalHearingExclusionDto exists for this offer we need to continue with the
+              // next offer since the suitabilityAuditText is already created for this offer.
+              continue offerloop;
+            }
+          }
+          // If no legalHearingExclusionDTOs exist for this offer we still need to check for
+          // Nachweise nicht erbracht and MUSS-Kriterien nicht erfüllt as exclusion reasons.
+          if (offerDTO.getSubmittent().getExistsExclusionReasons() != null
+            && offerDTO.getSubmittent().getExistsExclusionReasons()) {
+            suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText, null);
           }
         }
+      }
+      if (suitabilityAuditText.isEmpty()) {
+        suitabilityAuditText = "Keiner";
       }
       submissionDTO.setCommissionProcurementProposalSuitabilityAuditText(suitabilityAuditText);
       return SubmissionMapper.INSTANCE.toSubmission(submissionDTO);
@@ -1085,9 +1141,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    *
    * @param offerDTO the offer DTO
    * @param oldText the old text
+   * @param legalHearingExclusionDto the Legal Hearing Exclusion DTO
    * @return the string
    */
-  private String setSuitabiltityAuditText(OfferDTO offerDTO, String oldText) {
+  private String setSuitabiltityAuditText(OfferDTO offerDTO, String oldText,
+    LegalHearingExclusionDTO legalHearingExclusionDto) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method setSuitabiltityAuditText, Parameters: offerDTO: {0}, "
@@ -1101,7 +1159,36 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       bld.append("; " + offerDTO.getSubmittent().getSubmittentNameArgeSub() + " (");
     }
     if (offerDTO.getSubmittent().getExistsExclusionReasons()) {
-      bld.append("Ausschlussgründe Art. 24 ÖBV");
+      if(legalHearingExclusionDto != null){
+        List<ExclusionReasonDTO> exclusionReasonDTOs = new ArrayList<>();
+        exclusionReasonDTOs.addAll(legalHearingExclusionDto.getExclusionReasons());
+        List<ExclusionReasonDTO> exclusionReasons = new ArrayList<>();
+        for(ExclusionReasonDTO exclusionReasonDTO : exclusionReasonDTOs){
+          if(exclusionReasonDTO.getReasonExists()){
+            exclusionReasons.add(exclusionReasonDTO);
+          }
+        }
+        // Concat the all Lit. numbering of exlusion reasons in text string
+        if(!exclusionReasons.isEmpty()){
+          bld.append("Ausschlussgründe Art. 24 Abs. 1 Lit. ");
+          Collections.sort(exclusionReasons, ComparatorUtil.sortLegalHearingExclusionDTOsByLit);
+          int counter = 0;
+          for(ExclusionReasonDTO exclusionReasonDTO : exclusionReasons){
+            String lit = exclusionReasonDTO.getExclusionReason().getValue1();
+            bld.append(lit.substring(lit.length() - 1));
+            if(counter < exclusionReasons.size() - 2){
+              bld.append(", ");
+            }else if(counter < exclusionReasons.size() - 1){
+              bld.append(" und ");
+            }
+            counter++;
+          }
+        }else{
+          bld.append("Ausschlussgründe Art. 24 ÖBV");
+        }
+      }else{
+        bld.append("Ausschlussgründe Art. 24 ÖBV");
+      }
     }
     if (!offerDTO.getSubmittent().getFormalExaminationFulfilled()) {
       if (offerDTO.getSubmittent().getExistsExclusionReasons()) {
@@ -1183,23 +1270,23 @@ public class OfferServiceImpl extends BaseService implements OfferService {
   /**
    * Update and get threshold.
    *
-   * @param submissionId the submission id
+   * @param submissionDto the submission DTO
    * @param offerEntities the offer entities
    */
-  private void updateTresholdAndGeko(SubmissionEntity submissionEntity, List<OfferEntity> offerEntities) {
+  private void updateTresholdAndGeko(SubmissionDTO submissionDto, List<OfferEntity> offerEntities) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateTresholdAndGeko, Parameters: submissionEntity: {0}, "
         + "offerEntities: {1}",
-      new Object[]{submissionEntity, offerEntities});
+      new Object[]{submissionDto, offerEntities});
     /*
      * Get a procedure history entity so to compare the value with the max Offer afterwards. Process
      * must be the next step of Freihandiges verfarhen(process: Negotiated Procedure)
+     * Do not touch this code, it works!
      */
     ProcedureHistoryDTO thresholdEntity = procedureService.readProcedure(
-      submissionEntity.getProcessType().getId(),
-      Process.INVITATION,
-      submissionEntity.getProject().getTenant().getId());
+      submissionDto.getProcessType().getMasterListValueId().getId(), Process.INVITATION,
+      submissionDto.getProject().getTenant().getId());
 
     for (OfferEntity offerEntity : offerEntities) {
       if (thresholdEntity != null) {
@@ -1209,13 +1296,13 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         if (offerEntity.getAmount() != null
           && (offerEntity.getAmount().compareTo(tresholdValue)) == 1
           && ((offerEntity.getSubmittent().getSubmissionId().getProcess()
-          == Process.NEGOTIATED_PROCEDURE) || submissionEntity
+          == Process.NEGOTIATED_PROCEDURE) || submissionDto
           .getProcess() == Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
-          submissionEntity.setAboveThreshold(true);
+          submissionDto.setAboveThreshold(true);
           //Bug 13233 - Freihändiges Verfahren oberhalb Schwellenwert und GeKo
-          if (!submissionEntity.getIsGekoEntry()) {
-            submissionEntity.setIsGekoEntry(true);
-            submissionEntity.setIsGekoEntryByManualAward(true);
+          if (!submissionDto.getIsGekoEntry()) {
+            submissionDto.setIsGekoEntry(true);
+            submissionDto.setIsGekoEntryByManualAward(true);
           }
         }
       }

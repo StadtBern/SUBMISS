@@ -60,7 +60,6 @@ import ch.bern.submiss.services.impl.model.ProjectEntity;
 import ch.bern.submiss.services.impl.model.QMasterListEntity;
 import ch.bern.submiss.services.impl.model.QMasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.QSignatureCopyEntity;
-import ch.bern.submiss.services.impl.model.QSignatureProcessTypeEntitledEntity;
 import ch.bern.submiss.services.impl.model.QSignatureProcessTypeEntity;
 import ch.bern.submiss.services.impl.model.SignatureCopyEntity;
 import ch.bern.submiss.services.impl.model.SignatureProcessTypeEntitledEntity;
@@ -82,6 +81,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -264,9 +264,9 @@ public class SDServiceImpl extends BaseService implements SDService {
   /**
    * Retrieve signature.
    *
-   * @param departmentId the department id
+   * @param departmentId  the department id
    * @param directorateId the directorate id
-   * @param process the process
+   * @param process       the process
    * @return the signature process type DTO
    */
   @Override
@@ -280,6 +280,7 @@ public class SDServiceImpl extends BaseService implements SDService {
 
     QSignatureProcessTypeEntity qSignatureProcessTypeEntity =
       QSignatureProcessTypeEntity.signatureProcessTypeEntity;
+
     SignatureProcessTypeDTO signatureProcessTypeDTO =
       SignatureProcessTypeDTOMapper.INSTANCE.toSignatureProcessTypeDTO(new JPAQueryFactory(em)
         .select(qSignatureProcessTypeEntity).from(qSignatureProcessTypeEntity)
@@ -287,8 +288,9 @@ public class SDServiceImpl extends BaseService implements SDService {
           qSignatureProcessTypeEntity.signature.directorate.id.eq(directorateId),
           (qSignatureProcessTypeEntity.signature.department.id.eq(departmentId)))
         .fetchOne(), new CycleAvoidingMappingContext());
+
     sortSignaturesBySortNumber(signatureProcessTypeDTO);
-    return sortSignaturesBySortNumber(signatureProcessTypeDTO);
+    return signatureProcessTypeDTO;
   }
 
   /**
@@ -434,6 +436,8 @@ public class SDServiceImpl extends BaseService implements SDService {
         }
       }
     }
+    // Replace password with **** in Settings
+    replacePassword(type, typeDTOs);
     // Sort master list type data accordingly.
     if (type.equals(CategorySD.CANCEL_REASON.getValue())
       || type.equals(CategorySD.EXCLUSION_CRITERION.getValue())) {
@@ -442,6 +446,21 @@ public class SDServiceImpl extends BaseService implements SDService {
       Collections.sort(typeDTOs, ComparatorUtil.sortMasterListTypeDataByDescription);
     }
     return typeDTOs;
+  }
+
+  /**
+   * Replace password with ****
+   *
+   * @param type the type
+   * @param typeDTOs the typeDTOs
+   */
+  private void replacePassword(String type, List<MasterListTypeDataDTO> typeDTOs) {
+    if (type.equals(CategorySD.SETTINGS.getValue())) {
+      typeDTOs.stream().filter(masterListTypeDataDTO -> masterListTypeDataDTO.getShortCode()
+        .equals(ShortCode.S14.toString()))
+        .forEach(masterListTypeDataDTO -> masterListTypeDataDTO
+          .setAddedDescription(LookupValues.PASSWORD_ENCRYPTED));
+    }
   }
 
   /**
@@ -792,29 +811,19 @@ public class SDServiceImpl extends BaseService implements SDService {
    * @param signatureProcessTypeDTO the signature process type DTO
    */
   @Override
-  public Set<ValidationError> updateSignatureProcessEntitled(SignatureProcessTypeDTO signatureProcessTypeDTO) {
+  public void updateSignatureProcessEntitled(SignatureProcessTypeDTO signatureProcessTypeDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSignatureProcessEntitled, Parameters: "
         + "signatureProcessTypeDTO: {0}",
       signatureProcessTypeDTO);
 
-    Set<ValidationError> optimisticLockErrors = new HashSet<>();
-
     QSignatureProcessTypeEntity qSignatureProcessTypeEntity =
       QSignatureProcessTypeEntity.signatureProcessTypeEntity;
-    QSignatureProcessTypeEntitledEntity qsignatureProcessTypeEntitledEntity =
-      QSignatureProcessTypeEntitledEntity.signatureProcessTypeEntitledEntity;
 
     SignatureProcessTypeEntity sPtE = new JPAQueryFactory(em).select(qSignatureProcessTypeEntity)
       .from(qSignatureProcessTypeEntity)
       .where(qSignatureProcessTypeEntity.id.eq(signatureProcessTypeDTO.getId())).fetchOne();
-
-    List<SignatureProcessTypeEntitledEntity> sPTEentities = new JPAQueryFactory(em)
-      .select(qsignatureProcessTypeEntitledEntity).from(qsignatureProcessTypeEntitledEntity)
-      .where(
-        qsignatureProcessTypeEntitledEntity.processType.id.eq(signatureProcessTypeDTO.getId()))
-      .fetch();
 
     /*
      * Check for optimistic locking.
@@ -828,15 +837,18 @@ public class SDServiceImpl extends BaseService implements SDService {
      * If createdOn is after requestedOn, another user has created a signature
      * and an optimistic lock error should be shown.
      */
-    if (!sPTEentities.isEmpty() && signatureProcessTypeDTO.getRequestedOn() != null
-      && sPTEentities.get(0).getCreatedOn().after(signatureProcessTypeDTO.getRequestedOn())) {
-      optimisticLockErrors
-        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
-      return optimisticLockErrors;
+    if (sPtE != null && sPtE.getSignatureProcessTypeEntitled() != null && !sPtE
+      .getSignatureProcessTypeEntitled().isEmpty()
+      && signatureProcessTypeDTO.getRequestedOn() != null
+      && sPtE.getSignatureProcessTypeEntitled().get(0).getCreatedOn()
+      .after(signatureProcessTypeDTO.getRequestedOn())) {
+      throw new OptimisticLockException();
     }
 
-    deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtE, sPTEentities, signatureProcessTypeDTO);
+    deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtE,
+      signatureProcessTypeDTO.getSignatureProcessTypeEntitled());
 
+    // Update also the connected signature types
     if (signatureProcessTypeDTO.getProcess().getValue().equals(Process.SELECTIVE.getValue())) {
       SignatureProcessTypeEntity sPtEOff =
         new JPAQueryFactory(em).select(qSignatureProcessTypeEntity)
@@ -846,12 +858,8 @@ public class SDServiceImpl extends BaseService implements SDService {
               .eq(signatureProcessTypeDTO.getSignature().getDepartment().getId())))
           .fetchOne();
 
-      List<SignatureProcessTypeEntitledEntity> sPTEentitiesOpen = new JPAQueryFactory(em)
-        .select(qsignatureProcessTypeEntitledEntity).from(qsignatureProcessTypeEntitledEntity)
-        .where(qsignatureProcessTypeEntitledEntity.processType.eq(sPtEOff)).fetch();
-
-      deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtEOff, sPTEentitiesOpen,
-        signatureProcessTypeDTO);
+      deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtEOff,
+        signatureProcessTypeDTO.getSignatureProcessTypeEntitled());
 
     } else if (signatureProcessTypeDTO.getProcess()
       .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)) {
@@ -863,49 +871,57 @@ public class SDServiceImpl extends BaseService implements SDService {
               .eq(signatureProcessTypeDTO.getSignature().getDepartment().getId())))
           .fetchOne();
 
-      List<SignatureProcessTypeEntitledEntity> sPTEentitiesNpro = new JPAQueryFactory(em)
-        .select(qsignatureProcessTypeEntitledEntity).from(qsignatureProcessTypeEntitledEntity)
-        .where(qsignatureProcessTypeEntitledEntity.processType.eq(sPtENpro)).fetch();
-
-      deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtENpro, sPTEentitiesNpro,
-        signatureProcessTypeDTO);
+      deleteOldAndInsertNewSignatureProcessTypeEntitled(sPtENpro,
+        signatureProcessTypeDTO.getSignatureProcessTypeEntitled());
     }
-    return optimisticLockErrors;
   }
 
   /**
    * Delete old and insert new signature process type entitled.
    *
-   * @param sPtE the s pt E
-   * @param sPTEentities the s PT eentities
-   * @param signatureProcessTypeDTO the signature process type DTO
+   * @param signatureProcessTypeEntity       the signature process type entity
+   * @param signatureProcessTypeEntitledDTOs the signature process type entitled DTOs
    */
-  private void deleteOldAndInsertNewSignatureProcessTypeEntitled(SignatureProcessTypeEntity sPtE,
-    List<SignatureProcessTypeEntitledEntity> sPTEentities,
-    SignatureProcessTypeDTO signatureProcessTypeDTO) {
+  private void deleteOldAndInsertNewSignatureProcessTypeEntitled(
+    SignatureProcessTypeEntity signatureProcessTypeEntity,
+    List<SignatureProcessTypeEntitledDTO> signatureProcessTypeEntitledDTOs) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method deleteOldAndInsertNewSignatureProcessTypeEntitled, "
-        + "Parameters: sPtE: {0}, sPTEentities: {1}, signatureProcessTypeDTO: {2}",
-      new Object[]{sPtE, sPTEentities, signatureProcessTypeDTO});
+        + "Parameters: signatureProcessTypeEntity: {0}, signatureProcessTypeEntitledDTOs: {1}",
+      new Object[]{signatureProcessTypeEntity, signatureProcessTypeEntitledDTOs});
 
-    // remove the old SignatureProcessTypeEntitled
-    for (SignatureProcessTypeEntitledEntity sPTEe : sPTEentities) {
-      em.remove(sPTEe);
+    // remove the old Signatures
+    if (signatureProcessTypeEntity != null
+      && signatureProcessTypeEntity.getSignatureProcessTypeEntitled() != null) {
+      signatureProcessTypeEntity.getSignatureProcessTypeEntitled()
+        .forEach(signatureProcessTypeEntitledEntity ->
+          em.remove(signatureProcessTypeEntitledEntity));
     }
 
-    // insert the new SignatureProcessTypeEntitled sent from the dto
-    if (signatureProcessTypeDTO.getSignatureProcessTypeEntitled() != null) {
-      for (SignatureProcessTypeEntitledDTO sPTEeDTO : signatureProcessTypeDTO
-        .getSignatureProcessTypeEntitled()) {
-        SignatureProcessTypeEntitledEntity sPTEe = new SignatureProcessTypeEntitledEntity();
-        sPTEe.setName(sPTEeDTO.getName());
-        sPTEe.setDepartment(DepartmentMapper.INSTANCE.toDepartment(sPTEeDTO.getDepartment()));
-        sPTEe.setProcessType(sPtE);
-        sPTEe.setFunction(sPTEeDTO.getFunction());
-        sPTEe.setSortNumber(sPTEeDTO.getSortNumber());
-        em.persist(sPTEe);
-      }
+    if (signatureProcessTypeEntitledDTOs != null) {
+      // remove the empty Signatures if exist from the dto
+      signatureProcessTypeEntitledDTOs
+        .removeIf(signatureProcessTypeEntitledDTO ->
+          StringUtils.isBlank(signatureProcessTypeEntitledDTO.getName())
+            && StringUtils.isBlank(signatureProcessTypeEntitledDTO.getFunction())
+            && signatureProcessTypeEntitledDTO.getDepartment() == null);
+
+      // insert the new Signatures sent from the dto
+      AtomicInteger sortNumber = new AtomicInteger();
+      signatureProcessTypeEntitledDTOs
+        .forEach(signatureProcessTypeEntitledDTO -> {
+          SignatureProcessTypeEntitledEntity signatureProcessTypeEntitledEntity =
+            new SignatureProcessTypeEntitledEntity();
+          signatureProcessTypeEntitledEntity.setName(signatureProcessTypeEntitledDTO.getName());
+          signatureProcessTypeEntitledEntity.setDepartment(DepartmentMapper.INSTANCE
+            .toDepartment(signatureProcessTypeEntitledDTO.getDepartment()));
+          signatureProcessTypeEntitledEntity.setProcessType(signatureProcessTypeEntity);
+          signatureProcessTypeEntitledEntity
+            .setFunction(signatureProcessTypeEntitledDTO.getFunction());
+          signatureProcessTypeEntitledEntity.setSortNumber(sortNumber.getAndIncrement());
+          em.persist(signatureProcessTypeEntitledEntity);
+        });
     }
   }
 
@@ -915,16 +931,12 @@ public class SDServiceImpl extends BaseService implements SDService {
    * @param signatureProcessTypeDTO the signature process type DTO
    */
   @Override
-  public Set<ValidationError> updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
+  public void updateSignatureCopies(SignatureProcessTypeDTO signatureProcessTypeDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateSignatureCopies, Parameters: "
         + "signatureProcessTypeDTO: {0}",
       signatureProcessTypeDTO);
-
-    Set<ValidationError> optimisticLockErrors = new HashSet<>();
-
-    QSignatureCopyEntity qSignatureCopyEntity = QSignatureCopyEntity.signatureCopyEntity;
 
     QSignatureProcessTypeEntity qSignatureProcessTypeEntity =
       QSignatureProcessTypeEntity.signatureProcessTypeEntity;
@@ -932,10 +944,6 @@ public class SDServiceImpl extends BaseService implements SDService {
     SignatureProcessTypeEntity sPtE = new JPAQueryFactory(em).select(qSignatureProcessTypeEntity)
       .from(qSignatureProcessTypeEntity)
       .where(qSignatureProcessTypeEntity.id.eq(signatureProcessTypeDTO.getId())).fetchOne();
-
-    List<SignatureCopyEntity> copyEntities =
-      new JPAQueryFactory(em).select(qSignatureCopyEntity).from(qSignatureCopyEntity)
-        .where(qSignatureCopyEntity.processType.id.eq(signatureProcessTypeDTO.getId())).fetch();
 
     /*
      * Check for optimistic locking.
@@ -949,16 +957,16 @@ public class SDServiceImpl extends BaseService implements SDService {
      * If createdOn is after requestedOn, another user has created a signature copy
      * and an optimistic lock error should be shown.
      */
-    if (!copyEntities.isEmpty() && signatureProcessTypeDTO.getRequestedOn() != null
-      && copyEntities.get(0).getCreatedOn().after(signatureProcessTypeDTO.getRequestedOn())) {
-      optimisticLockErrors
-        .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
-      return optimisticLockErrors;
+    if (sPtE != null && sPtE.getSignatureCopies() != null && !sPtE.getSignatureCopies().isEmpty()
+      && signatureProcessTypeDTO.getRequestedOn() != null
+      && sPtE.getSignatureCopies().get(0).getCreatedOn()
+      .after(signatureProcessTypeDTO.getRequestedOn())) {
+      throw new OptimisticLockException();
     }
 
-    deleteOldAndInsertNewSignatureCopies(sPtE, copyEntities, signatureProcessTypeDTO);
+    deleteOldAndInsertNewSignatureCopies(sPtE, signatureProcessTypeDTO.getSignatureCopies());
 
-    // update signature Copies in offen process if selective
+    // Update also the connected signature copy types
     if (signatureProcessTypeDTO.getProcess().getValue().equals(Process.SELECTIVE.getValue())) {
       SignatureProcessTypeEntity sPtOffen =
         new JPAQueryFactory(em).select(qSignatureProcessTypeEntity)
@@ -968,14 +976,8 @@ public class SDServiceImpl extends BaseService implements SDService {
               .eq(signatureProcessTypeDTO.getSignature().getDepartment().getId())))
           .fetchOne();
 
-      List<SignatureCopyEntity> copyEntitiesOffen =
-        new JPAQueryFactory(em).select(qSignatureCopyEntity).from(qSignatureCopyEntity)
-          .where(qSignatureCopyEntity.processType.eq(sPtOffen)).fetch();
+      deleteOldAndInsertNewSignatureCopies(sPtOffen, signatureProcessTypeDTO.getSignatureCopies());
 
-      deleteOldAndInsertNewSignatureCopies(sPtOffen, copyEntitiesOffen, signatureProcessTypeDTO);
-
-      // update signature Copies in NEGOTIATED_PROCEDURE process if
-      // NEGOTIATED_PROCEDURE_WITH_COMPETITION
     } else if (signatureProcessTypeDTO.getProcess().getValue()
       .equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION.getValue())) {
       SignatureProcessTypeEntity sptNP =
@@ -986,45 +988,49 @@ public class SDServiceImpl extends BaseService implements SDService {
               .eq(signatureProcessTypeDTO.getSignature().getDepartment().getId())))
           .fetchOne();
 
-      List<SignatureCopyEntity> copyEntitiesNP =
-        new JPAQueryFactory(em).select(qSignatureCopyEntity).from(qSignatureCopyEntity)
-          .where(qSignatureCopyEntity.processType.eq(sptNP)).fetch();
-      deleteOldAndInsertNewSignatureCopies(sptNP, copyEntitiesNP, signatureProcessTypeDTO);
+      deleteOldAndInsertNewSignatureCopies(sptNP, signatureProcessTypeDTO.getSignatureCopies());
     }
-    return optimisticLockErrors;
   }
 
   /**
    * Delete old and insert new signature copies.
    *
-   * @param sPtE the s pt E
-   * @param copyEntities the copy entities
-   * @param signatureProcessTypeDTO the signature process type DTO
+   * @param signatureProcessTypeEntity the signatureProcessTypeEntity
+   * @param signatureCopyDTOs          the signatureCopyDTOs
    */
-  private void deleteOldAndInsertNewSignatureCopies(SignatureProcessTypeEntity sPtE,
-    List<SignatureCopyEntity> copyEntities, SignatureProcessTypeDTO signatureProcessTypeDTO) {
+  private void deleteOldAndInsertNewSignatureCopies(
+    SignatureProcessTypeEntity signatureProcessTypeEntity,
+    List<SignatureCopyDTO> signatureCopyDTOs) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method deleteOldAndInsertNewSignatureCopies, Parameters: sPtE: {0}, "
-        + "copyEntities: {1}, signatureProcessTypeDTO: {2}",
-      new Object[]{sPtE, copyEntities, signatureProcessTypeDTO});
+      "Executing method deleteOldAndInsertNewSignatureCopies, Parameters: signatureProcessTypeEntity: {0}, "
+        + "signatureCopyDTOs: {1}",
+      new Object[]{signatureProcessTypeEntity, signatureCopyDTOs});
 
     // remove the old SignatureCopies
-    for (SignatureCopyEntity cE : copyEntities) {
-      em.remove(cE);
+    if (signatureProcessTypeEntity != null
+      && signatureProcessTypeEntity.getSignatureCopies() != null) {
+      signatureProcessTypeEntity.getSignatureCopies()
+        .forEach(signatureCopyEntity -> em.remove(signatureCopyEntity));
     }
 
-    // insert the new SignatureCopies sent from the dto
-    if (signatureProcessTypeDTO.getSignatureCopies() != null) {
-      for (SignatureCopyDTO copyDTO : signatureProcessTypeDTO.getSignatureCopies()) {
-        SignatureCopyEntity sCe = new SignatureCopyEntity();
-        sCe.setDepartment(DepartmentMapper.INSTANCE.toDepartment(copyDTO.getDepartment()));
-        sCe.setProcessType(sPtE);
-        em.persist(sCe);
-      }
+    if (signatureCopyDTOs != null) {
+      // remove the empty SignatureCopies if exist from the dto
+      signatureCopyDTOs
+        .removeIf(signatureCopyDTO -> signatureCopyDTO.getDepartment() == null);
+
+      // insert the new SignatureCopies sent from the dto
+      AtomicInteger sortNumber = new AtomicInteger();
+      signatureCopyDTOs.forEach(signatureCopyDTO -> {
+        SignatureCopyEntity signatureCopyEntity = new SignatureCopyEntity();
+        signatureCopyEntity
+          .setDepartment(DepartmentMapper.INSTANCE.toDepartment(signatureCopyDTO.getDepartment()));
+        signatureCopyEntity.setProcessType(signatureProcessTypeEntity);
+        signatureCopyEntity.setSortNumber(sortNumber.getAndIncrement());
+        em.persist(signatureCopyEntity);
+      });
     }
   }
-
 
   /**
    * Uploads image.
@@ -1055,17 +1061,12 @@ public class SDServiceImpl extends BaseService implements SDService {
   }
 
   /**
-   * Sort signatures by sort number.
+   * Sort signatures by sort number in order to be shown in the correct order in the UI,depending on
+   * the order the user gives when editing.If no editing has been done before,sorting is not done
    *
    * @param signatureProcessTypeDTO the signature process type DTO
-   * @return the signature process type DTO
    */
-  /*
-   * this method is used to sort the SignatureProcessTypeEntitled List in order to be shown in the
-   * correct order in the UI,depending on the order the user gives when editing.If no editing has
-   * been done before,sorting is not done
-   */
-  private SignatureProcessTypeDTO sortSignaturesBySortNumber(
+  private void sortSignaturesBySortNumber(
     SignatureProcessTypeDTO signatureProcessTypeDTO) {
 
     LOGGER.log(Level.CONFIG,
@@ -1073,17 +1074,21 @@ public class SDServiceImpl extends BaseService implements SDService {
         + "signatureProcessTypeDTO: {0}",
       signatureProcessTypeDTO);
 
-    if (signatureProcessTypeDTO.getSignatureProcessTypeEntitled() != null) {
-      for (SignatureProcessTypeEntitledDTO s : signatureProcessTypeDTO
-        .getSignatureProcessTypeEntitled()) {
-        if (s.getSortNumber() == null) {
-          return signatureProcessTypeDTO;
-        }
-      }
-      Collections.sort(signatureProcessTypeDTO.getSignatureProcessTypeEntitled(),
-        ComparatorUtil.SortNumberComparator);
+    // sort signatures only if signature list is not null and sort number of every signature is not null
+    if (signatureProcessTypeDTO.getSignatureProcessTypeEntitled() != null
+      && signatureProcessTypeDTO.getSignatureProcessTypeEntitled().stream()
+      .noneMatch(signature -> signature.getSortNumber() == null)) {
+      // sorting signatures
+      signatureProcessTypeDTO.getSignatureProcessTypeEntitled()
+        .sort(ComparatorUtil.SignatureComparator);
     }
-    return signatureProcessTypeDTO;
+    // sort copies only if signature copies list is not null and sort number of every copy is not null
+    if (signatureProcessTypeDTO.getSignatureCopies() != null
+      && signatureProcessTypeDTO.getSignatureCopies().stream()
+      .noneMatch(copy -> copy.getSortNumber() == null)) {
+      // sorting copies
+      signatureProcessTypeDTO.getSignatureCopies().sort(ComparatorUtil.SignatureCopyComparator);
+    }
   }
 
   /**

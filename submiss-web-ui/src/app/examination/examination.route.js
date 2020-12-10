@@ -55,10 +55,12 @@
         ncyBreadcrumb: {
           label: '{{examinationViewCtrl.data.submission.workType.value1}} {{examinationViewCtrl.data.submission.workType.value2}}',
           parent: function ($rootScope) {
-            if ($rootScope.$previousState === 'projectSubmissionsView' || $rootScope.$previousState === FROM_OFFERS ||
-              $rootScope.$previousState === PROJECTVIEW) {
+            if ($rootScope.$previousState === 'projectSubmissionsView'
+              || $rootScope.$previousState === FROM_OFFERS
+              || $rootScope.$previousState === PROJECTVIEW
+              || $rootScope.$previousState === PROJECTSEARCH  || !$rootScope.$previousState) {
               return PROJECTVIEW;
-            } else if ($rootScope.$previousState === PROJECTSEARCH || !$rootScope.$previousState) {
+            } else {
               return PROJECTSEARCH;
             }
           }
@@ -79,10 +81,12 @@
         ncyBreadcrumb: {
           label: '{{formalAuditCtrl.data.submission.workType.value1}} {{formalAuditCtrl.data.submission.workType.value2}}',
           parent: function ($rootScope) {
-            if ($rootScope.$previousState === 'projectSubmissionsView' || $rootScope.$previousState === FROM_OFFERS ||
-              $rootScope.$previousState === PROJECTVIEW) {
+            if ($rootScope.$previousState === 'projectSubmissionsView'
+              || $rootScope.$previousState === FROM_OFFERS
+              || $rootScope.$previousState === PROJECTVIEW
+              || $rootScope.$previousState === PROJECTSEARCH || !$rootScope.$previousState) {
               return PROJECTVIEW;
-            } else if ($rootScope.$previousState === PROJECTSEARCH || !$rootScope.$previousState) {
+            } else {
               return PROJECTSEARCH;
             }
           }
@@ -102,10 +106,12 @@
         ncyBreadcrumb: {
           label: '{{suitabilityAuditCtrl.data.submission.workType.value1}} {{suitabilityAuditCtrl.data.submission.workType.value2}}',
           parent: function ($rootScope) {
-            if ($rootScope.$previousState === 'projectSubmissionsView' || $rootScope.$previousState === FROM_OFFERS ||
-              $rootScope.$previousState === PROJECTVIEW) {
+            if ($rootScope.$previousState === 'projectSubmissionsView'
+              || $rootScope.$previousState === FROM_OFFERS
+              || $rootScope.$previousState === PROJECTVIEW
+              || $rootScope.$previousState === PROJECTSEARCH || !$rootScope.$previousState) {
               return PROJECTVIEW;
-            } else if ($rootScope.$previousState === PROJECTSEARCH || !$rootScope.$previousState) {
+            } else {
               return PROJECTSEARCH;
             }
           }

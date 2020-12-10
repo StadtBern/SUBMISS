@@ -37,8 +37,8 @@
      **********************************************************************/
     vm.project = {};
     vm.objects = [];
-    vm.procedures = {};
-    vm.departments = {};
+    vm.procedures = [];
+    vm.departments = [];
     vm.company = {};
     vm.pmExternal = $stateParams.pmExternal;
 

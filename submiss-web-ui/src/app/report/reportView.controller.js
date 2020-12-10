@@ -40,7 +40,7 @@
     vm.directorates = [];
     vm.objects = [];
     vm.projects = [];
-    vm.projectsCreditNos = [];
+    vm.projectCreditNos = [];
     vm.projectManagers = [];
     vm.procedures = [];
     vm.departmentsIDs = [];
@@ -86,7 +86,7 @@
     vm.areErrorsPresent = areErrorsPresent;
     vm.clearFormErrors = clearFormErrors;
     vm.checkForEmptyResults = checkForEmptyResults;
-    vm.getGekOResultsnumber = getGekOResultsnumber;
+    vm.getGekoResultsNumber = getGekoResultsNumber;
     vm.processOptions = [{
       value: "SELECTIVE",
       label: 'Selektiv'
@@ -165,26 +165,19 @@
         vm.invalidDate = true;
       } else {
         vm.invalidDate = false;
-        ReportService.validateForm(vm.reportForm).success(
-          function (data, status) {
+        ReportService.validateForm(vm.reportForm)
+          .success(function (response, status) {
             if (status === 403) { // Security checks.
               return;
             }
             vm.clearFormErrors('Auswertungen');
-            ReportService.proceedOrNotToResults(vm.reportForm)
-              .success(function (response, status) {
-                if (status === 403) { // Security checks.
-                  return;
-                }
-                vm.data = response;
-                if (angular.isNumber(response)) {
-                  confirmModal(response, 1);
-                } else {
-                  proceedTogenerateReport();
-                }
-              });
-          }).error(
-          function (response, status) {
+            if (angular.isNumber(response)) {
+              confirmModal(response, 1);
+            } else {
+              proceedTogenerateReport();
+            }
+          })
+          .error(function (response, status) {
             if (status === 400) { // Validation errors.
               QFormJSRValidation.markErrors($scope,
                 $scope.reportViewCtr.htmlReportForm,
@@ -310,7 +303,7 @@
     // Function that returns all Projects Credit Numbers
     function loadProjectsCreditNos() {
       ProjectService.readAllProjectsCreditNos().success(function (data) {
-        vm.projectsCreditNos = data;
+        vm.projectCreditNos = data;
       }).error(function (response, status) {})
     }
 
@@ -623,33 +616,26 @@
       });
     }
 
-    function getGekOResultsnumber() {
+    function getGekoResultsNumber() {
       vm.clearFormErrors('GeKo');
       vm.noResultsReturned = false;
-      ReportService.validateOperationForm(vm.reportForm).success(
-        function (data, status) {
+      ReportService.validateOperationForm(vm.reportForm)
+        .success(function (response, status) {
           if (status === 403) { // Security checks.
             return;
           }
           vm.clearFormErrors('GeKo');
-          ReportService.proceedOrNotToOperationResults(vm.reportForm)
-            .success(function (response, status) {
-              if (status === 403) { // Security checks.
-                return;
-              }
-              vm.data = response;
-              if (angular.isNumber(response) && response !== 0) {
-                confirmModal(response, 2);
-                vm.noResultsReturned = false;
-              } else if (response === 0) {
-                vm.noResultsReturned = true;
-              } else {
-                vm.noResultsReturned = false;
-                openGeKoTable();
-              }
-            });
-        }).error(
-        function (response, status) {
+          if (angular.isNumber(response) && response !== 0) {
+            confirmModal(response, 2);
+            vm.noResultsReturned = false;
+          } else if (response === 0) {
+            vm.noResultsReturned = true;
+          } else {
+            vm.noResultsReturned = false;
+            openGeKoTable();
+          }
+        })
+        .error(function (response, status) {
           if (status === 400) { // Validation errors.
             QFormJSRValidation.markErrors($scope,
               $scope.reportViewCtr.htmlReportForm,

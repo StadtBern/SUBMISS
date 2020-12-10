@@ -26,12 +26,14 @@ import ch.bern.submiss.services.impl.model.SubmissAuditCompanyEntity;
 import ch.bern.submiss.services.impl.model.SubmissAuditProjectEntity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.sql.SQLExpressions;
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
@@ -83,62 +85,296 @@ public class SubmissAuditServiceImpl extends BaseService implements SubmissAudit
         + "sortColumn: {2}, sortType: {3}, levelIdOption: {4}, auditLogDTO: {5}",
       new Object[]{page, pageItems, sortColumn, sortType, levelIdOption, auditLogDTO});
 
-    JPAQuery<?> query = new JPAQuery<>(em);
     // In case of company level, retrieve company level entries
     if (levelIdOption.equals(LookupValues.COMPANY_LEVEL)) {
-      List<SubmissAuditCompanyEntity> submissAuditCompanyEntities;
-      // if the user is permitted to view proof status FABE, retrieve all entries
 
-      query.select(qSubmissAuditCompanyEntity).from(qSubmissAuditCompanyEntity);
-      query.where(getWhereClause(auditLogDTO, qSubmissAuditCompanyEntity,
-        qSubmissAuditProjectEntity, levelIdOption));
-
-      if (!isUserFABEPermitted()) {
-        // retrieve company entries that have not 'WITH_FABE' status
-        query.where(qSubmissAuditCompanyEntity.proofStatusFabe.notIn(3));
-      }
-      query.where(qSubmissAuditCompanyEntity.tenantId
-        .eq(getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData())
-        .or(qSubmissAuditCompanyEntity.tenantId.isNull()));
-      // Return all entries
-      if (pageItems != -1) {
-        query.offset((page - 1) * pageItems).limit(pageItems);
-      }
-      if (sortColumn != null) {
-        query.orderBy(getOrderBy(levelIdOption, sortColumn, sortType, qSubmissAuditCompanyEntity,
-          qSubmissAuditProjectEntity));
-      }
-
-      submissAuditCompanyEntities = (List<SubmissAuditCompanyEntity>) query.fetch();
-
+      Query auditCompanyQuery = em.createNativeQuery(
+        getAuditQuery(pageItems, sortColumn, sortType, levelIdOption, auditLogDTO),
+        "SubmissAuditCompanyMapping");
+      // Add the query parameters
+      addQueryParameters(page, pageItems, auditLogDTO, auditCompanyQuery);
+      List<SubmissAuditCompanyEntity> submissAuditCompanyEntities = auditCompanyQuery
+        .getResultList();
       return SubmissAuditCompanyMapper.INSTANCE
         .auditCompanyEntityToAuditCompanyDTO(submissAuditCompanyEntities);
-
-
     } else {
 
       // otherwise, retrieve project level entries
-      List<SubmissAuditProjectEntity> submissAuditProjectEntities;
-      query.select(qSubmissAuditProjectEntity).from(qSubmissAuditProjectEntity)
-        .where(getWhereClause(auditLogDTO, qSubmissAuditCompanyEntity, qSubmissAuditProjectEntity,
-          levelIdOption)
-          .and(qSubmissAuditProjectEntity.tenantId
-            .eq(getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData())));
-      // Return all entries
-      if (pageItems != -1) {
-        query.offset((page - 1) * pageItems).limit(pageItems);
-      }
-      if (sortColumn != null) {
-        query.orderBy(getOrderBy(levelIdOption, sortColumn, sortType, qSubmissAuditCompanyEntity,
-          qSubmissAuditProjectEntity));
-      }
-      submissAuditProjectEntities = (List<SubmissAuditProjectEntity>) query.fetch();
+      Query auditQuery = em.createNativeQuery(
+        getAuditQuery(pageItems, sortColumn, sortType, levelIdOption, auditLogDTO),
+        "SubmissAuditProjectMapping");
+      // Add the query parameters
+      addQueryParameters(page, pageItems, auditLogDTO, auditQuery);
+      List<SubmissAuditProjectEntity> submissAuditProjectEntities = auditQuery.getResultList();
       return SubmissAuditProjectMapper.INSTANCE
         .auditProjectEntityToAuditProjectDTO(submissAuditProjectEntities);
     }
   }
 
- @Override
+  /**
+   * Gets the audit query.
+   *
+   * @param pageItems     the pageItems
+   * @param sortColumn    the sortColumn
+   * @param sortType      the sortType
+   * @param levelIdOption the levelIdOption
+   * @param auditLogDTO   the auditLogDTO
+   * @return the query
+   */
+  private String getAuditQuery(int pageItems, String sortColumn, String sortType,
+    String levelIdOption, AuditLogDTO auditLogDTO) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getAuditLogs, Parameters: pageItems: {0}, "
+        + "sortColumn: {1}, sortType: {2}, levelIdOption: {3}, auditLogDTO: {4}",
+      new Object[]{pageItems, sortColumn, sortType, levelIdOption, auditLogDTO});
+
+    StringBuilder query = new StringBuilder();
+
+    if (levelIdOption.equals(LookupValues.PROJECT_LEVEL)) {
+      query.append(LookupValues.AUDIT_PROJECT_QUERY);
+      addProjectFilters(auditLogDTO, query);
+
+    } else if (levelIdOption.equals(LookupValues.COMPANY_LEVEL)) {
+      query.append(LookupValues.AUDIT_COMPANY_QUERY);
+      addCompanyFilters(auditLogDTO, query);
+    }
+
+    // Add common filtering values for both levelIdOptions
+    addCommonFilters(auditLogDTO, query);
+
+    // Add sorting
+    if (sortColumn != null) {
+      query.append(getOrderBy(sortColumn, sortType));
+    }
+
+    // Add pagination
+    if (pageItems != -1) {
+      query.append(" LIMIT :limit OFFSET :offset");
+    }
+
+    return query.toString();
+  }
+
+  /**
+   * Adds the common filter values.
+   *
+   * @param auditLogDTO the auditLogDTO
+   * @param query       the query
+   */
+  private void addCommonFilters(AuditLogDTO auditLogDTO, StringBuilder query) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method addCommonFilters, Parameters: auditLogDTO: {0}, "
+        + "query: {1}",
+      new Object[]{auditLogDTO, query});
+
+    if (StringUtils.isNotBlank(auditLogDTO.getUserName())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_USERNAME)
+        .append(" LIKE :username");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getShortDescription())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_TRANSLATION)
+        .append(" LIKE :shortDescription");
+    }
+    if (auditLogDTO.getCreatedOn() != null) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_CREATED_ON)
+        .append(" LIKE :createdOn");
+    }
+  }
+
+  /**
+   * Adds the company filter values.
+   *
+   * @param auditLogDTO the auditLogDTO
+   * @param query       the query
+   */
+  private void addCompanyFilters(AuditLogDTO auditLogDTO, StringBuilder query) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method addCompanyFilters, Parameters: auditLogDTO: {0}, "
+        + "query: {1}",
+      new Object[]{auditLogDTO, query});
+
+    // Add check for tenant
+    query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.LEFT_PARENTHESIS)
+      .append(LookupValues.AUDIT_COMPANY_TENANT_ID).append(" = :tenant_id")
+      .append(LookupValues.AUDIT_OR_QUERY).append(LookupValues.AUDIT_COMPANY_TENANT_ID)
+      .append(" IS NULL").append(LookupValues.RIGHT_PARENTHESIS);
+
+    // if the user is permitted to view proof status FABE, retrieve all entries
+
+    if (!isUserFABEPermitted()) {
+      // retrieve company entries that have not 'WITH_FABE' status
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_PROOF_STATUS_FABE)
+        .append(" NOT IN(3)");
+    }
+    // Add filtering values for company level
+    if (StringUtils.isNotBlank(auditLogDTO.getCompanyName())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_COMPANY_NAME)
+        .append(" LIKE :companyName");
+    }
+  }
+
+  /**
+   * Adds the project filter values.
+   *
+   * @param auditLogDTO the auditLogDTO
+   * @param query       the query
+   */
+  private void addProjectFilters(AuditLogDTO auditLogDTO, StringBuilder query) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method addProjectFilters, Parameters: auditLogDTO: {0}, "
+        + "query: {1}",
+      new Object[]{auditLogDTO, query});
+
+    // Add check for tenant
+    query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_PROJECT_TENANT_ID)
+      .append(" = :tenant_id");
+    // Add filtering values for project level
+    if (StringUtils.isNotBlank(auditLogDTO.getObjectName())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_OBJECT_NAME)
+        .append(" LIKE :objectName");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getProjectName())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_PROJECT_NAME)
+        .append(" LIKE :projectName");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getWorkType())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.LEFT_PARENTHESIS)
+        .append(LookupValues.AUDIT_WORKTYPE).append(" LIKE :workType")
+        .append(LookupValues.AUDIT_OR_QUERY).append(LookupValues.AUDIT_TENDER_DESCRIPTION)
+        .append(" LIKE :tender_description").append(LookupValues.RIGHT_PARENTHESIS);
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getReason())) {
+      query.append(LookupValues.AUDIT_AND_QUERY).append(LookupValues.AUDIT_REASON)
+        .append(" LIKE :reason");
+    }
+  }
+
+  /**
+   * Adds the query parameters.
+   *
+   * @param page        the page
+   * @param pageItems   the pageItems
+   * @param auditLogDTO the auditLogDTO
+   * @param query       the query
+   */
+  private void addQueryParameters(int page, int pageItems, AuditLogDTO auditLogDTO, Query query) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method addQueryParameters, Parameters: page: {0}, "
+        + "pageItems: {1}, AuditLogDTO: {2}, query: {3}",
+      new Object[]{page, pageItems, auditLogDTO, query});
+
+    query.setParameter("tenant_id",
+      getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData());
+
+    if (StringUtils.isNotBlank(auditLogDTO.getUserName())) {
+      query.setParameter("username", "%" + auditLogDTO.getUserName() + "%");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getShortDescription())) {
+      query.setParameter("shortDescription", "%" + auditLogDTO.getShortDescription() + "%");
+    }
+    if (auditLogDTO.getCreatedOn() != null) {
+      query.setParameter("createdOn", "%" + new SimpleDateFormat(
+        "yyyy-MM-dd").format(auditLogDTO.getCreatedOn()) + "%");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getObjectName())) {
+      query.setParameter("objectName", "%" + auditLogDTO.getObjectName() + "%");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getProjectName())) {
+      query.setParameter("projectName", "%" + auditLogDTO.getProjectName() + "%");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getWorkType())) {
+      query.setParameter("workType", "%" + auditLogDTO.getWorkType() + "%");
+      query.setParameter("tender_description", "%" + auditLogDTO.getWorkType() + "%");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getReason())) {
+      query.setParameter("reason", "%" + auditLogDTO.getReason() + "%");
+    }
+    if (StringUtils.isNotBlank(auditLogDTO.getCompanyName())) {
+      query.setParameter("companyName", "%" + auditLogDTO.getCompanyName() + "%");
+    }
+    // Add pagination parameters
+    if (pageItems != -1) {
+      query.setParameter("limit", pageItems);
+      query.setParameter("offset", (page - 1) * pageItems);
+    }
+  }
+
+  /**
+   * Gets the order by.
+   *
+   * @param sortColumn the sort column
+   * @param sortType   the sort type
+   * @return the order by
+   */
+  private String getOrderBy(String sortColumn, String sortType) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOrderBy, Parameters: sortColumn: {0}, "
+        + "sortType: {1}, sortType: {2}",
+      new Object[]{sortColumn, sortType});
+
+    StringBuilder orderBy = new StringBuilder();
+
+    switch (sortColumn) {
+      case "userName":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("userName")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      case "shortDescription":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("translation")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      case "createdOn":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("createdOn")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      case "objectName":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("objectName")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      case "projectName":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("projectName")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      case "workType":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("workType")
+          .append(LookupValues.SPACE).append(getOrderType(sortType))
+          .append(", tender_description ASC");
+        break;
+      case "reason":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("reason")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      case "companyName":
+        orderBy.append(LookupValues.AUDIT_ORDER_BY_QUERY).append("companyName")
+          .append(LookupValues.SPACE).append(getOrderType(sortType));
+        break;
+      default:
+        break;
+    }
+    return orderBy.toString();
+  }
+
+  /**
+   * Gets the order type.
+   *
+   * @param sortType the sortType
+   * @return asc or desc
+   */
+  private String getOrderType(String sortType) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getOrderType, Parameters: sortType: {0}", sortType);
+
+    return (sortType.equals("asc")) ? "ASC" : "DESC";
+  }
+
+  @Override
   public long auditLogCount(AuditLogDTO auditLogDTO, String levelIdOption) {
 
     LOGGER.log(Level.CONFIG,
@@ -146,179 +382,46 @@ public class SubmissAuditServiceImpl extends BaseService implements SubmissAudit
         + "levelIdOption: {1}",
       new Object[]{auditLogDTO, levelIdOption});
 
-    JPAQuery<?> query = new JPAQuery<>(em);
-    long auditLogCount = 0;
-    // In case of company level, retrieve company level entries
-    if (levelIdOption.equals(LookupValues.COMPANY_LEVEL)) {
+    Query auditCountQuery = em.createNativeQuery(
+      getAuditCountQuery(levelIdOption, auditLogDTO));
+    // Add the query parameters
+    addQueryParameters(1, -1, auditLogDTO, auditCountQuery);
+    Object auditLogCount = auditCountQuery.getResultList().get(0);
 
-      query.select(qSubmissAuditCompanyEntity).from(qSubmissAuditCompanyEntity)
-        .where(getWhereClause(auditLogDTO, qSubmissAuditCompanyEntity, qSubmissAuditProjectEntity,
-          levelIdOption));
-      if (!isUserFABEPermitted()) {
-        query.where(qSubmissAuditCompanyEntity.proofStatusFabe.notIn(3));
-      }
-      auditLogCount = query.fetchCount();
-    } else {
-      auditLogCount = query
-        .select(qSubmissAuditProjectEntity).from(qSubmissAuditProjectEntity).where(
-
-          getWhereClause(auditLogDTO, qSubmissAuditCompanyEntity, qSubmissAuditProjectEntity,
-            levelIdOption)
-            .and(qSubmissAuditProjectEntity.tenantId
-              .eq(getUser().getAttribute(USER_ATTRIBUTES.TENANT.getValue()).getData())))
-        .fetchCount();
-
-    }
-
-    return auditLogCount;
-  }
-
-
-  /**
-   * Gets the where clause.
-   *
-   * @param auditLogDTO the audit log DTO
-   * @param qSubmissAuditCompanyEntity the q submiss audit company entity
-   * @param qSubmissAuditProjectEntity the q submiss audit project entity
-   * @param levelIdOption the level id option
-   * @return the where clause
-   */
-  private BooleanBuilder getWhereClause(AuditLogDTO auditLogDTO,
-    QSubmissAuditCompanyEntity qSubmissAuditCompanyEntity,
-    QSubmissAuditProjectEntity qSubmissAuditProjectEntity, String levelIdOption) {
-
-    LOGGER.log(Level.CONFIG,
-      "Executing method getWhereClause, Parameters: auditLogDTO: {0}, "
-        + "qSubmissAuditCompanyEntity: {1}, qSubmissAuditProjectEntity: {2}, "
-        + "levelIdOption: {3}",
-      new Object[]{auditLogDTO, qSubmissAuditCompanyEntity, qSubmissAuditProjectEntity,
-        levelIdOption});
-
-    BooleanBuilder whereClause = new BooleanBuilder();
-
-    if (levelIdOption.equals(LookupValues.COMPANY_LEVEL)) {
-      if (StringUtils.isNotBlank(auditLogDTO.getUserName())) {
-        whereClause
-          .and(qSubmissAuditCompanyEntity.userName.like("%" + auditLogDTO.getUserName() + "%"));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getShortDescription())) {
-        whereClause.and(qSubmissAuditCompanyEntity.translation
-          .like("%" + auditLogDTO.getShortDescription() + "%"));
-      }
-      if (auditLogDTO.getCreatedOn() != null) {
-        whereClause.and(SQLExpressions.date(qSubmissAuditCompanyEntity.createdOn)
-          .eq(auditLogDTO.getCreatedOn()));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getCompanyName())) {
-        whereClause.and(
-          qSubmissAuditCompanyEntity.companyName.like("%" + auditLogDTO.getCompanyName() + "%"));
-      }
-
-    } else {
-      if (StringUtils.isNotBlank(auditLogDTO.getUserName())) {
-        whereClause
-          .and(qSubmissAuditProjectEntity.userName.like("%" + auditLogDTO.getUserName() + "%"));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getShortDescription())) {
-        whereClause.and(qSubmissAuditProjectEntity.translation
-          .like("%" + auditLogDTO.getShortDescription() + "%"));
-      }
-      if (auditLogDTO.getCreatedOn() != null) {
-        whereClause.and(SQLExpressions.date(qSubmissAuditProjectEntity.createdOn)
-          .eq(auditLogDTO.getCreatedOn()));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getObjectName())) {
-        whereClause.and(
-          qSubmissAuditProjectEntity.objectName.like("%" + auditLogDTO.getObjectName() + "%"));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getProjectName())) {
-        whereClause.and(
-          qSubmissAuditProjectEntity.projectName.like("%" + auditLogDTO.getProjectName() + "%"));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getWorkType())) {
-        whereClause
-          .and(qSubmissAuditProjectEntity.workType.like("%" + auditLogDTO.getWorkType() + "%"));
-      }
-      if (StringUtils.isNotBlank(auditLogDTO.getReason())) {
-        whereClause
-          .and(qSubmissAuditProjectEntity.reason.like("%" + auditLogDTO.getReason() + "%"));
-      }
-    }
-    return whereClause;
+    return (auditLogCount instanceof BigInteger)
+      ? ((BigInteger) auditLogCount).longValue()
+      : 0;
   }
 
   /**
-   * Gets the order by.
+   * Gets the audit count query.
    *
-   * @param levelIdOption the level id option
-   * @param sortColumn the sort column
-   * @param sortType the sort type
-   * @param qSubmissAuditCompanyEntity the q submiss audit company entity
-   * @param qSubmissAuditProjectEntity the q submiss audit project entity
-   * @return the order by
+   * @param levelIdOption the levelIdOption
+   * @param auditLogDTO   the auditLogDTO
+   * @return the query
    */
-  private OrderSpecifier getOrderBy(String levelIdOption, String sortColumn, String sortType,
-    QSubmissAuditCompanyEntity qSubmissAuditCompanyEntity,
-    QSubmissAuditProjectEntity qSubmissAuditProjectEntity) {
+  private String getAuditCountQuery(String levelIdOption, AuditLogDTO auditLogDTO) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method getOrderBy, Parameters: levelIdOption: {0}, "
-        + "sortColumn: {1}, sortType: {2}, qSubmissAuditCompanyEntity: {3}, "
-        + "qSubmissAuditProjectEntity: {4}",
-      new Object[]{levelIdOption, sortColumn, sortType, qSubmissAuditCompanyEntity,
-        qSubmissAuditProjectEntity});
+      "Executing method getAuditCountQuery, Parameters: levelIdOption: {0}, "
+        + "auditLogDTO: {1}",
+      new Object[]{levelIdOption, auditLogDTO});
 
-    OrderSpecifier orderBy = null;
+    StringBuilder query = new StringBuilder();
 
-    if (levelIdOption.equals(LookupValues.COMPANY_LEVEL)) {
-      if (sortColumn.equals("userName")) {
-        return (sortType.equals("asc")) ? qSubmissAuditCompanyEntity.userName.asc()
-          : qSubmissAuditCompanyEntity.userName.desc();
-      }
-      if (sortColumn.equals("shortDescription")) {
-        return (sortType.equals("asc")) ? qSubmissAuditCompanyEntity.translation.asc()
-          : qSubmissAuditCompanyEntity.translation.desc();
-      }
-      if (sortColumn.equals("createdOn")) {
-        return (sortType.equals("asc")) ? qSubmissAuditCompanyEntity.createdOn.asc()
-          : qSubmissAuditCompanyEntity.createdOn.desc();
-      }
-      if (sortColumn.equals("companyName")) {
-        return (sortType.equals("asc")) ? qSubmissAuditCompanyEntity.companyName.asc()
-          : qSubmissAuditCompanyEntity.companyName.desc();
-      }
+    if (levelIdOption.equals(LookupValues.PROJECT_LEVEL)) {
+      query.append(LookupValues.AUDIT_COUNT_PROJECT_QUERY);
+      addProjectFilters(auditLogDTO, query);
 
-    } else {
-      if (sortColumn.equals("userName")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.userName.asc()
-          : qSubmissAuditProjectEntity.userName.desc();
-      }
-      if (sortColumn.equals("shortDescription")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.translation.asc()
-          : qSubmissAuditProjectEntity.translation.desc();
-      }
-      if (sortColumn.equals("createdOn")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.createdOn.asc()
-          : qSubmissAuditProjectEntity.createdOn.desc();
-      }
-      if (sortColumn.equals("objectName")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.objectName.asc()
-          : qSubmissAuditProjectEntity.objectName.desc();
-      }
-      if (sortColumn.equals("projectName")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.projectName.asc()
-          : qSubmissAuditProjectEntity.projectName.desc();
-      }
-      if (sortColumn.equals("workType")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.workType.asc()
-          : qSubmissAuditProjectEntity.workType.desc();
-      }
-      if (sortColumn.equals("reason")) {
-        return (sortType.equals("asc")) ? qSubmissAuditProjectEntity.reason.asc()
-          : qSubmissAuditProjectEntity.reason.desc();
-      }
+    } else if (levelIdOption.equals(LookupValues.COMPANY_LEVEL)) {
+      query.append(LookupValues.AUDIT_COUNT_COMPANY_QUERY);
+      addCompanyFilters(auditLogDTO, query);
     }
-    return orderBy;
+
+    // Add common filtering values for both levelIdOptions
+    addCommonFilters(auditLogDTO, query);
+
+    return query.toString();
   }
 
   @Override

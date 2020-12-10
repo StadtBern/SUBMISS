@@ -79,10 +79,9 @@ public abstract class SubmissAuditProjectMapper {
     submissAuditProjectDTO.setWorkType(submissAuditProjectEntity.getWorkType());
     submissAuditProjectDTO.setReason(submissAuditProjectEntity.getReason());
     submissAuditProjectDTO.setResourceKey(submissAuditProjectEntity.getResourceKey());
+    submissAuditProjectDTO.setTenderDescription(submissAuditProjectEntity.getTenderDescription());
 
     return submissAuditProjectDTO;
 
   }
-
-
 }

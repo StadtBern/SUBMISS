@@ -119,7 +119,7 @@ public abstract class UserDTOtoSubmissUserDTOMapper {
     if (!secondaryDepartments.isEmpty()) {
       submissUserDto.setSecondaryDepartments(secondaryDepartments);
       submissUserDto.setSecondaryDepartmentsVersion(
-        userDto.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue()).getDbversion());
+        userDto.getAttribute(USER_ATTRIBUTES.SEC_DEPARTMENTS.getValue() + "_" + 1).getDbversion());
     }
 
     if (permittedOperations != null && !permittedOperations.isEmpty()) {

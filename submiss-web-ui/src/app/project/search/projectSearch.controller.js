@@ -119,6 +119,7 @@
             return;
           } else {
             vm.loadObjects();
+            vm.loadProjects();
             vm.loadProcedures();
             vm.loadDepartments();
             vm.loadDirectorates();

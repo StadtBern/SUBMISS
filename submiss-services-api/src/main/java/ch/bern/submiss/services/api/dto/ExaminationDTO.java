@@ -14,7 +14,6 @@
 package ch.bern.submiss.services.api.dto;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -33,6 +32,11 @@ public class ExaminationDTO {
 
   /** The criterion. */
   private List<CriterionDTO> criterion;
+
+  /**
+   * The number of passing applicants to the 2nd stage of Selektiv.
+   */
+  private Integer passingApplicants;
 
   /**
    * Gets the min grade.
@@ -106,11 +110,14 @@ public class ExaminationDTO {
     this.criterion = criterion;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
+  public Integer getPassingApplicants() {
+    return passingApplicants;
+  }
+
+  public void setPassingApplicants(Integer passingApplicants) {
+    this.passingApplicants = passingApplicants;
+  }
+
   @Override
   public String toString() {
     return "ExaminationDTO [minGrade=" + minGrade + ", maxGrade=" + maxGrade + ", submissionId="
