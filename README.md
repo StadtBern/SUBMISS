@@ -205,7 +205,7 @@ Finally, following files should be present:
  - org.ops4j.datasource-managed
 
 
-To build the project under your production environment, go to the root of the application and execute::
+To build the project under your production environment, go to the root of the application and execute:
 ```
 mvn clean install -DskipTests
 ```
@@ -214,7 +214,7 @@ Under submiss-dist/target you will find the Application as .tar.gz-File, that in
 
 * Create a folder in which the file should be extracted
 ```
-sudo mkdir submiss
+mkdir submiss
 ```
 
 * Extract the file 
@@ -224,7 +224,7 @@ tar zxvf submiss-dist-1.0.0.tar.gz -C submiss --strip 1
 
 * Navigate to submiss/bin and execute:
 ```
-./client
+./start
 ```
 This command will start Karaf.
 
