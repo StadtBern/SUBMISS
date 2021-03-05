@@ -135,7 +135,14 @@ public enum SecurityOperation {
   AWARD_INFO_FIRST_LEVEL_EDIT("AwardInfoFirstLevelEdit"),
   AWARD_INFO_FIRST_LEVEL_VIEW("AwardInfoFirstLevelView"),
   GENERATE_OPERATIONS_REPORT("GenerateOperationsReport"),
-  GENERATE_USERS_EXPORT_REPORT("GenerateUsersExportReport");
+  GENERATE_USERS_EXPORT_REPORT("GenerateUsersExportReport"),
+  ORDER_EXTENSION_VIEW("OrderExtensionView"),
+  NACHTRAG_VIEW("NachtragView"),
+  NACHTRAG_CREATE("NachtragCreate"),
+  NACHTRAG_EDIT("NachtragEdit"),
+  NACHTRAG_DELETE("NachtragDelete"),
+  NACHTRAG_CLOSE("NachtragClose"),
+  NACHTRAG_REOPEN("NachtragReopen");
 
   private String value;
 

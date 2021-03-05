@@ -1,0 +1,24 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_structure_nachtrag.0005.xml">
+    <sql>
+      ALTER TABLE SUB_ADDENDUM
+      MODIFY DISCOUNT2 DECIMAL(15, 2) NULL DEFAULT NULL COMMENT 'Zusatzrabatt.';
+
+      ALTER TABLE SUB_ADDENDUM
+      MODIFY IS_DISCOUNT2_PERCENTAGE BIT(1) NULL DEFAULT b'1' COMMENT 'Kennzeichnet, ob das Zusatzrabatt in %. Mögliche Werte: 1 (true), 0 (false).';
+
+      ALTER TABLE SUB_ADDENDUM
+      ADD TITLE VARCHAR(100) NULL;
+
+      ALTER TABLE SUB_ADDENDUM
+      ADD DISCOUNT_DESCRIPTION VARCHAR(100) NULL;
+
+      ALTER TABLE SUB_ADDENDUM
+      ADD TOTAL_SUM TEXT NULL;
+    </sql>
+  </changeSet>
+</databaseChangeLog>

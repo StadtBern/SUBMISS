@@ -127,9 +127,12 @@ public abstract class OfferDTOMapper {
     offerEntity.setMigratedProcedure(dto.getMigratedProcedure());
     offerEntity.setCreatedOn(dto.getCreatedOn());
     offerEntity.setCreatedBy(dto.getCreatedBy());
+    offerEntity.setUpdatedOn(dto.getUpdatedOn());
+    offerEntity.setUpdatedBy(dto.getUpdatedBy());
     offerEntity.setApplicationInformation(dto.getApplicationInformation());
     offerEntity.setExcludedFirstLevel(dto.getExcludedFirstLevel());
-
+    offerEntity.setNachtragSubmittent(dto.getNachtragSubmittent());
+    offerEntity.setManualAmount(dto.getManualAmount());
     return offerEntity;
   }
 
@@ -256,6 +259,7 @@ public abstract class OfferDTOMapper {
     offerDTO.setCreatedOn(entity.getCreatedOn());
     offerDTO.setCreatedBy(entity.getCreatedBy());
     offerDTO.setUpdatedOn(entity.getUpdatedOn());
+    offerDTO.setUpdatedBy(entity.getUpdatedBy());
     offerDTO.setApplicationInformation(entity.getApplicationInformation());
     offerDTO.setExclusionReason(entity.getExclusionReason());
     // Return a set of MasterListValueHistoryDTO instead of MasterListValueDTOs.
@@ -265,6 +269,8 @@ public abstract class OfferDTOMapper {
     offerDTO.setExclusionReasonsFirstLevel(
       masterListValueEntitySetToMasterListValueDTOSet(entity.getExclusionReasonsFirstLevel()));
     offerDTO.setExcludedFirstLevel(entity.getExcludedFirstLevel());
+    offerDTO.setNachtragSubmittent(entity.getNachtragSubmittent());
+    offerDTO.setManualAmount(entity.getManualAmount());
     return offerDTO;
   }
 

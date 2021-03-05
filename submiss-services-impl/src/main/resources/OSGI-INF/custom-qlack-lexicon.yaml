@@ -380,3 +380,14 @@ translations:
       - contract_document_error: Der Vertrag kann nicht erstellt werden, da kein Zuschlagsempfänger für diese Submission vorliegt.
       - passing_applicants_error_message: Die Anzahl darf nicht kleiner 0 oder grösser als die Anzahl der teilnehmenden Bewerber sein.
       - mail_with_huge_content: Der E-Mail-Entwurf konnte aufgrund der hohen Zeichenanzahl (maximal 2000 Zeichen) nicht vollständig befüllt werden. Bitte kopieren Sie den Textentwurf aus der Vertragsvorlage manuell in den geöffneten E-Mail-Entwurf.
+      - NACHTRAG_CLOSE: Nachtrag abgeschlossen
+      - NACHTRAG_REOPEN: Wiederaufnahme Nachtrag
+      - nachtrag_mandatory_error_message: Sie müssen alle Pflichtfelder ausfüllen um den Nachtrag erfassen zu können.
+      - nachtrag_date_before_start_date_error_message: Bitte geben Sie ein gültiges Datum ein. Beachten Sie, dass der Nachtragsdatum nicht jünger als der Eingabetermin sein darf.
+      - nachtrag_deleted_message: Der ausgewählte Nachtrag wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
+      - mandatory_nachtrag_document_message: Um fortfahren zu können, müssen Sie einmal den Nachtrag zum Werkvertrag erstellt haben.
+      - navigate_to_unselected_nachtrag_message: Bitte wählen Sie einen Nachtrag aus, um weiter fortzufahren.
+      - navigate_to_unsaved_nachtrag_message: Bitte speichern Sie die Maske des Nachtrags ab, bevor Sie mit der Generierung des Dokuments fortfahren.
+      - navigate_to_old_nachtrag_submittent_message : Der Zuschlagsempfänger ist obsolet. Der Nachtrag kann nicht erneut generiert werden.
+      - nachtrag_max_size_title_message: "Titel: Der Wert darf maximal 100 Zeichen lang sein."
+      - nachtrag_max_size_discount_name_message: "Rabattbeschreibung: Der Wert darf maximal 100 Zeichen lang sein."

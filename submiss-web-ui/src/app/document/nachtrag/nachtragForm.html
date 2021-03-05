@@ -1,0 +1,207 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<form name="nachtragCtrl.nachtragForm" id="nachtragForm" ng-submit="nachtragCtrl.save()" shows-validation-errors>
+  <fieldset ng-disabled="nachtragCtrl.disableForm(nachtragCtrl.nachtrag)">
+    <div class="col-sm-10 col-sm-offset-1">
+      <div class="col-sm-12">
+        <div class="alert alert-danger" ng-if="nachtragCtrl.nachtragForm.$invalid || nachtragCtrl.errorFieldsVisible"
+             role="alert">
+          <field-error form-element-name="nachtragMandatoryErrorField" translate name="error"></field-error>
+          <field-error form-element-name="nachtragMaxSizeErrorField" translate name="error"></field-error>
+          <field-error form-element-name="nachtragDateErrorField" translate name="error"></field-error>
+        </div>
+        <input name="nachtragMandatoryErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="nachtragMaxSizeErrorField" ng-hide="true" data-ng-model="fd">
+        <input name="nachtragDateErrorField" ng-hide="true" data-ng-model="fd">
+      </div>
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <div class="form-group" ng-class="{'has-error': nachtragCtrl.nachtragForm.title.$invalid}">
+            <label for="title">Titel
+              <span class="mandatory">*</span>
+            </label>
+            <input class="form-control" value="" id="title" name="title" placeholder="" type="text"
+              ng-model="nachtragCtrl.nachtrag.title">
+          </div>
+
+          <div class="form-group"  ng-class="{'has-error': nachtragCtrl.nachtragForm.nachtragDate.$invalid}">
+            <label for="nachtragDate">Nachtragsdatum
+              <span class="mandatory">*</span>
+            </label>
+            <div class="input-group">
+              <input class="form-control datepicker" id="nachtragDate" name="nachtragDate" type="text"
+                uib-datepicker-popup="dd.MM.yyyy" is-open="nachtragCtrl.openNachtragDate.opened"
+                ng-model="nachtragCtrl.nachtrag.nachtragDate" ng-click="nachtragCtrl.openNachtragDate()">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button" data-ng-click="nachtragCtrl.openNachtragDate()">
+                  <span class="fa fa-calendar"></span>
+                </button>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group"  ng-class="{'has-error': nachtragCtrl.nachtragForm.grossAmount.$invalid}">
+            <label for="grossAmount">Bruttobetrag <span class="mandatory">*</span></label> <input class="form-control"
+              id="bruttobetrag" name="grossAmount" df-currency data-ng-model="nachtragCtrl.nachtrag.grossAmount"
+              placeholder="" type="text" ng-change="nachtragCtrl.nachtragForm.grossAmount.$invalid =
+              nachtragCtrl.ignoreInvalidNumber(nachtragCtrl.nachtragForm.grossAmount)">
+          </div>
+
+          <div class="form-group"  ng-class="{'has-error': nachtragCtrl.nachtragForm.discount.$invalid}">
+            <label for="discount">Rabatt</label> <input class="form-control" id="discount" name="discount" disabled
+              ng-change="nachtragCtrl.nachtragForm.discount.$invalid =
+            nachtragCtrl.ignoreInvalidNumber(nachtragCtrl.nachtragForm.discount)" data-ng-model="nachtragCtrl.nachtrag.discount"
+              df-currency type="text">
+          </div>
+
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-12">
+                <label class="checkbox-inline"> <input type="checkbox" id="isDiscountPercentage" checked="checked"
+                    disabled value="option7" data-ng-model="nachtragCtrl.nachtrag.isDiscountPercentage">
+                  Rabatt in %
+                </label> <span class="label label-default" ng-if="nachtragCtrl.nachtrag.isDiscountPercentage">
+                  {{nachtragCtrl.customRoundNumber(nachtragCtrl.calculateCHFDiscountValue(nachtragCtrl.nachtrag.grossAmount, nachtragCtrl.nachtrag.discount))}}
+                  CHF</span>
+                <span class="label label-default" ng-if="!nachtragCtrl.nachtrag.isDiscountPercentage">0.00
+                  CHF</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" ng-class="{'has-error': nachtragCtrl.nachtragForm.discountDescription.$invalid}">
+            <label for="rabattbeschreibung">Rabattbeschreibung</label>
+            <input class="form-control" value="" id="discountDescription" name="discountDescription" placeholder=""
+              type="text" ng-model="nachtragCtrl.nachtrag.discountDescription">
+          </div>
+          <div class="form-group">
+            <label for="buildingCosts">Baunebenkosten</label> <input class="form-control" id="buildingCosts"
+                                                                     name="buildingCosts" type="text" df-currency ng-change="nachtragCtrl.nachtragForm.buildingCosts.$invalid =
+											nachtragCtrl.ignoreInvalidNumber(nachtragCtrl.nachtragForm.buildingCosts)"
+                                                                     data-ng-model="nachtragCtrl.nachtrag.buildingCosts">
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-12">
+                <label class="checkbox-inline"> <input type="checkbox" id="isBuildingCostsPercentage"
+                                                       checked="checked" value="option8"
+                                                       data-ng-model="nachtragCtrl.nachtrag.isBuildingCostsPercentage">
+                  Baunebenkosten in %
+                </label> <span class="label label-default"
+                               ng-if="nachtragCtrl.nachtrag.isBuildingCostsPercentage">{{nachtragCtrl.customRoundNumber(nachtragCtrl.calculateCHFBuildingCostsValue(nachtragCtrl.nachtrag.grossAmount,nachtragCtrl.nachtrag.discount,nachtragCtrl.nachtrag.isDiscountPercentage,nachtragCtrl.nachtrag.discount2,nachtragCtrl.nachtrag.isDiscount2Percentage,nachtragCtrl.nachtrag.buildingCosts))}}
+                          CHF</span>
+                <span class="label label-default" ng-if="!nachtragCtrl.nachtrag.isBuildingCostsPercentage">0.00
+                          CHF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6">
+          <div class="form-group" ng-class="{'has-error': nachtragCtrl.nachtragForm.discount2.$invalid}">
+            <label for="discount2">Zusatzrabatt</label> <input df-currency ng-change="nachtragCtrl.nachtragForm.discount2.$invalid =
+            nachtragCtrl.ignoreInvalidNumber(nachtragCtrl.nachtragForm.discount2)" class="form-control" id="discount2"
+              name="discount2" type="text" data-ng-model="nachtragCtrl.nachtrag.discount2">
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-12">
+                <label class="checkbox-inline"> <input type="checkbox" id="isDiscount2Percentage" checked="checked"
+                    value="option8" data-ng-model="nachtragCtrl.nachtrag.isDiscount2Percentage">
+                  Zusatzrabatt in %
+                </label> <span class="label label-default"
+                  ng-if="nachtragCtrl.nachtrag.isDiscount2Percentage">{{nachtragCtrl.customRoundNumber(nachtragCtrl.calculateCHFDiscount(nachtragCtrl.nachtrag.grossAmount, nachtragCtrl.nachtrag.discount2))}}
+                  CHF</span>
+                <span class="label label-default" ng-if="!nachtragCtrl.nachtrag.isDiscount2Percentage">0.00
+                  CHF</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="isVatPercentage">MWST in %</label>
+            <div class="row">
+              <div class="col-sm-6">
+                <ui-select name="vat" data-ng-model="nachtragCtrl.tempVatDD" theme="select2"
+                  ng-disabled="!(nachtragCtrl.tempVat == '0.00' || nachtragCtrl.tempVat == '0.0' || nachtragCtrl.tempVat == '0' || nachtragCtrl.tempVat == '')
+                                  || nachtragCtrl.disableForm(nachtragCtrl.nachtrag)">
+                  <ui-select-match allow-clear="true"> <span>
+                      {{$select.selected | number:2 }}</span> </ui-select-match>
+                  <ui-select-choices
+                    repeat="vatValue in nachtragCtrl.vatValues | filter: $select.search track by vatValue">
+                    <span ng-bind="vatValue"></span> </ui-select-choices>
+                </ui-select>
+              </div>
+              <div class="col-sm-6" style="margin-top:5px">
+                <span class="label label-default"
+                  ng-if="nachtragCtrl.tempVat == '0.00' || nachtragCtrl.tempVat == '0.0' || nachtragCtrl.tempVat == '0' || nachtragCtrl.tempVat == ''">{{nachtragCtrl.customRoundNumber(nachtragCtrl.calculateCHFMWSTValueCalc(nachtragCtrl.calculateNet(nachtragCtrl.nachtrag.grossAmount, nachtragCtrl.nachtrag.discount, nachtragCtrl.nachtrag.isDiscountPercentage, nachtragCtrl.nachtrag.buildingCosts, nachtragCtrl.nachtrag.isBuildingCostsPercentage,nachtragCtrl.nachtrag.discount2, nachtragCtrl.nachtrag.isDiscount2Percentage), nachtragCtrl.nachtrag.vat, nachtragCtrl.nachtrag.isVatPercentage, nachtragCtrl.tempVat, nachtragCtrl.tempVatDD))}}
+                  CHF</span>
+                <span class="label label-default"
+                  ng-if="!(nachtragCtrl.tempVat == '0.00' || nachtragCtrl.tempVat == '0.0' || nachtragCtrl.tempVat == '0' || nachtragCtrl.tempVat == '')">0.00
+                  CHF</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="vat">MWST</label> <input class="form-control" id="tempVat" name="tempVat"
+              data-ng-model="nachtragCtrl.tempVat"
+              ng-change="nachtragCtrl.nachtragForm.tempVat.$invalid = nachtragCtrl.ignoreInvalidNumber(nachtragCtrl.nachtragForm.tempVat)"
+              placeholder="" type="text" df-currency>
+          </div>
+
+          <div class="form-group">
+            <label for="nettobetragin">Nettobetrag inkl. MWST </label> <input class="form-control"
+                disabled
+                id="nettobetragin"
+                ng-value="nachtragCtrl.customRoundNumber(nachtragCtrl.calculateNet(nachtragCtrl.nachtrag.grossAmount, nachtragCtrl.nachtrag.discount, nachtragCtrl.nachtrag.isDiscountPercentage, nachtragCtrl.nachtrag.buildingCosts, nachtragCtrl.nachtrag.isBuildingCostsPercentage, nachtragCtrl.nachtrag.discount2, nachtragCtrl.nachtrag.isDiscount2Percentage)
+                + nachtragCtrl.calculateCHFMWSTValueCalc(nachtragCtrl.calculateNet(nachtragCtrl.nachtrag.grossAmount, nachtragCtrl.nachtrag.discount, nachtragCtrl.nachtrag.isDiscountPercentage, nachtragCtrl.nachtrag.buildingCosts, nachtragCtrl.nachtrag.isBuildingCostsPercentage, nachtragCtrl.nachtrag.discount2, nachtragCtrl.nachtrag.isDiscount2Percentage), nachtragCtrl.nachtrag.vat, nachtragCtrl.nachtrag.isVatPercentage, nachtragCtrl.tempVat, nachtragCtrl.tempVatDD))"
+                type="text"
+                placeholder="">
+          </div>
+
+          <div class="form-group">
+            <label for="nettobetrag">Nettobetrag exkl. MWST</label> <input class="form-control" disabled name="amount"
+              ng-value="nachtragCtrl.customRoundNumber(nachtragCtrl.calculateNet(nachtragCtrl.nachtrag.grossAmount, nachtragCtrl.nachtrag.discount, nachtragCtrl.nachtrag.isDiscountPercentage, nachtragCtrl.nachtrag.buildingCosts, nachtragCtrl.nachtrag.isBuildingCostsPercentage, nachtragCtrl.nachtrag.discount2, nachtragCtrl.nachtrag.isDiscount2Percentage))"
+              type="text" placeholder="">
+          </div>
+
+          <div class="form-group">
+            <label for="gesamtsumme">Gesamtsumme</label>
+            <textarea id="gesamtsumme" name="gesamtsumme" rows="3"
+                      class="form-control ng-pristine ng-untouched ng-valid ng-not-empty"
+                      ng-model="nachtragCtrl.gesamtsumme" disabled> </textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-12 col-md-12">
+          <div class="form-group" ng-class="{'has-error': nachtragCtrl.nachtragForm.notes.$invalid}">
+            <label for="notes">Nachtragsinformation
+            </label>
+            <textarea id="notes" name="notes" class="form-control" ng-model="nachtragCtrl.nachtrag.notes"> </textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-10 col-sm-offset-1 btn-bar">
+      <button type="submit" class="btn btn-primary" ng-disabled="!nachtragCtrl.nachtragForm.$dirty">Speichern</button>
+      <button type="button" class="btn btn-default"
+        ng-click="nachtragCtrl.resetPage(nachtragCtrl.nachtragForm.$dirty)">Abbrechen</button>
+    </div>
+  </fieldset>
+</form>

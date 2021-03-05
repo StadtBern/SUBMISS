@@ -761,6 +761,34 @@
     {
       "name": "NegotiatedCompetitionTender.FormalAuditView",
       "description": "FormellePrüfung"
+    },
+    {
+      "name": "OrderExtensionView",
+      "description": "Auftragserweiterung anzeigen"
+    },
+    {
+      "name": "NachtragView",
+      "description": "Nachträge anzeigen"
+    },
+    {
+      "name": "NachtragCreate",
+      "description": "Nachtrag erstellen"
+    },
+    {
+      "name": "NachtragEdit",
+      "description": "Nachtrag bearbeiten"
+    },
+    {
+      "name": "NachtragDelete",
+      "description": "Nachtrag entfernen"
+    },
+    {
+      "name": "NachtragClose",
+      "description": "Nachtrag abschliessen"
+    },
+    {
+      "name": "NachtragReopen",
+      "description": "Nachtrag wiederaufnehmen"
     }
 	],
 	"groupHasOperations": [
@@ -2079,6 +2107,66 @@
     {
       "groupName": "Admin",
       "operationName": "UserOperationUserView"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "OrderExtensionView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "OrderExtensionView"
+    },
+    {
+      "groupName": "Dir",
+      "operationName": "OrderExtensionView"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NachtragView"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NachtragView"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NachtragCreate"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NachtragCreate"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NachtragEdit"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NachtragEdit"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NachtragDelete"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NachtragDelete"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NachtragClose"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NachtragClose"
+    },
+    {
+      "groupName": "Admin",
+      "operationName": "NachtragReopen"
+    },
+    {
+      "groupName": "PL",
+      "operationName": "NachtragReopen"
     }
 	]
 }

@@ -119,6 +119,11 @@ rule "RU001"
 	&& $indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110")))
 	|| ($previousStatusId.intValue() == 50
 	&& $indexOfCurrentState.intValue() == LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110"))))) do[PT22]
+
+	if (($isRole_admin || $isRole_PL) && !$isTenant_KB
+	  && ($submission.getIsNachtragCreated() != null && $submission.getIsNachtragCreated())
+  	&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260"))
+  	&& $indexOfCurrentState.intValue() <= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("270")))) do[PT26]
 then
 	//templates without restrictions should be added here
 	then[PT01]
@@ -166,4 +171,6 @@ then
 		templateCodes.add("PT22");
 	then[PT25] //Zuschlag/Absage
 		templateCodes.add("PT24");
+	then[PT26] //Nachtrag
+    templateCodes.add("PT26");
 end

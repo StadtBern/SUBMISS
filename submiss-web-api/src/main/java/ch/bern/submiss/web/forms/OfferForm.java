@@ -17,7 +17,6 @@ import ch.bern.submiss.services.api.dto.OfferCriterionDTO;
 import ch.bern.submiss.services.api.dto.OfferSubcriterionDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +24,7 @@ import java.util.List;
  * The Class OfferForm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OfferForm extends AbstractForm {
+public class OfferForm extends AbstractOfferForm {
 
   /**
    * The submittent.
@@ -68,11 +67,6 @@ public class OfferForm extends AbstractForm {
   private MasterListValueHistoryForm settlement;
 
   /**
-   * The gross amount.
-   */
-  private Double grossAmount;
-
-  /**
    * The gross amount corrected.
    */
   private Double grossAmountCorrected;
@@ -81,31 +75,6 @@ public class OfferForm extends AbstractForm {
    * The is corrected.
    */
   private Boolean isCorrected;
-
-  /**
-   * The discount.
-   */
-  private Double discount;
-
-  /**
-   * The is discount percentage.
-   */
-  private Boolean isDiscountPercentage;
-
-  /**
-   * The vat.
-   */
-  private Double vat;
-
-  /**
-   * The discount 2.
-   */
-  private Double discount2;
-
-  /**
-   * The is discount 2 percentage.
-   */
-  private Boolean isDiscount2Percentage;
 
   /**
    * The discount 2 days.
@@ -121,11 +90,6 @@ public class OfferForm extends AbstractForm {
    * The modified on.
    */
   private Date modifiedOn;
-
-  /**
-   * The notes.
-   */
-  private String notes;
 
   /**
    * The rank.
@@ -146,21 +110,6 @@ public class OfferForm extends AbstractForm {
    * The application date.
    */
   private Date applicationDate;
-
-  /**
-   * The is vat percentage.
-   */
-  private Boolean isVatPercentage;
-
-  /**
-   * The building costs.
-   */
-  private Double buildingCosts;
-
-  /**
-   * The is building costs percentage.
-   */
-  private Boolean isBuildingCostsPercentage;
 
   /**
    * The ancilliary amount gross.
@@ -253,11 +202,6 @@ public class OfferForm extends AbstractForm {
   private Boolean fromMigration;
 
   /**
-   * The amount.
-   */
-  private BigDecimal amount;
-
-  /**
    * The discount in percentage.
    */
   private BigDecimal discountInPercentage;
@@ -345,24 +289,14 @@ public class OfferForm extends AbstractForm {
   private Boolean isExcludedFromAwardProcess;
 
   /**
-   * The create by.
-   */
-  private String createdBy;
-
-  /**
-   * The created on.
-   */
-  private Timestamp createdOn;
-
-  /**
-   * The updated on.
-   */
-  private Timestamp updatedOn;
-
-  /**
    * The application information.
    */
   private String applicationInformation;
+
+  /**
+   * The is nachtrag submittent.
+   */
+  private Boolean isNachtragSubmittent;
 
   /**
    * Gets the submittent.
@@ -491,24 +425,6 @@ public class OfferForm extends AbstractForm {
   }
 
   /**
-   * Gets the gross amount.
-   *
-   * @return the gross amount
-   */
-  public Double getGrossAmount() {
-    return grossAmount;
-  }
-
-  /**
-   * Sets the gross amount.
-   *
-   * @param grossAmount the new gross amount
-   */
-  public void setGrossAmount(Double grossAmount) {
-    this.grossAmount = grossAmount;
-  }
-
-  /**
    * Gets the gross amount corrected.
    *
    * @return the gross amount corrected
@@ -542,96 +458,6 @@ public class OfferForm extends AbstractForm {
    */
   public void setIsCorrected(Boolean isCorrected) {
     this.isCorrected = isCorrected;
-  }
-
-  /**
-   * Gets the discount.
-   *
-   * @return the discount
-   */
-  public Double getDiscount() {
-    return discount;
-  }
-
-  /**
-   * Sets the discount.
-   *
-   * @param discount the new discount
-   */
-  public void setDiscount(Double discount) {
-    this.discount = discount;
-  }
-
-  /**
-   * Gets the checks if is discount percentage.
-   *
-   * @return the checks if is discount percentage
-   */
-  public Boolean getIsDiscountPercentage() {
-    return isDiscountPercentage;
-  }
-
-  /**
-   * Sets the checks if is discount percentage.
-   *
-   * @param isDiscountPercentage the new checks if is discount percentage
-   */
-  public void setIsDiscountPercentage(Boolean isDiscountPercentage) {
-    this.isDiscountPercentage = isDiscountPercentage;
-  }
-
-  /**
-   * Gets the vat.
-   *
-   * @return the vat
-   */
-  public Double getVat() {
-    return vat;
-  }
-
-  /**
-   * Sets the vat.
-   *
-   * @param vat the new vat
-   */
-  public void setVat(Double vat) {
-    this.vat = vat;
-  }
-
-  /**
-   * Gets the discount 2.
-   *
-   * @return the discount 2
-   */
-  public Double getDiscount2() {
-    return discount2;
-  }
-
-  /**
-   * Sets the discount 2.
-   *
-   * @param discount2 the new discount 2
-   */
-  public void setDiscount2(Double discount2) {
-    this.discount2 = discount2;
-  }
-
-  /**
-   * Gets the checks if is discount 2 percentage.
-   *
-   * @return the checks if is discount 2 percentage
-   */
-  public Boolean getIsDiscount2Percentage() {
-    return isDiscount2Percentage;
-  }
-
-  /**
-   * Sets the checks if is discount 2 percentage.
-   *
-   * @param isDiscount2Percentage the new checks if is discount 2 percentage
-   */
-  public void setIsDiscount2Percentage(Boolean isDiscount2Percentage) {
-    this.isDiscount2Percentage = isDiscount2Percentage;
   }
 
   /**
@@ -686,24 +512,6 @@ public class OfferForm extends AbstractForm {
    */
   public void setModifiedOn(Date modifiedOn) {
     this.modifiedOn = modifiedOn;
-  }
-
-  /**
-   * Gets the notes.
-   *
-   * @return the notes
-   */
-  public String getNotes() {
-    return notes;
-  }
-
-  /**
-   * Sets the notes.
-   *
-   * @param notes the new notes
-   */
-  public void setNotes(String notes) {
-    this.notes = notes;
   }
 
   /**
@@ -776,60 +584,6 @@ public class OfferForm extends AbstractForm {
    */
   public void setApplicationDate(Date applicationDate) {
     this.applicationDate = applicationDate;
-  }
-
-  /**
-   * Gets the checks if is vat percentage.
-   *
-   * @return the checks if is vat percentage
-   */
-  public Boolean getIsVatPercentage() {
-    return isVatPercentage;
-  }
-
-  /**
-   * Sets the checks if is vat percentage.
-   *
-   * @param isVatPercentage the new checks if is vat percentage
-   */
-  public void setIsVatPercentage(Boolean isVatPercentage) {
-    this.isVatPercentage = isVatPercentage;
-  }
-
-  /**
-   * Gets the building costs.
-   *
-   * @return the building costs
-   */
-  public Double getBuildingCosts() {
-    return buildingCosts;
-  }
-
-  /**
-   * Sets the building costs.
-   *
-   * @param buildingCosts the new building costs
-   */
-  public void setBuildingCosts(Double buildingCosts) {
-    this.buildingCosts = buildingCosts;
-  }
-
-  /**
-   * Gets the checks if is building costs percentage.
-   *
-   * @return the checks if is building costs percentage
-   */
-  public Boolean getIsBuildingCostsPercentage() {
-    return isBuildingCostsPercentage;
-  }
-
-  /**
-   * Sets the checks if is building costs percentage.
-   *
-   * @param isBuildingCostsPercentage the new checks if is building costs percentage
-   */
-  public void setIsBuildingCostsPercentage(Boolean isBuildingCostsPercentage) {
-    this.isBuildingCostsPercentage = isBuildingCostsPercentage;
   }
 
   /**
@@ -1138,24 +892,6 @@ public class OfferForm extends AbstractForm {
    */
   public void setMigratedProject(String migratedProject) {
     this.migratedProject = migratedProject;
-  }
-
-  /**
-   * Gets the amount.
-   *
-   * @return the amount
-   */
-  public BigDecimal getAmount() {
-    return amount;
-  }
-
-  /**
-   * Sets the amount.
-   *
-   * @param amount the new amount
-   */
-  public void setAmount(BigDecimal amount) {
-    this.amount = amount;
   }
 
   /**
@@ -1482,43 +1218,6 @@ public class OfferForm extends AbstractForm {
     this.isExcludedFromAwardProcess = isExcludedFromAwardProcess;
   }
 
-
-  /**
-   * Gets the created by.
-   *
-   * @return the created by
-   */
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  /**
-   * Sets the created by.
-   *
-   * @param createdBy the new created by
-   */
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
-  /**
-   * Gets the created on.
-   *
-   * @return the created on
-   */
-  public Timestamp getCreatedOn() {
-    return createdOn;
-  }
-
-  /**
-   * Sets the created on.
-   *
-   * @param createdOn the new created on
-   */
-  public void setCreatedOn(Timestamp createdOn) {
-    this.createdOn = createdOn;
-  }
-
   /**
    * Gets the application information.
    *
@@ -1554,21 +1253,12 @@ public class OfferForm extends AbstractForm {
   public void setExcludedFirstLevel(Boolean excludedFirstLevel) {
     this.excludedFirstLevel = excludedFirstLevel;
   }
-  /**
-   * Gets the updated on.
-   *
-   * @return the updatedOn
-   */
-  public Timestamp getUpdatedOn() {
-    return updatedOn;
+
+  public Boolean getNachtragSubmittent() {
+    return isNachtragSubmittent;
   }
 
-  /**
-   * Sets the updated on.
-   *
-   * @param updatedOn the updatedOn
-   */
-  public void setUpdatedOn(Timestamp updatedOn) {
-    this.updatedOn = updatedOn;
+  public void setNachtragSubmittent(Boolean nachtragSubmittent) {
+    isNachtragSubmittent = nachtragSubmittent;
   }
 }

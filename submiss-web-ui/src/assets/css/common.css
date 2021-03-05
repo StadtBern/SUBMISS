@@ -1,4 +1,5 @@
 @import url('fonts.css');
+
 /* === general rules === */
 a {
   cursor: pointer;
@@ -114,13 +115,14 @@ h5 {
 .versionieren {
   padding-left: 0;
 }
+
 /* === ./general rules === */
 /* === main-nav === */
 .user {
   padding: 1em 0;
 }
 
-.main-nav .navbar-nav > li {
+.main-nav .navbar-nav>li {
   cursor: pointer;
 }
 
@@ -194,9 +196,11 @@ h5 {
   box-shadow: 0 -2px 0 transparent;
 }
 
-.navbar, .navbar.navbar-default.main-nav.affix-top {
+.navbar,
+.navbar.navbar-default.main-nav.affix-top {
   min-height: 39px;
 }
+
 /* === ./main-nav === */
 /* === breadcrumb === */
 .breadcrumb {
@@ -216,6 +220,7 @@ h5 {
 .breadcrumb>.active {
   font-weight: 600;
 }
+
 /* === ./breadcrumb === */
 .nav-tabs>li>a {
   padding: 8px;
@@ -237,8 +242,8 @@ h5 {
   border-bottom: 3px solid #555;
 }
 
-.subTabs  .nav>li>a:hover,
-.subTabs  .nav>li>a:focus {
+.subTabs .nav>li>a:hover,
+.subTabs .nav>li>a:focus {
   text-decoration: none;
   background-color: transparent;
   border-color: transparent;
@@ -259,7 +264,7 @@ h5 {
   padding: 15px 7px;
 }
 
-.nav-tabs + div .PaginationContainer {
+.nav-tabs+div .PaginationContainer {
   margin-top: 1em;
 }
 
@@ -292,6 +297,7 @@ form .tab-content h4,
 .section-card-item .col-sm-4 {
   padding-top: 2px;
 }
+
 /* The following removes IE issue with cursor in input fields */
 .modal.fade {
   transition: opacity .3s linear;
@@ -335,7 +341,7 @@ form .tab-content h4,
 }
 
 .modal-body .card-box,
-.card-box .card-box  {
+.card-box .card-box {
   box-shadow: none;
   border: none;
   padding: 0;
@@ -345,6 +351,7 @@ form .tab-content h4,
   margin: 9px;
   vertical-align: sub;
 }
+
 /* === form === */
 form h4 {
   font-size: 15px;
@@ -365,7 +372,7 @@ form .form-control:not(textarea) {
 }
 
 .form-control#companyAdminNotes,
-.form-control#companyNotes{
+.form-control#companyNotes {
   height: 50px;
 }
 
@@ -449,6 +456,7 @@ form .btn {
 .whiteBg .select2-container--default.select2-container--disabled .select2-selection--multiple {
   background: #fff none repeat scroll 0 0;
 }
+
 /* select 2 older version */
 .select2-container-multi .select2-choices {
   border-color: #ccc;
@@ -462,14 +470,22 @@ form .btn {
 .select2-container-multi .select2-container-active .select2-choices {
   border-color: #ccc;
 }
+
 .select2-container.select2-container-active a {
   border: 1px solid #ccc;
   box-shadow: none;
 }
+
 /* select 2 older version */
 .radio-inline+.radio-inline,
 .checkbox-inline+.checkbox-inline {
   margin-top: 0;
+}
+
+.nachtrag-radio-inline {
+  margin-top: 4px;
+  margin-right: 2px;
+  margin-left: 2px;
 }
 
 .checkbox-inline {
@@ -508,7 +524,7 @@ form .input-group-btn .btn {
   min-height: 100%;
   font-size: 100px;
   text-align: right;
-  filter: alpha(opacity = 0);
+  filter: alpha(opacity=0);
   opacity: 0;
   outline: none;
   background: white;
@@ -560,7 +576,7 @@ strong.ng-binding.fabe-kaio-style {
   max-width: 25em;
 }
 
-.entry.input-group button + button {
+.entry.input-group button+button {
   display: block;
   margin-top: 8px;
 }
@@ -574,18 +590,21 @@ strong.ng-binding.fabe-kaio-style {
 .kopie.input-group {
   margin-bottom: 10px;
 }
+
 /* === FOR MOCKS ONLY, IN DEVELOPMENT MORE EFFICIENT SOLUTION SHOULD BE ADOPT IT === */
 .berechtigter.modal-open .select2-dropdown {
   width: 8.7% !important;
   right: 0;
   left: 34.9%;
 }
+
 /* === FOR MOCKS ONLY, IN DEVELOPMENT MORE EFFICIENT SOLUTION SHOULD BE ADOPT IT === */
 .form-group.noLabel {
   margin-top: 3em;
 }
 
-.noLabel, .marginTop {
+.noLabel,
+.marginTop {
   margin-top: 26px;
 }
 
@@ -633,7 +652,7 @@ tr .accordian-body {
   padding: 0 0 0 4em;
 }
 
-.tableBtnAction  tr .accordian-body {
+.tableBtnAction tr .accordian-body {
   padding: .25em 0 0 2em;
 }
 
@@ -704,7 +723,7 @@ tr.accordion-toggle.collapsed i.fa-caret-right {
   display: block;
 }
 
-tr.accordion-toggle.collapsed  i.fa-caret-down {
+tr.accordion-toggle.collapsed i.fa-caret-down {
   display: none;
 }
 
@@ -719,6 +738,7 @@ tr.accordion-toggle.collapsed  i.fa-caret-down {
 .table .btn-group .btn-primary {
   padding: 2px;
 }
+
 /* POSSIBLE NEED TO SPECIFY RULE ON TABLE */
 .formellePruf td .form-control {
   max-width: 80%;
@@ -728,6 +748,7 @@ tr.accordion-toggle.collapsed  i.fa-caret-down {
 table.formellePruf tr td table td {
   font-style: italic;
 }
+
 /* POSSIBLE NEED TO SPECIFY RULE ON TABLE */
 .gekoTable th {
   min-width: 9em;
@@ -746,6 +767,7 @@ table[ng-table='documentListCtr.tableParams'] td {
 table[ng-table='documentListCtr.tableParams'] td.w110 {
   min-width: 6em;
 }
+
 /* === ./form === */
 /* === table toolbar === */
 .ToolbarContainer {
@@ -791,6 +813,7 @@ table[ng-table='documentListCtr.tableParams'] td.w110 {
   font-size: 14px;
   margin-right: 6px;
 }
+
 /* === ./table toolbar === */
 /* === table === */
 .table>thead>tr>th,
@@ -815,8 +838,7 @@ table[ng-table='documentListCtr.tableParams'] td.w110 {
   padding: 3px;
 }
 
-.table-condensed
-th .fa-sort {
+.table-condensed th .fa-sort {
   margin-left: 2px;
 }
 
@@ -851,8 +873,7 @@ th .fa-sort {
   border: 1px solid #f2f2f2;
 }
 
-.multiEdit .btn.action:focus {
-}
+.multiEdit .btn.action:focus {}
 
 td ul {
   list-style-type: none;
@@ -870,16 +891,19 @@ td ol {
 table td[title="'Status'"] {
   font-family: FontAwesome, serif;
 }
+
 /* RANKING TABLES */
-.table td.leftborder, .table th.leftborder {
+.table td.leftborder,
+.table th.leftborder {
   border-left: 1px solid #cfcfcf !important;
 }
 
-.table td.rightborder, .table th.rightborder {
+.table td.rightborder,
+.table th.rightborder {
   border-right: 1px solid #cfcfcf !important;
 }
 
-body .rankWhole  table.table {
+body .rankWhole table.table {
   font-size: 13px !important;
 }
 
@@ -891,7 +915,8 @@ body .rankWhole  table.table {
   max-height: 500px;
 }
 
-.rankSummary table .total, .rankWhole table .total {
+.rankSummary table .total,
+.rankWhole table .total {
   font-weight: bold;
 }
 
@@ -911,12 +936,14 @@ body .rankWhole  table.table {
 .fixedCol .table th.leftborder {
   box-shadow: -1px -2px 0 #ddd !important;
 }
+
 /* == fixed column (firma name) box shadow == */
 .rankWhole tbody tr td:first-child {
   /* box-shadow: 0px 20px 20px rgba(0,0,0,0.15); */
   /* right drop shadow */
   box-shadow: 0 -1px 0 #ccc;
 }
+
 /* == fixed column (firma name) box shadow == */
 /* === ./table === */
 /* === pagination === */
@@ -989,6 +1016,7 @@ body .rankWhole  table.table {
   border-color: #ced5d9;
   color: #b9bfc1;
 }
+
 /* === ./pagination === */
 .subunternehmerTable .fa.fa-circle-thin {
   color: #7d7d7d;
@@ -997,6 +1025,7 @@ body .rankWhole  table.table {
 .subunternehmerTable .fa.fa-circle {
   color: #02ba00;
 }
+
 /* === Footer === */
 .footer .row {
   padding-bottom: 15px;
@@ -1083,9 +1112,10 @@ body .rankWhole  table.table {
 .select2-container.ng-invalid .select2-choice {
   border-color: #a94442 !important;
 }
+
 /* ==== */
-table.mailSendAction tbody tr:nth-child(2)  .eMainBtn,
-table.mailSendAction tbody tr:nth-child(7)  .eMainBtn {
+table.mailSendAction tbody tr:nth-child(2) .eMainBtn,
+table.mailSendAction tbody tr:nth-child(7) .eMainBtn {
   display: none;
 }
 
@@ -1113,14 +1143,16 @@ div#subDetails .col-sm-12 b {
   margin-left: -17.7%;
 }
 
-div#projektdetails .col-sm-6 + .col-sm-12,
-div#subDetails .col-sm-6 + .col-sm-12 {
+div#projektdetails .col-sm-6+.col-sm-12,
+div#subDetails .col-sm-6+.col-sm-12 {
   padding-left: 20.8%;
 }
+
 /* == FIXES FOR USED PLUGINS == */
 .select2-highlighted:hover {
   background-color: #3875d7;
 }
+
 /* == FIXES FOR USED PLUGINS == */
 .modal .form-group.whiteBg .input-group {
   width: 90%;
@@ -1147,7 +1179,7 @@ div#subDetails .col-sm-6 + .col-sm-12 {
   display: inline-block;
 }
 
-.modal .ui-select-match-item.btn span + span {
+.modal .ui-select-match-item.btn span+span {
   white-space: normal;
   width: 90%;
   float: left;
@@ -1164,7 +1196,7 @@ div#subDetails .col-sm-6 + .col-sm-12 {
   margin-top: 5px;
 }
 
-.modal .copycontrols .kopie.input-group div button + button {
+.modal .copycontrols .kopie.input-group div button+button {
   float: right;
   margin-top: 7px;
   margin-right: 12px;
@@ -1242,4 +1274,13 @@ ul {
 
 .status {
   font-weight: bold;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.grayRow {
+  background-color: #f5f5f5;
+  color: #848484;
 }

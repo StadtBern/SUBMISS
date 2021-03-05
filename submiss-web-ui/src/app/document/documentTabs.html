@@ -20,8 +20,7 @@
   <td colspan="9" class="hiddenRow">
     <div id="demo1" class="collapse subTabs" is-open="close" style="display: block;">
       <ul class="nav nav-tabs" role="tablist" id="insideTabs">
-        <li ui-sref-active="active"><a ui-sref="documentView.documentList({submissionId: submission.id})"
-            ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===0}">Dokumentenliste</a>
+        <li ui-sref-active="active"><a ui-sref="documentView.documentList({submissionId: submission.id})">Dokumentenliste</a>
         </li>
         <li ng-class="{'active': documentViewCtrl.legalHearingTabActive}" ng-if="documentViewCtrl.isLegal()">
           <a ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">Rechtliches
@@ -49,6 +48,10 @@
         <li ui-sref-active="active" ng-if="documentViewCtrl.isAwardInfoTabNegotiatedVisible()"
           ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===5}">
           <a ui-sref="documentView.awardInfo({submissionId: documentViewCtrl.submission.id})">Zu/Absage</a>
+        </li>
+        <li ui-sref-active="active" ng-if="documentViewCtrl.isNachtragTabVisible()"
+          ng-class="{'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===0}">
+          <a ui-sref="documentView.nachtrag({submissionId: documentViewCtrl.submission.id})">Auftragserweiterung</a>
         </li>
         <li ng-if="documentViewCtrl.isSubmissionCancelTabVisible()"
           ng-class="{'active': documentViewCtrl.submissionCancelTabActive, 'status': documentViewCtrl.getStatusSubTab(documentViewCtrl.currentStatus)===6}">

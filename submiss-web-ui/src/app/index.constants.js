@@ -179,7 +179,14 @@
         AWARD_INFO_FIRST_LEVEL_EDIT: "AwardInfoFirstLevelEdit",
         AWARD_INFO_FIRST_LEVEL_VIEW: "AwardInfoFirstLevelView",
         GENERATE_OPERATIONS_REPORT: "GenerateOperationsReport",
-        GENERATE_USERS_EXPORT_REPORT: "GenerateUsersExportReport"
+        GENERATE_USERS_EXPORT_REPORT: "GenerateUsersExportReport",
+        ORDER_EXTENSION_VIEW: "OrderExtensionView",
+        NACHTRAG_VIEW: "NachtragView",
+        NACHTRAG_CREATE: "NachtragCreate",
+        NACHTRAG_EDIT: "NachtragEdit",
+        NACHTRAG_DELETE: "NachtragDelete",
+        NACHTRAG_CLOSE: "NachtragClose",
+        NACHTRAG_REOPEN: "NachtragReopen"
       },
 
       GROUP: {
@@ -263,6 +270,7 @@
       A_OFFERRTOFFNUNGSPROTOKOLL: "PT09",
       OFFERRTOFFNUNGSPROTOKOLL_DL_WW: "PT10",
       A_OFFERRTOFFNUNGSPROTOKOLL_DL_WW: "PT11",
+      NACHTRAG: "PT26",
       MASTER_LIST_TYPE: {
         EXCLUSION_REASON: "Ausschlussgrund",
         CANCELATION_REASON: "Abbruchgrund"

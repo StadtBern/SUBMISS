@@ -1178,4 +1178,25 @@ public class ValidationMessages {
   public static final String PASSING_APPLICANTS_ERROR_FIELD = "passingApplicantsErrorField";
 
   public static final String PASSING_APPLICANTS_ERROR_MESSAGE = "passing_applicants_error_message";
+
+  public static final String NACHTRAG_MANDATORY_ERROR_MESSAGE = "nachtrag_mandatory_error_message";
+
+  public static final String NACHTRAG_MANDATORY_ERROR_FIELD = "nachtragMandatoryErrorField";
+
+  public static final String NACHTRAG_DATE_BEFORE_START_DATE_ERROR_MESSAGE = "nachtrag_date_before_start_date_error_message";
+
+  public static final String NACHTRAG_DATE_ERROR_FIELD = "nachtragDateErrorField";
+
+  public static final String NACHTRAG_MAX_SIZE_TITLE_MESSAGE = "nachtrag_max_size_title_message";
+
+  public static final String NACHTRAG_MAX_SIZE_NOTES_MESSAGE = "nachtrag_max_size_notes_message";
+
+  public static final String NACHTRAG_MAX_SIZE_DISCOUNT_NAME_MESSAGE = "nachtrag_max_size_discount_name_message";
+
+  public static final String NACHTRAG_MAX_SIZE_ERROR_FIELD = "nachtragMaxSizeErrorField";
+
+  public static final String NACHTRAG_DELETED_MESSAGE = "nachtrag_deleted_message";
+
+  public static final String MANDATORY_NACHTRAG_DOCUMENT_MESSAGE = "mandatory_nachtrag_document_message";
+
 }

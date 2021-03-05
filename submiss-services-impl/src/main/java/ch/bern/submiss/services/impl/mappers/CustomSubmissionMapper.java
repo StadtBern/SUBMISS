@@ -167,6 +167,7 @@ public abstract class CustomSubmissionMapper {
     submissionEntity.setUpdatedOn(dto.getUpdatedOn());
     submissionEntity.setNoAwardTender(dto.getNoAwardTender());
     submissionEntity.setPassingApplicants(dto.getPassingApplicants());
+    submissionEntity.setIsNachtragCreated(dto.getIsNachtragCreated());
 
     return submissionEntity;
   }
@@ -276,7 +277,8 @@ public abstract class CustomSubmissionMapper {
     submissionDTO.setCustomOperatingCostFormula(entity.getCustomOperatingCostFormula());
     submissionDTO.setNoAwardTender(entity.getNoAwardTender());
     submissionDTO.setPassingApplicants(entity.getPassingApplicants());
-    
+    submissionDTO.setIsNachtragCreated(entity.getIsNachtragCreated());
+
     setSD(entity, submissionDTO, activeSd, historySd,activeDepartments,historyDepartments,activeDirectorates,historyDirectorates);
     return submissionDTO;
   }

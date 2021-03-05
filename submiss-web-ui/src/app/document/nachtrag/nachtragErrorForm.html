@@ -1,0 +1,15 @@
+
+  <form name="nachtragCtrl.nachtragErrorForm" id="nachtragErrorForm" shows-validation-errors>
+    <fieldset>
+        <div class="col-sm-12">
+          <div class="alert alert-danger" ng-if="nachtragCtrl.nachtragErrorForm.$invalid  || nachtragCtrl.errorFieldsVisible"
+               role="alert">
+            <field-error form-element-name="mandatoryDocument" translate name="error"></field-error>
+            <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
+          </div>
+          <input name="mandatoryDocument" ng-hide="true" data-ng-model="fd">
+          <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd">
+        </div>
+      </fieldset>
+  </form>
+

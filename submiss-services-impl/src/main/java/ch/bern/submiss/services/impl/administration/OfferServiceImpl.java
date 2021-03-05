@@ -354,6 +354,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       offerEntity.setNotes(notes);
       offerEntity.setIsEmptyOffer(Boolean.TRUE);
       offerEntity.setIsDefaultOffer(Boolean.FALSE);
+      offerEntity.setUpdatedBy(getUserId());
 
       // Change the submission (tender) status to offer opening started, if no higher or equal
       // status has
@@ -823,6 +824,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       offerEntity = OfferDTOWithCriteriaMapper.INSTANCE.toOffer(offerDTO);
       offerEntity.setFromMigration(Boolean.FALSE);
       offerEntity.setIsDefaultOffer(Boolean.FALSE);
+      offerEntity.setUpdatedBy(getUserId());
       em.merge(offerEntity);
       // Update the award evaluation page.
       submissionService.updateAwardEvaluationPage(submissionEntity.getId());
@@ -943,6 +945,9 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     for (OfferEntity offer : offerEntities) {
       /* update offer to take the award */
       offer.setIsAwarded(true);
+      /* update offer to be a nachtrag submittent */
+      offer.setNachtragSubmittent(Boolean.TRUE);
+      offer.setUpdatedBy(getUserId());
       em.merge(offer);
     }
 
@@ -1005,7 +1010,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
     // Give awards to offers.
     for (String id : awardedOfferIds) {
       OfferEntity offer = em.find(OfferEntity.class, id);
+      /* update offer to take the award */
       offer.setIsAwarded(true);
+      /* update offer to be a nachtrag submittent */
+      offer.setNachtragSubmittent(Boolean.TRUE);
+      offer.setUpdatedBy(getUserId());
       em.merge(offer);
     }
     // Initialize the commission procurement proposal values.
@@ -1123,7 +1132,9 @@ public class OfferServiceImpl extends BaseService implements OfferService {
           // If no legalHearingExclusionDTOs exist for this offer we still need to check for
           // Nachweise nicht erbracht and MUSS-Kriterien nicht erfüllt as exclusion reasons.
           if (offerDTO.getSubmittent().getExistsExclusionReasons() != null
-            && offerDTO.getSubmittent().getExistsExclusionReasons()) {
+            && offerDTO.getSubmittent().getExistsExclusionReasons()
+            && offerDTO.getIsExcludedFromProcess() != null
+            && offerDTO.getIsExcludedFromProcess()) {
             suitabilityAuditText = setSuitabiltityAuditText(offerDTO, suitabilityAuditText, null);
           }
         }
@@ -1263,6 +1274,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       offerDTOs);
     List<OfferEntity> offerEntities = OfferDTOMapper.INSTANCE.toOffer(offerDTOs);
     for (OfferEntity offerEntity : offerEntities) {
+      offerEntity.setUpdatedBy(getUserId());
       em.merge(offerEntity);
     }
   }
@@ -1404,6 +1416,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         }
         offerEntity.setApplicationDate(applicationDate);
         offerEntity.setApplicationInformation(applicationInformation);
+        offerEntity.setUpdatedBy(getUserId());
         em.merge(offerEntity);
         int offerCriteria = new JPAQueryFactory(em).selectFrom(qOfferCriterionEntity)
           .where(qOfferCriterionEntity.offer.id.eq(offerEntity.getId())).fetch().size();

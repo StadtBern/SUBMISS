@@ -531,6 +531,12 @@ public class SubmissionDTO extends AbstractDTO {
   private Integer passingApplicants;
 
   /**
+   * The Boolean isNachtragCreated.
+   */
+  @JsonView(View.Internal.class)
+  private Boolean isNachtragCreated;
+
+  /**
    * Gets the report companies.
    *
    * @return the report companies
@@ -2008,6 +2014,14 @@ public class SubmissionDTO extends AbstractDTO {
 
   public void setPassingApplicants(Integer passingApplicants) {
     this.passingApplicants = passingApplicants;
+  }
+
+  public Boolean getIsNachtragCreated() {
+    return isNachtragCreated;
+  }
+
+  public void setIsNachtragCreated(Boolean isNachtragCreated) {
+    this.isNachtragCreated = isNachtragCreated;
   }
 
   @Override

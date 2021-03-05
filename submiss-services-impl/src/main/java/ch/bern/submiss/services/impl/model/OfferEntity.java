@@ -14,7 +14,6 @@
 package ch.bern.submiss.services.impl.model;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -27,15 +26,13 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * The Class OfferEntity.
  */
 @Entity
 @Table(name = "SUB_OFFER")
-public class OfferEntity extends AbstractEntity {
+public class OfferEntity extends AbstractOfferEntity {
 
   /**
    * The submittent.
@@ -82,12 +79,6 @@ public class OfferEntity extends AbstractEntity {
   private MasterListValueEntity settlement;
 
   /**
-   * The gross amount.
-   */
-  @Column(name = "GROSS_AMOUNT")
-  private Double grossAmount;
-
-  /**
    * The gross amount corrected.
    */
   @Column(name = "GROSS_AMOUNT_CORRECTED")
@@ -98,36 +89,6 @@ public class OfferEntity extends AbstractEntity {
    */
   @Column(name = "IS_CORRECTED")
   private Boolean isCorrected;
-
-  /**
-   * The discount.
-   */
-  @Column(name = "DISCOUNT")
-  private Double discount;
-
-  /**
-   * The is discount percentage.
-   */
-  @Column(name = "IS_DISCOUNT_PERCENTAGE")
-  private Boolean isDiscountPercentage;
-
-  /**
-   * The vat.
-   */
-  @Column(name = "VAT")
-  private Double vat;
-
-  /**
-   * The discount 2.
-   */
-  @Column(name = "DISCOUNT2")
-  private Double discount2;
-
-  /**
-   * The is discount 2 percentage.
-   */
-  @Column(name = "IS_DISCOUNT2_PERCENTAGE")
-  private Boolean isDiscount2Percentage;
 
   /**
    * The discount 2 days.
@@ -146,12 +107,6 @@ public class OfferEntity extends AbstractEntity {
    */
   @Column(name = "MODIFIED_ON")
   private Date modifiedOn;
-
-  /**
-   * The notes.
-   */
-  @Column(name = "NOTES")
-  private String notes;
 
   /**
    * The rank.
@@ -176,24 +131,6 @@ public class OfferEntity extends AbstractEntity {
    */
   @Column(name = "APPLICATION_DATE")
   private Date applicationDate;
-
-  /**
-   * The is vat percentage.
-   */
-  @Column(name = "IS_VAT_PERCENTAGE")
-  private Boolean isVatPercentage;
-
-  /**
-   * The building costs.
-   */
-  @Column(name = "BUILDING_COSTS")
-  private Double buildingCosts;
-
-  /**
-   * The is building costs percentage.
-   */
-  @Column(name = "IS_BUILDING_COSTS_PERCENTAGE")
-  private Boolean isBuildingCostsPercentage;
 
   /**
    * The ancilliary amount gross.
@@ -316,12 +253,6 @@ public class OfferEntity extends AbstractEntity {
   private String migratedProcedure;
 
   /**
-   * The amount.
-   */
-  @Column(name = "AMOUNT")
-  private BigDecimal amount;
-
-  /**
    * The discount in percentage.
    */
   @Column(name = "DISCOUNT_IN_PERCENTAGE")
@@ -412,26 +343,6 @@ public class OfferEntity extends AbstractEntity {
   private String awardRecipientFreeTextField;
 
   /**
-   * The created on.
-   */
-  @CreationTimestamp
-  @Column(name = "CREATED_ON")
-  private Timestamp createdOn;
-
-  /**
-   * The updated on.
-   */
-  @UpdateTimestamp
-  @Column(name = "UPDATED_ON", insertable = false)
-  private Timestamp updatedOn;
-
-  /**
-   * The created by.
-   */
-  @Column(name = "CREATED_BY")
-  private String createdBy;
-
-  /**
    * The application information.
    */
   @Column(name = "APPLICATION_INFORMATION")
@@ -477,6 +388,12 @@ public class OfferEntity extends AbstractEntity {
     joinColumns = {@JoinColumn(name = "FK_OFFER")},
     inverseJoinColumns = {@JoinColumn(name = "FK_EXCLUSION_REASON")})
   private Set<MasterListValueEntity> exclusionReasonsFirstLevel;
+
+  /**
+   * The is nachtrag submittent.
+   */
+  @Column(name = "IS_NACHTRAG_SUBMITTENT")
+  private Boolean isNachtragSubmittent;
 
   /**
    * Gets the submittent.
@@ -605,24 +522,6 @@ public class OfferEntity extends AbstractEntity {
   }
 
   /**
-   * Gets the gross amount.
-   *
-   * @return the gross amount
-   */
-  public Double getGrossAmount() {
-    return grossAmount;
-  }
-
-  /**
-   * Sets the gross amount.
-   *
-   * @param grossAmount the new gross amount
-   */
-  public void setGrossAmount(Double grossAmount) {
-    this.grossAmount = grossAmount;
-  }
-
-  /**
    * Gets the gross amount corrected.
    *
    * @return the gross amount corrected
@@ -656,96 +555,6 @@ public class OfferEntity extends AbstractEntity {
    */
   public void setIsCorrected(Boolean isCorrected) {
     this.isCorrected = isCorrected;
-  }
-
-  /**
-   * Gets the discount.
-   *
-   * @return the discount
-   */
-  public Double getDiscount() {
-    return discount;
-  }
-
-  /**
-   * Sets the discount.
-   *
-   * @param discount the new discount
-   */
-  public void setDiscount(Double discount) {
-    this.discount = discount;
-  }
-
-  /**
-   * Gets the checks if is discount percentage.
-   *
-   * @return the checks if is discount percentage
-   */
-  public Boolean getIsDiscountPercentage() {
-    return isDiscountPercentage;
-  }
-
-  /**
-   * Sets the checks if is discount percentage.
-   *
-   * @param isDiscountPercentage the new checks if is discount percentage
-   */
-  public void setIsDiscountPercentage(Boolean isDiscountPercentage) {
-    this.isDiscountPercentage = isDiscountPercentage;
-  }
-
-  /**
-   * Gets the vat.
-   *
-   * @return the vat
-   */
-  public Double getVat() {
-    return vat;
-  }
-
-  /**
-   * Sets the vat.
-   *
-   * @param vat the new vat
-   */
-  public void setVat(Double vat) {
-    this.vat = vat;
-  }
-
-  /**
-   * Gets the discount 2.
-   *
-   * @return the discount 2
-   */
-  public Double getDiscount2() {
-    return discount2;
-  }
-
-  /**
-   * Sets the discount 2.
-   *
-   * @param discount2 the new discount 2
-   */
-  public void setDiscount2(Double discount2) {
-    this.discount2 = discount2;
-  }
-
-  /**
-   * Gets the checks if is discount 2 percentage.
-   *
-   * @return the checks if is discount 2 percentage
-   */
-  public Boolean getIsDiscount2Percentage() {
-    return isDiscount2Percentage;
-  }
-
-  /**
-   * Sets the checks if is discount 2 percentage.
-   *
-   * @param isDiscount2Percentage the new checks if is discount 2 percentage
-   */
-  public void setIsDiscount2Percentage(Boolean isDiscount2Percentage) {
-    this.isDiscount2Percentage = isDiscount2Percentage;
   }
 
   /**
@@ -800,24 +609,6 @@ public class OfferEntity extends AbstractEntity {
    */
   public void setModifiedOn(Date modifiedOn) {
     this.modifiedOn = modifiedOn;
-  }
-
-  /**
-   * Gets the notes.
-   *
-   * @return the notes
-   */
-  public String getNotes() {
-    return notes;
-  }
-
-  /**
-   * Sets the notes.
-   *
-   * @param notes the new notes
-   */
-  public void setNotes(String notes) {
-    this.notes = notes;
   }
 
   /**
@@ -890,60 +681,6 @@ public class OfferEntity extends AbstractEntity {
    */
   public void setApplicationDate(Date applicationDate) {
     this.applicationDate = applicationDate;
-  }
-
-  /**
-   * Gets the checks if is vat percentage.
-   *
-   * @return the checks if is vat percentage
-   */
-  public Boolean getIsVatPercentage() {
-    return isVatPercentage;
-  }
-
-  /**
-   * Sets the checks if is vat percentage.
-   *
-   * @param isVatPercentage the new checks if is vat percentage
-   */
-  public void setIsVatPercentage(Boolean isVatPercentage) {
-    this.isVatPercentage = isVatPercentage;
-  }
-
-  /**
-   * Gets the building costs.
-   *
-   * @return the building costs
-   */
-  public Double getBuildingCosts() {
-    return buildingCosts;
-  }
-
-  /**
-   * Sets the building costs.
-   *
-   * @param buildingCosts the new building costs
-   */
-  public void setBuildingCosts(Double buildingCosts) {
-    this.buildingCosts = buildingCosts;
-  }
-
-  /**
-   * Gets the checks if is building costs percentage.
-   *
-   * @return the checks if is building costs percentage
-   */
-  public Boolean getIsBuildingCostsPercentage() {
-    return isBuildingCostsPercentage;
-  }
-
-  /**
-   * Sets the checks if is building costs percentage.
-   *
-   * @param isBuildingCostsPercentage the new checks if is building costs percentage
-   */
-  public void setIsBuildingCostsPercentage(Boolean isBuildingCostsPercentage) {
-    this.isBuildingCostsPercentage = isBuildingCostsPercentage;
   }
 
   /**
@@ -1309,24 +1046,6 @@ public class OfferEntity extends AbstractEntity {
   }
 
   /**
-   * Gets the amount.
-   *
-   * @return the amount
-   */
-  public BigDecimal getAmount() {
-    return amount;
-  }
-
-  /**
-   * Sets the amount.
-   *
-   * @param amount the new amount
-   */
-  public void setAmount(BigDecimal amount) {
-    this.amount = amount;
-  }
-
-  /**
    * Gets the discount in percentage.
    *
    * @return the discount in percentage
@@ -1597,42 +1316,6 @@ public class OfferEntity extends AbstractEntity {
   }
 
   /**
-   * Gets the created on.
-   *
-   * @return the created on
-   */
-  public Timestamp getCreatedOn() {
-    return createdOn;
-  }
-
-  /**
-   * Sets the created on.
-   *
-   * @param createdOn the new created on
-   */
-  public void setCreatedOn(Timestamp createdOn) {
-    this.createdOn = createdOn;
-  }
-
-  /**
-   * Gets the created by.
-   *
-   * @return the created by
-   */
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  /**
-   * Sets the created by.
-   *
-   * @param createdBy the new created by
-   */
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
-  /**
    * Gets the application information.
    *
    * @return the application information
@@ -1758,22 +1441,12 @@ public class OfferEntity extends AbstractEntity {
     this.exclusionReasonsFirstLevel = exclusionReasonsFirstLevel;
   }
 
-  /**
-   * Gets the updatedOn.
-   *
-   * @return the updatedOn
-   */
-  public Timestamp getUpdatedOn() {
-    return updatedOn;
+  public Boolean getNachtragSubmittent() {
+    return isNachtragSubmittent;
   }
 
-  /**
-   * Sets the updatedOn.
-   *
-   * @param updatedOn the updatedOn
-   */
-  public void setUpdatedOn(Timestamp updatedOn) {
-    this.updatedOn = updatedOn;
+  public void setNachtragSubmittent(Boolean isNachtragSubmittent) {
+    this.isNachtragSubmittent = isNachtragSubmittent;
   }
 
   @Override
@@ -1781,15 +1454,17 @@ public class OfferEntity extends AbstractEntity {
     return "OfferEntity [id=" + super.getId() + ", version=" + super.getVersion() + ",  isAwarded="
       + isAwarded + ", offerDate=" + offerDate
       + ", isPartOffer=" + isPartOffer + ", isExcludedFromProcess=" + isExcludedFromProcess
-      + ", isVariant=" + isVariant + ", grossAmount=" + grossAmount + ", grossAmountCorrected="
-      + grossAmountCorrected + ", isCorrected=" + isCorrected + ", discount=" + discount
-      + ", isDiscountPercentage=" + isDiscountPercentage + ", vat=" + vat + ", discount2="
-      + discount2 + ", isDiscount2Percentage=" + isDiscount2Percentage + ", discount2Days="
+      + ", isVariant=" + isVariant + ", grossAmount=" + super.getGrossAmount()
+      + ", grossAmountCorrected="
+      + grossAmountCorrected + ", isCorrected=" + isCorrected + ", discount=" + super.getDiscount()
+      + ", isDiscountPercentage=" + super.getIsDiscountPercentage() + ", vat=" + super.getVat()
+      + ", discount2="
+      + super.getDiscount2() + ", isDiscount2Percentage=" + super.getIsDiscount2Percentage()
+      + ", discount2Days="
       + discount2Days + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn
-      + ", notes=" + notes + ", rank=" + rank + ", variantNotes=" + variantNotes
+      + ", notes=" + super.getNotes() + ", rank=" + rank + ", variantNotes=" + variantNotes
       + ", isEmptyOffer=" + isEmptyOffer + ", applicationDate=" + applicationDate
-      + ", isVatPercentage=" + isVatPercentage + ", buildingCosts=" + buildingCosts
-      + ", isBuildingCostsPercentage=" + isBuildingCostsPercentage + ", ancilliaryAmountGross="
+      + ", isVatPercentage=" + super.getIsVatPercentage() + ", ancilliaryAmountGross="
       + ancilliaryAmountGross + ", isAncilliaryAmountPercentage=" + isAncilliaryAmountPercentage
       + ", ancilliaryAmountVat=" + ancilliaryAmountVat + ", operatingCostGross="
       + operatingCostGross + ", operatingCostNotes=" + operatingCostNotes
@@ -1802,17 +1477,17 @@ public class OfferEntity extends AbstractEntity {
       + operatingCostIsVatPercentage + ", isDefaultOffer=" + isDefaultOffer + ", fromMigration="
       + fromMigration + ", migratedProject=" + migratedProject + ", migratedSubmission="
       + migratedSubmission + ", migratedDepartment=" + migratedDepartment + ", migreatedPM="
-      + migreatedPM + ", migratedProcedure=" + migratedProcedure + ", amount=" + amount
+      + migreatedPM + ", migratedProcedure=" + migratedProcedure + ", amount=" + super.getAmount()
       + ", discountInPercentage=" + discountInPercentage + ", discount2InPercentage="
       + discount2InPercentage + ", operatingCostsInPercentage=" + operatingCostsInPercentage
-      + ", buildingCostsInPercentage=" + buildingCostsInPercentage + ", qExTotalGrade="
-      + qExTotalGrade + ", qExStatus=" + qExStatus + ", qExExaminationIsFulfilled="
+      + ", qExTotalGrade=" + qExTotalGrade + ", qExStatus="
+      + qExStatus + ", qExExaminationIsFulfilled="
       + qExExaminationIsFulfilled + ", qExSuitabilityNotes=" + qExSuitabilityNotes
       + ",  awardRank=" + awardRank + ", awardTotalScore=" + awardTotalScore
       + ", operatingCostsAmount=" + operatingCostsAmount + ", qExRank=" + qExRank
       + ", awardRecipientFreeTextField=" + awardRecipientFreeTextField + ", createdOn="
-      + createdOn + ", createdBy=" + createdBy + ", applicationInformation="
+      + super.getCreatedOn() + ", createdBy=" + super.getCreatedBy() + ", applicationInformation="
       + applicationInformation + ", manualAmount=" + manualAmount
-      + ", updatedOn=" + updatedOn + "]";
+      + ", updatedOn=" + super.getUpdatedOn() + "]";
   }
 }

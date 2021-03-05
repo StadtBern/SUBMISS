@@ -25,7 +25,7 @@
 
   /** @ngInject */
   function DocumentViewController($scope, $rootScope, DocumentService,
-    AppService, $transitions,
+    AppService, $transitions, NachtragService,
     $state, $stateParams, SubmissionService, AppConstants, $uibModal,
     QFormJSRValidation, UsersService) {
     /***********************************************************************
@@ -38,7 +38,7 @@
     var CONTENT_DISPOSITION = 'content-disposition';
     var SUBMISSIONCANCEL = 'documentView.submissionCancel';
     var i = 0;
-    var dokumentenlisteStatus = [260, 270];
+    var nachtragStatus = [260, 270];
     var verfugungenStufe1Status = [60];
     var beKoAntragStatus = [200, 210, 220];
     var beKoBeschlussStatus = [230, 240];
@@ -82,6 +82,9 @@
     vm.legalHearingTabActive = false;
     vm.showError = false;
     vm.legalHearingErrorMessage = false;
+    vm.nachtragUnsavedErrorMessage = false;
+    vm.nachtragUnselectedErrorMessage = false;
+    vm.oldNachtragSubmittentMessage = false;
     vm.anonymousOfferDocTemplate = {};
     vm.group = AppConstants.GROUP;
     /***********************************************************************
@@ -94,6 +97,7 @@
     vm.isCPDecisionTabVisible = isCPDecisionTabVisible;
     vm.isAwardInfoTabVisible = isAwardInfoTabVisible;
     vm.isAwardInfoTabNegotiatedVisible = isAwardInfoTabNegotiatedVisible;
+    vm.isNachtragTabVisible = isNachtragTabVisible;
     vm.isSubmissionCancelTabVisible = isSubmissionCancelTabVisible;
     vm.isAwardInfoFirstLevelTabVisible = isAwardInfoFirstLevelTabVisible;
     vm.readStatusOfSubmission = readStatusOfSubmission;
@@ -118,6 +122,7 @@
             haveAwardStatusesBeenClosed($stateParams.id);
             hasCommissionProcurementProposalBeenClosed($stateParams.id);
             vm.readStatusOfSubmission($stateParams.id);
+            readStatusHistory($stateParams.id);
             readUserDepartments();
             loadSignatures();
             // we need to check if the status of the submission was ever set to certain statuses
@@ -148,9 +153,15 @@
         });
     }
 
+    function readStatusHistory(id) {
+      AppService.getSubmissionStatuses(id).success(function (data) {
+        vm.statusHistory = data;
+      });
+    }
+
     function getStatusSubTab(status) {
       let statusSubTab = -1;
-      if (dokumentenlisteStatus.includes(status)) {
+      if (nachtragStatus.includes(status)) {
         statusSubTab = 0;
       } else if (verfugungenStufe1Status.includes(status)) {
         statusSubTab = 1;
@@ -213,6 +224,15 @@
       // If error messages regarding the legal hearing are visible, remove them.
       if (vm.legalHearingErrorMessage) {
         vm.legalHearingErrorMessage = false;
+      }
+      if (vm.nachtragUnselectedErrorMessage) {
+        vm.nachtragUnselectedErrorMessage = false;
+      }
+      if (vm.nachtragUnsavedErrorMessage) {
+        vm.nachtragUnsavedErrorMessage = false;
+      }
+      if (vm.oldNachtragSubmittentMessage) {
+        vm.oldNachtragSubmittentMessage = false;
       }
       if (vm.showError) {
         vm.showError = false;
@@ -474,6 +494,70 @@
               vm.showError = true;
             }
             AppService.emptySubmittentList();
+          } else if(vm.chosenTemplate.shortCode ===
+            AppConstants.NACHTRAG){
+            vm.checkedNachtrag = NachtragService.getCheckedNachtragForDocCreation();
+            if(!vm.checkedNachtrag){
+              vm.nachtragUnselectedErrorMessage = true;
+            } else if(!vm.checkedNachtrag[1]){
+              vm.oldNachtragSubmittentMessage = true;
+            } else if(!vm.checkedNachtrag[2]){
+              vm.nachtragUnsavedErrorMessage = true;
+            } else {
+              vm.nachtragUnsavedErrorMessage = false;
+              vm.nachtragUnselectedErrorMessage = false;
+              vm.oldNachtragSubmittentMessage = false;
+              vm.templateForm.nachtragId = vm.checkedNachtrag[0];
+              vm.templateForm.nachtragSubmittentId = vm.checkedNachtrag[3];
+              vm.templateForm.nachtragCompanyId = vm.checkedNachtrag[4];
+              if (vm.templateForm.createVersion) {
+                AppService.setPaneShown(true);
+                DocumentService.createDocument(vm.templateForm)
+                .success(function (data) {
+                  $state.go(DOCUMENTLIST, {}, {
+                    reload: true
+                  });
+                  AppService.setPaneShown(false);
+                  if (vm.createAndPrintDocument) {
+                    printDocuments(data);
+                  }
+                  NachtragService.setCheckedNachtragForDocCreation(null);
+                }).error(function (response, status) {
+                  AppService.setPaneShown(true);
+                });
+              } else {
+                // In case the user has not requested a new version and a
+                // version already exists for this selection in the database,
+                // ask user for confirmation to overwrite the existing version
+                DocumentService
+                .documentVersionExists(vm.templateForm)
+                .success(function (data) {
+                  if (data === 'versionExists') {
+                    overwriteDocumentConfirmation(false);
+                  } else {
+                    AppService.setPaneShown(true);
+                    DocumentService.createDocument(
+                      vm.templateForm).success(
+                      function (data) {
+                        $state.go(DOCUMENTLIST, {}, {
+                          reload: true
+                        });
+                        AppService.setPaneShown(false);
+                        if (vm.createAndPrintDocument) {
+                          printDocuments(data);
+                        }
+                        NachtragService.setCheckedNachtragForDocCreation(null);
+                      }).error(
+                      function (response, status) {
+                        AppService.setPaneShown(false);
+                        handleValidationErrors(response, status);
+                      });
+                  }
+                }).error(function (response, status) {
+                  AppService.setPaneShown(true);
+                });
+              }
+            }
           } else {
             AppService.emptySubmittentList();
             if (vm.chosenTemplate.shortCode ===
@@ -570,6 +654,15 @@
           if (vm.legalHearingErrorMessage) {
             vm.legalHearingErrorMessage = false;
           }
+          if (vm.nachtragUnselectedErrorMessage) {
+            vm.nachtragUnselectedErrorMessage = false;
+          }
+          if (vm.nachtragUnsavedErrorMessage) {
+            vm.nachtragUnsavedErrorMessage = false;
+          }
+          if (vm.oldNachtragSubmittentMessage) {
+            vm.oldNachtragSubmittentMessage = false;
+          }
           var docIds = [];
           // Add both ids to the docIds array (used for printing).
           docIds.push(offerDocId, data)
@@ -597,9 +690,19 @@
         if (vm.legalHearingErrorMessage) {
           vm.legalHearingErrorMessage = false;
         }
+        if (vm.nachtragUnselectedErrorMessage) {
+          vm.nachtragUnselectedErrorMessage = false;
+        }
+        if (vm.nachtragUnsavedErrorMessage) {
+          vm.nachtragUnsavedErrorMessage = false;
+        }
+        if (vm.oldNachtragSubmittentMessage) {
+          vm.oldNachtragSubmittentMessage = false;
+        }
         if (vm.createAndPrintDocument) {
           printDocuments(docId);
         }
+        NachtragService.setCheckedNachtragForDocCreation(null);
         $state.go(DOCUMENTLIST, {}, {
           reload: true
         });
@@ -816,6 +919,11 @@
       } else {
         return false;
       }
+    }
+
+    function isNachtragTabVisible() {
+      return !angular.isUndefined(vm.statusHistory) &&
+        (vm.statusHistory.includes(vm.status.AWARD_NOTICES_CREATED) || vm.statusHistory.includes(vm.status.CONTRACT_CREATED));
     }
 
     /** Function to determine if the submission cancel tab is visible */

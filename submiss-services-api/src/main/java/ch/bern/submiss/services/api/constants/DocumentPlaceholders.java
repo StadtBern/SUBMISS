@@ -20,7 +20,9 @@ public enum DocumentPlaceholders {
   S_CANCEL_ART_DESCRIPTION("s_cancel_art_description"),
   S_MAIN_COMPANY("s_main_company"),
   S_MAIN_COMPANY_LOCATION("s_main_company_location"),
-  
+  S_CURRENT_DATE("s_current_date"),
+  S_PUBLICATION_DATE("s_publication_date"),
+
   F_MAIN_COMPANY("f_main_company"),
   F_COMPANY_PROOF_STATUS_COL_1("f_company_proofs1"),
   F_COMPANY_PROOF_STATUS_COL_2("f_company_proofs2"),
@@ -37,6 +39,8 @@ public enum DocumentPlaceholders {
   F_FRENCH_PROOFS("f_french_proofs"),
   F_COMPANY_APPRENTICE_FACTOR_VALUE("f_app_factor_value"),
   F_COMPANY_FIFTY_PLUS_FACTOR_VALUE("f_fifty_plus_factor_value"),
+  F_COMPANY_TEL("f_company_tel"),
+  F_COMPANY_MAIL("f_company_mail"),
   
   R_DIRECTORATE_POST("r_directorate_post"),
   R_DIRECTORATE_TEL("r_directorate_tel"),
@@ -121,8 +125,19 @@ public enum DocumentPlaceholders {
   FIRST_REFERENCE_NAME("first_reference_name"),
   FIRST_REFERENCE_FUNCTION("first_reference_function"),
   SECOND_REFERENCE_NAME("second_reference_name"),
-  SECOND_REFERENCE_FUNCTION("second_reference_function");
-  
+  SECOND_REFERENCE_FUNCTION("second_reference_function"),
+  N_NACHTRAG_DATE("n_nachtrag_date"),
+  N_GROSS_AMOUNT("n_gross_amount"),
+  N_DISCOUNT_PERCENT("n_discount_percent"),
+  N_DISCOUNT_TOTAL("n_discount_total"),
+  N_TOTAL_1("n_total_1"),
+  N_BUILDING_COSTS_PERCENT("n_building_costs_percent"),
+  N_BUILDING_COSTS("n_building_costs"),
+  N_TOTAL_2("n_total_2"),
+  N_VAT_AMOUNT_PERCENT("n_vat_amount_percent"),
+  N_VAT_AMOUNT("n_vat_amount"),
+  N_AMOUNT_INCL("n_amount_incl");
+
   private String value;
 
   private DocumentPlaceholders(String value) {

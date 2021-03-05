@@ -1,0 +1,47 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal"
+      aria-label="Close" ng-click="addNachtragSubmittentCtrl.closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title">Zuschlagsempfänger hinzufügen</h4>
+  </div>
+  <form name="addNachtragSubmittentCtrl.awardedOfferForm"
+    data-ng-submit="addNachtragSubmittentCtrl.addNachtragSubmittent()">
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label for="name">Submittent</label>
+        <ui-select name="awardedOffers" id="awardedOffers"
+          data-ng-model="addNachtragSubmittentCtrl.awardedOffer"
+          theme="select2"> <ui-select-match allow-clear="true">
+        <span> {{$select.selected.submittent.submittentNameArgeSub}}</span> </ui-select-match> <ui-select-choices
+          repeat="awardedOffer in addNachtragSubmittentCtrl.awardedOffers">
+        {{awardedOffer.submittent.submittentNameArgeSub}}</ui-select-choices> </ui-select>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary">Hinzufügen</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal"
+      ng-click="addNachtragSubmittentCtrl.closeModal()">Abbrechen</button>
+      <div ng-if="addNachtragSubmittentCtrl.awardedOfferForm.$dirty">
+        <input ng-hide="true" type="checkbox" data-ng-model="addNachtragSubmittentCtrl.dirtyFlag"
+          ng-init="addNachtragSubmittentCtrl.dirtyFlag = true">
+      </div>
+    </div>
+  </form>
+

@@ -39,7 +39,8 @@
   <!-- SSO POST-redirect filter for SP initiated authentication -->
   <bean id="POSTSSOFilter" class="org.apache.cxf.rs.security.saml.sso.SamlPostBindingFilter">
     <property name="idpServiceAddress" value="${sso.idpServiceAddress}"/>
-    <property name="assertionConsumerServiceAddress" value="${sso.assertionConsumerServiceAddress}"/>
+    <property name="assertionConsumerServiceAddress"
+      value="${sso.assertionConsumerServiceAddress}"/>
     <property name="stateProvider" ref="stateManager"/>
     <property name="addEndpointAddressToContext" value="false"/>
     <property name="addWebAppContext" value="false"/>
@@ -55,13 +56,20 @@
   <bean id="FakeSSOFilter" class="com.eurodyn.qlack2.util.sso.FakeSSOFilter">
     <property name="fakeAttributes">
       <list>
-        <value>entryUUID</value> <value>subAdmSB</value>
-        <value>uid</value> <value>subAdmSB</value>
-        <value>sn</value> <value>FaBe</value>
-        <value>givenName</value> <value>Submiss Administrator</value>
-        <value>mail</value> <value>submiss@bern.ch</value>
-        <value>department</value> <value>FaBe</value>
-        <value>company</value> <value>FPI</value>
+        <value>entryUUID</value>
+        <value>subAdmSB</value>
+        <value>uid</value>
+        <value>subAdmSB</value>
+        <value>sn</value>
+        <value>FaBe</value>
+        <value>givenName</value>
+        <value>Submiss Administrator</value>
+        <value>mail</value>
+        <value>submiss@bern.ch</value>
+        <value>department</value>
+        <value>FaBe</value>
+        <value>company</value>
+        <value>FPI</value>
       </list>
     </property>
   </bean>
@@ -75,7 +83,8 @@
     <property name="enforceAssertionsSigned" value="true"/>
     <property name="callbackHandler" ref="callbackHandler"/>
     <property name="replayCache" ref="tokenReplayCache"/>
-    <property name="assertionConsumerServiceAddress" value="${sso.assertionConsumerServiceAddress}"/>
+    <property name="assertionConsumerServiceAddress"
+      value="${sso.assertionConsumerServiceAddress}"/>
     <property name="stateTimeToLive" value="36000000"/>
   </bean>
 
@@ -84,7 +93,8 @@
     <!-- serviceAddress is translated to 'entityId' in the metadata, as well as the 'Issuer' in
      requests -->
     <property name="serviceAddress" value="${sso.serviceAddress}"/>
-    <property name="assertionConsumerServiceAddress" value="${sso.assertionConsumerServiceAddress}"/>
+    <property name="assertionConsumerServiceAddress"
+      value="${sso.assertionConsumerServiceAddress}"/>
     <property name="logoutServiceAddress" value="${sso.logoutServiceAddress}"/>
     <property name="signatureUsername" value="${sso.signatureUsername}"/>
     <property name="signaturePropertiesFile" value="${sso.signaturePropertiesFile}"/>
@@ -93,11 +103,14 @@
   </bean>
 
   <!-- Interceptors to make the attributes of the SAML available to the application -->
-  <bean id="WebSSOCookieInterceptor" class="com.eurodyn.qlack2.util.sso.interceptors.WebSSOCookieInterceptor">
+  <bean id="WebSSOCookieInterceptor"
+    class="com.eurodyn.qlack2.util.sso.interceptors.WebSSOCookieInterceptor">
     <property name="stateProvider" ref="stateManager"/>
   </bean>
-  <bean id="WebSSOCookieInterceptorCleanup" class="com.eurodyn.qlack2.util.sso.interceptors.WebSSOCookieInterceptorCleanup"/>
-  <bean id="DumpCookieInterceptor" class="com.eurodyn.qlack2.util.sso.interceptors.DumpCookiesInterceptor"/>
+  <bean id="WebSSOCookieInterceptorCleanup"
+    class="com.eurodyn.qlack2.util.sso.interceptors.WebSSOCookieInterceptorCleanup"/>
+  <bean id="DumpCookieInterceptor"
+    class="com.eurodyn.qlack2.util.sso.interceptors.DumpCookiesInterceptor"/>
 
   <!-- A separate JAXRS server in which no filtering takes place -->
   <jaxrs:server id="SUBMISSSSOMetadataRestServer" address="/sso">
@@ -112,14 +125,14 @@
   <jaxrs:server id="SUBMISSRestServerPublic" address="/public">
 
     <jaxrs:serviceBeans>
-      <ref component-id="lexiconResource" />
+      <ref component-id="lexiconResource"/>
     </jaxrs:serviceBeans>
     <jaxrs:providers>
-    
-    <!-- Support for CORS -->
+
+      <!-- Support for CORS -->
       <bean id="cors-filter"
         class="org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter"/>
-        
+
       <!-- Map generic mapping errors from JSON. This is to support validation errors
            when e.g. a DTO's property is 'int' whereas the value submitted is text. -->
       <bean id="JSONMappingExceptionMapper"
@@ -148,17 +161,17 @@
   <!-- Endpoints requiring authentication -->
   <jaxrs:server id="SUBMISSRestServerPrivate" address="/">
     <jaxrs:serviceBeans>
-      <ref component-id="projectResource" />
-      <ref component-id="sDObjectResource" />
-      <ref component-id="sDProcedureResource" />
-      <ref component-id="sDDepartmentResource" />
-      <ref component-id="sDDirectorateResource" />
-      <ref component-id="sDWorkTypeResource" />
-      <ref component-id="sDCountryResource" />
-      <ref component-id="sDProcessTypeResource" />
-      <ref component-id="companyResource" />
-      <ref component-id="submissionResource" />
-      <ref component-id="sDNegotiatedProcedureResource" />      
+      <ref component-id="projectResource"/>
+      <ref component-id="sDObjectResource"/>
+      <ref component-id="sDProcedureResource"/>
+      <ref component-id="sDDepartmentResource"/>
+      <ref component-id="sDDirectorateResource"/>
+      <ref component-id="sDWorkTypeResource"/>
+      <ref component-id="sDCountryResource"/>
+      <ref component-id="sDProcessTypeResource"/>
+      <ref component-id="companyResource"/>
+      <ref component-id="submissionResource"/>
+      <ref component-id="sDNegotiatedProcedureResource"/>
       <ref component-id="authResource"/>
       <ref component-id="offerResource"/>
       <ref component-id="userAdministrationResource"/>
@@ -169,21 +182,22 @@
       <ref component-id="sDLogibResource"/>
       <ref component-id="criterionResource"/>
       <ref component-id="pingResource"/>
-	  <ref component-id="documentResource"/>
+      <ref component-id="documentResource"/>
       <ref component-id="commissionProcurementResource"/>
-      <ref component-id="fileUploadResource"/> 
+      <ref component-id="fileUploadResource"/>
       <ref component-id="enumerationResource"/>
       <ref component-id="submissionCancelResource"/>
       <ref component-id="sDResource"/>
       <ref component-id="reportResource"/>
       <ref component-id="tasksResource"/>
       <ref component-id="tenderStatusHistoryResource"/>
-	  <ref component-id="emailResource"/>
+      <ref component-id="emailResource"/>
       <ref component-id="submissAuditResource"/>
       <ref component-id="procedureResource"/>
       <ref component-id="sDProofResource"/>
-      <ref component-id="sDCancelReasonResource" />    
-   </jaxrs:serviceBeans>
+      <ref component-id="sDCancelReasonResource"/>
+      <ref component-id="nachtragResource"/>
+    </jaxrs:serviceBeans>
 
     <jaxrs:inInterceptors>
       <ref component-id="WebSSOCookieInterceptor"/>

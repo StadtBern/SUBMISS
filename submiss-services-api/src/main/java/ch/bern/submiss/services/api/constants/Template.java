@@ -153,18 +153,12 @@ public class Template {
   
   /** The Constant COMPANIES_PER_TENANT. */
   public static final String COMPANIES_PER_TENANT = "FT06";
-  
-  /** The Constant VERTRAG_PLANUNGS_PROJEKTIERUNGS_HERSTELLUNGSVERTRAG. */
-  public static final String VERTRAG_PLANUNGS_PROJEKTIERUNGS_HERSTELLUNGSVERTRAG = "DEP_SGB06";
-  
-  /** The Constant VERTRAG_LIEFER_ANBAUVERTRAG. */
-  public static final String VERTRAG_LIEFER_ANBAUVERTRAG = "DEP_SGB05";
-  
-  /** The Constant VERTRAG_KAUFVERTRAG_SGB. */
-  public static final String VERTRAG_KAUFVERTRAG_SGB ="DEP_SGB04";
 
-  /** The Constant VERTRAG_HONORARVERTRAG_SGB. */
-  public static final String VERTRAG_HONORARVERTRAG_SGB = "DEP_SGB03";
+  /** The Constant VERTRAG_BESTELLUNG_PLANERLEISTUNGEN_SGB. */
+  public static final String VERTRAG_BESTELLUNG_PLANERLEISTUNGEN_SGB ="DEP_SGB07";
+
+  /** The Constant VERTRAG_PLANERVERTRAG_SGB. */
+  public static final String VERTRAG_PLANERVERTRAG_SGB = "DEP_SGB08";
 
   /** The Constant VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_SGB. */
   public static final String VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_SGB = "DEP_SGB02";
@@ -226,5 +220,8 @@ public class Template {
   public static final String LF_CR_CONSTANT = "%0D%0A";
   
   public static final String LF_CONSTANT = "\\%0A";
+
+  /** The Constant NACHTRAG. */
+  public static final String NACHTRAG = "PT26";
   
 }

@@ -1,0 +1,64 @@
+<!--
+  ~  Submiss, eProcurement system for managing tenders
+  ~  Copyright (C) 2019 Stadt Bern
+  ~  Licensed under the EUPL, Version 1.2 or - as soon as they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+  ~  You may not use this work except in compliance with the Licence.
+  ~  You may obtain a copy of the Licence at:
+  ~  https://joinup.ec.europa.eu/collection/eupl
+  ~  Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+  ~  distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  ~  express or implied. See the Licence for the specific language governing permissions and limitations
+  ~  under the Licence.
+  -->
+
+<div class="accordian-body collapse" style="display:block;">
+  <div class="panel-group full-width" role="tablist" aria-multiselectable="true" id="nachtragList">
+    <div class="panel panel-default" ng-repeat="nachtrag in nachtragCtrl.nachtragList"
+         ng-init="nachtrag.show = false">
+      <div class="panel-heading clearfix" role="tab"
+           ng-click="nachtragCtrl.openNachtragForm(nachtrag)">
+
+        <div class="pull-left" style="padding-top: -10px;"
+             ng-click="nachtragCtrl.openNachtragForm(nachtrag)">
+          <label class="nachtrag-radio-inline">
+            <input type="radio" name="inlineRadioOptions" id="inlineCinlineRadio1"
+                   ng-value="nachtragCtrl.displayedNachtrag"
+                   ng-click="nachtragCtrl.setCheckedNachtragForDocCreation(nachtrag)">
+          </label>
+        </div>
+
+        <h4 class="panel-title pull-left" style="padding-top: 7.5px;">
+          <a role="button" data-toggle="collapse" data-parent="#nachtragList"
+             aria-expanded="{{nachtrag.show}}"
+             aria-controls="collapseSix">{{nachtrag.nachtragName}}</a>
+        </h4>
+
+        <div class="pull-right" ng-click="nachtragCtrl.openNachtragForm(nachtrag)">
+          <button type="button" class="btn action btn-primary" title="Nachtrag wiederaufnehmen"
+                  ng-disabled="nachtragCtrl.disableReopenButton(nachtrag)"
+                  ng-click="nachtragCtrl.reopenNachtrag(nachtrag)">
+            <span class="fa fa-pencil-square-o" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn action btn-primary" title="Nachtrag abschliessen"
+                  ng-disabled="nachtragCtrl.disableCloseButton(nachtrag)"
+                  ng-click="nachtragCtrl.closeNachtrag(nachtrag)">
+            <span class="fa fa-check-square-o" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn action btn-primary" title="Nachtrag löschen"
+                  ng-disabled="nachtragCtrl.disableDeleteButton(nachtrag)"
+                  ng-click="nachtragCtrl.deleteNachtrag(nachtrag)">
+            <span class="fa fa-trash-o" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="nachtrag1" class="panel-collapse collapse in" role="tabpanel"
+           aria-labelledby="headingOne"
+           ng-if="nachtrag.show">
+        <div class="panel-body">
+          <div ng-include src="'app/document/nachtrag/nachtragForm.html'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

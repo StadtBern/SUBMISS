@@ -36,10 +36,8 @@ rule "RU006"
 		then [DEP_SGB]
 			templateCodes.add("DEP_SGB01");
 			templateCodes.add("DEP_SGB02");
-			templateCodes.add("DEP_SGB03");
-			templateCodes.add("DEP_SGB04");
-			templateCodes.add("DEP_SGB05");
-			templateCodes.add("DEP_SGB06");
+			templateCodes.add("DEP_SGB07");
+			templateCodes.add("DEP_SGB08");
 		then [DEP_LB]
 			templateCodes.add("DEP_LB01");
 			templateCodes.add("DEP_LB02");								

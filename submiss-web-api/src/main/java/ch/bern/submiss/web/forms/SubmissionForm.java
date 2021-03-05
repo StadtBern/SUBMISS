@@ -84,6 +84,7 @@ public class SubmissionForm extends AbstractForm {
   private Boolean isGekoEntryByManualAward;
   private Boolean noAwardTender;
   private Integer passingApplicants;
+  private Boolean isNachtragCreated;
 
   public ProjectForm getProject() {
     return project;
@@ -572,6 +573,14 @@ public class SubmissionForm extends AbstractForm {
 
   public void setPassingApplicants(Integer passingApplicants) {
     this.passingApplicants = passingApplicants;
+  }
+
+  public Boolean getIsNachtragCreated() {
+    return isNachtragCreated;
+  }
+
+  public void setIsNachtragCreated(Boolean isNachtragCreated) {
+    this.isNachtragCreated = isNachtragCreated;
   }
 
   @Override

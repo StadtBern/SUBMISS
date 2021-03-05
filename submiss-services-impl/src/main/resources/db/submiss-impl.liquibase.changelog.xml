@@ -144,4 +144,6 @@
   <include file="v1.7.0\master_v1.7.0.xml" relativeToChangelogFile="true"/>
   <include file="v1.8.0\master_v1.8.0.xml" relativeToChangelogFile="true"/>
   <include file="v1.9.0\master_v1.9.0.xml" relativeToChangelogFile="true"/>
+  <include file="nachtrag\master_nachtrag.xml" relativeToChangelogFile="true"/>
+  <include file="v1.10.0\master_v1.10.0.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

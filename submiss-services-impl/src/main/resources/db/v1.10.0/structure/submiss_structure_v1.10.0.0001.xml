@@ -1,0 +1,18 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_structure_v1.10.0.0001.xml">
+    <sql>
+
+      ALTER TABLE SUB_ADDENDUM
+      ADD BUILDING_COSTS DECIMAL(15,2) NULL;
+
+      ALTER TABLE SUB_ADDENDUM
+      ADD IS_BUILDING_COSTS_PERCENTAGE BIT(1) NULL DEFAULT NULL COMMENT 'Kennzeichnet, ob die Baunebenkosten in %. Mögliche Werte: 1 (true), 0 (false).';
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>

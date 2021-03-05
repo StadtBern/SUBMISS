@@ -90,6 +90,22 @@ public class DocumentForm {
   private List<SignatureCopyDTO> signatureCopies;
 
   /**
+   * The Nachtrag Id.
+   */
+  private String nachtragId;
+
+  /**
+   * The Nachtrag Submittent.
+   */
+  private String nachtragSubmittentId;
+
+
+  /**
+   * The Nachtrag Company Id.
+   */
+  private String nachtragCompanyId;
+
+  /**
    * Gets the tenant id.
    *
    * @return the tenant id
@@ -438,5 +454,29 @@ public class DocumentForm {
 
   public void setSignatureCopies(List<SignatureCopyDTO> signatureCopies) {
     this.signatureCopies = signatureCopies;
+  }
+
+  public String getNachtragId() {
+    return nachtragId;
+  }
+
+  public void setNachtragId(String nachtragId) {
+    this.nachtragId = nachtragId;
+  }
+
+  public String getNachtragSubmittentId() {
+    return nachtragSubmittentId;
+  }
+
+  public void setNachtragSubmittentId(String nachtragSubmittentId) {
+    this.nachtragSubmittentId = nachtragSubmittentId;
+  }
+
+  public String getNachtragCompanyId() {
+    return nachtragCompanyId;
+  }
+
+  public void setNachtragCompanyId(String nachtragCompanyId) {
+    this.nachtragCompanyId = nachtragCompanyId;
   }
 }

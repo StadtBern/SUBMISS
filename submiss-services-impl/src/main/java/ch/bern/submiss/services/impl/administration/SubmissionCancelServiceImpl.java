@@ -261,7 +261,10 @@ public class SubmissionCancelServiceImpl extends BaseService implements Submissi
       templateId.getMasterListValueId().getId());
     for (SubmittentEntity submittentEntity : submissionEntity.getSubmittents()) {
       attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentEntity.getId());
-      if (documentService.getNodeByAttributes(submissionEntity.getId(), attributesMap).isEmpty()) {
+      //The Submission should be cancable, even if there is a "Leere Offerte"
+      if (documentService.getNodeByAttributes(submissionEntity.getId(), attributesMap).isEmpty()
+        && (submittentEntity.getOffer().getGrossAmount() != null
+            && submittentEntity.getOffer().getGrossAmount() != 0)) {
         return false;
       }
     }

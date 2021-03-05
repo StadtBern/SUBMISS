@@ -224,6 +224,22 @@ public class DocumentDTO {
   private String deptAmountAction;
 
   /**
+   * The Nachtrag Id.
+   */
+  private String nachtragId;
+
+  /**
+   * The Nachtrag Submittent Id.
+   */
+  private String nachtragSubmittentId;
+
+
+  /**
+   * The Nachtrag Company Id.
+   */
+  private String nachtragCompanyId;
+
+  /**
    * The version name as Integer.
    */
   private int versionName;
@@ -956,6 +972,30 @@ public class DocumentDTO {
 
   public void setSignatureCopies(List<SignatureCopyDTO> signatureCopies) {
     this.signatureCopies = signatureCopies;
+  }
+
+  public String getNachtragId() {
+    return nachtragId;
+  }
+
+  public void setNachtragId(String nachtragId) {
+    this.nachtragId = nachtragId;
+  }
+
+  public String getNachtragSubmittentId() {
+    return nachtragSubmittentId;
+  }
+
+  public void setNachtragSubmittentId(String nachtragSubmittentId) {
+    this.nachtragSubmittentId = nachtragSubmittentId;
+  }
+
+  public String getNachtragCompanyId() {
+    return nachtragCompanyId;
+  }
+
+  public void setNachtragCompanyId(String nachtragCompanyId) {
+    this.nachtragCompanyId = nachtragCompanyId;
   }
 
   @Override

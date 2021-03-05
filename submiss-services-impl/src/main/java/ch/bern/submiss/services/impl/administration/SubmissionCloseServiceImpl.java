@@ -784,6 +784,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
         if (set != null) {
           offerEntity.setExclusionReasons(set);
         }
+        offerEntity.setUpdatedBy(getUserId());
         em.merge(offerEntity);
       }
     }
@@ -1041,6 +1042,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
       if (set != null) {
         offerEntity.setExclusionReasonsFirstLevel(set);
       }
+      offerEntity.setUpdatedBy(getUserId());
       em.merge(offerEntity);
     }
   }

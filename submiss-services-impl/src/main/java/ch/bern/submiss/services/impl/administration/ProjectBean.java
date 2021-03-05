@@ -144,6 +144,7 @@ public class ProjectBean {
     offerEntity.setIsPartOffer(Boolean.FALSE);
     offerEntity.setIsExcludedFromProcess(Boolean.FALSE);
     offerEntity.setIsEmptyOffer(Boolean.FALSE);
+    offerEntity.setNachtragSubmittent(Boolean.FALSE);
     offerEntity.setCreatedBy(submittentEntity.getCreatedBy());
     offerEntity.setCreatedOn(submittentEntity.getCreatedOn());
 
@@ -208,6 +209,7 @@ public class ProjectBean {
     offerEntity.setIsEmptyOffer(Boolean.FALSE);
     offerEntity.setAmount(BigDecimal.ZERO);
     offerEntity.setOperatingCostsAmount(BigDecimal.ZERO);
+    offerEntity.setNachtragSubmittent(Boolean.FALSE);
     em.merge(offerEntity);
     return offerEntity;
   }

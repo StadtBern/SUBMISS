@@ -75,6 +75,7 @@ rule "RU007"
 		if ($offer.getIsBuildingCostsPercentage() != null && $offer.getIsBuildingCostsPercentage()) do[buildingCostsPercent]
 		else do[buildingCostsPercentEmpty]
 	then
+	  placeholderMappings.put("s_current_date", SubmissConverter.convertToSwissDate(new Date()));
 		placeholderMappings.put("f_company_location", $company.getLocation());
 		placeholderMappings.put("f_company_name", $company.getCompanyName());
 		placeholderMappings.put("f_company_post", $company.getPostCode() + " " + $company.getLocation());

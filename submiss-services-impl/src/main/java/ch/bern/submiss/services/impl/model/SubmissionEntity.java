@@ -481,6 +481,12 @@ public class SubmissionEntity extends AbstractEntity {
   private Integer passingApplicants;
 
   /**
+   * The is nachtrag created.
+   */
+  @Column(name = "IS_NACHTRAG_CREATED")
+  private Boolean isNachtragCreated;
+
+  /**
    * Gets the project.
    *
    * @return the project
@@ -1920,6 +1926,23 @@ public class SubmissionEntity extends AbstractEntity {
    */
   public void setSubmittentListCheckedOn(Long submittentListCheckedOn) {
     this.submittentListCheckedOn = submittentListCheckedOn;
+  }
+
+  /**
+   * Gets the is nachtrag created
+   *
+   * @return the isNachtragCreated
+   */
+  public Boolean getIsNachtragCreated() {
+    return isNachtragCreated;
+  }
+  /**
+   * Sets the boolean of the is nachtrag created.
+   *
+   * @param isNachtragCreated the boolean
+   */
+  public void setIsNachtragCreated(Boolean isNachtragCreated) {
+    this.isNachtragCreated = isNachtragCreated;
   }
 
   /**

@@ -52,7 +52,27 @@
             </li>
           </ul>
         </div>
-
+        <div class="alert alert-danger" ng-if="documentViewCtrl.nachtragUnselectedErrorMessage" role="alert" translate>
+          <ul ng-if="documentViewCtrl.nachtragUnselectedErrorMessage">
+            <li translate>
+              navigate_to_unselected_nachtrag_message
+            </li>
+          </ul>
+        </div>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.oldNachtragSubmittentMessage" role="alert" translate>
+          <ul ng-if="documentViewCtrl.oldNachtragSubmittentMessage">
+            <li translate>
+              navigate_to_old_nachtrag_submittent_message
+            </li>
+          </ul>
+        </div>
+        <div class="alert alert-danger" ng-if="documentViewCtrl.nachtragUnsavedErrorMessage" role="alert" translate>
+          <ul ng-if="documentViewCtrl.nachtragUnsavedErrorMessage">
+            <li translate>
+              navigate_to_unsaved_nachtrag_message
+            </li>
+          </ul>
+        </div>
         <input name="templateNotSelectedError" ng-hide="true" data-ng-model="fd"></input>
         <input name="contract_document_error_field" ng-hide="true" data-ng-model="fd"></input>
 

@@ -1,0 +1,36 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="European Dynamics SA" id="submiss_structure_nachtrag.0001.xml">
+    <sql>
+
+      CREATE TABLE SUB_ADDENDUM
+      (
+      ID                      VARCHAR(36)    NOT NULL COMMENT 'Primärschlüssel der Tabelle SUB_ADDENDUM.',
+      FK_OFFER                VARCHAR(36)    NOT NULL COMMENT 'Fremdschlüssel der Tabelle SUB_OFFER.',
+      ADDENDUM_NAME           VARCHAR(100)   NULL COMMENT 'Der Name des Nachtrags.',
+      ADDENDUM_DATE           TIMESTAMP      NULL COMMENT 'Das Datum des Nachtrags.',
+      NOTES                   TEXT           NULL COMMENT 'Nachtragsinformationen.',
+      GROSS_AMOUNT            DECIMAL(15, 2) NULL DEFAULT NULL COMMENT 'Bruttobetrag.',
+      DISCOUNT                DECIMAL(15, 2) NULL DEFAULT NULL COMMENT 'Rabatt.',
+      IS_DISCOUNT_PERCENTAGE  BIT(1)         NULL DEFAULT b'1' COMMENT 'Kennzeichnet, ob Rabatt in %. Mögliche Werte: 1 (true), 0 (false).',
+      VAT                     DECIMAL(15, 2) NULL DEFAULT NULL COMMENT 'MWST oder MWST in %.',
+      IS_VAT_PERCENTAGE       BIT(1)         NULL DEFAULT b'1' COMMENT 'Kennzeichnet, ob die MwSt. in %. Mögliche Werte: 1 (true), 0 (false).',
+      DISCOUNT2               DECIMAL(15, 2) NULL DEFAULT NULL COMMENT 'Skonto.',
+      IS_DISCOUNT2_PERCENTAGE BIT(1)         NULL DEFAULT b'1' COMMENT 'Kennzeichnet, ob das Skonto in %. Mögliche Werte: 1 (true), 0 (false).',
+      AMOUNT                  DECIMAL(15, 2) NULL DEFAULT NULL COMMENT 'Nettobetrag exkl. MWST.',
+      CREATED_ON              TIMESTAMP      NULL COMMENT 'Das Erstellungsdatum.',
+      CREATED_BY              VARCHAR(36)    NULL COMMENT 'Das id des Nutzers, der das Nachtrag zum ersten Mal gespeichert hat.',
+      UPDATED_ON              TIMESTAMP      NULL COMMENT 'Das Modifizierungsdatum.',
+      UPDATED_BY              VARCHAR(36)    NULL COMMENT 'Das id des Nutzers, der das Nachtrag zum letzten Mal gespeichert hat.',
+      VERSION                 BIGINT         NULL DEFAULT 0,
+      CONSTRAINT PK_ADDENDUM PRIMARY KEY (ID ASC),
+      CONSTRAINT FK_ADDENDUM_OFFER FOREIGN KEY (FK_OFFER) REFERENCES SUB_OFFER (ID) ON DELETE CASCADE
+      )
+      COMMENT ='Diese Tabelle enthält die Nachträge der Zuschlagsempfänger.';
+
+    </sql>
+  </changeSet>
+</databaseChangeLog>

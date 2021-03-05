@@ -201,6 +201,9 @@ public class DocumentResource {
     documentDTO.setTitle(StringUtils.isNotBlank(documentForm.getTitle()) ? documentForm.getTitle()
       : documentForm.getTemplateName());
     documentDTO.setProjectDocument(documentForm.isProjectDocument());
+    if (documentForm.getNachtragId() != null) {
+      documentDTO.setNachtragId(documentForm.getNachtragId());
+    }
     if (documentForm.getLegalHearingType() != null) {
       documentDTO.setLegalHearingType(documentForm.getLegalHearingType());
     }
@@ -317,6 +320,11 @@ public class DocumentResource {
           break;
         }
       }
+    } else if(documentForm.getTemplateName().equals("Nachtrag")){
+      documentDTO.setNachtragId(documentForm.getNachtragId());
+      latestDocVersion =
+        documentService.getDocLatestversion(documentDTO, documentForm.getNachtragSubmittentId(),
+          documentForm.getNachtragCompanyId());
     } else {
       if (documentForm.getLegalHearingType() != null
         && !documentForm.getLegalHearingType().equals("EXCLUSION")) {

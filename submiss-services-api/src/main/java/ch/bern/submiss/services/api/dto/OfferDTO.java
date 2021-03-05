@@ -27,7 +27,7 @@ import java.util.Set;
  * The Class OfferDTO.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OfferDTO extends AbstractDTO {
+public class OfferDTO extends AbstractOfferDTO {
 
   /**
    * Amount gross amount or gross amount corrected.
@@ -143,11 +143,6 @@ public class OfferDTO extends AbstractDTO {
   @JsonView(View.Internal.class)
   private MasterListValueHistoryDTO settlement;
   /**
-   * The gross amount.
-   */
-  @JsonView(View.Internal.class)
-  private Double grossAmount;
-  /**
    * The gross amount corrected.
    */
   @JsonView(View.Internal.class)
@@ -157,31 +152,6 @@ public class OfferDTO extends AbstractDTO {
    */
   @JsonView(View.Internal.class)
   private Boolean isCorrected;
-  /**
-   * The discount.
-   */
-  @JsonView(View.Internal.class)
-  private Double discount;
-  /**
-   * The is discount percentage.
-   */
-  @JsonView(View.Internal.class)
-  private Boolean isDiscountPercentage;
-  /**
-   * The vat.
-   */
-  @JsonView(View.Internal.class)
-  private Double vat;
-  /**
-   * The discount 2.
-   */
-  @JsonView(View.Internal.class)
-  private Double discount2;
-  /**
-   * The is discount 2 percentage.
-   */
-  @JsonView(View.Internal.class)
-  private Boolean isDiscount2Percentage;
   /**
    * The discount 2 days.
    */
@@ -197,11 +167,6 @@ public class OfferDTO extends AbstractDTO {
    */
   @JsonView(View.Internal.class)
   private Date modifiedOn;
-  /**
-   * The notes.
-   */
-  @JsonView(View.Internal.class)
-  private String notes;
   /**
    * The rank.
    */
@@ -222,21 +187,6 @@ public class OfferDTO extends AbstractDTO {
    */
   @JsonView(View.Internal.class)
   private Date applicationDate;
-  /**
-   * The is vat percentage.
-   */
-  @JsonView(View.Internal.class)
-  private Boolean isVatPercentage;
-  /**
-   * The building costs.
-   */
-  @JsonView(View.Internal.class)
-  private Double buildingCosts;
-  /**
-   * The is building costs percentage.
-   */
-  @JsonView(View.Internal.class)
-  private Boolean isBuildingCostsPercentage;
   /**
    * The ancilliary amount gross.
    */
@@ -332,11 +282,6 @@ public class OfferDTO extends AbstractDTO {
    */
   @JsonView(View.Internal.class)
   private Boolean fromMigration;
-  /**
-   * The amount.
-   */
-  @JsonView(View.Internal.class)
-  private BigDecimal amount;
   /**
    * The discount in percentage.
    */
@@ -467,6 +412,24 @@ public class OfferDTO extends AbstractDTO {
    */
   @JsonView(View.Internal.class)
   private Set<MasterListValueHistoryDTO> exclusionReasonsFirstLevel;
+
+  /**
+   * The is nachtrag submittent.
+   */
+  @JsonView(View.Internal.class)
+  private Boolean isNachtragSubmittent;
+
+  /**
+   * The is nachtrag submittent.
+   */
+  @JsonView(View.Internal.class)
+  private Boolean hasActiveNachtrag;
+
+  /**
+   * The manual amount.
+   */
+  @JsonView(View.Internal.class)
+  private BigDecimal manualAmount;
 
   /**
    * Gets the gross amount or corrected.
@@ -841,24 +804,6 @@ public class OfferDTO extends AbstractDTO {
   }
 
   /**
-   * Gets the gross amount.
-   *
-   * @return the gross amount
-   */
-  public Double getGrossAmount() {
-    return grossAmount;
-  }
-
-  /**
-   * Sets the gross amount.
-   *
-   * @param grossAmount the new gross amount
-   */
-  public void setGrossAmount(Double grossAmount) {
-    this.grossAmount = grossAmount;
-  }
-
-  /**
    * Gets the gross amount corrected.
    *
    * @return the gross amount corrected
@@ -892,96 +837,6 @@ public class OfferDTO extends AbstractDTO {
    */
   public void setIsCorrected(Boolean isCorrected) {
     this.isCorrected = isCorrected;
-  }
-
-  /**
-   * Gets the discount.
-   *
-   * @return the discount
-   */
-  public Double getDiscount() {
-    return discount;
-  }
-
-  /**
-   * Sets the discount.
-   *
-   * @param discount the new discount
-   */
-  public void setDiscount(Double discount) {
-    this.discount = discount;
-  }
-
-  /**
-   * Gets the checks if is discount percentage.
-   *
-   * @return the checks if is discount percentage
-   */
-  public Boolean getIsDiscountPercentage() {
-    return isDiscountPercentage;
-  }
-
-  /**
-   * Sets the checks if is discount percentage.
-   *
-   * @param isDiscountPercentage the new checks if is discount percentage
-   */
-  public void setIsDiscountPercentage(Boolean isDiscountPercentage) {
-    this.isDiscountPercentage = isDiscountPercentage;
-  }
-
-  /**
-   * Gets the vat.
-   *
-   * @return the vat
-   */
-  public Double getVat() {
-    return vat;
-  }
-
-  /**
-   * Sets the vat.
-   *
-   * @param vat the new vat
-   */
-  public void setVat(Double vat) {
-    this.vat = vat;
-  }
-
-  /**
-   * Gets the discount 2.
-   *
-   * @return the discount 2
-   */
-  public Double getDiscount2() {
-    return discount2;
-  }
-
-  /**
-   * Sets the discount 2.
-   *
-   * @param discount2 the new discount 2
-   */
-  public void setDiscount2(Double discount2) {
-    this.discount2 = discount2;
-  }
-
-  /**
-   * Gets the checks if is discount 2 percentage.
-   *
-   * @return the checks if is discount 2 percentage
-   */
-  public Boolean getIsDiscount2Percentage() {
-    return isDiscount2Percentage;
-  }
-
-  /**
-   * Sets the checks if is discount 2 percentage.
-   *
-   * @param isDiscount2Percentage the new checks if is discount 2 percentage
-   */
-  public void setIsDiscount2Percentage(Boolean isDiscount2Percentage) {
-    this.isDiscount2Percentage = isDiscount2Percentage;
   }
 
   /**
@@ -1036,24 +891,6 @@ public class OfferDTO extends AbstractDTO {
    */
   public void setModifiedOn(Date modifiedOn) {
     this.modifiedOn = modifiedOn;
-  }
-
-  /**
-   * Gets the notes.
-   *
-   * @return the notes
-   */
-  public String getNotes() {
-    return notes;
-  }
-
-  /**
-   * Sets the notes.
-   *
-   * @param notes the new notes
-   */
-  public void setNotes(String notes) {
-    this.notes = notes;
   }
 
   /**
@@ -1126,60 +963,6 @@ public class OfferDTO extends AbstractDTO {
    */
   public void setApplicationDate(Date applicationDate) {
     this.applicationDate = applicationDate;
-  }
-
-  /**
-   * Gets the checks if is vat percentage.
-   *
-   * @return the checks if is vat percentage
-   */
-  public Boolean getIsVatPercentage() {
-    return isVatPercentage;
-  }
-
-  /**
-   * Sets the checks if is vat percentage.
-   *
-   * @param isVatPercentage the new checks if is vat percentage
-   */
-  public void setIsVatPercentage(Boolean isVatPercentage) {
-    this.isVatPercentage = isVatPercentage;
-  }
-
-  /**
-   * Gets the building costs.
-   *
-   * @return the building costs
-   */
-  public Double getBuildingCosts() {
-    return buildingCosts;
-  }
-
-  /**
-   * Sets the building costs.
-   *
-   * @param buildingCosts the new building costs
-   */
-  public void setBuildingCosts(Double buildingCosts) {
-    this.buildingCosts = buildingCosts;
-  }
-
-  /**
-   * Gets the checks if is building costs percentage.
-   *
-   * @return the checks if is building costs percentage
-   */
-  public Boolean getIsBuildingCostsPercentage() {
-    return isBuildingCostsPercentage;
-  }
-
-  /**
-   * Sets the checks if is building costs percentage.
-   *
-   * @param isBuildingCostsPercentage the new checks if is building costs percentage
-   */
-  public void setIsBuildingCostsPercentage(Boolean isBuildingCostsPercentage) {
-    this.isBuildingCostsPercentage = isBuildingCostsPercentage;
   }
 
   /**
@@ -1508,25 +1291,6 @@ public class OfferDTO extends AbstractDTO {
     this.migratedProject = migratedProject;
   }
 
-
-  /**
-   * Gets the amount.
-   *
-   * @return the amount
-   */
-  public BigDecimal getAmount() {
-    return amount;
-  }
-
-  /**
-   * Sets the amount.
-   *
-   * @param amount the new amount
-   */
-  public void setAmount(BigDecimal amount) {
-    this.amount = amount;
-  }
-
   /**
    * Gets the discount in percentage.
    *
@@ -1580,7 +1344,6 @@ public class OfferDTO extends AbstractDTO {
   public void setOperatingCostsInPercentage(BigDecimal operatingCostsInPercentage) {
     this.operatingCostsInPercentage = operatingCostsInPercentage;
   }
-
   /**
    * Gets the building costs in percentage.
    *
@@ -1851,43 +1614,6 @@ public class OfferDTO extends AbstractDTO {
     this.migratedProcedure = migratedProcedure;
   }
 
-
-  /**
-   * Gets the created on.
-   *
-   * @return the created on
-   */
-  public Timestamp getCreatedOn() {
-    return createdOn;
-  }
-
-  /**
-   * Sets the created on.
-   *
-   * @param createdOn the new created on
-   */
-  public void setCreatedOn(Timestamp createdOn) {
-    this.createdOn = createdOn;
-  }
-
-  /**
-   * Gets the created by.
-   *
-   * @return the created by
-   */
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  /**
-   * Sets the created by.
-   *
-   * @param createdBy the new created by
-   */
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
   /**
    * Gets the application information.
    *
@@ -2001,22 +1727,28 @@ public class OfferDTO extends AbstractDTO {
     this.exclusionReasonsFirstLevel = exclusionReasonsFirstLevel;
   }
 
-  /**
-   * Gets the updated on.
-   *
-   * @return the updatedOn
-   */
-  public Timestamp getUpdatedOn() {
-    return updatedOn;
+  public Boolean getNachtragSubmittent() {
+    return isNachtragSubmittent;
   }
 
-  /**
-   * Sets the updated on.
-   *
-   * @param updatedOn the updatedOn
-   */
-  public void setUpdatedOn(Timestamp updatedOn) {
-    this.updatedOn = updatedOn;
+  public void setNachtragSubmittent(Boolean nachtragSubmittent) {
+    isNachtragSubmittent = nachtragSubmittent;
+  }
+
+  public Boolean getHasActiveNachtrag() {
+    return hasActiveNachtrag;
+  }
+
+  public void setHasActiveNachtrag(Boolean hasActiveNachtrag) {
+    this.hasActiveNachtrag = hasActiveNachtrag;
+  }
+
+  public BigDecimal getManualAmount() {
+    return manualAmount;
+  }
+
+  public void setManualAmount(BigDecimal manualAmount) {
+    this.manualAmount = manualAmount;
   }
 
   @Override
@@ -2025,15 +1757,13 @@ public class OfferDTO extends AbstractDTO {
       + isAwarded + ", offerDate=" + offerDate
       + ", isPartOffer=" + isPartOffer + ", isExcludedFromProcess=" + isExcludedFromProcess
       + ", excludedFirstLevel=" + excludedFirstLevel + ", isVariant=" + isVariant
-      + ", grossAmount=" + grossAmount + ", grossAmountCorrected=" + grossAmountCorrected
-      + ", isCorrected=" + isCorrected + ", discount=" + discount + ", isDiscountPercentage="
-      + isDiscountPercentage + ", vat=" + vat + ", discount2=" + discount2
-      + ", isDiscount2Percentage=" + isDiscount2Percentage + ", discount2Days=" + discount2Days
-      + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn + ", notes=" + notes
+      + ", grossAmountCorrected=" + grossAmountCorrected
+      + ", isCorrected=" + isCorrected
+      + ", discount2Days=" + discount2Days
+      + ", priceIncrease=" + priceIncrease + ", modifiedOn=" + modifiedOn
       + ", rank=" + rank + ", variantNotes=" + variantNotes + ", isEmptyOffer=" + isEmptyOffer
-      + ", applicationDate=" + applicationDate + ", isVatPercentage=" + isVatPercentage
-      + ", buildingCosts=" + buildingCosts + ", isBuildingCostsPercentage="
-      + isBuildingCostsPercentage + ", ancilliaryAmountGross=" + ancilliaryAmountGross
+      + ", applicationDate=" + applicationDate
+      + ", ancilliaryAmountGross=" + ancilliaryAmountGross
       + ", isAncilliaryAmountPercentage=" + isAncilliaryAmountPercentage
       + ", ancilliaryAmountVat=" + ancilliaryAmountVat + ", operatingCostGross="
       + operatingCostGross + ", operatingCostNotes=" + operatingCostNotes
@@ -2046,9 +1776,9 @@ public class OfferDTO extends AbstractDTO {
       + operatingCostIsVatPercentage + ", migreatedPM=" + migreatedPM + ", migratedProcedure="
       + migratedProcedure + ", migratedDepartment=" + migratedDepartment + ", migratedSubmission="
       + migratedSubmission + ", migratedProject=" + migratedProject + ", fromMigration="
-      + fromMigration + ", amount=" + amount + ", discountInPercentage=" + discountInPercentage
+      + fromMigration + ", discountInPercentage=" + discountInPercentage
       + ", discount2InPercentage=" + discount2InPercentage + ", operatingCostsInPercentage="
-      + operatingCostsInPercentage + ", buildingCostsInPercentage=" + buildingCostsInPercentage
+      + operatingCostsInPercentage
       + ", isDefaultOffer=" + isDefaultOffer + ", qExTotalGrade=" + qExTotalGrade + ", qExStatus="
       + qExStatus + ", qExExaminationIsFulfilled=" + qExExaminationIsFulfilled
       + ", qExSuitabilityNotes=" + qExSuitabilityNotes + ", awardRank=" + awardRank

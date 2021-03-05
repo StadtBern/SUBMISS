@@ -16,6 +16,7 @@ package ch.bern.submiss.services.impl.administration;
 import ch.bern.submiss.services.api.administration.CompanyService;
 import ch.bern.submiss.services.api.administration.LegalHearingService;
 import ch.bern.submiss.services.api.administration.LexiconService;
+import ch.bern.submiss.services.api.administration.NachtragService;
 import ch.bern.submiss.services.api.administration.OfferService;
 import ch.bern.submiss.services.api.administration.RuleService;
 import ch.bern.submiss.services.api.administration.SDDepartmentService;
@@ -65,6 +66,7 @@ import ch.bern.submiss.services.api.dto.ExclusionReasonDTO;
 import ch.bern.submiss.services.api.dto.LegalHearingExclusionDTO;
 import ch.bern.submiss.services.api.dto.MasterListValueDTO;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
+import ch.bern.submiss.services.api.dto.NachtragDTO;
 import ch.bern.submiss.services.api.dto.OfferCriterionDTO;
 import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.ProofHistoryDTO;
@@ -118,6 +120,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -328,6 +331,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
 
   @Inject
   private SubmissionCloseService submissionCloseService;
+
+  @Inject
+  private NachtragService nachtragService;
 
   /**
    * The q master list value history entity.
@@ -953,11 +959,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       case Template.VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_ISB:
       case Template.VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_SGB:
       case Template.VERTRAG_DIENSTLEISTUNGSVERTRAG_LB:
-      case Template.VERTRAG_HONORARVERTRAG_SGB:
+      case Template.VERTRAG_PLANERVERTRAG_SGB:
       case Template.VERTRAG_KAUF_LIEFERVERTRAG_LB:
-      case Template.VERTRAG_KAUFVERTRAG_SGB:
-      case Template.VERTRAG_LIEFER_ANBAUVERTRAG:
-      case Template.VERTRAG_PLANUNGS_PROJEKTIERUNGS_HERSTELLUNGSVERTRAG:
+      case Template.VERTRAG_BESTELLUNG_PLANERLEISTUNGEN_SGB:
       case Template.VERTRAG_WERKVERTRAG_HSB:
       case Template.VERTRAG_WERKVERTRAG_ISB:
       case Template.VERTRAG_WERKVERTRAG_SGB:
@@ -995,6 +999,36 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
               placeholders.put(DocumentPlaceholders.O_VAT_AMOUNT_PERCENT.getValue(),
                 TemplateConstants.EMPTY_STRING);
             }
+            if(submission.getPublicationDate() != null){
+              placeholders.put(DocumentPlaceholders.S_PUBLICATION_DATE.getValue(),
+                SubmissConverter.convertToSwissDate(submission.getPublicationDate()));
+            }else{
+              placeholders.put(DocumentPlaceholders.S_PUBLICATION_DATE.getValue(),
+                TemplateConstants.EMPTY_STRING);
+            }
+            placeholders.put(DocumentPlaceholders.S_CURRENT_DATE.getValue(),
+              SubmissConverter.convertToSwissDate(new Date()));
+
+            placeholders.put(DocumentPlaceholders.F_COMPANY_TEL.getValue(),
+              offer.getOffer().getSubmittent().getCompanyId().getCompanyTel());
+            placeholders.put(DocumentPlaceholders.F_COMPANY_MAIL.getValue(),
+              offer.getOffer().getSubmittent().getCompanyId().getCompanyEmail());
+
+            if(submission.getProject().getDepartment().getTelephone() != null){
+              placeholders.put(DocumentPlaceholders.R_DEPARTMENT_TEL.getValue(),
+                submission.getProject().getDepartment().getTelephone());
+            }else{
+              placeholders.put(DocumentPlaceholders.R_DEPARTMENT_TEL.getValue(),
+                TemplateConstants.EMPTY_STRING);
+            }
+            if(submission.getProject().getDepartment().getEmail() != null){
+              placeholders.put(DocumentPlaceholders.R_DEPARTMENT_EMAIL.getValue(),
+                submission.getProject().getDepartment().getEmail());
+            }else{
+              placeholders.put(DocumentPlaceholders.R_DEPARTMENT_EMAIL.getValue(),
+                TemplateConstants.EMPTY_STRING);
+            }
+
             try (InputStream inputStream1 = new ByteArrayInputStream(
               versionService.getBinContent(templateList.get(0).getId()))) {
               createdDocumentIds
@@ -1952,9 +1986,184 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
         } catch (Exception e) {
           LOGGER.log(Level.SEVERE, e.getMessage());
         }
+        break;
+      case Template.NACHTRAG:
+        generateNachtrag(documentDTO, templateList, createdDocumentIds, logo,
+          logoWidth, placeholders, submission, offers);
+        break;
     }
 
     return createdDocumentIds;
+  }
+
+  private void generateNachtrag(DocumentDTO documentDTO, List<NodeDTO> templateList,
+    List<String> createdDocumentIds, byte[] logo, long logoWidth,
+    HashMap<String, String> placeholders, SubmissionDTO submission,
+    List<SubmittentOfferDTO> offers) {
+
+    NachtragDTO nachtragDTO = nachtragService.getNachtrag(documentDTO.getNachtragId());
+
+    try (InputStream inputStream1 = new ByteArrayInputStream(
+      versionService.getBinContent(templateList.get(0).getId()))) {
+
+      for(SubmittentOfferDTO offer : offers){
+        if(offer.getOffer().getIsAwarded() != null && offer.getOffer().getIsAwarded()
+        && StringUtils.equals(offer.getOffer().getId(), nachtragDTO.getOffer().getId())){
+
+          documentDTO
+            .setFilename(nachtragDTO.getTitle() + LookupValues.UNDER_SCORE
+              + offer.getSubmittent().getCompanyId().getCompanyName() + setFileExtension(
+              Template.NACHTRAG));
+
+          replaceNachtragPlaceholders(placeholders, submission, nachtragDTO, offer);
+
+          // create Document
+          createdDocumentIds
+            .add(
+              createDocument(documentDTO,
+                templateService.replacePlaceholdersWordDoc(inputStream1,
+                  SubmissConverter.replaceSpecialCharactersInPlaceholders(
+                    placeholders),
+                  logo, logoWidth).toByteArray(), offer.getSubmittent().getId(),
+                offer.getSubmittent().getCompanyId().getId(), false));
+
+          nachtragService.updateNachtrag(nachtragDTO);
+        }
+      }
+    } catch (IOException e) {
+      LOGGER.log(Level.SEVERE, TemplateConstants.INPUTSTREAM_ERROR + e.getMessage());
+    }
+    StringBuilder additionalInfo =
+      new StringBuilder(submission.getProject().getProjectName()).append("[#]")
+        .append(submission.getProject().getObjectName().getValue1()).append("[#]")
+        .append(submission.getWorkType().getValue1() + submission.getWorkType().getValue2())
+        .append("[#]").append(getUser()
+        .getAttributeData(LookupValues.USER_ATTRIBUTES.TENANT.getValue())).append("[#]");
+
+    auditLog(AuditLevel.PROJECT_LEVEL.name(), AuditEvent.CREATE.name(),
+      AuditMessages.NACHTRAG_CREATED.name(), submission.getId(),
+      additionalInfo.toString());
+  }
+
+  private void replaceNachtragPlaceholders(HashMap<String, String> placeholders,
+    SubmissionDTO submission, NachtragDTO nachtragDTO, SubmittentOfferDTO offer) {
+
+    templateBean.replaceJointVenturesPlaceholder(offer, placeholders);
+    templateBean.setCompanyNameOrArge(offer.getOffer(), placeholders,
+      DocumentPlaceholders.F_COMPANY_NAME_OR_ARGE.getValue());
+
+    if(submission.getProject().getObjectName().getValue2()!=null){
+      placeholders.put("p_object_both_values", submission.getProject().getObjectName().getValue1()
+        + ", " + submission.getProject().getObjectName().getValue2());
+    } else {
+      placeholders.put("p_object_both_values", submission.getProject().getObjectName().getValue1());
+    }
+    if (offer.getSubmittent().getCompanyId().getAddress2() != null) {
+      placeholders.put("f_company_address", offer.getSubmittent().getCompanyId().getAddress1()
+        + "\\n" + offer.getSubmittent().getCompanyId().getAddress2());
+    } else {
+      placeholders.put("f_company_address", offer.getSubmittent().getCompanyId().getAddress1());
+    }
+    placeholders.put("f_company_location", offer.getSubmittent().getCompanyId().getLocation());
+    placeholders.put("f_company_name", offer.getSubmittent().getCompanyId().getCompanyName());
+    placeholders.put("f_company_post", offer.getSubmittent().getCompanyId().getPostCode()
+      + " " + offer.getSubmittent().getCompanyId().getLocation());
+
+    placeholders.put(DocumentPlaceholders.N_NACHTRAG_DATE.getValue(),
+      SubmissConverter.convertToSwissDate(nachtragDTO.getNachtragDate()));
+
+    placeholders.put(DocumentPlaceholders.N_GROSS_AMOUNT.getValue(),
+      SubmissConverter.convertToCHFCurrency(BigDecimal.valueOf(nachtragDTO.getGrossAmount())).substring(4));
+
+    BigDecimal discountTotal;
+
+    if(nachtragDTO.getIsDiscountPercentage() && nachtragDTO.getIsDiscount2Percentage()){
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_PERCENT.getValue(),
+        String.format("%.2f", nachtragDTO.getDiscount() + nachtragDTO.getDiscount2()) + " %");
+      discountTotal = nachtragDTO.getDiscount1Value().add(nachtragDTO.getDiscount2Value());
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_TOTAL.getValue(),
+        SubmissConverter.convertToCHFCurrency(discountTotal).substring(4));
+    } else if(nachtragDTO.getIsDiscountPercentage() && !nachtragDTO.getIsDiscount2Percentage()){
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_PERCENT.getValue(),
+        TemplateConstants.EMPTY_STRING);
+      discountTotal = BigDecimal.valueOf(nachtragDTO.getDiscount2())
+        .add(nachtragDTO.getDiscount1Value());
+        placeholders.put(DocumentPlaceholders.N_DISCOUNT_TOTAL.getValue(),
+        SubmissConverter.convertToCHFCurrency(discountTotal).substring(4));
+    } else if(!nachtragDTO.getIsDiscountPercentage() && nachtragDTO.getIsDiscount2Percentage()){
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_PERCENT.getValue(),
+        TemplateConstants.EMPTY_STRING);
+      discountTotal = BigDecimal.valueOf(nachtragDTO.getDiscount())
+        .add(nachtragDTO.getDiscount2Value());
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_TOTAL.getValue(),
+        SubmissConverter.convertToCHFCurrency(discountTotal).substring(4));
+    } else {
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_PERCENT.getValue(),
+        TemplateConstants.EMPTY_STRING);
+      discountTotal = BigDecimal.valueOf(nachtragDTO.getDiscount() + nachtragDTO.getDiscount2());
+      placeholders.put(DocumentPlaceholders.N_DISCOUNT_TOTAL.getValue(),
+        SubmissConverter.convertToCHFCurrency(discountTotal).substring(4));
+    }
+
+    placeholders.put(DocumentPlaceholders.N_TOTAL_1.getValue(),
+      SubmissConverter.convertToCHFCurrency(BigDecimal
+        .valueOf(nachtragDTO.getGrossAmount()).subtract(discountTotal)).substring(4));
+
+    if (nachtragDTO.getIsBuildingCostsPercentage() != null
+      && nachtragDTO.getIsBuildingCostsPercentage()){
+      if(nachtragDTO.getBuildingCosts() != null && nachtragDTO.getBuildingCosts() != 0){
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS_PERCENT.getValue(),
+          String.format("%.2f", nachtragDTO.getBuildingCosts()) + " %");
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS.getValue(),
+          SubmissConverter.convertToCHFCurrency(nachtragDTO.getBuildingCostsValue()).substring(4));
+      }else{
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS_PERCENT.getValue(), "0.00 %");
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS.getValue(), "0.00");
+      }
+    }else {
+      if(nachtragDTO.getBuildingCosts() != null && nachtragDTO.getBuildingCosts() != 0){
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS_PERCENT.getValue(),
+          TemplateConstants.EMPTY_STRING);
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS.getValue(),
+          SubmissConverter.convertToCHFCurrency(new BigDecimal(nachtragDTO.getBuildingCosts()))
+            .substring(4));
+      }else{
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS_PERCENT.getValue(), "0.00 %");
+        placeholders.put(DocumentPlaceholders.N_BUILDING_COSTS.getValue(), "0.00");
+      }
+    }
+
+    placeholders.put(DocumentPlaceholders.N_TOTAL_2.getValue(),
+      SubmissConverter.convertToCHFCurrency(nachtragDTO.getAmount()).substring(4));
+
+    if (nachtragDTO.getIsVatPercentage() != null && nachtragDTO.getIsVatPercentage()){
+      if(nachtragDTO.getVat() != null && nachtragDTO.getVat() != 0){
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT_PERCENT.getValue(),
+          String.format("%.2f", nachtragDTO.getVat()) + " %");
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT.getValue(),
+          SubmissConverter.convertToCHFCurrency(nachtragDTO.getVatValue()).substring(4));
+      }else{
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT_PERCENT.getValue(), "0.00 %");
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT.getValue(), "0.00");
+      }
+    }else {
+      if(nachtragDTO.getVat() != null && nachtragDTO.getVat() != 0
+        && nachtragDTO.getVatValue() != null){
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT_PERCENT.getValue(),
+          TemplateConstants.EMPTY_STRING);
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT.getValue(),
+          SubmissConverter.convertToCHFCurrency(nachtragDTO.getVatValue()).substring(4));
+      }else{
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT_PERCENT.getValue(), "0.00 %");
+        placeholders.put(DocumentPlaceholders.N_VAT_AMOUNT.getValue(), "0.00");
+      }
+    }
+
+    placeholders.put(DocumentPlaceholders.N_AMOUNT_INCL.getValue(),
+      SubmissConverter.convertToCHFCurrency(nachtragDTO.getAmountInclusive()).substring(4));
+
+    placeholders.put(DocumentPlaceholders.S_CURRENT_DATE.getValue(),
+      SubmissConverter.convertToSwissDate(new Date()));
   }
 
   /**
@@ -2849,6 +3058,10 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       file.getAttributes().put(DocumentAttributes.ADDITIONAL_INFO.name(),
         documentDTO.getLegalHearingType());
     }
+    if (documentDTO.getNachtragId() != null) {
+      file.getAttributes().put(DocumentAttributes.ADDITIONAL_INFO.name(),
+        documentDTO.getNachtragId());
+    }
     if (submittentId != null) {
       file.getAttributes().put(DocumentAttributes.TENDER_ID.name(), submittentId);
     }
@@ -2928,6 +3141,10 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     if (documentDTO.getLegalHearingType() != null) {
       file.getAttributes().put(DocumentAttributes.ADDITIONAL_INFO.name(),
         documentDTO.getLegalHearingType());
+    }
+    if (documentDTO.getNachtragId() != null) {
+      file.getAttributes().put(DocumentAttributes.ADDITIONAL_INFO.name(),
+        documentDTO.getNachtragId());
     }
     // if the document can be generated only by Admin, then it is set to Private
     if (documentDTO.getIsAdminRightsOnly() != null && documentDTO.getIsAdminRightsOnly()) {
@@ -3233,6 +3450,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     if (documentDTO.getLegalHearingType() != null) {
       attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(),
         documentDTO.getLegalHearingType());
+    }
+    if (documentDTO.getNachtragId() != null) {
+      attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(), documentDTO.getNachtragId());
     }
     List<NodeDTO> peristedNodes =
       documentService.getNodeByAttributes(documentDTO.getFolderId(), attributesMap);
@@ -3668,6 +3888,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       case Template.RECHTLICHES_GEHOR:
       case Template.ZERTIFIKAT:
       case Template.FIRMENBLATT_ERWEITERT:
+      case Template.VERTRAG_PLANERVERTRAG_SGB:
         // Bug 4046 and UC 177 - Department and Direktion reference data of certain department when
         // Tenant is Stadt Bern.
         if (usersService.getUserById(getUser().getId()).getTenant().getIsMain()) {
@@ -5125,14 +5346,13 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       case Template.VERTRAG_WERKVERTRAG_SGB:
       case Template.VERTRAG_DIENSTLEISTUNGSVERTRAG_LB:
       case Template.VERTRAG_KAUF_LIEFERVERTRAG_LB:
-      case Template.VERTRAG_HONORARVERTRAG_SGB:
-      case Template.VERTRAG_KAUFVERTRAG_SGB:
-      case Template.VERTRAG_LIEFER_ANBAUVERTRAG:
-      case Template.VERTRAG_PLANUNGS_PROJEKTIERUNGS_HERSTELLUNGSVERTRAG:
+      case Template.VERTRAG_BESTELLUNG_PLANERLEISTUNGEN_SGB:
+      case Template.VERTRAG_PLANERVERTRAG_SGB:
       case Template.AUSSCHLUSS:
       case Template.VERFUGUNGEN:
       case Template.SELEKTIV_1_STUFE:
       case Template.VERFUGUNGEN_DL_WETTBEWERB:
+      case Template.NACHTRAG:
         return TemplateConstants.DOCX_FILE_EXTENSION;
 
       // Excel documents

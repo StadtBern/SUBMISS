@@ -191,14 +191,32 @@
             return setParent($rootScope);
           }
         }
+      })
+
+      .state('documentView.nachtrag', {
+        controller: "NachtragController",
+        controllerAs: "nachtragCtrl",
+        templateUrl: "app/document/nachtrag/nachtrag.html",
+        params: {
+          submissionId: null
+        },
+        data: {
+          isPublic: false
+        },
+        ncyBreadcrumb: {
+          label: '{{documentViewCtrl.submission.workType.value1}} {{documentViewCtrl.submission.workType.value2}}',
+          parent: function ($rootScope) {
+            return setParent($rootScope);
+          }
+        }
       });
 
     /** Function to set breadcrumb parent */
     function setParent(rootScope) {
       if (rootScope.$previousState === 'projectSubmissionsView' ||
         rootScope.$previousState === 'projectSubmissionsView.from.Offers' ||
-        rootScope.$previousState === 'project.view' || rootScope.$previousState === 'project.search'
-        || !rootScope.$previousState) {
+        rootScope.$previousState === 'project.view' || rootScope.$previousState === 'project.search' ||
+        !rootScope.$previousState) {
         return 'project.view';
       } else {
         return 'project.search';

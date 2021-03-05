@@ -304,6 +304,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
           for (OfferEntity offerEntity : offerEntities) {
             offerEntity.setqExRank(sortOrder);
             offerEntity.getSubmittent().setSortOrder(sortOrder);
+            offerEntity.setUpdatedBy(getUserId());
             em.merge(offerEntity);
             sortOrder++;
           }
@@ -527,6 +528,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
           }
         }
         offerEntity.setqExTotalGrade(BigDecimal.valueOf(totalScore));
+        offerEntity.setUpdatedBy(getUserId());
         em.merge(offerEntity);
       }
     }
@@ -2352,6 +2354,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
     for (OfferEntity offerEntity : offerEntities) {
       offerEntity.setqExRank(Integer.valueOf(offerEntities.indexOf(offerEntity) + 1));
       offerEntity.getSubmittent().setSortOrder(offerEntity.getqExRank());
+      offerEntity.setUpdatedBy(getUserId());
       em.merge(offerEntity);
     }
   }

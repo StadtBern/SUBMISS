@@ -969,14 +969,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       .fetch());
   }
 
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * ch.bern.submiss.services.api.administration.SubmissionService#hasSubmissionStatus(java.lang.
-   * String, java.lang.String)
-   */
   @Override
   public Boolean hasSubmissionStatus(String submissionId, String statusId) {
 
@@ -991,7 +983,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       .from(qTenderStatusHistoryEntity).where(qTenderStatusHistoryEntity.tenderId.id
         .eq(submissionId).and(qTenderStatusHistoryEntity.statusId.eq(statusId)))
       .fetchCount();
-    return (hasSubmissionStatus == 0) ? false : true;
+    return hasSubmissionStatus != 0;
   }
 
   /*
@@ -1252,6 +1244,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         .where(qOfferEntity.submittent.id.in(changedSubmittentIds)).fetch();
       for (OfferEntity offerEntity : offerEntities) {
         offerEntity.setqExExaminationIsFulfilled(null);
+        offerEntity.setUpdatedBy(getUserId());
         em.merge(offerEntity);
       }
     }
@@ -1447,6 +1440,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
           .where(qOfferEntity.submittent.id.in(changedSubmittentIds)).fetch();
         for (OfferEntity offerEntity : offerEntities) {
           offerEntity.setqExExaminationIsFulfilled(null);
+          offerEntity.setUpdatedBy(getUserId());
           em.merge(offerEntity);
         }
       }
@@ -2248,6 +2242,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         } else {
           offerEntity.setIsExcludedFromProcess(Boolean.TRUE);
         }
+        offerEntity.setUpdatedBy(getUserId());
         em.merge(offerEntity);
       }
       if (offerEntity.getExcludedFirstLevel() == null && offerEntity
@@ -2255,6 +2250,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         // If the process type is selective and the excludedFirstLevel value is still null, set it
         // to false.
         offerEntity.setExcludedFirstLevel(Boolean.FALSE);
+        offerEntity.setUpdatedBy(getUserId());
         em.merge(offerEntity);
       }
       // If process is Selektiv we should also check the number of passing applicants.
@@ -2266,6 +2262,9 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         countApplicants++;
         if (countApplicants > passingApplicants) {
           offerEntity.setExcludedFirstLevel(Boolean.TRUE);
+          offerEntity.setUpdatedBy(getUserId());
+          offerEntity.setqExStatus(Boolean.FALSE);
+          offerEntity.setqExExaminationIsFulfilled((Boolean.FALSE));
           em.merge(offerEntity);
         }
       }
