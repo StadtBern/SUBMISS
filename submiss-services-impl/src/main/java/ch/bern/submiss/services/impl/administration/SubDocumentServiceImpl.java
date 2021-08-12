@@ -957,14 +957,17 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     templateBean.replaceSubmissionPlaceholders(placeholders, submission, offers);
     switch (template.getShortCode()) {
       case Template.VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_ISB:
-      case Template.VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_SGB:
       case Template.VERTRAG_DIENSTLEISTUNGSVERTRAG_LB:
       case Template.VERTRAG_PLANERVERTRAG_SGB:
-      case Template.VERTRAG_KAUF_LIEFERVERTRAG_LB:
+      case Template.VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_SGB:
       case Template.VERTRAG_BESTELLUNG_PLANERLEISTUNGEN_SGB:
+      case Template.VERTRAG_WERKVERTRAG_SGB:
+      case Template.VERTRAG_KAUFVERTRAG_SGB:
+      case Template.VERTRAG_LIEFER_ANBAUVERTRAG:
+      case Template.VERTRAG_KAUF_LIEFERVERTRAG_LB:
       case Template.VERTRAG_WERKVERTRAG_HSB:
       case Template.VERTRAG_WERKVERTRAG_ISB:
-      case Template.VERTRAG_WERKVERTRAG_SGB:
+
 
         documentDTO.setFilename(documentDTO.getFilename()
           + setFileExtension(Template.VERTRAG_AUFTRAGSBESTATIGUNG_FREIHANDIG_ISB));

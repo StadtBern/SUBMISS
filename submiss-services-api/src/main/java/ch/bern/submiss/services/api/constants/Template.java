@@ -165,6 +165,12 @@ public class Template {
 
   /** The Constant VERTRAG_WERKVERTRAG_SGB. */
   public static final String VERTRAG_WERKVERTRAG_SGB = "DEP_SGB01";
+
+  /** The Constant VERTRAG_LIEFER_ANBAUVERTRAG. */
+  public static final String VERTRAG_LIEFER_ANBAUVERTRAG = "DEP_SGB05";
+
+  /** The Constant VERTRAG_KAUFVERTRAG_SGB. */
+  public static final String VERTRAG_KAUFVERTRAG_SGB ="DEP_SGB04";
   
   /** The Constant VERTRAG_KAUF_LIEFERVERTRAG_LB. */
   public static final String VERTRAG_KAUF_LIEFERVERTRAG_LB = "DEP_LB02";

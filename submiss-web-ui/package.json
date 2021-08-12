@@ -1,6 +1,6 @@
 {
   "name": "submiss",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "dependencies": {},
   "scripts": {
     "test": "gulp test"
