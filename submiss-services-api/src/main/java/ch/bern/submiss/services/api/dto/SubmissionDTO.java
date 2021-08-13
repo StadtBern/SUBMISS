@@ -432,6 +432,24 @@ public class SubmissionDTO extends AbstractDTO {
   private BigDecimal reportAmountTotal;
 
   /**
+   * The report Nachtrag amount.
+   */
+  @JsonView(View.Internal.class)
+  private List<BigDecimal> reportNachtragAmount;
+
+  /**
+   * The report Nachtrag amount total.
+   */
+  @JsonView(View.Internal.class)
+  private BigDecimal reportNachtragAmountTotal;
+
+  /**
+   * The report Nachtrag date.
+   */
+  @JsonView(View.Internal.class)
+  private Date reportNachtragDate;
+
+  /**
    * The status.
    */
   @JsonView(View.Internal.class)
@@ -1726,6 +1744,60 @@ public class SubmissionDTO extends AbstractDTO {
    */
   public void setReportAmountTotal(BigDecimal reportAmountTotal) {
     this.reportAmountTotal = reportAmountTotal;
+  }
+
+  /**
+   * Gets report nachtrag amount.
+   *
+   * @return the report nachtrag amount
+   */
+  public List<BigDecimal> getReportNachtragAmount() {
+    return reportNachtragAmount;
+  }
+
+  /**
+   * Sets report nachtrag amount.
+   *
+   * @param reportNachtragAmount the report nachtrag amount
+   */
+  public void setReportNachtragAmount(List<BigDecimal> reportNachtragAmount) {
+    this.reportNachtragAmount = reportNachtragAmount;
+  }
+
+  /**
+   * Gets report nachtrag amount total.
+   *
+   * @return the report nachtrag amount total
+   */
+  public BigDecimal getReportNachtragAmountTotal() {
+    return reportNachtragAmountTotal;
+  }
+
+  /**
+   * Sets report nachtrag amount total.
+   *
+   * @param reportNachtragAmountTotal the report nachtrag amount total
+   */
+  public void setReportNachtragAmountTotal(BigDecimal reportNachtragAmountTotal) {
+    this.reportNachtragAmountTotal = reportNachtragAmountTotal;
+  }
+
+  /**
+   * Gets report nachtrag date.
+   *
+   * @return the report nachtrag date
+   */
+  public Date getReportNachtragDate() {
+    return reportNachtragDate;
+  }
+
+  /**
+   * Sets report nachtrag date.
+   *
+   * @param reportNachtragDate the report nachtrag date
+   */
+  public void setReportNachtragDate(Date reportNachtragDate) {
+    this.reportNachtragDate = reportNachtragDate;
   }
 
   /**

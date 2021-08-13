@@ -1996,64 +1996,6 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     Set<ValidationError> errors = new HashSet<>();
     if (operationReportDTO != null) {
 
-      // Check for future dates
-      if (isFutureDate(operationReportDTO.getStartDate(), operationReportDTO.getEndDate())) {
-        errors.add(new ValidationError(ValidationMessages.FUTURE_DATE_ERROR_FIELD, LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getPublicationDateAwardFrom(),
-        operationReportDTO.getPublicationDateAwardTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.PUBLICATION_AWARD.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getPublicationDateDirectAwardFrom(),
-        operationReportDTO.getPublicationDateDirectAwardTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.PUBLICATION_DIRECT_AWARD.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-
-      if (isFutureDate(operationReportDTO.getPublicationDateFrom(),
-        operationReportDTO.getPublicationDateTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.PUBLICATION.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getApplicationOpeningDateFrom(),
-        operationReportDTO.getApplicationOpeningDateTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.APPLICATION_OPENING.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getOfferOpeningDateFrom(),
-        operationReportDTO.getOfferOpeningDateTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.OFFER_OPENING.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-
-      if (isFutureDate(operationReportDTO.getCommissionProcurementProposalDateFrom(),
-        operationReportDTO.getCommissionProcurementProposalDateTo())) {
-        errors.add(
-          new ValidationError(GEKO_CRITERIA.COMMISION_PROCUREMENT_PROPOSAL.getFutureErrorField(),
-            LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getFirstDeadlineFrom(),
-        operationReportDTO.getFirstDeadlineTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.FIRST_DEADLINE.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getSecondDeadlineFrom(),
-        operationReportDTO.getSecondDeadlineTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.SECOND_DEADLINE.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getFirstLevelavailableDateFrom(),
-        operationReportDTO.getFirstLevelavailableDateTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.FIRST_LEVEL_AVAILABLE.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-      if (isFutureDate(operationReportDTO.getLevelavailableDateFrom(),
-        operationReportDTO.getLevelavailableDateTo())) {
-        errors.add(new ValidationError(GEKO_CRITERIA.LEVEL_AVAILABLE.getFutureErrorField(),
-          LookupValues.FUTURE_ERROR));
-      }
-
       // Check for earlier end date than start date
       if (isEndDateBeforeStartDate(operationReportDTO.getStartDate(),
         operationReportDTO.getEndDate())) {
@@ -2117,23 +2059,6 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
 
     }
     return errors;
-  }
-
-  /**
-   * Checks if it's a future date.
-   *
-   * @param dateFrom the date from
-   * @param dateTo the date to
-   * @return true, if future date
-   */
-  private boolean isFutureDate(Date dateFrom, Date dateTo) {
-
-    LOGGER.log(Level.CONFIG,
-      "Executing method isFutureDate, Parameters: dateFrom: {0}, dateTo: {1}",
-      new Object[]{dateFrom, dateTo});
-
-    Date today = new Date();
-    return (dateFrom != null && dateFrom.after(today)) || (dateTo != null && dateTo.after(today));
   }
 
   /**

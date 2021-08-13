@@ -367,6 +367,13 @@ public class OfferEntity extends AbstractOfferEntity {
   private Boolean excludedFirstLevel;
 
   /**
+   * The is excluded by passing applicants.
+   */
+  @Column(name = "EXCLUDED_BY_PASSING_APPLICANTS")
+  private Boolean isExcludedByPassingApplicants;
+
+
+  /**
    * The exclusion reasons.
    */
   @ManyToMany(fetch = FetchType.LAZY)
@@ -1421,6 +1428,24 @@ public class OfferEntity extends AbstractOfferEntity {
    */
   public void setExclusionReasonFirstLevel(String exclusionReasonFirstLevel) {
     this.exclusionReasonFirstLevel = exclusionReasonFirstLevel;
+  }
+
+  /**
+   * Gets the excluded by passing applicants.
+   *
+   * @return the excluded by passing applicants.
+   */
+  public Boolean getExcludedByPassingApplicants() {
+    return isExcludedByPassingApplicants;
+  }
+
+  /**
+   * Sets the excluded by passing applicants.
+   *
+   * @param excludedByPassingApplicants the excluded by passing applicants.
+   */
+  public void setExcludedByPassingApplicants(Boolean excludedByPassingApplicants) {
+    isExcludedByPassingApplicants = excludedByPassingApplicants;
   }
 
   /**

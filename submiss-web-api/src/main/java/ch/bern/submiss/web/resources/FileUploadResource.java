@@ -175,7 +175,8 @@ public class FileUploadResource extends FileUploadRestTemplate {
           .equals("application/vnd.ms-excel")) || (mimeType.equals("application/vnd.ms-outlook") && contentType
           .equals("application/octet-stream")) || (mimeType.equals("application/vnd.ms-project") && contentType
           .equals("application/octet-stream")) || (mimeType.equals("application/rtf") && contentType
-          .equals("application/msword"))
+          .equals("application/msword") || (contentType.equals("application/pdf") && mimeType
+          .equals("application/octet-stream")))
       );
     } else {
       return Optional.empty();

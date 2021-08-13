@@ -106,6 +106,7 @@
     vm.submissionCancelNavigation = submissionCancelNavigation;
     vm.printDocuments = printDocuments;
     vm.getStatusSubTab = getStatusSubTab;
+    vm.getChosenTemplate = getChosenTemplate;
     // Activating the controller.
     activate();
     /***********************************************************************
@@ -157,6 +158,14 @@
       AppService.getSubmissionStatuses(id).success(function (data) {
         vm.statusHistory = data;
       });
+    }
+
+    function getChosenTemplate() {
+      if(!angular.isUndefined(vm.chosenTemplate) && vm.chosenTemplate !== null ){
+        return vm.chosenTemplate;
+      } else{
+        return vm.templates[0];
+      }
     }
 
     function getStatusSubTab(status) {
@@ -213,7 +222,7 @@
             }
           }
           vm.templates = data;
-          vm.chosenTemplate = vm.templates[0];
+          vm.chosenTemplate = vm.getChosenTemplate();
         }).error(function (response, status) {
 
       });

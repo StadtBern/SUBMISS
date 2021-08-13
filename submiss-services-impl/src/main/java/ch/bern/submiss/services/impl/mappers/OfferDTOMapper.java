@@ -133,6 +133,7 @@ public abstract class OfferDTOMapper {
     offerEntity.setExcludedFirstLevel(dto.getExcludedFirstLevel());
     offerEntity.setNachtragSubmittent(dto.getNachtragSubmittent());
     offerEntity.setManualAmount(dto.getManualAmount());
+    offerEntity.setExcludedByPassingApplicants(dto.getExcludedByPassingApplicants());
     return offerEntity;
   }
 
@@ -271,6 +272,7 @@ public abstract class OfferDTOMapper {
     offerDTO.setExcludedFirstLevel(entity.getExcludedFirstLevel());
     offerDTO.setNachtragSubmittent(entity.getNachtragSubmittent());
     offerDTO.setManualAmount(entity.getManualAmount());
+    offerDTO.setExcludedByPassingApplicants(entity.getExcludedByPassingApplicants());
     return offerDTO;
   }
 

@@ -30,6 +30,7 @@ import ch.bern.submiss.services.api.dto.OfferDTO;
 import ch.bern.submiss.services.api.dto.SignatureCopyDTO;
 import ch.bern.submiss.services.api.dto.SignatureProcessTypeEntitledDTO;
 import ch.bern.submiss.services.api.dto.SubcriterionDTO;
+import ch.bern.submiss.services.api.dto.SubmissionDTO;
 import ch.bern.submiss.services.api.dto.SubmissionOverviewDTO;
 import ch.bern.submiss.services.api.dto.SubmittentOfferDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
@@ -1062,6 +1063,44 @@ public class ComparatorUtil {
     (MasterListValueHistoryDTO m1, MasterListValueHistoryDTO m2) ->
       // Compare by value1 and order alphabetically.
       m1.getValue1().toLowerCase().compareTo(m2.getValue1().toLowerCase());
+
+  public static final Comparator<SubmissionDTO> sortSubmissionDTOsByObjekt =
+    (SubmissionDTO s1, SubmissionDTO s2) -> {
+      StringBuilder object1 = new StringBuilder();
+      object1.append(s1.getProject().getObjectName().getValue1());
+      if (s1.getProject().getObjectName().getValue2() != null) {
+        object1.append(LookupValues.COMMA)
+          .append(s1.getProject().getObjectName().getValue2());
+      }
+      StringBuilder object2 = new StringBuilder();
+      object2.append(s2.getProject().getObjectName().getValue1());
+      if (s2.getProject().getObjectName().getValue2() != null) {
+        object2.append(LookupValues.COMMA)
+          .append(s2.getProject().getObjectName().getValue2());
+      }
+      String obj1 = object1.toString();
+      String obj2 = object2.toString();
+      // ascending order
+      return obj1.compareTo(obj2);
+    };
+
+  public static final Comparator<SubmissionDTO> sortSubmissionDTOsByProjekt =
+    (SubmissionDTO s1, SubmissionDTO s2) -> {
+      String projekt1 = s1.getProject().getProjectName();
+      String projekt2 = s2.getProject().getProjectName();
+      // ascending order
+      return projekt1.compareTo(projekt2);
+    };
+
+  public static final Comparator<SubmissionDTO> sortSubmissionDTOsByArbeitsgattung =
+    (SubmissionDTO s1, SubmissionDTO s2) -> {
+      String arbeitsgattung1 = s1.getWorkType().getValue1() + LookupValues.SPACE + s1.getWorkType()
+        .getValue2();
+      String arbeitsgattung2 = s2.getWorkType().getValue1() + LookupValues.SPACE + s2.getWorkType()
+        .getValue2();
+      // ascending order
+      return arbeitsgattung1.compareTo(arbeitsgattung2);
+    };
 
   /*
    * sonar's bug: Utility classes, which are collections of static members, are not meant to be

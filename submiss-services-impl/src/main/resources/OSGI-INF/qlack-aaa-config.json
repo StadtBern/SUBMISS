@@ -2129,6 +2129,10 @@
       "operationName": "NachtragView"
     },
     {
+      "groupName": "Dir",
+      "operationName": "NachtragView"
+    },
+    {
       "groupName": "Admin",
       "operationName": "NachtragCreate"
     },

@@ -81,9 +81,9 @@
             <div class="row">
               <div class="col-sm-4 ">
                 <div class="form-group">
-                  <ui-select name="template" id="template"
-                    ng-init="documentViewCtrl.chosenTemplate = documentViewCtrl.templates[0]"
-                    ng-model="documentViewCtrl.chosenTemplate" theme="select2">
+                  <ui-select name="template" id="template" ng-click = "documentViewCtrl.getTemplates()"
+                             ng-init="documentViewCtrl.chosenTemplate = documentViewCtrl.templates[0]"
+                             ng-model="documentViewCtrl.chosenTemplate" theme="select2">
                     <ui-select-match allow-clear="true">
                       <span ng-bind="$select.selected.value1"></span>
                     </ui-select-match>

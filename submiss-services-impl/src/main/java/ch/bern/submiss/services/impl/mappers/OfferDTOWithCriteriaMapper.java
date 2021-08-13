@@ -116,7 +116,7 @@ public abstract class OfferDTOWithCriteriaMapper {
     offerEntity.setExcludedFirstLevel(dto.getExcludedFirstLevel());
     offerEntity.setExclusionReason(dto.getExclusionReason());
     offerEntity.setExclusionReasonFirstLevel(dto.getExclusionReasonFirstLevel());
-
+    offerEntity.setExcludedByPassingApplicants(dto.getExcludedByPassingApplicants());
     return offerEntity;
   }
 
@@ -288,6 +288,7 @@ public abstract class OfferDTOWithCriteriaMapper {
     offerDTO.setExcludedFirstLevel(entity.getExcludedFirstLevel());
     offerDTO.setExclusionReason(entity.getExclusionReason());
     offerDTO.setExclusionReasonFirstLevel(entity.getExclusionReasonFirstLevel());
+    offerDTO.setExcludedByPassingApplicants(entity.getExcludedByPassingApplicants());
     // Return a set of MasterListValueHistoryDTO instead of MasterListValueDTOs.
     // Convert MasterListValueEntity set to MasterListValueHistoryDTO set.
     offerDTO.setExclusionReasons(

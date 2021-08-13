@@ -231,6 +231,21 @@ public class NachtragServiceImpl extends BaseService implements NachtragService 
   }
 
   @Override
+  public List<NachtragDTO> getNachtragsBySubmittentId(String submittentId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getNachtragsByNachtragSubmittent, Parameters: submittentId: {0}",
+      submittentId);
+
+    return NachtragDTOMapper.INSTANCE
+      .toNachtragDTO((new JPAQueryFactory(em).selectFrom(qNachtragEntity)
+        .where((qNachtragEntity.offer.submittent.id.eq(submittentId))
+          .and(qNachtragEntity.isClosed.isTrue()))
+        .orderBy(qNachtragEntity.nachtragDate.desc())
+        .fetch()));
+  }
+
+  @Override
   public void updateNachtrag(NachtragDTO nachtragDTO) {
 
     LOGGER.log(Level.CONFIG,

@@ -2072,6 +2072,8 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
     placeholders.put("f_company_post", offer.getSubmittent().getCompanyId().getPostCode()
       + " " + offer.getSubmittent().getCompanyId().getLocation());
 
+    placeholders.put(DocumentPlaceholders.N_NACHTRAG_NAME.getValue(), nachtragDTO.getNachtragName());
+
     placeholders.put(DocumentPlaceholders.N_NACHTRAG_DATE.getValue(),
       SubmissConverter.convertToSwissDate(nachtragDTO.getNachtragDate()));
 
@@ -2219,9 +2221,11 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       templateBean.setCompanyNameOrArge(offer, placeholders,
         DocumentPlaceholders.F_COMPANY_NAME_OR_ARGE.getValue());
       // Absage
-      if ((offer.getqExStatus() != null && offer.getqExStatus())
+      if (((offer.getqExStatus() != null && offer.getqExStatus())
         && (offer.getqExExaminationIsFulfilled() == null
-        || !offer.getqExExaminationIsFulfilled())) {
+        || !offer.getqExExaminationIsFulfilled()))
+        || ((offer.getExcludedByPassingApplicants() != null
+        && offer.getExcludedByPassingApplicants()))) {
         attributesMap.put(LookupValues.TYPE, TemplateConstants.REJECTION);
         documentDTO
           .setFilename(TEMPLATE_NAMES.SELEKTIV_1_STUFE.getValue() + " (Absage)"

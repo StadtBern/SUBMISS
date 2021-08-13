@@ -432,6 +432,12 @@ public class OfferDTO extends AbstractOfferDTO {
   private BigDecimal manualAmount;
 
   /**
+   * The is excluded by passing applicants.
+   */
+  @JsonView(View.Internal.class)
+  private Boolean isExcludedByPassingApplicants;
+
+  /**
    * Gets the gross amount or corrected.
    *
    * @return the gross amount or corrected
@@ -1706,6 +1712,23 @@ public class OfferDTO extends AbstractOfferDTO {
     this.exclusionReasonFirstLevel = exclusionReasonFirstLevel;
   }
 
+  /**
+   * Gets the excluded by passing applicants.
+   *
+   * @return the excluded by passing applicants.
+   */
+  public Boolean getExcludedByPassingApplicants() {
+    return isExcludedByPassingApplicants;
+  }
+
+  /**
+   * Sets the excluded by passing applicants.
+   *
+   * @param excludedByPassingApplicants the excluded by passing applicants.
+   */
+  public void setExcludedByPassingApplicants(Boolean excludedByPassingApplicants) {
+    isExcludedByPassingApplicants = excludedByPassingApplicants;
+  }
 
   /**
    * Gets the exclusion reasons first level.

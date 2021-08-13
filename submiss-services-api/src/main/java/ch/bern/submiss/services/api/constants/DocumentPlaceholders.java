@@ -126,6 +126,7 @@ public enum DocumentPlaceholders {
   FIRST_REFERENCE_FUNCTION("first_reference_function"),
   SECOND_REFERENCE_NAME("second_reference_name"),
   SECOND_REFERENCE_FUNCTION("second_reference_function"),
+  N_NACHTRAG_NAME("n_nachtrag_name"),
   N_NACHTRAG_DATE("n_nachtrag_date"),
   N_GROSS_AMOUNT("n_gross_amount"),
   N_DISCOUNT_PERCENT("n_discount_percent"),

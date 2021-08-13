@@ -46,6 +46,14 @@ public interface NachtragService {
   List<NachtragDTO> getNachtragsByNachtragSubmittent(String offerId);
 
   /**
+   * Get all nachtrags for a specific nachtrag submittent by submittendId.
+   *
+   * @param submittentId the nachtrag offer submittent id
+   * @return the nachtrags
+   */
+  List<NachtragDTO> getNachtragsBySubmittentId(String submittentId);
+
+  /**
    * Update nachtrag.
    *
    * @param nachtragDTO the nachtragDTO

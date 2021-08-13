@@ -13,6 +13,7 @@
 
 package ch.bern.submiss.services.impl.administration;
 
+import ch.bern.submiss.services.api.administration.NachtragService;
 import ch.bern.submiss.services.api.administration.OfferService;
 import ch.bern.submiss.services.api.administration.ReportService;
 import ch.bern.submiss.services.api.administration.SDService;
@@ -24,6 +25,7 @@ import ch.bern.submiss.services.api.dto.CompanyDTO;
 import ch.bern.submiss.services.api.dto.DepartmentHistoryDTO;
 import ch.bern.submiss.services.api.dto.DirectorateHistoryDTO;
 import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
+import ch.bern.submiss.services.api.dto.NachtragDTO;
 import ch.bern.submiss.services.api.dto.ReportDTO;
 import ch.bern.submiss.services.api.dto.ReportResultsDTO;
 import ch.bern.submiss.services.api.dto.SubmissionDTO;
@@ -31,7 +33,6 @@ import ch.bern.submiss.services.api.dto.SubmittentDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.CustomSubmissionMapper;
-import ch.bern.submiss.services.impl.mappers.OfferDTOMapper;
 import ch.bern.submiss.services.impl.model.DepartmentEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
@@ -40,6 +41,7 @@ import ch.bern.submiss.services.impl.model.QMasterListValueEntity;
 import ch.bern.submiss.services.impl.model.QMasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.QSubmissionEntity;
 import ch.bern.submiss.services.impl.model.SubmissionEntity;
+import ch.bern.submiss.services.impl.util.ComparatorUtil;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.google.common.collect.Table;
 import com.querydsl.core.BooleanBuilder;
@@ -54,6 +56,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -215,6 +218,12 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
    */
   @Inject
   private TemplateBean templateBean;
+
+  /**
+   * The Nachtrag service.
+   */
+  @Inject
+  private NachtragService nachtragService;
 
   public byte[] generateReport(ReportResultsDTO reportResults) {
 
@@ -584,42 +593,50 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     CellStyle footerValueStyle3 = setCellStyle(workbook, footerValueFont, true,
       HorizontalAlignment.RIGHT, VerticalAlignment.TOP, true, LookupValues.NUMBER_FORMAT);
 
+    // Document footerValue4 style with HorizontalAlignment -> RIGHT and data format
+    // We have to use a new footer title style because there is an issue when removing borders
+    // and using the same style again.
+    CellStyle footerValueStyle4 = setCellStyle(workbook, footerValueFont, true,
+      HorizontalAlignment.RIGHT, VerticalAlignment.TOP, true, LookupValues.NUMBER_FORMAT);
+
     if (reportResults.getTotalizationBy().equals(TOTAL_BY_YEAR)) {
-      insertYearSumUp(sheet, startingIndex, reportResults, footerTitleStyle, footerTitleStyle3, footerValueStyle2,
-        footerValueStyle3);
+      insertYearSumUp(sheet, startingIndex, reportResults, footerTitleStyle, footerTitleStyle3,
+        footerValueStyle, footerValueStyle2,
+        footerValueStyle3, footerValueStyle4);
     } else {
       insertReportSumUp(sheet, startingIndex, reportResults, footerTitleStyle, footerTitleStyle2,
-        footerValueStyle, footerValueStyle3);
+        footerValueStyle, footerValueStyle3, footerValueStyle4);
     }
   }
 
   /**
    * Insert the sum up on the report.
-   *
-   * @param sheet             the sheet
+   *  @param sheet             the sheet
    * @param startingIndex     the startingIndex
    * @param reportResults     the reportResults
    * @param footerTitleStyle  the footerTitleStyle
    * @param footerTitleStyle2 the footerTitleStyle2
    * @param footerValueStyle  the footerValueStyle
    * @param footerValueStyle3 the footerValueStyle3
+   * @param footerValueStyle4 the footerValueStyle4
    */
   private void insertReportSumUp(XSSFSheet sheet, int startingIndex,
-    ReportResultsDTO reportResults, CellStyle footerTitleStyle, CellStyle footerTitleStyle2,
-    CellStyle footerValueStyle, CellStyle footerValueStyle3) {
+    ReportResultsDTO reportResults,
+    CellStyle footerTitleStyle, CellStyle footerTitleStyle2,
+    CellStyle footerValueStyle, CellStyle footerValueStyle3, CellStyle footerValueStyle4) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method insertReportFooter, Parameters: sheet: {0}, startingIndex: {1}, "
         + "reportResults: {2}, footerTitleStyle: {3}, footerTitleStyle2: {4}, footerValueStyle: {5}, "
         + "footerValueStyle3: {6}",
       new Object[]{sheet, startingIndex, reportResults, footerTitleStyle, footerTitleStyle2,
-        footerValueStyle, footerValueStyle3});
+        footerValueStyle, footerValueStyle3, footerValueStyle4});
 
     // Creating a row for counting the results
     Row row = sheet.createRow(startingIndex);
 
-    // Create 10 cells with top and bottom borders for the footer
-    for (int i = 0; i < 10; i++) {
+    // Create 12 cells with top and bottom borders for the footer
+    for (int i = 0; i < 12; i++) {
       Cell cell = row.createCell(i);
       // Add the borders
       footerValueStyle.setBorderTop(BorderStyle.THIN);
@@ -658,6 +675,15 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     // Add the countSectionResultsValue on the 10th cell
     cell = row.getCell(9);
     cell.setCellValue(getReportTotalAmount(reportResults.getSubmissions()).doubleValue());
+    // Add top and bottom borders in the 11th cell
+    footerValueStyle4.setBorderTop(BorderStyle.THIN);
+    footerValueStyle4.setTopBorderColor(IndexedColors.BLACK.getIndex());
+    footerValueStyle4.setBorderBottom(BorderStyle.THIN);
+    footerValueStyle4.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+    cell.setCellStyle(footerValueStyle4);
+    // Add the countSectionResultsValue on the last cell
+    cell = row.getCell(11);
+    cell.setCellValue(getReportNachtragTotalAmount(reportResults.getSubmissions()).doubleValue());
     // Add top, bottom and right borders for the last cell
     footerValueStyle3.setBorderTop(BorderStyle.THIN);
     footerValueStyle3.setTopBorderColor(IndexedColors.BLACK.getIndex());
@@ -677,15 +703,19 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
    * @param footerTitleStyle  the footerTitleStyle
    * @param footerValueStyle2 the footerValueStyle2
    * @param footerValueStyle3 the footerValueStyle3
+   * @param footerValueStyle4 the footerValueStyle4
    */
   private void insertYearSumUp(XSSFSheet sheet, int startingIndex, ReportResultsDTO reportResults,
-    CellStyle footerTitleStyle, CellStyle footerTitleStyle2, CellStyle footerValueStyle2, CellStyle footerValueStyle3) {
+    CellStyle footerTitleStyle, CellStyle footerTitleStyle2, CellStyle footerValueStyle,
+    CellStyle footerValueStyle2, CellStyle footerValueStyle3,
+    CellStyle footerValueStyle4) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method insertYearFooter, Parameters: sheet: {0}, startingIndex: {1}, "
-        + "reportResults: {2}, footerTitleStyle: {3}, footerValueStyle2: {4}, footerValueStyle3: {5}",
+        + "reportResults: {2}, footerTitleStyle: {3}, footerValueStyle2: {4}, "
+        + "footerValueStyle3: {5}, footerValueStyle4: {6}",
       new Object[]{sheet, startingIndex, reportResults, footerTitleStyle, footerValueStyle2,
-        footerValueStyle3});
+        footerValueStyle3, footerValueStyle4});
 
     // Creating a row for counting the amounts in year report
     Row row = sheet.createRow(startingIndex);
@@ -701,6 +731,13 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
 
     cell = row.createCell(1);
     cell.setCellValue(getReportTotalAmount(reportResults.getSubmissions()).doubleValue());
+    // Add top and right borders in the second cell of the first row
+    footerValueStyle4.setBorderTop(BorderStyle.THIN);
+    footerValueStyle4.setTopBorderColor(IndexedColors.BLACK.getIndex());
+    cell.setCellStyle(footerValueStyle4);
+
+    cell = row.createCell(2);
+    cell.setCellValue(getReportNachtragTotalAmount(reportResults.getSubmissions()).doubleValue());
     // Add top and right borders in the second cell of the first row
     footerValueStyle3.setBorderTop(BorderStyle.THIN);
     footerValueStyle3.setTopBorderColor(IndexedColors.BLACK.getIndex());
@@ -724,12 +761,17 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     cell.setCellStyle(footerTitleStyle2);
 
     cell = row.createCell(1);
+    footerValueStyle.setBorderBottom(BorderStyle.THIN);
+    footerValueStyle.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+    cell.setCellStyle(footerValueStyle);
+
+    cell = row.createCell(2);
     cell.setCellValue(reportResults.getSubmissions().size());
     // Add bottom and right borders in the second cell of the second row
-    footerValueStyle2.setBorderBottom(BorderStyle.THIN);
-    footerValueStyle2.setBottomBorderColor(IndexedColors.BLACK.getIndex());
     footerValueStyle2.setBorderRight(BorderStyle.THIN);
     footerValueStyle2.setRightBorderColor(IndexedColors.BLACK.getIndex());
+    footerValueStyle2.setBorderBottom(BorderStyle.THIN);
+    footerValueStyle2.setBottomBorderColor(IndexedColors.BLACK.getIndex());
     cell.setCellStyle(footerValueStyle2);
   }
 
@@ -1102,11 +1144,15 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     Row row = sheet.createRow(startingIndex++);
 
     Cell cell = row.createCell(0);
-    cell.setCellValue("Total Nettobetrag inkl. MWST");
+    cell.setCellValue("Total Nettobetrag exkl. MWST");
     cell.setCellStyle(countSectionResultsStyle);
 
     cell = row.createCell(1);
     cell.setCellValue(getCountAmounts(results).doubleValue());
+    cell.setCellStyle(countSectionResultsStyle2);
+
+    cell = row.createCell(2);
+    cell.setCellValue(getNachtragCountAmounts(results).doubleValue());
     cell.setCellStyle(countSectionResultsStyle2);
 
     // Creating a row for counting the number of results
@@ -1116,7 +1162,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     cell.setCellValue(LookupValues.TOTAL_VERFAHREN);
     cell.setCellStyle(countSectionResultsStyle);
 
-    cell = row.createCell(1);
+    cell = row.createCell(2);
     cell.setCellValue(getCountResults(results));
     cell.setCellStyle(countSectionResultsStyle3);
   }
@@ -1136,6 +1182,25 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     AtomicReference<BigDecimal> countAmounts = new AtomicReference<>(new BigDecimal(0));
 
     results.forEach((k, v) -> countAmounts.accumulateAndGet(getReportTotalAmount(v), BigDecimal::add));
+
+    return countAmounts.get();
+  }
+
+  /**
+   * Get the count amounts for the year report.
+   *
+   * @param results the results
+   * @return the count
+   */
+  private BigDecimal getNachtragCountAmounts(Map<String, List<SubmissionDTO>> results) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getCountAmounts, Parameters: results: {0}",
+      results);
+
+    AtomicReference<BigDecimal> countAmounts = new AtomicReference<>(new BigDecimal(0));
+
+    results.forEach((k, v) -> countAmounts.accumulateAndGet(getReportNachtragTotalAmount(v), BigDecimal::add));
 
     return countAmounts.get();
   }
@@ -1221,15 +1286,22 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     cell.setCellStyle(countSectionResultsValueStyle);
 
     // Add the countSectionResultsTitle on the cell of the second to last column
-    cell = row.createCell(columnNumbers - 2);
+    cell = row.createCell(columnNumbers - 4);
     cell.setCellValue("Total");
     cell.setCellStyle(countSectionResultsTitleStyle2);
 
     // Add the countSectionResultsValue on the cell of the last column
-    cell = row.createCell(columnNumbers - 1);
+    cell = row.createCell(columnNumbers - 3);
     cell.setCellValue((totalizationBy.equals(TOTAL_BY_COMPANY))
         ? getReportTotalAmountCompany(results).doubleValue()
         : getReportTotalAmount(results).doubleValue());
+    cell.setCellStyle(countSectionResultsValueStyle2);
+
+    // Add the countSectionResultsValue on the cell of the last column
+    cell = row.createCell(columnNumbers - 1);
+    cell.setCellValue((totalizationBy.equals(TOTAL_BY_COMPANY))
+      ? getReportNachtragTotalAmountCompany(results).doubleValue()
+      : getReportNachtragTotalAmount(results).doubleValue());
     cell.setCellStyle(countSectionResultsValueStyle2);
   }
 
@@ -1278,7 +1350,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
       // Adding result values to cells for each column header
       columnHeaders.forEach(columnHeader -> {
         Cell cell = row.createCell(columnIndex.getAndIncrement());
-        if (columnHeader.equals("Netto inkl. MWST")) {
+        if (columnHeader.equals("Netto exkl. MWST")) {
           // This needs an extra case because we add a number to the cell
           BigDecimal amount = new BigDecimal(0);
           // Check for null pointer exceptions
@@ -1287,10 +1359,19 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
           }
           cell.setCellValue(amount.doubleValue());
           cell.setCellStyle(sectionResultsStyle3);
+        } else if(columnHeader.equals("Nachtrag netto")){
+          // This needs an extra case because we add a number to the cell
+          BigDecimal nachtragAmount = new BigDecimal(0);
+          // Check for null pointer exceptions
+          if (result.getReportNachtragAmountTotal() != null) {
+            nachtragAmount = result.getReportNachtragAmountTotal();
+          }
+          cell.setCellValue(nachtragAmount.doubleValue());
+          cell.setCellStyle(sectionResultsStyle3);
         } else {
           // All values added here are Strings
           cell.setCellValue(addColumnResult(columnHeader, result));
-          if (columnHeader.equals("Zuschlagsjahr")) {
+          if (columnHeader.equals("Zuschlagsjahr") || columnHeader.equals("Nachtragsjahr")) {
             // For column Zuschlagsjahr use style 2 (with horizontal alignment -> RIGHT)
             cell.setCellStyle(sectionResultsStyle2);
           } else {
@@ -1351,6 +1432,14 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
       cell.setCellValue(
         (results.containsKey(process))
           ? getReportTotalAmount(results.get(process)).doubleValue()
+          : new BigDecimal(0).doubleValue());
+      cell.setCellStyle(sectionResultsStyle2);
+
+      // Add the Nachtrag total amount for this process
+      cell = row.createCell(2);
+      cell.setCellValue(
+        (results.containsKey(process))
+          ? getReportNachtragTotalAmount(results.get(process)).doubleValue()
           : new BigDecimal(0).doubleValue());
       cell.setCellStyle(sectionResultsStyle2);
     });
@@ -1414,6 +1503,12 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
       case "Zuschlagsjahr":
         SimpleDateFormat dateFormat = new SimpleDateFormat(LookupValues.DATE_FORMAT);
         columnResult = dateFormat.format(result.getReportAvailableDate());
+        break;
+      case "Nachtragsjahr":
+        SimpleDateFormat nachtragDateFormat = new SimpleDateFormat(LookupValues.DATE_FORMAT);
+        columnResult = (result.getReportNachtragDate() != null)
+          ? nachtragDateFormat.format(result.getReportNachtragDate())
+          : StringUtils.EMPTY;
         break;
       default:
         break;
@@ -1838,8 +1933,9 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     columnHeaders.forEach(columnHeader -> {
       Cell cell = row.createCell(index.getAndIncrement());
       cell.setCellValue(columnHeader);
-      if (columnHeader.equals("Zuschlagsjahr") || columnHeader.equals("Netto inkl. MWST")) {
-        // For these 2 columns the style must contain HorizontalAlignment -> RIGHT
+      if (columnHeader.equals("Zuschlagsjahr") || columnHeader.equals("Netto exkl. MWST")
+      || columnHeader.equals("Nachtragsjahr") || columnHeader.equals("Nachtrag netto")) {
+        // For these 4 columns the style must contain HorizontalAlignment -> RIGHT
         cell.setCellStyle(columnHeaderStyle2);
       } else {
         cell.setCellStyle(columnHeaderStyle);
@@ -1892,7 +1988,12 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
 
     // Second cell contains the total amount
     cell = row.createCell(1);
-    cell.setCellValue("Netto inkl. MWST");
+    cell.setCellValue("Netto exkl. MWST");
+    cell.setCellStyle(columnHeaderStyle2);
+
+    // Third cell contains the Nachtrag total amount
+    cell = row.createCell(2);
+    cell.setCellValue("Nachtrag netto");
     cell.setCellStyle(columnHeaderStyle2);
   }
 
@@ -1919,7 +2020,9 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     columnHeaders.add("Arbeitsgattung");
     columnHeaders.add("Firma");
     columnHeaders.add("Zuschlagsjahr");
-    columnHeaders.add("Netto inkl. MWST");
+    columnHeaders.add("Netto exkl. MWST");
+    columnHeaders.add("Nachtragsjahr");
+    columnHeaders.add("Nachtrag netto");
 
     // Remove the selected totalization from the column header list.
     columnHeaders.removeIf(s -> s.equals(getColumnHeaderFromTotalization(totalizationBy)));
@@ -2006,32 +2109,32 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
 
     switch (totalizationBy) {
       case TOTAL_BY_PROCEDURE:
-        columnWidths = Arrays.asList(21, 30, 23, 37, 38, 18, 29, 37, 16, 19);
+        columnWidths = Arrays.asList(21, 30, 23, 37, 38, 18, 29, 37, 16, 19, 16, 19);
         break;
       case TOTAL_BY_OBJECT:
-        columnWidths = Arrays.asList(16, 22, 32, 23, 37, 19, 30, 37, 16, 19);
+        columnWidths = Arrays.asList(16, 22, 32, 23, 37, 19, 30, 37, 16, 19, 16, 19);
         break;
       case TOTAL_BY_PROJECT:
-        columnWidths = Arrays.asList(19, 20, 32, 23, 37, 19, 30, 37, 16, 19);
+        columnWidths = Arrays.asList(19, 20, 32, 23, 37, 19, 30, 37, 16, 19, 16, 19);
         break;
       case TOTAL_BY_PROJECT_CREDIT_NO:
-        columnWidths = Arrays.asList(19, 20, 30, 23, 37, 38, 30, 37, 16, 19);
+        columnWidths = Arrays.asList(19, 20, 30, 23, 37, 38, 30, 37, 16, 19, 16, 19);
         break;
       case TOTAL_BY_PROJECT_MANAGER:
       case TOTAL_BY_DEPARTMENT:
-        columnWidths = Arrays.asList(19, 20, 23, 37, 38, 19, 33, 45, 16, 19);
+        columnWidths = Arrays.asList(19, 20, 23, 37, 38, 19, 33, 45, 16, 19, 16, 19);
         break;
       case TOTAL_BY_WORKTYPE:
-        columnWidths = Arrays.asList(19, 20, 30, 23, 37, 38, 19, 38, 16, 19);
+        columnWidths = Arrays.asList(19, 20, 30, 23, 37, 38, 19, 38, 16, 19, 16, 19);
         break;
       case TOTAL_BY_DIRECTORATE:
-        columnWidths = Arrays.asList(19, 27, 30, 32, 38, 19, 33, 38, 16, 19);
+        columnWidths = Arrays.asList(19, 27, 30, 32, 38, 19, 33, 38, 16, 19, 16, 19);
         break;
       case TOTAL_BY_COMPANY:
-        columnWidths = Arrays.asList(19, 12, 27, 20, 28, 30, 23, 39, 38, 16, 19);
+        columnWidths = Arrays.asList(19, 12, 27, 20, 28, 30, 23, 39, 38, 16, 19, 16, 19);
         break;
       case TOTAL_BY_YEAR:
-        columnWidths = Arrays.asList(27, 41);
+        columnWidths = Arrays.asList(27, 41, 41);
         break;
       default:
         break;
@@ -2227,6 +2330,35 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
   }
 
   /**
+   * Gets the total amount for the report and rounds all amount values.
+   *
+   * @param submissions the submissions
+   * @return the report total amount
+   */
+  private BigDecimal getReportNachtragTotalAmount(List<SubmissionDTO> submissions) {
+
+    LOGGER.log(Level.CONFIG, "Executing method getReportTotalAmount, Parameters: submissions: {0}",
+      submissions);
+
+    BigDecimal nachtragAmountTotal = new BigDecimal(0);
+    for (SubmissionDTO submissionDTO : submissions) {
+      if (submissionDTO != null && submissionDTO.getReportNachtragAmount() != null) {
+        List<BigDecimal> nachtragAmountList = new ArrayList<>();
+        for (BigDecimal awardedSubmissionNachtragAmount : submissionDTO.getReportNachtragAmount()) {
+          if(awardedSubmissionNachtragAmount != null){
+            BigDecimal nachtragAmount =
+              BigDecimal.valueOf(customRoundNumber(awardedSubmissionNachtragAmount.doubleValue()));
+            nachtragAmountList.add(nachtragAmount);
+            nachtragAmountTotal = nachtragAmountTotal.add(nachtragAmount);
+          }
+        }
+        submissionDTO.setReportNachtragAmount(nachtragAmountList);
+      }
+    }
+    return BigDecimal.valueOf(customRoundNumber(nachtragAmountTotal.doubleValue()));
+  }
+
+  /**
    * Gets the total amount for the company report.
    *
    * @param submissions the submissions
@@ -2241,6 +2373,26 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     for (SubmissionDTO submissionDTO : submissions) {
       if (submissionDTO != null && submissionDTO.getReportAmountTotal() != null) {
         amountTotal = amountTotal.add(submissionDTO.getReportAmountTotal());
+      }
+    }
+    return amountTotal;
+  }
+
+  /**
+   * Gets the total amount for the company report.
+   *
+   * @param submissions the submissions
+   * @return the report total amount
+   */
+  private BigDecimal getReportNachtragTotalAmountCompany(List<SubmissionDTO> submissions) {
+
+    LOGGER.log(Level.CONFIG, "Executing method getReportTotalAmountCompany, Parameters: "
+      + "submissions: {0}", submissions);
+
+    BigDecimal amountTotal = new BigDecimal(0);
+    for (SubmissionDTO submissionDTO : submissions) {
+      if (submissionDTO != null && submissionDTO.getReportNachtragAmountTotal() != null) {
+        amountTotal = amountTotal.add(submissionDTO.getReportNachtragAmountTotal());
       }
     }
     return amountTotal;
@@ -2341,7 +2493,8 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
               companyInAllawardedSubmittents(submissionsList, searchedCompany, submissionDTO);
             } else {
               createCompanySubmission(submissionsList, searchedCompany, submissionDTO,
-                submissionDTO.getReportAmount().get(0), submissionDTO.getReportCompanies());
+                submissionDTO.getReportAmount().get(0), submissionDTO.getReportCompanies(),
+                true, submissionDTO.getSubmittents().get(0));
             }
           }
         }
@@ -2354,21 +2507,25 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
             awardedCompanyNameList.add(submissionDTO.getReportCompanies().get(i));
             createCompanySubmission(submissionsList,
               submissionDTO.getSubmittents().get(i).getCompanyId(), submissionDTO,
-              submissionDTO.getReportAmount().get(i), awardedCompanyNameList);
+              submissionDTO.getReportAmount().get(i), awardedCompanyNameList, true,
+              submissionDTO.getSubmittents().get(i));
             if (submissionDTO.getSubmittents().get(i).getJointVentures() != null) {
               for (CompanyDTO arge : submissionDTO.getSubmittents().get(i).getJointVentures()) {
                 createCompanySubmission(submissionsList, arge, submissionDTO,
-                  submissionDTO.getReportAmount().get(i), awardedCompanyNameList);
+                  submissionDTO.getReportAmount().get(i), awardedCompanyNameList, false,
+                  submissionDTO.getSubmittents().get(i));
               }
             }
           } else {
             createCompanySubmission(submissionsList,
               submissionDTO.getSubmittents().get(i).getCompanyId(), submissionDTO,
-              submissionDTO.getReportAmount().get(i), submissionDTO.getReportCompanies());
+              submissionDTO.getReportAmount().get(i), submissionDTO.getReportCompanies(), true,
+              submissionDTO.getSubmittents().get(i));
             if (submissionDTO.getSubmittents().get(i).getJointVentures() != null) {
               for (CompanyDTO arge : submissionDTO.getSubmittents().get(i).getJointVentures()) {
                 createCompanySubmission(submissionsList, arge, submissionDTO,
-                  submissionDTO.getReportAmount().get(i), submissionDTO.getReportCompanies());
+                  submissionDTO.getReportAmount().get(i), submissionDTO.getReportCompanies(),
+                  false, submissionDTO.getSubmittents().get(i));
               }
             }
           }
@@ -2380,16 +2537,16 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
 
   /**
    * Create submission for searched company.
-   *
-   * @param submissionsList the submissions list
+   *  @param submissionsList the submissions list
    * @param searchedCompany the searched company
    * @param submissionDTO the submission DTO
    * @param amount the amount
    * @param reportCompaniesName the report companies name
+   * @param addNachtragAmmount
    */
   private void createCompanySubmission(List<SubmissionDTO> submissionsList,
     CompanyDTO searchedCompany, SubmissionDTO submissionDTO, BigDecimal amount,
-    List<String> reportCompaniesName) {
+    List<String> reportCompaniesName, boolean addNachtragAmmount, SubmittentDTO submittentDTO) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method createCompanySubmission, Parameters: submissionsList: {0}, "
@@ -2405,6 +2562,22 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     newSubmission.setReportAwardedSubmittentName(searchedCompany.getCompanyName());
     newSubmission.setReportAwardedSubmittentAmount(amount);
     newSubmission.setReportAmountTotal(amount);
+
+    // We should add the Nachtrag amount and date only once for ARGE companies
+    if(submissionDTO.getIsNachtragCreated() != null
+      && submissionDTO.getIsNachtragCreated() && addNachtragAmmount){
+      List<NachtragDTO> nachtragList = new ArrayList<>();
+      List<BigDecimal> nachtragAmountList = new ArrayList<>();
+      nachtragList.addAll(nachtragService.getNachtragsBySubmittentId(submittentDTO.getId()));
+      nachtragList.forEach(nachtrag -> { nachtragAmountList.add(nachtrag.getAmount()); });
+      if(!nachtragList.isEmpty()){
+        // We retrieve results in desc order on NachtragDate and we always show the latest one
+        newSubmission.setReportNachtragDate(nachtragList.get(0).getNachtragDate());
+      }
+
+      newSubmission.setReportNachtragAmount(nachtragAmountList);
+      newSubmission.setReportNachtragAmountTotal(sumNachtragAmounts(nachtragAmountList));
+    }
     submissionsList.add(newSubmission);
   }
 
@@ -2431,7 +2604,8 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
         List<String> awardedCompanyNameList = new ArrayList<>();
         awardedCompanyNameList.add(submissionDTO.getReportCompanies().get(i));
         createCompanySubmission(submissionsList, searchedCompany, submissionDTO,
-          submissionDTO.getReportAmount().get(i), awardedCompanyNameList);
+          submissionDTO.getReportAmount().get(i), awardedCompanyNameList, true,
+          submissionDTO.getSubmittents().get(i));
       } else {
         Set<CompanyDTO> jointVentures = submissionDTO.getSubmittents().get(i).getJointVentures();
         if (jointVentures != null) {
@@ -2440,7 +2614,8 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
               List<String> awardedCompanyNameList = new ArrayList<>();
               awardedCompanyNameList.add(submissionDTO.getReportCompanies().get(i));
               createCompanySubmission(submissionsList, searchedCompany, submissionDTO,
-                submissionDTO.getReportAmount().get(i), awardedCompanyNameList);
+                submissionDTO.getReportAmount().get(i), awardedCompanyNameList, false,
+                submissionDTO.getSubmittents().get(i));
             }
           }
         }
@@ -2529,7 +2704,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
      */
     submissionDTOList = filterWithDirectorate(reportDTO, submissionDTOList);
 
-    setReportCompanies(submissionDTOList);
+    setReportCompanies(submissionDTOList, reportDTO.getTotalizationBy());
     ReportResultsDTO results = new ReportResultsDTO();
     results.setSubmissions(submissionDTOList);
     /* Setting reports searched criteria */
@@ -2574,14 +2749,21 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
    * Setting Companies names (with ARGE partners if exist).
    *
    * @param submissionDTOList the new report companies
+   * @param totalizationBy
    */
-  private void setReportCompanies(List<SubmissionDTO> submissionDTOList) {
+  private void setReportCompanies(List<SubmissionDTO> submissionDTOList,
+    String totalizationBy) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method setReportCompanies, Parameters: submissionDTOList: {0}",
       submissionDTOList);
 
     if (!submissionDTOList.isEmpty()) {
+      // First sort by Objekt, then by Projekt and finally by Arbeitsgattung
+      Collections.sort(submissionDTOList, ComparatorUtil.sortSubmissionDTOsByArbeitsgattung);
+      Collections.sort(submissionDTOList, ComparatorUtil.sortSubmissionDTOsByProjekt);
+      Collections.sort(submissionDTOList, ComparatorUtil.sortSubmissionDTOsByObjekt);
+
       for (SubmissionDTO submissionDTO : submissionDTOList) {
         List<String> submittentsIDs = new ArrayList<>();
         for (SubmittentDTO submittent : submissionDTO.getSubmittents()) {
@@ -2591,7 +2773,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
           .where(qOfferEntity.submittent.id.in(submittentsIDs)
             .and(qOfferEntity.isAwarded.eq(Boolean.TRUE)))
           .fetch();
-        generateReportCompanyName(submissionDTO, offers);
+        generateReportCompanyName(submissionDTO, offers, totalizationBy);
         getAvailableDate(submissionDTO);
       }
     }
@@ -2621,11 +2803,12 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
 
   /**
    * Method that handles the name if there are ARGE partners.
-   *
    * @param submissionDTO the submission DTO
    * @param offers the offers
+   * @param totalizationBy
    */
-  private void generateReportCompanyName(SubmissionDTO submissionDTO, List<OfferEntity> offers) {
+  private void generateReportCompanyName(SubmissionDTO submissionDTO, List<OfferEntity> offers,
+    String totalizationBy) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method generateReportCompanyName, Parameters: "
@@ -2636,19 +2819,21 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     List<String> companiesNameList = new ArrayList<>();
     List<BigDecimal> amountList = new ArrayList<>();
     List<SubmittentDTO> awardedSubmittentsList = new ArrayList<>();
+    List<NachtragDTO> nachtragList;
+    List<BigDecimal> nachtragAmountList = new ArrayList<>();
     for (SubmittentDTO submittent : submissionDTO.getSubmittents()) {
       for (OfferEntity offerEntity : offers) {
         if (submittent.getId().equals(offerEntity.getSubmittent().getId())) {
+          nachtragList = new ArrayList<>();
           awardedSubmittentsList.add(submittent);
           companyName.setLength(0);
           companyName.append(submittent.getCompanyId().getCompanyName());
-          BigDecimal amount = null;
+          BigDecimal amount;
           if (offerEntity.getManualAmount() != null) {
             amount = offerEntity.getManualAmount();
           } else {
             if (offerEntity.getAmount() != null) {
-              amount = offerEntity.getAmount().add(offerService
-                .calculateCHFMWSTValue(OfferDTOMapper.INSTANCE.toOfferDTO(offerEntity)));
+              amount = offerEntity.getAmount();
             } else {
               amount = new BigDecimal(0);
             }
@@ -2672,13 +2857,35 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
           }
           companiesNameList.add(companyName.toString());
           amountList.add(amount);
+          if(offerEntity.getNachtragSubmittent()){
+            nachtragList.addAll(nachtragService
+              .getNachtragsByNachtragSubmittent(offerEntity.getId())
+              .stream().filter(nachtrag -> nachtrag.getClosed()).collect(Collectors.toList()));
+            nachtragList.forEach(nachtrag -> { nachtragAmountList.add(nachtrag.getAmount()); });
+          }
+          if(!nachtragList.isEmpty()){
+            // We want to show the Nachtragsjahr of the latest Nachtrag
+            for(NachtragDTO nachtrag : nachtragList){
+              if(nachtrag.getAmount() != null
+                && nachtrag.getAmount().compareTo(BigDecimal.ZERO) != 0){
+                if(submissionDTO.getReportNachtragDate() != null
+                  && nachtrag.getNachtragDate() != null
+                  && nachtrag.getNachtragDate().after(submissionDTO.getReportNachtragDate())){
+                  submissionDTO.setReportNachtragDate(nachtrag.getNachtragDate());
+                } else if (nachtrag.getNachtragDate() != null
+                  && submissionDTO.getReportNachtragDate() == null){
+                  submissionDTO.setReportNachtragDate(nachtrag.getNachtragDate());
+                }
+              }
+            }
+          }
         }
       }
     }
     submissionDTO.setSubmittents(awardedSubmittentsList);
     submissionDTO.setReportCompanies(companiesNameList);
     submissionDTO.setReportAmount(amountList);
-
+    submissionDTO.setReportNachtragAmount(nachtragAmountList);
     // in case we have more than one awarded submittents, thus more than one offer
     // amount we calculate the sum of amounts
     BigDecimal addAmounts = new BigDecimal(0);
@@ -2688,6 +2895,20 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
       }
     }
     submissionDTO.setReportAmountTotal(addAmounts);
+    submissionDTO.setReportNachtragAmountTotal(sumNachtragAmounts(nachtragAmountList));
+  }
+
+  private BigDecimal sumNachtragAmounts(List <BigDecimal> nachtragAmountList){
+    BigDecimal addNachtragAmounts = new BigDecimal(0);
+    if (nachtragAmountList != null && !nachtragAmountList.isEmpty()) {
+      for (BigDecimal nachtragAmount : nachtragAmountList) {
+        if(nachtragAmount != null){
+          addNachtragAmounts = addNachtragAmounts
+            .add(BigDecimal.valueOf(customRoundNumber(nachtragAmount.doubleValue())));
+        }
+      }
+    }
+    return addNachtragAmounts;
   }
 
   /**

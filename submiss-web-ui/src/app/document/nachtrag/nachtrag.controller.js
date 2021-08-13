@@ -96,7 +96,7 @@
         // Check if AWARD_NOTICES_CREATED >= current status <= CONTRACT_CREATED
         // to enable the Nachtrag fields and functions
         if(vm.currentStatusOfSubmission >= '260'
-          && vm.currentStatusOfSubmission <= '270'){
+          && vm.currentStatusOfSubmission <= '280'){
           vm.enableFields = true;
         }
       }).error(function (response, status) {});
@@ -341,7 +341,11 @@
       NachtragService.updateNachtrag(vm.nachtrag)
         .success(function (data) {
           AppService.setPaneShown(false);
-          $state.reload();
+          if (AppService.getIsDirty()) {
+            AppService.setIsDirty(false);
+          }
+          getNachtrag(vm.nachtrag.id);
+          setCheckedNachtragForDocCreation(vm.nachtrag);
         })
         .error(function (response, status) {
           if (status === 400) { // Validation errors.
@@ -436,20 +440,19 @@
 
 
     function calculateGesamtsumme(){
-      var mainOfferAmount = vm.displayedSubmittent.amount +
-        calculateCHFMWSTValueCalc(vm.displayedSubmittent.amount,
-        vm.displayedSubmittent.vat, vm.displayedSubmittent.isVatPercentage,
-        null, null);
+      var mainOfferAmount = vm.displayedSubmittent.amount;
       var gesamtsummeString = customRoundNumber(mainOfferAmount) + ' CHF';
       var tempGesamtsumme = mainOfferAmount;
       for (var i = 0; i < vm.nachtragList.length; i++) {
         if(vm.nachtragList[i].grossAmount && vm.nachtragList[i].grossAmount !== 0){
-          var tmpNet = calculateNet(vm.nachtragList[i].grossAmount,
-            vm.nachtragList[i].discount, vm.nachtragList[i].isDiscountPercentage,
-            vm.nachtragList[i].buildingCosts, vm.nachtragList[i].isBuildingCostsPercentage,
-            vm.nachtragList[i].discount2, vm.nachtragList[i].isDiscount2Percentage);
-          var tmpAmount = tmpNet + calculateCHFMWSTValueCalc(tmpNet, vm.nachtragList[i].vat,
-            vm.nachtragList[i].isVatPercentage, vm.tempVat, vm.tempVatDD);
+          var nachtrag = vm.nachtragList[i];
+          if(vm.nachtrag.id === vm.nachtragList[i].id){
+            nachtrag = vm.nachtrag;
+          }
+          var tmpAmount = calculateNet(nachtrag.grossAmount,
+            nachtrag.discount, nachtrag.isDiscountPercentage,
+            nachtrag.buildingCosts, nachtrag.isBuildingCostsPercentage,
+            nachtrag.discount2, nachtrag.isDiscount2Percentage);
           tempGesamtsumme = tempGesamtsumme + tmpAmount;
           gesamtsummeString = gesamtsummeString + ' + ' + customRoundNumber(tmpAmount) + ' CHF';
         }
@@ -499,26 +502,36 @@
 
     function disableForm(nachtrag) {
       return (!angular.isUndefined(nachtrag) && nachtrag.closed)
-        || !vm.enableFields || !vm.displayedSubmittent.isNachtragSubmittent;
+        || !vm.enableFields || !vm.displayedSubmittent.isNachtragSubmittent
+        || !AppService.isOperationPermitted(
+          AppConstants.OPERATION.NACHTRAG_EDIT, null);
     }
 
     function disableCreateButton(nachtragSubmittent) {
       return nachtragSubmittent.hasActiveNachtrag || !vm.enableFields
-        || !nachtragSubmittent.isNachtragSubmittent;
+        || !nachtragSubmittent.isNachtragSubmittent
+        || !AppService.isOperationPermitted(
+          AppConstants.OPERATION.NACHTRAG_CREATE, null);
     }
 
     function disableReopenButton(nachtrag) {
       return !nachtrag.closed || !vm.enableFields
-        || !nachtrag.offer.isNachtragSubmittent;
+        || !nachtrag.offer.isNachtragSubmittent
+        || !AppService.isOperationPermitted(
+          AppConstants.OPERATION.NACHTRAG_REOPEN, null);
     }
 
     function disableCloseButton(nachtrag) {
       return !checkIfNachtragHasBeenSaved(nachtrag) || !vm.enableFields
-        || !nachtrag.offer.isNachtragSubmittent || nachtrag.closed;
+        || !nachtrag.offer.isNachtragSubmittent || nachtrag.closed
+        || !AppService.isOperationPermitted(
+          AppConstants.OPERATION.NACHTRAG_CLOSE, null);
     }
 
     function disableDeleteButton(nachtrag) {
-      return nachtrag.closed || !vm.enableFields;
+      return nachtrag.closed || !vm.enableFields
+        || !AppService.isOperationPermitted(
+          AppConstants.OPERATION.NACHTRAG_DELETE, null);
     }
 
     function checkIfNachtragHasBeenSaved(nachtrag) {
@@ -528,12 +541,18 @@
     }
 
     function setCheckedNachtragForDocCreation(checkedNachtrag) {
-      if(!angular.isUndefined(checkedNachtrag) &&  checkedNachtrag !== null){
-        NachtragService.setCheckedNachtragForDocCreation([checkedNachtrag.id,
-          checkedNachtrag.offer.isNachtragSubmittent,
-          checkIfNachtragHasBeenSaved(checkedNachtrag),
-          checkedNachtrag.offer.submittent.id,
-          checkedNachtrag.offer.submittent.companyId.id]);
+      if (!angular.isUndefined(checkedNachtrag) && checkedNachtrag !== null) {
+        NachtragService.getNachtrag(checkedNachtrag.id)
+        .success(function (data) {
+          checkedNachtrag = data;
+          NachtragService.setCheckedNachtragForDocCreation([checkedNachtrag.id,
+            checkedNachtrag.offer.isNachtragSubmittent,
+            checkIfNachtragHasBeenSaved(checkedNachtrag),
+            checkedNachtrag.offer.submittent.id,
+            checkedNachtrag.offer.submittent.companyId.id]);
+        })
+      } else {
+        NachtragService.setCheckedNachtragForDocCreation(null);
       }
     }
 

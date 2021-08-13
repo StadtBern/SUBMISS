@@ -510,11 +510,14 @@
         verfugungenIndex = statusHistory.findIndex(function (element) {
           return element === vm.status.AWARD_NOTICES_CREATED;
         });
-        // Take the last Verfugungen erstellt status that has been set.
+        // Take the last Verfugungen erstellt status that has been set and all statuses set after that.
         lastVerfugungenHistory = statusHistory.slice(0, verfugungenIndex + 1);
       }
+      // check if one of the following statuses has been set after Verfugungen erstellt status has been set.
       return lastVerfugungenHistory.length > 1 &&
-        (statusSetBefore(vm.status.COMMISSION_PROCUREMENT_DECISION_STARTED, lastVerfugungenHistory) || statusSetBefore(vm.status.FORMAL_EXAMINATION_STARTED, lastVerfugungenHistory));
+        (statusSetBefore(vm.status.COMMISSION_PROCUREMENT_DECISION_STARTED, lastVerfugungenHistory)
+          || statusSetBefore(vm.status.FORMAL_EXAMINATION_STARTED, lastVerfugungenHistory)
+          || statusSetBefore(vm.status.COMMISSION_PROCUREMENT_DECISION_CLOSED, lastVerfugungenHistory));
     }
 
     /** Function to check if given status has been set before */

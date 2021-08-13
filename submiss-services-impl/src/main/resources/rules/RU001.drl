@@ -123,7 +123,7 @@ rule "RU001"
 	if (($isRole_admin || $isRole_PL) && !$isTenant_KB
 	  && ($submission.getIsNachtragCreated() != null && $submission.getIsNachtragCreated())
   	&& ($indexOfCurrentState.intValue() >= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("260"))
-  	&& $indexOfCurrentState.intValue() <= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("270")))) do[PT26]
+  	&& $indexOfCurrentState.intValue() <= LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280")))) do[PT26]
 then
 	//templates without restrictions should be added here
 	then[PT01]

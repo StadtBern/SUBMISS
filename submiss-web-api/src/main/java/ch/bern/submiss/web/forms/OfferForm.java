@@ -299,6 +299,11 @@ public class OfferForm extends AbstractOfferForm {
   private Boolean isNachtragSubmittent;
 
   /**
+   * The is excluded by passing applicants.
+   */
+  private Boolean isExcludedByPassingApplicants;
+
+  /**
    * Gets the submittent.
    *
    * @return the submittent
@@ -1243,6 +1248,24 @@ public class OfferForm extends AbstractOfferForm {
    */
   public Boolean getExcludedFirstLevel() {
     return excludedFirstLevel;
+  }
+
+  /**
+   * Gets the excluded by passing applicants.
+   *
+   * @return the excluded by passing applicants.
+   */
+  public Boolean getExcludedByPassingApplicants() {
+    return isExcludedByPassingApplicants;
+  }
+
+  /**
+   * Sets the excluded by passing applicants.
+   *
+   * @param excludedByPassingApplicants the excluded by passing applicants.
+   */
+  public void setExcludedByPassingApplicants(Boolean excludedByPassingApplicants) {
+    isExcludedByPassingApplicants = excludedByPassingApplicants;
   }
 
   /**

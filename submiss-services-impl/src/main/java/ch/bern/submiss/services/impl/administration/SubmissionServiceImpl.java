@@ -2263,8 +2263,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         if (countApplicants > passingApplicants) {
           offerEntity.setExcludedFirstLevel(Boolean.TRUE);
           offerEntity.setUpdatedBy(getUserId());
-          offerEntity.setqExStatus(Boolean.FALSE);
-          offerEntity.setqExExaminationIsFulfilled((Boolean.FALSE));
+          offerEntity.setExcludedByPassingApplicants(Boolean.TRUE);
           em.merge(offerEntity);
         }
       }
