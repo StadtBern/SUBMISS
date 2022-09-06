@@ -56,8 +56,11 @@
       closeFormalAudit: function (submissionId, submissionVersion) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/formal/close/' + submissionId + '/' + submissionVersion);
       },
-      closeExamination: function (examinationForm) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/examination/close', examinationForm);
+      closeExaminationValidations: function (examinationForm) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/examination/closeValidations', examinationForm);
+      },
+      closeExamination: function (examinationForm, createVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/examination/close/' + createVersion, examinationForm);
       },
       readOfferCriteria: function (submissionId, type) {
         return $http.get(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/qualification/' + submissionId + '/' + type + '/offerCriteria');

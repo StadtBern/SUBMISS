@@ -2258,7 +2258,8 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       // and Ausschlussgründe gem. Art 24, ÖBV is Nein
       if(forEignungspruefungDoc){
         if(offer.getSubmittent().getExistsExclusionReasons() != null
-          && offer.getSubmittent().getCompanyId().getIsProofProvided()
+          && (offer.getSubmittent().getCompanyId().getIsProofProvided() != null
+          && offer.getSubmittent().getCompanyId().getIsProofProvided())
           && !offer.getSubmittent().getExistsExclusionReasons()){
           offer.getSubmittent().setFormalExaminationFulfilled(true);
         }else if(offer.getSubmittent().getExistsExclusionReasons() != null){

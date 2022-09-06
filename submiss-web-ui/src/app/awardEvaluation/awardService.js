@@ -39,8 +39,8 @@
       updateOfferCriteriaAward: function (awardAssessList, submissionId, pageRequestedOn) {
         return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardAssess/' + submissionId + '/' + pageRequestedOn + '/update', awardAssessList);
       },
-      closeAwardEvaluation: function (awardedOfferIds, submissionId, submissionVersion) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/closeAwardEvaluation/' + submissionId + '/' + submissionVersion, awardedOfferIds);
+      closeAwardEvaluation: function (awardedOfferIds, submissionId, submissionVersion, createVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/offer/closeAwardEvaluation/' + submissionId + '/' + submissionVersion + '/' + createVersion, awardedOfferIds);
       },
       awardEvaluationCloseNoErrors: function (criteria, submissionId, awardMinGrade, awardMaxGrade) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/awardEvaluationCloseNoErrors/' +

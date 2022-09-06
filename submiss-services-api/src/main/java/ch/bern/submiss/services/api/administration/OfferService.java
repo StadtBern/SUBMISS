@@ -150,8 +150,10 @@ public interface OfferService {
    *
    * @param awardedOfferIds the awarded offer ids
    * @param submissionId the submission id
+   * @param createVersion the create version
    */
-  void closeAwardEvaluation(List<String> awardedOfferIds, String submissionId);
+  void closeAwardEvaluation(List<String> awardedOfferIds, String submissionId,
+    boolean createVersion);
   
   /**
    * This method retrieves the offers of a submission.

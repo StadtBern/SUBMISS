@@ -300,7 +300,6 @@ public class UserAdministrationServiceImpl extends BaseService implements
       if (userAdminRight) { // if the user has user management right add resources for user view
         security.addUserViewResourcesToUser(dto, groupName); // for user view
       }
-      security.addTenantOperationsToUser(dto, groupName);
     } else {
       security.editProjectViewUserResources(dto, groupName, groupChanged, secDeptsChanged); // for
       // project
@@ -311,6 +310,7 @@ public class UserAdministrationServiceImpl extends BaseService implements
         security.editUserViewUserResources(dto, groupName, userAdminRight);
       }
     }
+    security.addTenantOperationsToUser(dto, groupName);
 
     // Call the handleUserHistory function to modify the user history (if applicable).
     userHistoryService.handleUserHistory(dto.getId(), getGroupByName(groupName).getId(),
@@ -1505,9 +1505,9 @@ public class UserAdministrationServiceImpl extends BaseService implements
       List<String> secondaryDepartmentIds = getAllSecondaryDepartments(userDTO);
 
       for (String secondaryDepartmentId : secondaryDepartmentIds) {
-          secondaryDepartments
-            .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
-        }
+        secondaryDepartments
+          .add(sDDepartmentService.getDepartmentHistByDepartmentId(secondaryDepartmentId));
+      }
 
       // Finds if the user has user view right, in order to inform the according flag
       Boolean userAdminRight = security.isPermitted(userDTO.getId(),

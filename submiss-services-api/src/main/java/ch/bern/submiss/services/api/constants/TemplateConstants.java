@@ -143,6 +143,12 @@ public class TemplateConstants {
   
   /** The Constant OFFERRTOFFNUNGSPROTOKOLL_DL_WW_TITLE. */
   public static final String ANON_OFFERRTOFFNUNGSPROTOKOLL_DL_WW_TITLE = "Anonymisiertes Offertöffnungsprotokoll Wettbewerb";
+
+  /** The Constant ZUSCHLAGSBEWERTUNG. */
+  public static final String ZUSCHLAGSBEWERTUNG = "Zuschlagsbewertung";
+
+  /** The Constant EIGNUNGSPRUFUNG. */
+  public static final String EIGNUNGSPRUFUNG = "Eignungsprüfung";
   
   /** The Constant DATASOURCE. */
   public static final String DATASOURCE = "DataSource";

@@ -391,3 +391,4 @@ translations:
       - navigate_to_old_nachtrag_submittent_message : Der Zuschlagsempfänger ist obsolet. Der Nachtrag kann nicht erneut generiert werden.
       - nachtrag_max_size_title_message: "Titel: Der Wert darf maximal 100 Zeichen lang sein."
       - nachtrag_max_size_discount_name_message: "Rabattbeschreibung: Der Wert darf maximal 100 Zeichen lang sein."
+      - passing_applicants__no_evaluated_criterion_error_message : Es wurde noch kein Bewertetes Kriterium hinzugefügt.

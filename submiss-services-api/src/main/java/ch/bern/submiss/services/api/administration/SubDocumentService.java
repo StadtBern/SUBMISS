@@ -55,6 +55,19 @@ public interface SubDocumentService {
   List<String> createDocumentFromTemplate(DocumentDTO documentDTO);
 
   /**
+   * Automatically creates the document from template
+   * after closing Examination or Award Evaluation
+   *
+   * @param submissionId the submission Id
+   * @param tenantId the tenant Id
+   * @param filename the filename
+   * @param template the template
+   * @param createVersion the create version
+   */
+   void autoCreateDocumentFromTemplate(String submissionId, String tenantId, String filename,
+     String template, boolean createVersion);
+
+  /**
    * Upload document.
    *
    * @param folderId the folder id

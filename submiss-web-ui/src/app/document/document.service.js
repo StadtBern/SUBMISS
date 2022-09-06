@@ -317,6 +317,10 @@
       checkContractDocument: function (submissionId) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER +
           '/document/contract/' + submissionId);
+      },
+      documentExists: function (submissionId, templateId) {
+        return $http.get(AppConstants.URLS.RESOURCE_PROVIDER +
+          '/document/documentExists/' + submissionId + '/'  + templateId);
       }
     };
   }

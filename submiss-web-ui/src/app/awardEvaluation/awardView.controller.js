@@ -26,7 +26,7 @@
   /** @ngInject */
   function AwardViewController($rootScope, $scope, $state, $stateParams,
     SubmissionService, ExaminationService, AwardService, $uibModal,
-    $filter, QFormJSRValidation, NgTableParams, AppService,
+    $filter, QFormJSRValidation, NgTableParams, AppService, DocumentService,
     AppConstants, $location, $anchorScroll, $transitions) {
     /***********************************************************************
      * Local variables.
@@ -531,10 +531,38 @@
       }
     }
 
+    function proceedToCloseAwardEvaluation(vm2, createVersionedDok) {
+      AppService.setPaneShown(true);
+      AwardService.closeAwardEvaluation(vm2.awardedOfferIds,
+        vm.data.submission.id, vm.data.submission.version, createVersionedDok)
+      .success(function (data) {
+        AppService.setPaneShown(false);
+        vm.dirtyFlag = false;
+        $state.go($state.current, {
+          displayedCriterionId: null,
+          proceedToClose: null
+        }, {
+          reload: true
+        });
+      }).error(function (response, status) {
+        AppService.setPaneShown(false);
+        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status
+          === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+          // remove this error message, if already exists
+          vm.notPermittedToEnterCriteriaAssess = false;
+          $anchorScroll('page-title');
+          QFormJSRValidation.markErrors($scope,
+            $scope.awardViewCtrl.awardForm, response);
+        }
+      });
+    }
+
     /**Create a function to close the award evaluation */
     function closeAwardEvaluationModal() {
+      AppService.setPaneShown(true);
       AwardService.awardEvaluationCloseNoErrors(vm.criteria, vm.data.submission.id, vm.data.submission.awardMinGrade, vm.data.submission.awardMaxGrade)
         .success(function (data) {
+          AppService.setPaneShown(false);
           $uibModal.open({
             template: '<div class="modal-header">' +
               '<button type="button" class="close" aria-label="Close"' +
@@ -581,24 +609,48 @@
               // Give award to submittents and close the award evaluation.
               vm2.closeAwardEvaluation = function (response) {
                 if (response) {
-                  AwardService.closeAwardEvaluation(vm2.awardedOfferIds, vm.data.submission.id, vm.data.submission.version)
-                    .success(function (data) {
-                      vm.dirtyFlag = false;
-                      $state.go($state.current, {
-                        displayedCriterionId: null,
-                        proceedToClose: null
-                      }, {
-                        reload: true
-                      });
-                    }).error(function (response, status) {
-                      if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
-                        // remove this error message, if already exists
-                        vm.notPermittedToEnterCriteriaAssess = false;
-                        $anchorScroll('page-title');
-                        QFormJSRValidation.markErrors($scope,
-                          $scope.awardViewCtrl.awardForm, response);
-                      }
-                    });
+                  AppService.setPaneShown(true);
+                  DocumentService.documentExists(vm.data.submission.id, AppConstants.ZUSCHLAGSBEWERTUNG).then(function (documentExists) {
+                    AppService.setPaneShown(false);
+                    if(documentExists.data){
+                      $uibModal.open({
+                        template: '<div class="modal-header">' +
+                          '<button type="button" class="close" aria-label="Close"' +
+                          'ng-click="closeAwardEvaluationModalCtrl.createVersion(null); $close()"><span aria-hidden="true">&times;</span></button>' +
+                          '<h4 class="modal-title">Zuschlagsbewertung Dokument erstellen</h4>' +
+                          '</div>' +
+                          '<div class="modal-body">' +
+                          '<div class="row">' +
+                          '<div class="col-md-12">' +
+                          '<p> Möchten Sie das bereits existierende Zuschlagsbewertung Dokument überschreiben oder versionieren? </p>' +
+                          '</div>' +
+                          '</div>' +
+                          '</div>' +
+                          '<div class="modal-footer">' +
+                          '<button type="button" class="btn btn-primary" ng-click="closeAwardEvaluationDocumentExistsModalCtrl.createVersion(false); $close()">Überschreiben</button>' +
+                          '<button type="button" class="btn btn-default" ng-click="closeAwardEvaluationDocumentExistsModalCtrl.createVersion(true); $close()">Versionieren</button>' +
+                          '<button type="button" class="btn btn-default" ng-click="closeAwardEvaluationDocumentExistsModalCtrl.createVersion(null); $close()">Abbrechen</button>' +
+                          '</div>' + '</div>',
+                        controllerAs: 'closeAwardEvaluationDocumentExistsModalCtrl',
+                        backdrop: 'static',
+                        size: 'lg',
+                        keyboard: false,
+                        controller: function () {
+                          var vm3 = this;
+                          vm3.createVersion = function (createVersionDok) {
+                            if(createVersionDok !== null){
+                              if(createVersionDok === true){
+                                proceedToCloseAwardEvaluation(vm2, true);
+                              } else {
+                                proceedToCloseAwardEvaluation(vm2, false);
+                              }
+                            }
+                          }
+                      }});
+                    } else {
+                      proceedToCloseAwardEvaluation(vm2, false);
+                    }
+                  })
                 } else {
                   if ($stateParams.proceedToClose) {
                     defaultReload();
@@ -610,6 +662,7 @@
             }
           });
         }).error(function (response, status) {
+          AppService.setPaneShown(false);
           if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
             // remove this error message, if already exists
             vm.notPermittedToEnterCriteriaAssess = false;

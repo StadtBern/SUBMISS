@@ -40,6 +40,7 @@ import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.SelectiveLevel;
 import ch.bern.submiss.services.api.constants.TaskTypes;
 import ch.bern.submiss.services.api.constants.Template;
+import ch.bern.submiss.services.api.constants.TemplateConstants;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.AwardDTO;
 import ch.bern.submiss.services.api.dto.CommissionProcurementDecisionDTO;
@@ -182,9 +183,13 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    */
   private static final String NULL_MIN_GRADE_MAX_GRADE = "null_min_grade_max_grade";
   /**
-   * The Constant NO_EXAMINATION_DOCUMENT.
+   * The Constant PASSING_APPLICANTS_NO_EVALUATED_CRITERION.
    */
-  private static final String NO_EXAMINATION_DOCUMENT = "no_examination_document";
+  private static final String PASSING_APPLICANTS_NO_EVALUATED_CRITERION = "passingApplicantsNoEvaluatedCriterion";
+  /**
+   * The Constant PASSING_APPLICANTS_TIE.
+   */
+  private static final String PASSING_APPLICANTS_TIE = "passingApplicantsTie";
   /**
    * The Constant PROOF_INCONSISTENCIES.
    */
@@ -1818,7 +1823,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * String, java.math.BigDecimal, java.math.BigDecimal)
    */
   @Override
-  public List<String> closeExamination(String submissionId, BigDecimal minGrade,
+  public List<String> closeExaminationValidations(String submissionId, BigDecimal minGrade,
     BigDecimal maxGrade) {
 
     LOGGER.log(Level.CONFIG,
@@ -1927,19 +1932,105 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     }
     existsExclusionReasons =
       validateOfferCriteriaValues(existsExclusionReasons, results, offerDTOs);
-    // Check if the Eignungsprüfung document has been created.
-    if (!subDocumentService.documentExists(submissionId, Template.EIGNUNGSPRUFUNG)) {
-      // Check if there has already been an exclusion.
-      if (!existsExclusionReasons) {
-        existsExclusionReasons = true;
-      }
-      results.add(NO_EXAMINATION_DOCUMENT);
-    }
-    // Change the status of submission if there has been no exclusion.
-    if (!existsExclusionReasons) {
-      proceedWithCloseExamination(submissionId, submissionEntity, offerDTOs);
-    }
+    // Validations for passing applicants
+    existsExclusionReasons =
+      validatePassingApplicants(existsExclusionReasons, results, offerDTOs,
+        submissionEntity);
+
     return results;
+  }
+
+  @Override
+  public void closeExamination(String submissionId, boolean createVersion) {
+    List<OfferDTO> offerDTOs;
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
+    if (submissionEntity.getProcess().equals(Process.SELECTIVE)) {
+      offerDTOs = offerService.retrieveOfferApplicants(submissionId);
+      List<FormalAuditEntity> formalAuditEntities =
+        new JPAQueryFactory(em).selectFrom(qFormalAuditEntity)
+          .where(qFormalAuditEntity.submittent.submissionId.id.eq(submissionId)).fetch();
+      for (OfferDTO offerDTO : offerDTOs) {
+        for (FormalAuditEntity formalAuditEntity : formalAuditEntities) {
+          // Check if the formal audit entity is connected to the current submittent.
+          if (formalAuditEntity.getSubmittent().getId().equals(offerDTO.getSubmittent().getId())) {
+            // Get the values existsExclusionReasons and formalExaminationFulfilled from the formal
+            // audit entity and set them to the submittent.
+            offerDTO.getSubmittent()
+              .setExistsExclusionReasons(formalAuditEntity.getExistsExclusionReasons());
+            offerDTO.getSubmittent()
+              .setFormalExaminationFulfilled(formalAuditEntity.getFormalExaminationFulfilled());
+            break;
+          }
+        }
+      }
+    } else {
+      offerDTOs = offerService.getSubmissionOffersWithCriteria(submissionId);
+    }
+    // Automatically create Eignungsprüfung document
+    subDocumentService.autoCreateDocumentFromTemplate(submissionId, submissionEntity.getProject().getTenant().getId(),
+      TemplateConstants.EIGNUNGSPRUFUNG, Template.EIGNUNGSPRUFUNG, createVersion);
+
+    proceedWithCloseExamination(submissionId, submissionEntity, offerDTOs);
+  }
+
+  private boolean validatePassingApplicants(boolean existsExclusionReasons,
+    List<String> results, List<OfferDTO> offerDTOs, SubmissionEntity submissionEntity) {
+    if (submissionEntity.getProcess().equals(Process.SELECTIVE)
+      && submissionEntity.getPassingApplicants() != null) {
+      boolean evaluatedCriterionExists = false;
+      for (OfferDTO offerDTO : offerDTOs) {
+        if (offerDTO.getIsEmptyOffer() == null || !offerDTO.getIsEmptyOffer()) {
+          for (OfferCriterionDTO offerCriterionDTO : offerDTO.getOfferCriteria()) {
+            if (offerCriterionDTO.getCriterion().getCriterionType().equals(
+              LookupValues.EVALUATED_CRITERION_TYPE)) {
+              evaluatedCriterionExists = true;
+              break;
+            }
+          }
+        }
+      }
+      // Show error message we have passing applicants and no evaluated criterion
+      if(!evaluatedCriterionExists){
+        existsExclusionReasons = true;
+        results.add(PASSING_APPLICANTS_NO_EVALUATED_CRITERION);
+      } else {
+        // Show error message we have passing applicants with tied total score for the last place.
+        existsExclusionReasons = checkPassingApplicantsTie(existsExclusionReasons, results,
+          offerDTOs,
+          submissionEntity);
+      }
+    }
+    return existsExclusionReasons;
+  }
+
+  private boolean checkPassingApplicantsTie(boolean existsExclusionReasons, List<String> results,
+    List<OfferDTO> offerDTOs, SubmissionEntity submissionEntity) {
+    List<OfferDTO> tiedOffers = new ArrayList<>();
+    if(offerDTOs.size() > submissionEntity.getPassingApplicants()){
+      BigDecimal lastPlaceOfferTotalGrade = offerDTOs.get(submissionEntity
+        .getPassingApplicants() -1).getqExTotalGrade();
+      for(OfferDTO offerDTO : offerDTOs){
+        if(lastPlaceOfferTotalGrade != null
+          && offerDTO.getqExTotalGrade() != null
+          && offerDTO.getqExTotalGrade().equals(lastPlaceOfferTotalGrade)){
+          tiedOffers.add(offerDTO);
+        }
+      }
+    }
+    if(!tiedOffers.isEmpty() && tiedOffers.size() > 1){
+      existsExclusionReasons = true;
+      StringBuilder tieMessage = new StringBuilder();
+      tieMessage.append(PASSING_APPLICANTS_TIE);
+      tieMessage.append("Die Firmen ");
+      for(OfferDTO offerDTO : tiedOffers){
+        tieMessage.append(offerDTO.getSubmittent().getCompanyId().getCompanyName());
+        tieMessage.append(LookupValues.COMMA);
+      }
+      tieMessage.setLength(tieMessage.length() - 2);
+      tieMessage.append(" sind punktegleich. Verfeinern sie ihre Bewertung erneut.");
+      results.add(tieMessage.toString());
+    }
+    return existsExclusionReasons;
   }
 
   @Override

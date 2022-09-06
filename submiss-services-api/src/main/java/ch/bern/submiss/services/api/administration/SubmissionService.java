@@ -183,14 +183,22 @@ public interface SubmissionService {
 
 
   /**
-   * Close examination.
+   * Close examination validations.
    *
    * @param id       the submission id
    * @param minGrade the minimum grade
    * @param maxGrade the maximum grade
    * @return String List
    */
-  List<String> closeExamination(String id, BigDecimal minGrade, BigDecimal maxGrade);
+  List<String> closeExaminationValidations(String id, BigDecimal minGrade, BigDecimal maxGrade);
+
+  /**
+   * Close examination.
+   *
+   * @param id              the submission id
+   * @param createVersion   the create Version
+   */
+  void closeExamination(String id, boolean createVersion);
 
   /**
    * This method updates the status of submission.

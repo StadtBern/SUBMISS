@@ -1120,10 +1120,6 @@ public class CriterionResource {
         }
       }
     }
-    // Check if the Zuschlagsbewertung document has been created.
-    if (!subDocumentService.documentExists(submissionId, Template.ZUSCHLAGSBEWERTUNG)) {
-      errors.add(new ValidationError("noAwardDocumentField", ValidationMessages.NO_AWARD_DOCUMENT));
-    }
     return errors;
   }
 

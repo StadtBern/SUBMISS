@@ -18,6 +18,7 @@ import ch.bern.submiss.services.api.administration.OfferService;
 import ch.bern.submiss.services.api.administration.ProcedureService;
 import ch.bern.submiss.services.api.administration.SDProofService;
 import ch.bern.submiss.services.api.administration.SDVatService;
+import ch.bern.submiss.services.api.administration.SubDocumentService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.administration.TenderStatusHistoryService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
@@ -35,6 +36,7 @@ import ch.bern.submiss.services.api.constants.LoanApproval;
 import ch.bern.submiss.services.api.constants.Process;
 import ch.bern.submiss.services.api.constants.SecurityOperation;
 import ch.bern.submiss.services.api.constants.Template;
+import ch.bern.submiss.services.api.constants.TemplateConstants;
 import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.CompanyDTO;
 import ch.bern.submiss.services.api.dto.ExclusionReasonDTO;
@@ -161,6 +163,11 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    */
   @Inject
   private DocumentService documentService;
+  /**
+   * The document service.
+   */
+  @Inject
+  private SubDocumentService subDocumentService;
   /**
    * The tender status history service.
    */
@@ -998,15 +1005,18 @@ public class OfferServiceImpl extends BaseService implements OfferService {
    *
    * @param awardedOfferIds the awarded offer ids
    * @param submissionId the submission id
+   * @param createVersion create version
    */
   @Override
-  public void closeAwardEvaluation(List<String> awardedOfferIds, String submissionId) {
+  public void closeAwardEvaluation(List<String> awardedOfferIds, String submissionId,
+    boolean createVersion) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method closeAwardEvaluation, Parameters:  awardedOfferIds: {0}, "
         + "submissionId: {1}",
       new Object[]{awardedOfferIds, submissionId});
 
+    String tenantId = null;
     // Give awards to offers.
     for (String id : awardedOfferIds) {
       OfferEntity offer = em.find(OfferEntity.class, id);
@@ -1016,7 +1026,13 @@ public class OfferServiceImpl extends BaseService implements OfferService {
       offer.setNachtragSubmittent(Boolean.TRUE);
       offer.setUpdatedBy(getUserId());
       em.merge(offer);
+      tenantId = offer.getSubmittent().getSubmissionId().getProject().getTenant().getId();
     }
+
+    // Automatically create Zuschlagsbewertung document
+    subDocumentService.autoCreateDocumentFromTemplate(submissionId, tenantId,
+      TemplateConstants.ZUSCHLAGSBEWERTUNG, Template.ZUSCHLAGSBEWERTUNG, createVersion);
+
     // Initialize the commission procurement proposal values.
     em.merge(initializeCommissionProcurementProposalValues(submissionId, null));
     // Update submission status.

@@ -926,4 +926,22 @@ public class DocumentResource {
       ? Response.ok().build()
       : Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
   }
+
+  /**
+   * Check if given document exists
+   *
+   * @param submissionId the submission id
+   * @param templateId the template id
+   * @return true/false
+   */
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/documentExists/{submissionId}/{templateId}")
+  public Response documentExists(@PathParam("submissionId") String submissionId,
+    @PathParam("templateId") String templateId) {
+    return Response.ok(documentService.documentExists(submissionId, templateId))
+      .build();
+  }
+
 }

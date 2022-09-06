@@ -300,13 +300,13 @@ public class EmailServiceImpl extends BaseService implements EmailService {
       String encodedCc = java.net.URLEncoder.encode(cc, ENCODING).replaceAll("\\+", "%20")
         .replaceAll(Template.LF_CONSTANT, Template.LF_CR_CONSTANT);
       if (StringUtils.isNotBlank(encodedCc)) {
-        email.append("&cc=").append(encodedCc);
+        email.append("?cc=").append(encodedCc);
       }
       if (StringUtils.isNotBlank(encodedBcc)) {
-        email.append("&bcc=").append(encodedBcc);
+        email.append("?bcc=").append(encodedBcc);
       }
       if (StringUtils.isNotBlank(encodedMailToBody)) {
-        email.append("&body=").append(encodedMailToBody);
+        email.append("?body=").append(encodedMailToBody);
       }
       if (StringUtils.isNotBlank(encodedMailToSubject)) {
         email.append("&subject=").append(encodedMailToSubject);

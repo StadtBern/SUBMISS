@@ -114,10 +114,6 @@ public class SubmissionResource {
    */
   private static final String NULL_MIN_GRADE_MAX_GRADE = "null_min_grade_max_grade";
   /**
-   * The Constant NO_EXAMINATION_DOCUMENT.
-   */
-  private static final String NO_EXAMINATION_DOCUMENT = "no_examination_document";
-  /**
    * The Constant PM_DEPARTMENT_NAME.
    */
   private static final String PM_DEPARTMENT_NAME = "pmDepartmentName";
@@ -125,6 +121,14 @@ public class SubmissionResource {
    * The Constant PROOF_INCONSISTENCIES.
    */
   private static final String PROOF_INCONSISTENCIES = "proofInconsistencies";
+  /**
+   * The Constant PASSING_APPLICANTS_NO_EVALUATED_CRITERION_MESSAGE.
+   */
+  private static final String PASSING_APPLICANTS_NO_EVALUATED_CRITERION = "passingApplicantsNoEvaluatedCriterion";
+  /**
+   * The Constant PROOF_INCONSISTENCIES.
+   */
+  private static final String PASSING_APPLICANTS_TIE = "passingApplicantsTie";
   /**
    * The submission service.
    */
@@ -563,78 +567,98 @@ public class SubmissionResource {
   }
 
   /**
-   * Close examination.
+     * Close examination validations.
+     *
+     * @param examinationForm the examination form
+     * @return the response
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/examination/closeValidations")
+    public Response closeExaminationValidations(@Valid ExaminationForm examinationForm) {
+      submissionService.checkOptimisticLockSubmission(examinationForm.getSubmissionId(),
+        examinationForm.getSubmissionVersion());
+      List<String> results = submissionService.closeExaminationValidations(examinationForm.getSubmissionId(),
+        examinationForm.getMinGrade(), examinationForm.getMaxGrade());
+      // Check if errors have occurred.
+      if (!results.isEmpty()) {
+        Set<ValidationError> errors = new HashSet<>();
+        for (String result : results) {
+          // Invalid grades error.
+          if (result.equals(INVALID_GRADES)) {
+            errors.add(new ValidationError("invalidGradesField",
+              ValidationMessages.CLOSE_EXAMINATION_INVALID_GRADES));
+          }
+          // Empty values error.
+          else if (result.equals(EMPTY_VALUES)) {
+            errors.add(new ValidationError("emptyFieldsField",
+              ValidationMessages.CLOSE_EXAMINATION_EMPTY_FIELD));
+          }
+          // Invalid subcriteria weighting sum.
+          else if (result.equals(INVALID_SUBCRITERION_WEIGHTINGS)) {
+            errors.add(new ValidationError("invalidSubcriteriaWeightingsField",
+              ValidationMessages.INVALID_SUBCRITERIA_WEIGHTINGS));
+          }
+          // Invalid criteria weighting sum.
+          else if (result.equals(INVALID_CRITERION_WEIGHTINGS)) {
+            errors.add(new ValidationError("invalidCriteriaWeightingsField",
+              ValidationMessages.INVALID_CRITERIA_WEIGHTINGS));
+          } else if (result.equals(ValidationMessages.DOCUMENT_SHOULD_BE_CREATED)) {
+            errors.add(new ValidationError("mandatoryDocument",
+              ValidationMessages.DOCUMENT_SHOULD_BE_CREATED));
+          } else if (result.equals(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED)) {
+            errors.add(new ValidationError("mandatoryLegalHearingDocument",
+              ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED));
+          } else if (result.equals(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED)) {
+            errors.add(new ValidationError("mandatoryProofDocument",
+              ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED));
+          }
+          // If minimum or maximum grades are set as null and are also mandatory fields.
+          else if (result.equals(NULL_MIN_GRADE_MAX_GRADE)) {
+            errors.add(new ValidationError("nullMinGradeMaxGradeErrorField",
+              ValidationMessages.MANDATORY_ERROR_MESSAGE));
+            if (examinationForm.getMinGrade() == null) {
+              errors.add(new ValidationError("minGrade",
+                ValidationMessages.MANDATORY_ERROR_MESSAGE));
+            }
+            if (examinationForm.getMaxGrade() == null) {
+              errors.add(new ValidationError("maxGrade",
+                ValidationMessages.MANDATORY_ERROR_MESSAGE));
+            }
+          }
+          // Proof provided values of companies have been changed.
+          else if (result.equals(PROOF_INCONSISTENCIES)) {
+            errors.add(new ValidationError("proofInconsistenciesField",
+              ValidationMessages.PROOF_INCONSISTENCIES_MESSAGE));
+          }
+          else if (result.equals(PASSING_APPLICANTS_NO_EVALUATED_CRITERION)) {
+            errors.add(new ValidationError("passingApplicantsErrorField",
+              ValidationMessages.PASSING_APPLICANTS_NO_EVALUATED_CRITERION_ERROR_MESSAGE));
+          }
+          else if (result.contains(PASSING_APPLICANTS_TIE)) {
+            errors.add(new ValidationError("passingApplicantsErrorField",
+              result.replaceAll(PASSING_APPLICANTS_TIE, "")));
+          }
+        }
+        return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
+      }
+      return Response.ok().build();
+  }
+
+  /**
+   * Close examination validations.
    *
-   * @param examinationForm the examination form
+   * @param createVersion the create version
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/examination/close")
-  public Response closeExamination(@Valid ExaminationForm examinationForm) {
+  @Path("/examination/close/{createVersion}")
+  public Response closeExamination(@PathParam("createVersion") boolean createVersion,
+    @Valid ExaminationForm examinationForm) {
     submissionService.checkOptimisticLockSubmission(examinationForm.getSubmissionId(),
       examinationForm.getSubmissionVersion());
-    List<String> results = submissionService.closeExamination(examinationForm.getSubmissionId(),
-      examinationForm.getMinGrade(), examinationForm.getMaxGrade());
-    // Check if errors have occurred.
-    if (!results.isEmpty()) {
-      Set<ValidationError> errors = new HashSet<>();
-      for (String result : results) {
-        // Invalid grades error.
-        if (result.equals(INVALID_GRADES)) {
-          errors.add(new ValidationError("invalidGradesField",
-            ValidationMessages.CLOSE_EXAMINATION_INVALID_GRADES));
-        }
-        // Empty values error.
-        else if (result.equals(EMPTY_VALUES)) {
-          errors.add(new ValidationError("emptyFieldsField",
-            ValidationMessages.CLOSE_EXAMINATION_EMPTY_FIELD));
-        }
-        // Invalid subcriteria weighting sum.
-        else if (result.equals(INVALID_SUBCRITERION_WEIGHTINGS)) {
-          errors.add(new ValidationError("invalidSubcriteriaWeightingsField",
-            ValidationMessages.INVALID_SUBCRITERIA_WEIGHTINGS));
-        }
-        // Invalid criteria weighting sum.
-        else if (result.equals(INVALID_CRITERION_WEIGHTINGS)) {
-          errors.add(new ValidationError("invalidCriteriaWeightingsField",
-            ValidationMessages.INVALID_CRITERIA_WEIGHTINGS));
-        } else if (result.equals(ValidationMessages.DOCUMENT_SHOULD_BE_CREATED)) {
-          errors.add(new ValidationError("mandatoryDocument",
-            ValidationMessages.DOCUMENT_SHOULD_BE_CREATED));
-        } else if (result.equals(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED)) {
-          errors.add(new ValidationError("mandatoryLegalHearingDocument",
-            ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED));
-        } else if (result.equals(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED)) {
-          errors.add(new ValidationError("mandatoryProofDocument",
-            ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED));
-        }
-        // If minimum or maximum grades are set as null and are also mandatory fields. 
-        else if (result.equals(NULL_MIN_GRADE_MAX_GRADE)) {
-          errors.add(new ValidationError("nullMinGradeMaxGradeErrorField",
-            ValidationMessages.MANDATORY_ERROR_MESSAGE));
-          if (examinationForm.getMinGrade() == null) {
-            errors.add(new ValidationError("minGrade",
-              ValidationMessages.MANDATORY_ERROR_MESSAGE));
-          }
-          if (examinationForm.getMaxGrade() == null) {
-            errors.add(new ValidationError("maxGrade",
-              ValidationMessages.MANDATORY_ERROR_MESSAGE));
-          }
-        }
-        // Eignungsprüfung document has not been created.
-        else if (result.equals(NO_EXAMINATION_DOCUMENT)) {
-          errors.add(new ValidationError("noExaminationDocumentField",
-            ValidationMessages.NO_EXAMINATION_DOCUMENT));
-        }
-        // Proof provided values of companies have been changed.
-        else if (result.equals(PROOF_INCONSISTENCIES)) {
-          errors.add(new ValidationError("proofInconsistenciesField",
-            ValidationMessages.PROOF_INCONSISTENCIES_MESSAGE));
-        }
-      }
-      return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
-    }
+    submissionService.closeExamination(examinationForm.getSubmissionId(), createVersion);
     return Response.ok().build();
   }
 

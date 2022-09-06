@@ -860,6 +860,24 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)));
   }
 
+  @Override
+  public void autoCreateDocumentFromTemplate(String submissionId, String tenantId, String filename,
+    String template, boolean createVersion) {
+    DocumentDTO documentDTO = new DocumentDTO();
+    documentDTO.setFolderId(submissionId);
+    documentDTO.setFilename(filename);
+    documentDTO.setTitle(filename);
+    documentDTO.setTemplateId(
+      new JPAQueryFactory(em).selectFrom(qMasterListValueHistoryEntity)
+        .where(qMasterListValueHistoryEntity.shortCode.eq(template)
+          .and(qMasterListValueHistoryEntity.tenant.id.eq(tenantId)))
+        .fetchOne().getMasterListValueId().getId());
+    documentDTO.setTenantId(tenantId);
+    documentDTO.setGenerateProofTemplate(Boolean.FALSE);
+    documentDTO.setIsCompanyCertificate(Boolean.FALSE);
+    documentDTO.setCreateVersion(createVersion);
+    createDocumentFromTemplate(documentDTO);
+  }
 
   @Override
   public List<String> createDocumentFromTemplate(DocumentDTO documentDTO) {

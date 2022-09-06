@@ -662,70 +662,124 @@
       }
     }
 
+    function proceedToCloseExamination(vm, createVersionedDok) {
+      AppService.setPaneShown(true);
+      ExaminationService.closeExamination(vm.examination, createVersionedDok).success(function (data) {
+      AppService.setPaneShown(false);
+      vm.dirtyFlag = false;
+      $state.go($state.current, {
+        displayedMustCriterionId: null,
+        displayedEvaluatedCriterionId: null,
+        proceedToClose: null
+      }, {
+        reload: true
+      });
+    }).error(function (response, status) {
+      AppService.setPaneShown(false);
+      if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+        $anchorScroll('ErrorAnchor');
+        QFormJSRValidation.markErrors($scope,
+          $scope.examinationViewCtrl.examinationForm, response);
+      }
+    });
+  }
+
+    /**Create a function to close the award evaluation */
     function closeExamination() {
-      var openCloseExaminationModal = $uibModal
-        .open({
+      AppService.setPaneShown(true);
+      vm.examination.submissionId = vm.data.submission.id;
+      vm.examination.submissionVersion = vm.data.submission.version;
+      ExaminationService.closeExaminationValidations(vm.examination)
+      .success(function (data) {
+        AppService.setPaneShown(false);
+        $uibModal.open({
           template: '<div class="modal-header">' +
-            '<button type="button" class="close" aria-label="Close" ng-click="examinationViewCtrl.closeModal(false)"><span aria-hidden="true">&times;</span></button>' +
+            '<button type="button" class="close" aria-label="Close"' +
+            'ng-click="closeExaminationModalCtrl.closeExamination(false); $close()"><span aria-hidden="true">&times;</span></button>' +
             '<h4 class="modal-title">Eignungsprüfung abschliessen</h4>' +
             '</div>' +
             '<div class="modal-body">' +
             '<div class="row">' +
             '<div class="col-md-12">' +
-            '<p> Möchten Sie die Eignungsprüfung wirklich abschliessen? </p>' +
+            '<p>Möchten Sie die Eignungsprüfung wirklich abschliessen?</p>' +
             '</div>' +
             '</div>' +
             '</div>' +
             '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-primary" ng-click="examinationViewCtrl.closeModal(true)">Ja</button>' +
-            '<button type="button" class="btn btn-default" ng-click="examinationViewCtrl.closeModal(false)">Nein</button>' +
+            '<button type="button" class="btn btn-primary" ng-click="closeExaminationModalCtrl.closeExamination(true); $close()">Ja</button>' +
+            '<button type="button" class="btn btn-default" ng-click="closeExaminationModalCtrl.closeExamination(false); $close()">Nein</button>' +
             '</div>' + '</div>',
-          controllerAs: 'examinationViewCtrl',
+          controllerAs: 'closeExaminationModalCtrl',
           backdrop: 'static',
           size: 'lg',
           keyboard: false,
           controller: function () {
-            var vm = this;
-            vm.closeModal = function (reason) {
-              openCloseExaminationModal.dismiss(reason);
-            };
+            var vm2 = this;
+            vm2.closeExamination = function (response) {
+              if (response) {
+                AppService.setPaneShown(true);
+                DocumentService.documentExists(vm.data.submission.id, AppConstants.EIGNUNGSPRUFUNG).then(function (documentExists) {
+                  AppService.setPaneShown(false);
+                  if(documentExists.data){
+                    $uibModal.open({
+                      template: '<div class="modal-header">' +
+                        '<button type="button" class="close" aria-label="Close"' +
+                        'ng-click="closeExaminationDocumentExistsModalCtrl.createVersion(null); $close()"><span aria-hidden="true">&times;</span></button>' +
+                        '<h4 class="modal-title">Eignungsprüfung Dokument erstellen</h4>' +
+                        '</div>' +
+                        '<div class="modal-body">' +
+                        '<div class="row">' +
+                        '<div class="col-md-12">' +
+                        '<p> Möchten Sie das bereits existierende Eignungsprüfung Dokument überschreiben oder versionieren? </p>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer">' +
+                        '<button type="button" class="btn btn-primary" ng-click="closeExaminationDocumentExistsModalCtrl.createVersion(false); $close()">Überschreiben</button>' +
+                        '<button type="button" class="btn btn-default" ng-click="closeExaminationDocumentExistsModalCtrl.createVersion(true); $close()">Versionieren</button>' +
+                        '<button type="button" class="btn btn-default" ng-click="closeExaminationDocumentExistsModalCtrl.createVersion(null); $close()">Abbrechen</button>' +
+                        '</div>' + '</div>',
+                      controllerAs: 'closeExaminationDocumentExistsModalCtrl',
+                      backdrop: 'static',
+                      size: 'lg',
+                      keyboard: false,
+                      controller: function () {
+                        var vm3 = this;
+                        vm3.createVersion = function (createVersionDok) {
+                          if(createVersionDok !== null){
+                            if(createVersionDok === true){
+                              proceedToCloseExamination(vm, true);
+                            } else {
+                              proceedToCloseExamination(vm, false);
+                            }
+                          }
+                        }
+                      }});
+                  } else {
+                    proceedToCloseExamination(vm, false);
+                  }
+                })
+              } else {
+                if ($stateParams.proceedToClose) {
+                  defaultReload();
+                }
+                return false;
+              }
+              return null;
+            }
           }
         });
-      return openCloseExaminationModal.result.then(function () {
-        // Modal Success Handler
-      }, function (response) { // Modal Dismiss Handler
-        if (response) {
-          AppService.setPaneShown(true);
-          vm.examination.submissionId = vm.data.submission.id;
-          vm.examination.submissionVersion = vm.data.submission.version;
-          ExaminationService.closeExamination(vm.examination)
-            .success(function (data) {
-              AppService.setPaneShown(false);
-              vm.dirtyFlag = false;
-              $state.go($state.current, {
-                displayedMustCriterionId: null,
-                displayedEvaluatedCriterionId: null,
-                proceedToClose: null
-              }, {
-                reload: true
-              });
-            }).error(function (response, status) {
-              AppService.setPaneShown(false);
-              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
-                $anchorScroll('ErrorAnchor');
-                QFormJSRValidation.markErrors($scope,
-                  $scope.examinationViewCtrl.examinationForm, response);
-              }
-            });
-        } else {
-          if ($stateParams.proceedToClose) {
-            defaultReload();
-          }
-          return false;
+      }).error(function (response, status) {
+        AppService.setPaneShown(false);
+        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+          $anchorScroll('ErrorAnchor');
+          QFormJSRValidation.markErrors($scope,
+            $scope.examinationViewCtrl.examinationForm, response);
         }
-        return null;
       });
     }
+
+
 
     /**Function to determine when to add, delete or update a criterion */
     function buttonOrFieldDisabledForCriterion(process, currentStatus) {

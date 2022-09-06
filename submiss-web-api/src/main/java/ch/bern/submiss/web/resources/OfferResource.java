@@ -440,15 +440,17 @@ public class OfferResource {
    *
    * @param submissionId the submission id
    * @param awardedOfferIds the awarded offer ids
+   * @param createVersion the create version
    * @return the response
    */
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/closeAwardEvaluation/{submissionId}/{submissionVersion}")
+  @Path("/closeAwardEvaluation/{submissionId}/{submissionVersion}/{createVersion}")
   public Response closeAwardEvaluation(@PathParam("submissionId") String submissionId,
-    @PathParam("submissionVersion") Long submissionVersion, @Valid List<String> awardedOfferIds) {
+    @PathParam("submissionVersion") Long submissionVersion,
+    @PathParam("createVersion") boolean createVersion, @Valid List<String> awardedOfferIds) {
     submissionService.checkOptimisticLockSubmission(submissionId, submissionVersion);
-    offerService.closeAwardEvaluation(awardedOfferIds, submissionId);
+    offerService.closeAwardEvaluation(awardedOfferIds, submissionId, createVersion);
     return Response.ok().build();
   }
 

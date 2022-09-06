@@ -44,7 +44,6 @@
                || examinationViewCtrl.examinationForm.mandatoryLegalHearingDocument.$invalid
                || examinationViewCtrl.examinationForm.mandatoryProofDocument.$invalid
                || examinationViewCtrl.examinationForm.nullMinGradeMaxGradeErrorField.$invalid
-               || examinationViewCtrl.examinationForm.noExaminationDocumentField.$invalid
                || examinationViewCtrl.examinationForm.proofInconsistenciesField.$invalid
                || examinationViewCtrl.examinationForm.optimisticLockErrorField.$invalid
                || examinationViewCtrl.examinationForm.deletedByAnotherUserErrorField.$invalid
@@ -63,7 +62,6 @@
             <field-error form-element-name=mandatoryLegalHearingDocument translate name="error"></field-error>
             <field-error form-element-name=mandatoryProofDocument translate name="error"></field-error>
             <field-error form-element-name=nullMinGradeMaxGradeErrorField translate name="error"></field-error>
-            <field-error form-element-name="noExaminationDocumentField" translate name="error"></field-error>
             <field-error form-element-name="proofInconsistenciesField" translate name="error"></field-error>
             <field-error form-element-name="optimisticLockErrorField" translate name="error"></field-error>
             <field-error form-element-name="deletedByAnotherUserErrorField" translate name="error"></field-error>
@@ -92,7 +90,6 @@
           <input name="mandatoryLegalHearingDocument" ng-hide="true" data-ng-model="fd">
           <input name="mandatoryProofDocument" ng-hide="true" data-ng-model="fd">
           <input name="nullMinGradeMaxGradeErrorField" ng-hide="true" data-ng-model="fd">
-          <input name="noExaminationDocumentField" ng-hide="true" data-ng-model="fd">
           <input name="proofInconsistenciesField" ng-hide="true" data-ng-model="fd">
           <input name="optimisticLockErrorField" ng-hide="true" data-ng-model="fd">
           <input name="deletedByAnotherUserErrorField" ng-hide="true" data-ng-model="fd">

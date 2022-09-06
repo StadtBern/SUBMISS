@@ -562,16 +562,6 @@ public class ValidationMessages {
   public static final String UNIQUE_NAME_AND_SHORT_NAME = "unique_name_and_short_name";
 
   /**
-   * The Constant NO_EXAMINATION_DOCUMENT.
-   */
-  public static final String NO_EXAMINATION_DOCUMENT = "no_examination_document";
-
-  /**
-   * The Constant NO_AWARD_DOCUMENT.
-   */
-  public static final String NO_AWARD_DOCUMENT = "no_award_document";
-
-  /**
    * The Constant OPTIMISTIC_LOCK_DELETE.
    */
   public static final String OPTIMISTIC_LOCK_DELETE = "optimistic_lock_delete";
@@ -1198,5 +1188,7 @@ public class ValidationMessages {
   public static final String NACHTRAG_DELETED_MESSAGE = "nachtrag_deleted_message";
 
   public static final String MANDATORY_NACHTRAG_DOCUMENT_MESSAGE = "mandatory_nachtrag_document_message";
+
+  public static final String PASSING_APPLICANTS_NO_EVALUATED_CRITERION_ERROR_MESSAGE = "passing_applicants__no_evaluated_criterion_error_message";
 
 }

@@ -1359,7 +1359,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
           }
           cell.setCellValue(amount.doubleValue());
           cell.setCellStyle(sectionResultsStyle3);
-        } else if(columnHeader.equals("Nachtrag netto")){
+        } else if(columnHeader.equals("Nachtrag Netto exkl. MWST")){
           // This needs an extra case because we add a number to the cell
           BigDecimal nachtragAmount = new BigDecimal(0);
           // Check for null pointer exceptions
@@ -1934,7 +1934,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
       Cell cell = row.createCell(index.getAndIncrement());
       cell.setCellValue(columnHeader);
       if (columnHeader.equals("Zuschlagsjahr") || columnHeader.equals("Netto exkl. MWST")
-      || columnHeader.equals("Nachtragsjahr") || columnHeader.equals("Nachtrag netto")) {
+      || columnHeader.equals("Nachtragsjahr") || columnHeader.equals("Nachtrag Netto exkl. MWST")) {
         // For these 4 columns the style must contain HorizontalAlignment -> RIGHT
         cell.setCellStyle(columnHeaderStyle2);
       } else {
@@ -1993,7 +1993,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
 
     // Third cell contains the Nachtrag total amount
     cell = row.createCell(2);
-    cell.setCellValue("Nachtrag netto");
+    cell.setCellValue("Nachtrag Netto exkl. MWST");
     cell.setCellStyle(columnHeaderStyle2);
   }
 
@@ -2022,7 +2022,7 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
     columnHeaders.add("Zuschlagsjahr");
     columnHeaders.add("Netto exkl. MWST");
     columnHeaders.add("Nachtragsjahr");
-    columnHeaders.add("Nachtrag netto");
+    columnHeaders.add("Nachtrag Netto exkl. MWST");
 
     // Remove the selected totalization from the column header list.
     columnHeaders.removeIf(s -> s.equals(getColumnHeaderFromTotalization(totalizationBy)));
@@ -3040,9 +3040,10 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
         .select(qJointVentureEntity.submittent.id).from(qJointVentureEntity)
         .where(qJointVentureEntity.company.id.in(companiesIDs)).fetch();
       List<SubmissionEntity> companySubmissions =
-        new JPAQueryFactory(em).select(qSubmittentEntity.submissionId).from(qSubmittentEntity)
-          .where(qSubmittentEntity.companyId.id.in(companiesIDs)
-            .or(qSubmittentEntity.id.in(submittentsIDList)))
+        new JPAQueryFactory(em).select(qSubmittentEntity.submissionId).from(qSubmittentEntity) // here
+          .where((qSubmittentEntity.companyId.id.in(companiesIDs)
+              .or(qSubmittentEntity.id.in(submittentsIDList)))
+            .and(qSubmittentEntity.offer.isAwarded.eq(Boolean.TRUE)))
           .orderBy(qSubmittentEntity.companyId.companyName.asc()).fetch();
       whereClause.and(qSubmissionEntity.in(companySubmissions));
     }

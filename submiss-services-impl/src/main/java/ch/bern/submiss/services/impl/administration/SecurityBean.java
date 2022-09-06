@@ -905,11 +905,33 @@ public class SecurityBean{
           SecurityOperation.MAIN_TENANT_BEMERKUNG_FABE_VIEW.getValue(), false);
         operationService.addOperationToUser(userDTO.getId(),
           SecurityOperation.MAIN_TENANT_BEMERKUNG_FABE_EDIT.getValue(), false);
+      } else {
+        // otherwise remove the operations, if they exist
+        operationService.removeOperationFromUser(userDTO.getId(),
+          SecurityOperation.MAIN_TENANT_BESCHAFFUNGSWESEN_EDIT.getValue());
+        operationService.removeOperationFromUser(userDTO.getId(),
+          SecurityOperation.MAIN_TENANT_BEMERKUNG_FABE_VIEW.getValue());
+        operationService.removeOperationFromUser(userDTO.getId(),
+          SecurityOperation.MAIN_TENANT_BEMERKUNG_FABE_EDIT.getValue());
       }
+    } else {
+      // otherwise remove the operations, if they exist
+      operationService.removeOperationFromUser(userDTO.getId(),
+        SecurityOperation.MAIN_TENANT_BESCHAFFUNGSWESEN_VIEW.getValue());
+      operationService.removeOperationFromUser(userDTO.getId(),
+        SecurityOperation.MAIN_TENANT_BESCHAFFUNGSWESEN_EDIT.getValue());
+      operationService.removeOperationFromUser(userDTO.getId(),
+        SecurityOperation.MAIN_TENANT_BEMERKUNG_FABE_VIEW.getValue());
+      operationService.removeOperationFromUser(userDTO.getId(),
+        SecurityOperation.MAIN_TENANT_BEMERKUNG_FABE_EDIT.getValue());
     }
     if (!tenantDTO.getName().equals(LookupValues.TENANT_KANTON_BERN)) {
       operationService.addOperationToUser(userDTO.getId(),
         SecurityOperation.EXTENDED_ACCESS.getValue(), false);
+    } else {
+      // otherwise remove the operation, if it exists
+      operationService.removeOperationFromUser(userDTO.getId(),
+        SecurityOperation.EXTENDED_ACCESS.getValue());
     }
   }
 
