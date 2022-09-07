@@ -1155,13 +1155,11 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
             TenderStatus.CONTRACT_CREATED.getValue()))
           // check if the current status (or the one before the current in case current status
           // is CONTRACT_CREATED)
-          // is AWARD_NOTICES_CREATED and is set more than 1 day ago
+          // is AWARD_NOTICES_CREATED
           .and(entity.id.in(JPAExpressions.select(qTenderStatusHistoryEntity.tenderId.id)
             .from(qTenderStatusHistoryEntity)
             .where(qTenderStatusHistoryEntity.statusId
               .eq(TenderStatus.AWARD_NOTICES_CREATED.getValue())
-              .and(qTenderStatusHistoryEntity.onDate.loe(Timestamp.valueOf(
-                LocalDate.now().minusDays(LookupValues.ONE_INT).atStartOfDay())))
               .and(qTenderStatusHistoryEntity.onDate
                 .in(JPAExpressions.select(qTenderStatusHistoryEntity1.onDate.max())
                   .from(qTenderStatusHistoryEntity1)

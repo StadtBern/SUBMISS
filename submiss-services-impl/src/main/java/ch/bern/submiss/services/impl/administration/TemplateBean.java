@@ -3197,6 +3197,16 @@ public class TemplateBean extends BaseService {
       }
     }
 
+    if (company.getApprenticeFactor() != null || company.getTlp() != null
+      || company.getFiftyPlusFactor() != null) {
+      if (company.getNotes() != null && !company.getNotes().isEmpty()) {
+        sbRemarks.append(LookupValues.SLASH).append(company.getNotes());
+      }
+    } else {
+      if (company.getNotes() != null && !company.getNotes().isEmpty()) {
+        sbRemarks.append(company.getNotes());
+      }
+    }
 
   }
 
