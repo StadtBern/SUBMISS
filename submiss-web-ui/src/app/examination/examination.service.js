@@ -53,8 +53,11 @@
       addSubcriterionToCriterion: function (submissionId, submissionVersion, subcriterion) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/examination/' + submissionId + '/' + submissionVersion + '/subcriterion/add', subcriterion);
       },
-      closeFormalAudit: function (submissionId, submissionVersion) {
-        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/formal/close/' + submissionId + '/' + submissionVersion);
+      closeFormalAuditValidations: function (submissionId, submissionVersion) {
+        return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/formal/closeValidations/' + submissionId + '/' + submissionVersion);
+      },
+      closeFormalAudit: function (createVersion, submissionId, submissionVersion) {
+        return $http.put(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/formal/close/' + createVersion + '/' + submissionId + '/' + submissionVersion);
       },
       closeExaminationValidations: function (examinationForm) {
         return $http.post(AppConstants.URLS.RESOURCE_PROVIDER + '/submission/examination/closeValidations', examinationForm);

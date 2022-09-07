@@ -1496,9 +1496,20 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
           .getValue2();
         break;
       case "Firma":
-        columnResult = !result.getReportCompanies().isEmpty()
-          ? result.getReportCompanies().get(0)
-          : StringUtils.EMPTY;
+        StringBuilder firmaInfo = new StringBuilder();
+        if (!result.getReportCompanies().isEmpty()){
+            if (result.getReportCompanies().size() == 1) {
+                firmaInfo.append(result.getReportCompanies().get(0));
+            } else {
+                firmaInfo.append(result.getReportCompanies().get(0));
+                for (int i = 1; i < result.getReportCompanies().size(); i ++ ){
+                  firmaInfo.append(LookupValues.SLASH).append(result.getReportCompanies().get(i));
+                }
+            }
+        } else {
+          firmaInfo.append(StringUtils.EMPTY);
+        }
+        columnResult = firmaInfo.toString();
         break;
       case "Zuschlagsjahr":
         SimpleDateFormat dateFormat = new SimpleDateFormat(LookupValues.DATE_FORMAT);
@@ -2703,6 +2714,17 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
      * (If we do not use the directorate history, the results are missing the case of a department changing to a different directorate as we retrieve only the latest results.)
      */
     submissionDTOList = filterWithDirectorate(reportDTO, submissionDTOList);
+    // If "Auswertungszeitraum" is selected, only Zuschläge in Status "Verfügung erstellt" should be shown
+    int count = submissionDTOList.size();
+    for (int i = 0; i < count; i++) {
+      if (reportDTO.getEndDate() != null && reportDTO.getStartDate() != null
+        && !submissionDTOList.get(i).getStatus().equals(TenderStatus.PROCEDURE_COMPLETED.getValue())
+        && !submissionDTOList.get(i).getStatus().equals(TenderStatus.COMMISSION_PROCUREMENT_DECISION_CLOSED.getValue())
+        && !submissionDTOList.get(i).getStatus().equals(TenderStatus.AWARD_NOTICES_CREATED.getValue())) {
+
+          submissionDTOList.remove(i);
+      }
+    }
 
     setReportCompanies(submissionDTOList, reportDTO.getTotalizationBy());
     ReportResultsDTO results = new ReportResultsDTO();

@@ -2208,7 +2208,7 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
       offers = new JPAQueryFactory(em).selectDistinct(qOfferEntity).from(qOfferEntity)
         .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
           .and(qOfferEntity.submittent.isApplicant.isTrue()))
-        .orderBy(qOfferEntity.submittent.sortOrder.asc()).limit(5).fetch();
+        .orderBy(qOfferEntity.submittent.sortOrder.asc()).fetch();
     } else {
       offers = new JPAQueryFactory(em).selectDistinct(qOfferEntity).from(qOfferEntity)
         .where(qOfferEntity.submittent.submissionId.id.eq(submissionId)

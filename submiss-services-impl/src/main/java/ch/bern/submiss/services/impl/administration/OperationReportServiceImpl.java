@@ -1367,14 +1367,11 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       for (OfferDTO offerDTO : offerDTOs) {
         if (offerDTO != null && offerDTO.getIsAwarded() != null && offerDTO.getIsAwarded()) {
           if (process.equals(Process.SELECTIVE) || process.equals(Process.OPEN)) {
-            soSumList.add(nulltoZeroDecimal(offerDTO.getAmount())
-              .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+            addAmountOrManualAmount(soSumList,offerDTO);
           } else if (process.equals(Process.INVITATION)) {
-            eSumList.add(nulltoZeroDecimal(offerDTO.getAmount())
-              .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+            addAmountOrManualAmount(eSumList, offerDTO);
           } else {
-            fSumList.add(nulltoZeroDecimal(offerDTO.getAmount())
-              .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+            addAmountOrManualAmount(fSumList, offerDTO);
           }
         }
       }
@@ -2279,14 +2276,11 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
           Process process = submission.getProcess();
           if (offerDTO != null && offerDTO.getIsAwarded() != null && offerDTO.getIsAwarded()) {
             if (process.equals(Process.SELECTIVE) || process.equals(Process.OPEN)) {
-              soSumList.add(nulltoZeroDecimal(offerDTO.getAmount())
-                .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+              addAmountOrManualAmount(soSumList, offerDTO);
             } else if (process.equals(Process.INVITATION)) {
-              eSumList.add(nulltoZeroDecimal(offerDTO.getAmount())
-                .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+              addAmountOrManualAmount(eSumList, offerDTO);
             } else {
-              fSumList.add(nulltoZeroDecimal(offerDTO.getAmount())
-                .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+              addAmountOrManualAmount(fSumList, offerDTO);
             }
           }
         }
@@ -2298,6 +2292,16 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     results.setTotal(calculateTotalAmount(soSumList, eSumList, fSumList));
     results.setSearchedCriteria(getOperationReportSearchCriteria(operationReportDTO));
     return results;
+  }
+
+  private void addAmountOrManualAmount(List<BigDecimal> sumList, OfferDTO offerDTO) {
+    if (offerDTO.getManualAmount() != null) {
+      sumList.add(nulltoZeroDecimal(offerDTO.getManualAmount())
+        .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+    } else {
+      sumList.add(nulltoZeroDecimal(offerDTO.getAmount())
+        .add(nulltoZeroDecimal(offerDTO.getOperatingCostsAmount())));
+    }
   }
 
   /**

@@ -8,7 +8,7 @@
   <parent>
     <groupId>ch.bern.submiss</groupId>
     <artifactId>submiss</artifactId>
-    <version>1.11.2</version>    <relativePath>../</relativePath>
+    <version>1.11.3</version>    <relativePath>../</relativePath>
   </parent>
 
   <artifactId>submiss-dist</artifactId>

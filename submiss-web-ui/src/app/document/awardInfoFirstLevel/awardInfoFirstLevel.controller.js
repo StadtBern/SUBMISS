@@ -90,7 +90,9 @@
     function getExclusionReasons() {
       return StammdatenService.getMasterListValueHistoryDataBySubmission($stateParams.submissionId, "ExclusionCriterion").success(
         function (data) {
-          vm.exclusionReasons = $filter('orderBy')(data, 'value1');
+          let activeExlusionReasons = data.filter(function(data) {
+            return data.active == true; });
+          vm.exclusionReasons = $filter('orderBy')(activeExlusionReasons, 'value1');
         }).error(function (response, status) {
 
       });
@@ -119,7 +121,7 @@
               (vm.awardInfoFirstLevel.offers[io].existsExclusionReasons ||
                 !vm.awardInfoFirstLevel.offers[io].formalExaminationFulfilled)) ||
             (vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_C &&
-              !vm.awardInfoFirstLevel.offers[io].mustCriteriaFulfilled)) {
+              (vm.awardInfoFirstLevel.offers[io].mustCriteriaFulfilled !== null && !vm.awardInfoFirstLevel.offers[io].mustCriteriaFulfilled))) {
             exclusionReason.selected = true;
             exclusionReason.disabled = true;
           } else {

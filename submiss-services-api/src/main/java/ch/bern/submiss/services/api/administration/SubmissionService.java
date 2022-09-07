@@ -174,12 +174,20 @@ public interface SubmissionService {
   void updateSubmissionFormalAuditExaminationStatus(String id);
 
   /**
+   * Close Formal Audit validations.
+   *
+   * @param id       the submission id
+   * @return String List
+   */
+  List<String> closeFormalAuditValidations(String id);
+
+  /**
    * This method updates the status of submission according to submission process.
    *
    * @param id the UUID of the submission.
-   * @return int according to process and validation
+   * @param createVersion   the create Version
    */
-  List<String> closeFormalAudit(String id);
+  void closeFormalAudit(String id, boolean createVersion);
 
 
   /**

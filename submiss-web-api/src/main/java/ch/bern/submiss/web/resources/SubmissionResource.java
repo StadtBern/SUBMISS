@@ -495,15 +495,16 @@ public class SubmissionResource {
   }
 
   /**
-   * Close formal audit.
+   * Close formal audit validations.
    *
-   * @param id the id
+   * @param id the Submission Id
+   * @param version the Submission version
    * @return the response
    */
-  @PUT
+  @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/formal/close/{id}/{version}")
-  public Response closeFormalAudit(@PathParam("id") String id, @PathParam("version") Long version) {
+  @Path("/formal/closeValidations/{id}/{version}")
+  public Response closeFormalAuditValidations(@PathParam("id") String id, @PathParam("version") Long version) {
     submissionService.checkOptimisticLockSubmission(id, version);
     Set<ValidationError> errors = new HashSet<>();
     SubmissionDTO submissionDTO = submissionService.getSubmissionById(id);
@@ -530,8 +531,9 @@ public class SubmissionResource {
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
 
-    List<String> results = submissionService.closeFormalAudit(id);
+    List<String> results = submissionService.closeFormalAuditValidations(id);
 
+    // Check if errors have occurred.
     if (!results.isEmpty()) {
       for (String result : results) {
         // No exclusion reasons for selective process.
@@ -562,7 +564,21 @@ public class SubmissionResource {
       }
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
+    return Response.ok().build();
+  }
 
+  /**
+   * Close formal audit.
+   *
+   * @param id the id
+   * @return the response
+   */
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/formal/close/{createVersion}/{id}/{version}")
+  public Response closeFormalAudit(@PathParam("createVersion") boolean createVersion, @PathParam("id") String id, @PathParam("version") Long version) {
+    submissionService.checkOptimisticLockSubmission(id, version);
+    submissionService.closeFormalAudit(id, createVersion);
     return Response.ok().build();
   }
 

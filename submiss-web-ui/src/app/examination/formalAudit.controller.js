@@ -27,7 +27,8 @@
   function FormalAuditController($rootScope, $scope, $state, $stateParams,
     $transitions,
     SubmissionService, ExaminationService, QFormJSRValidation, NgTableParams,
-    $filter, $element, $uibModal, AppService, AppConstants, TasksService) {
+    $filter, $element, $uibModal, AppService, AppConstants, TasksService,
+    DocumentService) {
     /***********************************************************************
      * Local variables.
      **********************************************************************/
@@ -304,11 +305,34 @@
 
     }
 
+    function proceedToCloseFormalAudit(vm, createVersionedDok) {
+      AppService.setPaneShown(true);
+      ExaminationService.closeFormalAudit(createVersionedDok, vm.data.submission.id, vm.data.submission.version).success(function (data) {
+        AppService.setPaneShown(false);
+        vm.dirtyFlag = false;
+        defaultReload();
+      }).error(function (response, status) {
+        AppService.setPaneShown(false);
+        // Remove no checked submittents error message if present.
+        if (vm.noCheckedSubmittents) {
+          vm.noCheckedSubmittents = false;
+        }
+        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.formalAuditCtrl.evidenceForm, response);
+        }
+      });
+    }
+
     function closeFormalAudit() {
-      var openCloseFormalAuditModal = $uibModal
-        .open({
+      AppService.setPaneShown(true);
+      ExaminationService.closeFormalAuditValidations(vm.data.submission.id, vm.data.submission.version)
+      .success(function (data) {
+        AppService.setPaneShown(false);
+        $uibModal.open({
           template: '<div class="modal-header">' +
-            '<button type="button" class="close" aria-label="Close" ng-click="formalAuditCtrl.closeModal(false)"><span aria-hidden="true">&times;</span></button>' +
+            '<button type="button" class="close" aria-label="Close"' +
+            'ng-click="closeFormalAuditModalCtrl.closeFormalAudit(false); $close()"><span aria-hidden="true">&times;</span></button>' +
             '<h4 class="modal-title">Formelle Prüfung abschliessen</h4>' +
             '</div>' +
             '<div class="modal-body">' +
@@ -319,44 +343,79 @@
             '</div>' +
             '</div>' +
             '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-primary" ng-click="formalAuditCtrl.closeModal(true)">Ja</button>' +
-            '<button type="button" class="btn btn-default" ng-click="formalAuditCtrl.closeModal(false)">Nein</button>' +
+            '<button type="button" class="btn btn-primary" ng-click="closeFormalAuditModalCtrl.closeFormalAudit(true); $close()">Ja</button>' +
+            '<button type="button" class="btn btn-default" ng-click="closeFormalAuditModalCtrl.closeFormalAudit(false); $close()">Nein</button>' +
             '</div>' + '</div>',
-          controllerAs: 'formalAuditCtrl',
+          controllerAs: 'closeFormalAuditModalCtrl',
           backdrop: 'static',
           size: 'lg',
           keyboard: false,
           controller: function () {
-            var vm = this;
-            vm.closeModal = function (reason) {
-              openCloseFormalAuditModal.dismiss(reason);
-            };
+            var vm2 = this;
+            vm2.closeFormalAudit = function (response) {
+              if (response) {
+                AppService.setPaneShown(true);
+                DocumentService.documentExists(vm.data.submission.id, AppConstants.EIGNUNGSPRUFUNG).then(function (documentExists) {
+                  AppService.setPaneShown(false);
+                  if(documentExists.data){
+                    $uibModal.open({
+                      template: '<div class="modal-header">' +
+                        '<button type="button" class="close" aria-label="Close"' +
+                        'ng-click="closeFormalAuditDocumentExistsModalCtrl.createVersion(null); $close()"><span aria-hidden="true">&times;</span></button>' +
+                        '<h4 class="modal-title">Eignungsprüfung Dokument erstellen</h4>' +
+                        '</div>' +
+                        '<div class="modal-body">' +
+                        '<div class="row">' +
+                        '<div class="col-md-12">' +
+                        '<p> Möchten Sie das bereits existierende Eignungsprüfung Dokument überschreiben oder versionieren? </p>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer">' +
+                        '<button type="button" class="btn btn-primary" ng-click="closeFormalAuditDocumentExistsModalCtrl.createVersion(false); $close()">Überschreiben</button>' +
+                        '<button type="button" class="btn btn-default" ng-click="closeFormalAuditDocumentExistsModalCtrl.createVersion(true); $close()">Versionieren</button>' +
+                        '<button type="button" class="btn btn-default" ng-click="closeFormalAuditDocumentExistsModalCtrl.createVersion(null); $close()">Abbrechen</button>' +
+                        '</div>' + '</div>',
+                      controllerAs: 'closeFormalAuditDocumentExistsModalCtrl',
+                      backdrop: 'static',
+                      size: 'lg',
+                      keyboard: false,
+                      controller: function () {
+                        var vm3 = this;
+                        vm3.createVersion = function (createVersionDok) {
+                          if(createVersionDok !== null){
+                            if(createVersionDok === true){
+                              proceedToCloseFormalAudit(vm, true);
+                            } else {
+                              proceedToCloseFormalAudit(vm, false);
+                            }
+                          }
+                        }
+                      }});
+                  } else {
+                    proceedToCloseFormalAudit(vm, false);
+                  }
+                })
+              } else {
+                if ($stateParams.proceedToClose) {
+                  defaultReload();
+                }
+                return false;
+              }
+              return null;
+            }
           }
         });
-      return openCloseFormalAuditModal.result.then(function () {
-        // Modal Success Handler
-      }, function (response) { // Modal Dismiss Handler
-        if (response) {
-          ExaminationService.closeFormalAudit(vm.data.submission.id, vm.data.submission.version)
-            .success(function (data) {
-              defaultReload();
-            }).error(function (response, status) {
-              // Remove no checked submittents error message if present.
-              if (vm.noCheckedSubmittents) {
-                vm.noCheckedSubmittents = false;
-              }
-              if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
-                QFormJSRValidation.markErrors($scope,
-                  $scope.formalAuditCtrl.evidenceForm, response);
-              }
-            });
-        } else {
-          if ($stateParams.proceedToClose) {
-            defaultReload();
-          }
-          return false;
+      }).error(function (response, status) {
+        AppService.setPaneShown(false);
+        // Remove no checked submittents error message if present.
+        if (vm.noCheckedSubmittents) {
+          vm.noCheckedSubmittents = false;
         }
-        return null;
+        if (status === AppConstants.HTTP_RESPONSES.BAD_REQUEST || status === AppConstants.HTTP_RESPONSES.CONFLICT) { // Validation errors.
+          QFormJSRValidation.markErrors($scope,
+            $scope.formalAuditCtrl.evidenceForm, response);
+        }
       });
     }
 

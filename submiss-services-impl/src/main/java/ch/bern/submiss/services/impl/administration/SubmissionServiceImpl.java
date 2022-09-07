@@ -873,7 +873,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     LOGGER.log(Level.CONFIG,
       "Executing method getCompaniesBySubmission, Parameters: id: {0}",
       id);
-
     security.isPermittedOperationForUser(getUserId(),
       SecurityOperation.TENDER_VIEW.getValue(), id);
 
@@ -890,7 +889,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       offerEntityList = new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
         .where(qOfferEntity.submittent.submissionId.id.eq(id)
           .and(qOfferEntity.submittent.isApplicant.isNull()))
-        .fetch();
+        .orderBy(qOfferEntity.amount.asc()).fetch();
     } else {
       // Fetch all submittents who are either submittents by default, or are applicants who have
       // not been excluded from the process.
@@ -900,7 +899,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
             .and(qOfferEntity.excludedFirstLevel.eq(Boolean.FALSE)))
             .or(qOfferEntity.submittent.isApplicant.eq(Boolean.FALSE))
             .or(qOfferEntity.submittent.isApplicant.isNull())))
-        .fetch();
+        .orderBy(qOfferEntity.amount.asc()).fetch();
     }
     List<SubmittentOfferDTO> submittentOfferDTOs = new ArrayList<>();
     for (OfferEntity offer : offerEntityList) {
@@ -1668,14 +1667,14 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /*
    * (non-Javadoc)
    *
-   * @see ch.bern.submiss.services.api.administration.SubmissionService#closeFormalAudit(java.lang.
-   * String)
+   * @see ch.bern.submiss.services.api.administration.SubmissionService#closeFormalAuditValidations(java.lang.
+   * String, java.math.BigDecimal, java.math.BigDecimal)
    */
   @Override
-  public List<String> closeFormalAudit(String id) {
+  public List<String> closeFormalAuditValidations(String id) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method closeFormalAudit, Parameters: id: {0}",
+      "Executing method closeExaminationValidations, Parameters: id: {0}",
       id);
 
     List<String> messages = new ArrayList<>();
@@ -1715,60 +1714,82 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     if (messages.isEmpty() && submissionEntity.getProcess().equals(Process.SELECTIVE)) {
       shouldProofDocumentsBeGenerated(id, !messages.isEmpty(), messages, submissionEntity);
     }
+    return messages;
+  }
 
-    if (messages.isEmpty()) {
-      // If process is selective, exclude all offers from process whose submittents have exclusion
-      // reasons.
-      if (submissionEntity.getProcess().equals(Process.SELECTIVE)) {
+  /*
+   * (non-Javadoc)
+   *
+   * @see ch.bern.submiss.services.api.administration.SubmissionService#closeFormalAudit(java.lang.
+   * String)
+   */
+  @Override
+  public void closeFormalAudit(String id, boolean createVersion) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method closeFormalAudit, Parameters: id: {0}",
+      id);
+    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, id);
+    List<OfferEntity> offerEntities =
+      new JPAQueryFactory(em).select(qOfferEntity).from(qOfferEntity)
+        .where(qOfferEntity.submittent.submissionId.id.eq(id)
+          .and(qOfferEntity.isEmptyOffer.isFalse().or(qOfferEntity.isEmptyOffer.isNull()))
+          .and(
+            qOfferEntity.excludedFirstLevel.isFalse().or(qOfferEntity.excludedFirstLevel.isNull())))
+        .fetch();
+    // If process is selective, exclude all offers from process whose submittents have exclusion
+    // reasons.
+    if (submissionEntity.getProcess().equals(Process.SELECTIVE)) {
+      for (OfferEntity offerEntity : offerEntities) {
+        if ((offerEntity.getSubmittent().getIsApplicant() == null
+          || (offerEntity.getSubmittent().getIsApplicant()
+          && (offerEntity.getExcludedFirstLevel() == null
+          || !offerEntity.getExcludedFirstLevel())))
+          && (offerEntity.getSubmittent().getExistsExclusionReasons() != null
+          && offerEntity.getSubmittent().getExistsExclusionReasons())) {
+          offerEntity.setIsExcludedFromProcess(Boolean.TRUE);
+          // If offer is excluded, set award offer criteria score and grade to null.
+          for (OfferCriterionEntity offerCriterionEntity : offerEntity.getOfferCriteria()) {
+            if (offerCriterionEntity.getCriterion().getCriterionType()
+              .equals(LookupValues.AWARD_CRITERION_TYPE)) {
+              offerCriterionEntity.setGrade(null);
+              offerCriterionEntity.setScore(null);
+            }
+          }
+          // If offer is excluded, set award offer sub-criteria score and grade to null.
+          for (OfferSubcriterionEntity offerSubcriterionEntity : offerEntity
+            .getOfferSubcriteria()) {
+            if (offerSubcriterionEntity.getSubcriterion().getCriterion().getCriterionType()
+              .equals(LookupValues.AWARD_CRITERION_TYPE)) {
+              offerSubcriterionEntity.setGrade(null);
+              offerSubcriterionEntity.setScore(null);
+            }
+          }
+        } else {
+          offerEntity.setIsExcludedFromProcess(Boolean.FALSE);
+        }
+      }
+    } else {
+      if ((submissionEntity.getProcess().equals(Process.NEGOTIATED_PROCEDURE) || submissionEntity
+        .getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))) {
         for (OfferEntity offerEntity : offerEntities) {
-          if ((offerEntity.getSubmittent().getIsApplicant() == null
-            || (offerEntity.getSubmittent().getIsApplicant()
-            && (offerEntity.getExcludedFirstLevel() == null
-            || !offerEntity.getExcludedFirstLevel())))
-            && (offerEntity.getSubmittent().getExistsExclusionReasons() != null
-            && offerEntity.getSubmittent().getExistsExclusionReasons())) {
+          if (offerEntity.getSubmittent().getExistsExclusionReasons() != null
+            && offerEntity.getSubmittent().getExistsExclusionReasons()) {
             offerEntity.setIsExcludedFromProcess(Boolean.TRUE);
-            // If offer is excluded, set award offer criteria score and grade to null.
-            for (OfferCriterionEntity offerCriterionEntity : offerEntity.getOfferCriteria()) {
-              if (offerCriterionEntity.getCriterion().getCriterionType()
-                .equals(LookupValues.AWARD_CRITERION_TYPE)) {
-                offerCriterionEntity.setGrade(null);
-                offerCriterionEntity.setScore(null);
-              }
-            }
-            // If offer is excluded, set award offer sub-criteria score and grade to null.
-            for (OfferSubcriterionEntity offerSubcriterionEntity : offerEntity
-              .getOfferSubcriteria()) {
-              if (offerSubcriterionEntity.getSubcriterion().getCriterion().getCriterionType()
-                .equals(LookupValues.AWARD_CRITERION_TYPE)) {
-                offerSubcriterionEntity.setGrade(null);
-                offerSubcriterionEntity.setScore(null);
-              }
-            }
           } else {
             offerEntity.setIsExcludedFromProcess(Boolean.FALSE);
           }
         }
-      } else {
-        if ((submissionEntity.getProcess().equals(Process.NEGOTIATED_PROCEDURE) || submissionEntity
-          .getProcess().equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION))) {
-          for (OfferEntity offerEntity : offerEntities) {
-            if (offerEntity.getSubmittent().getExistsExclusionReasons() != null
-              && offerEntity.getSubmittent().getExistsExclusionReasons()) {
-              offerEntity.setIsExcludedFromProcess(Boolean.TRUE);
-            } else {
-              offerEntity.setIsExcludedFromProcess(Boolean.FALSE);
-            }
-          }
-        }
-      }
-      updateCloseFormalAuditStatus(submissionEntity);
-      // Update the award evaluation page if applicable.
-      if (submissionEntity.getProcess() == Process.SELECTIVE) {
-        updateAwardEvaluationPage(id);
       }
     }
-    return messages;
+    updateCloseFormalAuditStatus(submissionEntity);
+    // Update the award evaluation page if applicable.
+    if (submissionEntity.getProcess() == Process.SELECTIVE) {
+      updateAwardEvaluationPage(id);
+    }
+    // Automatically create Eignungsprüfung document
+    subDocumentService.autoCreateDocumentFromTemplate(id, submissionEntity.getProject().getTenant().getId(),
+      TemplateConstants.EIGNUNGSPRUFUNG, Template.EIGNUNGSPRUFUNG, createVersion);
   }
 
   /**
@@ -1819,7 +1840,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
   /*
    * (non-Javadoc)
    *
-   * @see ch.bern.submiss.services.api.administration.SubmissionService#closeExamination(java.lang.
+   * @see ch.bern.submiss.services.api.administration.SubmissionService#closeExaminationValidations(java.lang.
    * String, java.math.BigDecimal, java.math.BigDecimal)
    */
   @Override
@@ -1827,7 +1848,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     BigDecimal maxGrade) {
 
     LOGGER.log(Level.CONFIG,
-      "Executing method closeExamination, Parameters: id: {0}, "
+      "Executing method closeExaminationValidations, Parameters: id: {0}, "
         + "minGrade: {1}, maxGrade: {2}",
       new Object[]{submissionId, minGrade, maxGrade});
 
@@ -1993,11 +2014,20 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       if(!evaluatedCriterionExists){
         existsExclusionReasons = true;
         results.add(PASSING_APPLICANTS_NO_EVALUATED_CRITERION);
-      } else {
+      }
+      int countExaminationIsFulfilled=0;
+      List<OfferDTO> passingOfferDTOs = new ArrayList<>();
+      for (OfferDTO offerDTO : offerDTOs) {
+        if(offerDTO.getqExExaminationIsFulfilled()){
+          countExaminationIsFulfilled++;
+          passingOfferDTOs.add(offerDTO);
+        }
+      }
+
+      if (submissionEntity.getPassingApplicants()<countExaminationIsFulfilled){
         // Show error message we have passing applicants with tied total score for the last place.
         existsExclusionReasons = checkPassingApplicantsTie(existsExclusionReasons, results,
-          offerDTOs,
-          submissionEntity);
+          passingOfferDTOs, submissionEntity);
       }
     }
     return existsExclusionReasons;
@@ -2009,11 +2039,16 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     if(offerDTOs.size() > submissionEntity.getPassingApplicants()){
       BigDecimal lastPlaceOfferTotalGrade = offerDTOs.get(submissionEntity
         .getPassingApplicants() -1).getqExTotalGrade();
-      for(OfferDTO offerDTO : offerDTOs){
-        if(lastPlaceOfferTotalGrade != null
-          && offerDTO.getqExTotalGrade() != null
-          && offerDTO.getqExTotalGrade().equals(lastPlaceOfferTotalGrade)){
-          tiedOffers.add(offerDTO);
+      BigDecimal nextOfLastPlaceOfferTotalGrade = offerDTOs.get(submissionEntity
+        .getPassingApplicants()).getqExTotalGrade();
+      if(nextOfLastPlaceOfferTotalGrade.equals(lastPlaceOfferTotalGrade)){
+        for(OfferDTO offerDTO : offerDTOs){
+          if(lastPlaceOfferTotalGrade != null
+            && offerDTO.getqExTotalGrade() != null
+            && offerDTO.getqExTotalGrade().equals(lastPlaceOfferTotalGrade)
+            && offerDTO.getqExExaminationIsFulfilled()){
+            tiedOffers.add(offerDTO);
+          }
         }
       }
     }
