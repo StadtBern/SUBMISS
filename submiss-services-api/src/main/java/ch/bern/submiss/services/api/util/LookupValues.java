@@ -185,11 +185,12 @@ public class LookupValues {
   /* Exclusion Reason */
   public static final String EXCLUSION_REASON =
     "Das Angebot der Firma &1 entspricht den wesentlichen Formerfordernissen nicht. Gemäss der Verordnung "
-      + "über das öffentliche Beschaffungswesen (ÖBV), Art. 20, sind dem Angebot die Nachweise über die Erfüllung "
-      + "der Pflichten gegenüber der öffentlichen Hand, der Sozialversicherung sowie den Arbeitnehmerinnen und Arbeitnehmern "
+      + "zur Interkantonalen Vereinbarung über das öffentliche Beschaffungswesen (IVöBV), Art. 7, "
+      + "sind dem Angebot die Nachweise über die Erfüllung der Pflichten gegenüber der öffentlichen Hand, "
+      + "der Sozialversicherung sowie den Arbeitnehmerinnen und Arbeitnehmern "
       + "(Selbstdeklaration und weitere Bestätigungen, dass alle fälligen Prämien bezahlt sind) beizulegen. Die Nachweise wurden "
       + "der Offerte vom &2 nicht beigelegt. Mit Schreiben vom &3 wurde die Firma auf das Fehlen der Nachweise hingewiesen. Ihr "
-      + "wurde eine Frist zur Nachreichung der Unterlagen bis am &4 gewährt. Die Nachweise wurden bis heute nicht vollständig eingereicht.";
+      + "wurde eine Frist zur Nachreichung der Unterlagen bis am &4 gewährt. Die Nachweise wurden bis heute nicht vollständig.";
 
 
   /* Permitted expressions for calculation formulas */

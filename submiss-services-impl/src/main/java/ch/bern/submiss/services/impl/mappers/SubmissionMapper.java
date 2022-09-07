@@ -96,6 +96,7 @@ public abstract class SubmissionMapper {
     submissionEntity.setSecondDeadline(dto.getSecondDeadline());
     submissionEntity.setApplicationOpeningDate(dto.getApplicationOpeningDate());
     submissionEntity.setOfferOpeningDate(dto.getOfferOpeningDate());
+    submissionEntity.setSecondOfferOpeningDate(dto.getSecondOfferOpeningDate());
     submissionEntity.setFirstLoggedBy(dto.getFirstLoggedBy());
     submissionEntity.setSecondLoggedBy(dto.getSecondLoggedBy());
     submissionEntity.setNotes(dto.getNotes());

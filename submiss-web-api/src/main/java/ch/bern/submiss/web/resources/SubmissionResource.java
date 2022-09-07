@@ -551,16 +551,6 @@ public class SubmissionResource {
           errors.add(new ValidationError(ValidationMessages.DOCUMENT_ERROR_FIELD,
             ValidationMessages.DOCUMENT_SHOULD_BE_CREATED));
         }
-        // Proof document not created
-        else if (result.equals(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED)) {
-          errors.add(new ValidationError(ValidationMessages.PROOF_DOCUMENT_ERROR_FIELD,
-            ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED));
-        }
-        // Legal hearing document not created
-        else if (result.equals(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED)) {
-          errors.add(new ValidationError(ValidationMessages.LEGAL_HEARING_ERROR_FIELD,
-            ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED));
-        }
       }
       return Response.status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
@@ -622,15 +612,8 @@ public class SubmissionResource {
           } else if (result.equals(ValidationMessages.DOCUMENT_SHOULD_BE_CREATED)) {
             errors.add(new ValidationError("mandatoryDocument",
               ValidationMessages.DOCUMENT_SHOULD_BE_CREATED));
-          } else if (result.equals(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED)) {
-            errors.add(new ValidationError("mandatoryLegalHearingDocument",
-              ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED));
-          } else if (result.equals(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED)) {
-            errors.add(new ValidationError("mandatoryProofDocument",
-              ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED));
-          }
-          // If minimum or maximum grades are set as null and are also mandatory fields.
-          else if (result.equals(NULL_MIN_GRADE_MAX_GRADE)) {
+            // If minimum or maximum grades are set as null and are also mandatory fields.
+          }else if (result.equals(NULL_MIN_GRADE_MAX_GRADE)) {
             errors.add(new ValidationError("nullMinGradeMaxGradeErrorField",
               ValidationMessages.MANDATORY_ERROR_MESSAGE));
             if (examinationForm.getMinGrade() == null) {
@@ -1800,10 +1783,7 @@ public class SubmissionResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/submissionCancelNavigation/{submissionId}")
   public Response submissionCancelNavigation(@PathParam("submissionId") String submissionId) {
-    boolean navigationPossible = submissionService.submissionCancelNavigation(submissionId);
-    return (navigationPossible)
-      ? Response.ok().build()
-      : Response.status(Status.BAD_REQUEST).build();
+    return Response.ok().build();
   }
 
   /**

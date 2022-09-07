@@ -771,20 +771,12 @@ public class ValidationMessages {
    */
   public static final String DOCUMENT_ERROR_FIELD = "mandatoryDocument";
 
-  /**
-   * The Constant LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED.
-   */
-  public static final String LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED = "legal_hearing_document_should_be_created";
 
   /**
    * The Constant LEGAL_HEARING_ERROR_FIELD.
    */
   public static final String LEGAL_HEARING_ERROR_FIELD = "mandatoryLegalHearingDocument";
 
-  /**
-   * The Constant PROOF_DOCUMENT_SHOULD_BE_CREATED.
-   */
-  public static final String PROOF_DOCUMENT_SHOULD_BE_CREATED = "proof_document_should_be_created";
 
   /**
    * The Constant PROOF_DOCUMENT_ERROR_FIELD.

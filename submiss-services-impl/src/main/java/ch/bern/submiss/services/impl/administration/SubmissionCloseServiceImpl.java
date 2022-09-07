@@ -494,20 +494,25 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
                 List<NodeDTO> nodes =
                   documentService.getNodeByAttributes(submissionId, attributesMap);
                 // for each node (actually only one must exist)
-                for (NodeDTO node : nodes) {
-                  VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
-                  // get the creation date of the document
-                  exclusionReason = exclusionReason.replace("&3", SubmissConverter
-                    .convertToSwissDate(new Date(latestVersionDTO.getCreatedOn())));
-                  // the deadline is stored in another table per version id
-                  Date deadline = new JPAQueryFactory(em).select(qDocumentDeadlineEntity.deadline)
-                    .from(qDocumentDeadlineEntity)
-                    .where(qDocumentDeadlineEntity.versionId.eq(latestVersionDTO.getId()))
-                    .fetchOne();
-                  exclusionReason =
-                    exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
+                if (nodes.size() != 0) {
+                  for (NodeDTO node : nodes) {
+                    VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
+                    // get the creation date of the document
+                    exclusionReason = exclusionReason.replace("&3", SubmissConverter
+                      .convertToSwissDate(new Date(latestVersionDTO.getCreatedOn())));
+                    // the deadline is stored in another table per version id
+                    Date deadline = new JPAQueryFactory(em).select(qDocumentDeadlineEntity.deadline)
+                      .from(qDocumentDeadlineEntity)
+                      .where(qDocumentDeadlineEntity.versionId.eq(latestVersionDTO.getId()))
+                      .fetchOne();
+                    exclusionReason =
+                      exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
+                  }
+                }else{
+                  exclusionReason = null;
                 }
               }
+
               awardInfoOfferDTO.setExclusionReason(exclusionReason);
             }
             // else if submittent added later and Nachweise erbracht is No then construct a text
@@ -535,7 +540,8 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
               List<NodeDTO> nodes =
                 documentService.getNodeByAttributes(submissionId, attributesMap);
               // for each node (actually only one must exist)
-              for (NodeDTO node : nodes) {
+              if (nodes.size() != 0) {
+               for (NodeDTO node : nodes) {
                 VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
                 // get the creation date of the document
                 exclusionReason = exclusionReason.replace("&3", SubmissConverter
@@ -547,6 +553,9 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
                   .fetchOne();
                 exclusionReason =
                   exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
+               }
+              }else{
+                exclusionReason = null;
               }
               awardInfoOfferDTO.setExclusionReason(exclusionReason);
             }
@@ -933,7 +942,8 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
             offerEntity.getSubmittent().getId());
           List<NodeDTO> nodes = documentService.getNodeByAttributes(submissionId, attributesMap);
           // for each node (actually only one must exist)
-          for (NodeDTO node : nodes) {
+          if (nodes.size() != 0) {
+           for (NodeDTO node : nodes) {
             VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
             // get the creation date of the document
             exclusionReason = exclusionReason.replace("&3",
@@ -943,6 +953,9 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
               .from(qDocumentDeadlineEntity)
               .where(qDocumentDeadlineEntity.versionId.eq(latestVersionDTO.getId())).fetchOne();
             exclusionReason = exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
+           }
+          }else{
+            exclusionReason = null;
           }
         }
         awardInfoOfferDTO.setExclusionReasonFirstLevel(exclusionReason);
@@ -964,6 +977,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
           offerEntity.getSubmittent().getId());
         List<NodeDTO> nodes = documentService.getNodeByAttributes(submissionId, attributesMap);
         // for each node (actually only one must exist)
+        if (nodes.size() != 0) {
         for (NodeDTO node : nodes) {
           VersionDTO latestVersionDTO = versionService.getFileLatestVersion(node.getId());
           // get the creation date of the document
@@ -974,6 +988,9 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
             .from(qDocumentDeadlineEntity)
             .where(qDocumentDeadlineEntity.versionId.eq(latestVersionDTO.getId())).fetchOne();
           exclusionReason = exclusionReason.replace("&4", convertToSwissDateIfNotNull(deadline));
+         }
+        }else{
+          exclusionReason = null;
         }
         awardInfoOfferDTO.setExclusionReasonFirstLevel(exclusionReason);
       }
@@ -1138,13 +1155,13 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
             TenderStatus.CONTRACT_CREATED.getValue()))
           // check if the current status (or the one before the current in case current status
           // is CONTRACT_CREATED)
-          // is AWARD_NOTICES_CREATED and is set more than 20 days ago
+          // is AWARD_NOTICES_CREATED and is set more than 1 day ago
           .and(entity.id.in(JPAExpressions.select(qTenderStatusHistoryEntity.tenderId.id)
             .from(qTenderStatusHistoryEntity)
             .where(qTenderStatusHistoryEntity.statusId
               .eq(TenderStatus.AWARD_NOTICES_CREATED.getValue())
               .and(qTenderStatusHistoryEntity.onDate.loe(Timestamp.valueOf(
-                LocalDate.now().minusDays(LookupValues.TWENTY).atStartOfDay())))
+                LocalDate.now().minusDays(LookupValues.ONE_INT).atStartOfDay())))
               .and(qTenderStatusHistoryEntity.onDate
                 .in(JPAExpressions.select(qTenderStatusHistoryEntity1.onDate.max())
                   .from(qTenderStatusHistoryEntity1)

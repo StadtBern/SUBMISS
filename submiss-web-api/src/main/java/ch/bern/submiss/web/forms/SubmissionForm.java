@@ -44,6 +44,7 @@ public class SubmissionForm extends AbstractForm {
   private Date secondDeadline;
   private Date applicationOpeningDate;
   private Date offerOpeningDate;
+  private Date secondOfferOpeningDate;
   private String firstLoggedBy;
   private String secondLoggedBy;
   private String notes;
@@ -242,9 +243,13 @@ public class SubmissionForm extends AbstractForm {
     return offerOpeningDate;
   }
 
+  public Date getSecondOfferOpeningDate() {return secondOfferOpeningDate;}
+
   public void setOfferOpeningDate(Date offerOpeningDate) {
     this.offerOpeningDate = offerOpeningDate;
   }
+
+  public void setSecondOfferOpeningDate(Date secondOfferOpeningDate) {this.secondOfferOpeningDate = secondOfferOpeningDate;}
 
   public String getFirstLoggedBy() {
     return firstLoggedBy;
@@ -595,7 +600,8 @@ public class SubmissionForm extends AbstractForm {
       + isLocked + ", constructionPermit=" + constructionPermit + ", loanApproval=" + loanApproval
       + ", firstDeadline=" + firstDeadline + ", secondDeadline=" + secondDeadline
       + ", applicationOpeningDate=" + applicationOpeningDate + ", offerOpeningDate="
-      + offerOpeningDate + ", firstLoggedBy=" + firstLoggedBy + ", secondLoggedBy="
+      + offerOpeningDate + ", secondOfferOpeningDate=" + secondOfferOpeningDate
+      + ", firstLoggedBy=" + firstLoggedBy + ", secondLoggedBy="
       + secondLoggedBy + ", notes=" + notes + ", isServiceTender=" + isServiceTender
       + ", isGekoEntry=" + isGekoEntry + ", reasonFreeAward=" + reasonFreeAward
       + ", changeForSec=" + changeForSec + ", isLockedChanged=" + isLockedChanged

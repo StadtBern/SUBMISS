@@ -74,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.transaction.Transactional;
@@ -240,8 +241,10 @@ public class EmailServiceImpl extends BaseService implements EmailService {
         bccList.add(setMailTo(attr, submissionId, template, companyIds));
       }
     }
-    cc.append(String.join(";", ccList));
-    bcc.append(String.join(";", bccList));
+    cc.append(ccList.stream().filter(StringUtils::isNotBlank)
+      .collect(Collectors.joining(";")));
+    bcc.append(bccList.stream().filter(StringUtils::isNotBlank)
+      .collect(Collectors.joining(";")));
   }
 
   /*
@@ -299,17 +302,22 @@ public class EmailServiceImpl extends BaseService implements EmailService {
         .replaceAll(Template.LF_CONSTANT, Template.LF_CR_CONSTANT);
       String encodedCc = java.net.URLEncoder.encode(cc, ENCODING).replaceAll("\\+", "%20")
         .replaceAll(Template.LF_CONSTANT, Template.LF_CR_CONSTANT);
+      //The first parameter has ? as separator and every other parameter after this needs & instead
+      String separator = "?";
       if (StringUtils.isNotBlank(encodedCc)) {
-        email.append("?cc=").append(encodedCc);
+        email.append(separator).append("cc=").append(encodedCc);
+        separator = "&";
       }
       if (StringUtils.isNotBlank(encodedBcc)) {
-        email.append("?bcc=").append(encodedBcc);
+        email.append(separator).append("bcc=").append(encodedBcc);
+        separator = "&";
       }
       if (StringUtils.isNotBlank(encodedMailToBody)) {
-        email.append("?body=").append(encodedMailToBody);
+        email.append(separator).append("body=").append(encodedMailToBody);
+        separator = "&";
       }
       if (StringUtils.isNotBlank(encodedMailToSubject)) {
-        email.append("&subject=").append(encodedMailToSubject);
+        email.append(separator).append("subject=").append(encodedMailToSubject);
       }
       emailString = new URI("mailto:" + to + email).toASCIIString();
     } catch (URISyntaxException | IOException e) {

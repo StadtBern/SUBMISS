@@ -2723,6 +2723,8 @@ public class ReportServiceImpl extends ReportBaseServiceImpl implements ReportSe
         && !submissionDTOList.get(i).getStatus().equals(TenderStatus.AWARD_NOTICES_CREATED.getValue())) {
 
           submissionDTOList.remove(i);
+          i--;
+          count--;
       }
     }
 

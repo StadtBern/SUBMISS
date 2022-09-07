@@ -78,6 +78,10 @@ public class SubmissionBaseDTO {
 	@JsonView(View.Internal.class)
 	private Date offerOpeningDate;
 
+  /** The second offer opening date - Offertöffnung_2. */
+  @JsonView(View.Internal.class)
+  private Date secondOfferOpeningDate;
+
 	/** The commission procurement proposal date - BeKo-Sitzung. */
 	@JsonView(View.Internal.class)
 	private Date commissionProcurementProposalDate;
@@ -193,7 +197,11 @@ public class SubmissionBaseDTO {
 		this.offerOpeningDate = offerOpeningDate;
 	}
 
-	public String getNotes() {
+  public Date getSecondOfferOpeningDate() {return secondOfferOpeningDate;}
+
+  public void setSecondOfferOpeningDate(Date secondOfferOpeningDate) {this.secondOfferOpeningDate = secondOfferOpeningDate;}
+
+  public String getNotes() {
 		return notes;
 	}
 

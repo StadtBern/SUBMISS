@@ -94,6 +94,7 @@ public abstract class SubmissionDTOMBasicMapper {
     submissionDTO.setSecondDeadline(entity.getSecondDeadline());
     submissionDTO.setApplicationOpeningDate(entity.getApplicationOpeningDate());
     submissionDTO.setOfferOpeningDate(entity.getOfferOpeningDate());
+    submissionDTO.setSecondOfferOpeningDate(entity.getSecondOfferOpeningDate());
     submissionDTO.setFirstLoggedBy(entity.getFirstLoggedBy());
     submissionDTO.setSecondLoggedBy(entity.getSecondLoggedBy());
     submissionDTO.setNotes(entity.getNotes());

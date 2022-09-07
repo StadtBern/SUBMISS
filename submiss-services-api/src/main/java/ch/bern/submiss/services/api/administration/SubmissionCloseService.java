@@ -115,7 +115,7 @@ public interface SubmissionCloseService {
    * Finds all submissions with 
    * current status AWARD_NOTICES_CREATED or CONTRACT_CREATED
    * status AWARD_NOTICES_CREATED (being the last status in case current status is AWARD_NOTICES_CREATED or being the
-   * one before last status in case current status is CONTRACT_CREATED) set more than 20 days ago
+   * one before last status in case current status is CONTRACT_CREATED) set more than 1 day ago
    * field gattTwo set to true
    * field publicationDateAward empty.
    * 

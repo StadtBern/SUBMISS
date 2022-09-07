@@ -11,11 +11,19 @@ rule "PT10"
 		$submission: SubmissionDTO()
 		
 		if ($submission.getOfferOpeningDate() != null) do[offerOpeningDate]
-		else do[offerOpeningDateEmpty]	
-    then 
-    
-		then [offerOpeningDate]	
-			placeholderMappings.put("s_offer_opening",SubmissConverter.convertToSwissDate($submission.getOfferOpeningDate()));
-		then [offerOpeningDateEmpty]	
-			placeholderMappings.put("s_offer_opening"," ");		
-	end
+    	else do[offerOpeningDateEmpty]
+    	if ($submission.getSecondOfferOpeningDate() != null) do[secondOfferOpeningDate]
+      else do[secondOfferOpeningDateEmpty]
+        then
+
+    	then [offerOpeningDate]
+    		placeholderMappings.put("s_offer_opening",SubmissConverter.convertToSwissDate($submission.getOfferOpeningDate()));
+    	then [offerOpeningDateEmpty]
+    		placeholderMappings.put("s_offer_opening"," ");
+    	then [secondOfferOpeningDate]
+    	  placeholderMappings.put("s_offer_2","Offert" +"\\u00f6"+ "ffnung 2:");
+        placeholderMappings.put("s_second_offer_opening",SubmissConverter.convertToSwissDate($submission.getSecondOfferOpeningDate()) + "\\n");
+      then [secondOfferOpeningDateEmpty]
+        placeholderMappings.put("s_offer_2"," ");
+        placeholderMappings.put("s_second_offer_opening"," ");
+    	end

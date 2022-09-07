@@ -1586,26 +1586,35 @@ public class TemplateBean extends BaseService {
     int j = 0;
 
     for (OfferDTO offer : notExcluded) {
-      if (alphabet.length == j++) {
-        j = 1;
-      }
       if (offer.getIsEmptyOffer() == null || !offer.getIsEmptyOffer()) {
         Collections.sort(offer.getOfferCriteria(), ComparatorUtil.offerCriteriaWithWeightings);
-        notExcludedSubName.append(StringUtils.EMPTY + alphabet[j - 1]
-          + TemplateConstants.NEW_LINE_STRING);
+        StringBuilder companyName = setCompanyNameOrArge(offer, placeholders,
+          DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue());
+        int extraLinesNeeded = 0;
+        for(int i=46; i < companyName.length(); i += 46){
+          extraLinesNeeded++;
+        }
+        notExcludedSubName.append(StringUtils.EMPTY + companyName.toString())
+          .append(TemplateConstants.NEW_LINE_STRING);
         if (offer.getAmount() != null) {
           if (getTenantName().equals("EWB")) {
             notExcludedSubAmount.append("CHF ")
-              .append(SubmissConverter.convertToCHFCurrencyWithoutSymbol(offer.getAmount())
-                + TemplateConstants.NEW_LINE_STRING);
+              .append(SubmissConverter.convertToCHFCurrencyWithoutSymbol(offer.getAmount()))
+              .append(TemplateConstants.NEW_LINE_STRING);
           } else {
-            notExcludedSubAmount.append(
-              "Fr. " + SubmissConverter.convertToCHFCurrencyWithoutSymbol(offer.getAmount())
-                + TemplateConstants.NEW_LINE_STRING);
+            notExcludedSubAmount.append("Fr. ")
+              .append(SubmissConverter.convertToCHFCurrencyWithoutSymbol(offer.getAmount()))
+              .append(TemplateConstants.NEW_LINE_STRING);
+          }
+          for(int i = 0; i < extraLinesNeeded; i++){
+            notExcludedSubAmount.append(TemplateConstants.NEW_LINE_STRING);
           }
         } else {
           notExcludedSubAmount
-            .append(TemplateConstants.EMPTY_STRING + TemplateConstants.NEW_LINE_STRING);
+            .append(TemplateConstants.EMPTY_STRING).append(TemplateConstants.NEW_LINE_STRING);
+          for(int i = 0; i < extraLinesNeeded; i++){
+            notExcludedSubAmount.append(TemplateConstants.NEW_LINE_STRING);
+          }
         }
         if (offer.getIsAwarded() != null && offer.getIsAwarded()) {
           tableList.clear();
@@ -1624,8 +1633,7 @@ public class TemplateBean extends BaseService {
 
           for (OfferCriterionDTO criterion : offer.getOfferCriteria()) {
             LinkedHashMap<Map<String, String>, Map<String, String>> subContent = new LinkedHashMap<>();
-            Collections.sort(criterion.getCriterion().getSubcriterion(),
-              ComparatorUtil.subcriteria);
+            criterion.getCriterion().getSubcriterion().sort(ComparatorUtil.subcriteria);
             if (criterion.getCriterion().getCriterionType()
               .equals(LookupValues.AWARD_CRITERION_TYPE)
               || criterion.getCriterion().getCriterionType()
@@ -1890,7 +1898,7 @@ public class TemplateBean extends BaseService {
     placeholders.put(DocumentPlaceholders.R_DIRECTORATE_WEBSITE.getValue(), direction.getWebsite());
     placeholders.put(DocumentPlaceholders.R_DIRECTORATE_NAME.getValue(), direction.getName());
     placeholders.put(DocumentPlaceholders.R_DIRECTORATE_SHORT.getValue(),
-      department.getName() + LookupValues.COMMA + direction.getAddress() + LookupValues.COMMA
+      direction.getName() + LookupValues.COMMA + direction.getAddress() + LookupValues.COMMA
         + direction.getPostCode() + LookupValues.SPACE + direction.getLocation());
 
     /*
@@ -2733,7 +2741,7 @@ public class TemplateBean extends BaseService {
    * @param placeholders the placeholders
    * @param placeholderName the placeholder name
    */
-  public void setCompanyNameOrArge(OfferDTO offer, Map<String, String> placeholders,
+  public StringBuilder setCompanyNameOrArge(OfferDTO offer, Map<String, String> placeholders,
     String placeholderName) {
 
     LOGGER.log(Level.CONFIG,
@@ -2745,12 +2753,14 @@ public class TemplateBean extends BaseService {
     if (offer.getSubmittent().getJointVentures() == null
       || offer.getSubmittent().getJointVentures().isEmpty()) {
       if (placeholderName.equals(DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue())) {
-        placeholders.put(placeholderName,
-          TemplateConstants.COMPANY_DE + offer.getSubmittent().getCompanyId().getCompanyName()
-            + LookupValues.COMMA + offer.getSubmittent().getCompanyId().getLocation());
+        companyName.append(TemplateConstants.COMPANY_DE
+          + offer.getSubmittent().getCompanyId().getCompanyName()
+          + LookupValues.COMMA + offer.getSubmittent().getCompanyId().getLocation());
+        placeholders.put(placeholderName,companyName.toString());
       } else {
-        placeholders.put(placeholderName,
-          TemplateConstants.COMPANY_DE + offer.getSubmittent().getCompanyId().getCompanyName());
+        companyName.append(TemplateConstants.COMPANY_DE
+          + offer.getSubmittent().getCompanyId().getCompanyName());
+        placeholders.put(placeholderName, companyName.toString());
       }
     } else {
       companyName.append(TemplateConstants.ARGE)
@@ -2759,14 +2769,16 @@ public class TemplateBean extends BaseService {
         companyName.append(jointVenture.getCompanyName()).append(LookupValues.COMMA);
       }
       if (placeholderName.equals(DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue())) {
-        placeholders.put(placeholderName,
-          companyName.append(offer.getSubmittent().getCompanyId().getLocation()).toString());
+        companyName.append(offer.getSubmittent().getCompanyId().getLocation());
+        placeholders.put(placeholderName, companyName.toString());
       } else {
         if (companyName.length() > 1) {
-          placeholders.put(placeholderName, companyName.substring(0, companyName.length() - 2));
+          companyName.setLength(companyName.length() - 2);
+          placeholders.put(placeholderName, companyName.toString());
         }
       }
     }
+    return companyName;
   }
 
   /**

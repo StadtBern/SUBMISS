@@ -25,6 +25,7 @@ import ch.bern.submiss.services.api.dto.TenderStatusHistoryDTO;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -97,6 +98,14 @@ public interface SubmissionService {
    * @return the id of the current status of the submission as string
    */
   String getCurrentStatusOfSubmission(String submissionId);
+
+  /**
+   * Returns the exclusion deadline of a submission.
+   *
+   * @param submissionId the UUID of the submission
+   * @return the date of the exclusion deadline of the submission as string
+   */
+  Date getExclusionDeadlineOfSubmission(String submissionId);
 
   /**
    * Returns all data of the current status of submission, so also the date the status is set.
@@ -510,13 +519,6 @@ public interface SubmissionService {
    */
   Set<ValidationError> updateSelectiveFormalAudit(List<SubmittentDTO> submittentDTOs);
 
-  /**
-   * Function to handle navigation to the submission canceling tab.
-   *
-   * @param submissionId the submission id
-   * @return true, if navigation possible
-   */
-  boolean submissionCancelNavigation(String submissionId);
 
   /**
    * Gets the user group name.

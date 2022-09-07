@@ -3312,7 +3312,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
       // Check for inconsistencies regarding the criterion title/text
       if (!of.getCriterion().getCriterionText()
-        .equals(getCellTitle(importedSheet, importRow.getCell(col + 1), TITLE_ROWNUM))) {
+        .equals(getCellTitle(importedSheet, importRow.getCell(col - 1), TITLE_ROWNUM))) {
         LOGGER.log(Level.WARNING, MALFORMED_CRITERIA + " @ " + MUST_CRITERIA + PARSING_PHRASE);
         throw new IOException(MALFORMED_CRITERIA);
       }

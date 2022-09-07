@@ -198,8 +198,6 @@ translations:
       - formal_audit_notes_message: "Bemerkung: Der Wert darf maximal 150 Zeichen lang sein."
         forceUpdate: true
       - report_no_results: "Es liegen keine Ergebnisse zu den eingegebenen Kriterien bzw. dem eingegebenen Zeitraum vor."
-      - no_legal_hearing_document_created: Das Rechtliche (Abbruch) Gehör wurde noch nicht erstellt, daher ist die Bearbeitung des Verfahrensabbruchs derzeit nicht möglich.
-        forceUpdate: true
       - REGISTRATION_APPLICATION: Neuer Registrierungsantrag
       - PROOF_REQUEST: Nachweisaufforderung gewünscht {{USER}}
         forceUpdate: true
@@ -363,7 +361,6 @@ translations:
       - status_changed: Der Status wurde von einem anderen Benutzer geändert. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
         forceUpdate: true
       - legal_hearing_document_should_be_created: Das Rechtliche Gehör (Ausschluss) wurde für die ausgeschlossenen Firmen nicht erstellt.
-      - proof_document_should_be_created: Der Nachweisbrief wurde für die ausgeschlossenen Firmen nicht erstellt.
       - award_locked: Der Zuschlagsbewertung wird von einem anderen Benutzer bearbeitet und ist demnach gesperrt. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.
         forceUpdate: true
       - applicationDeleted: Die ausgewählte Bewerbung wurde bereits von einem anderen Benutzer gelöscht. Bitte aktualisieren Sie die Seite, um den aktuellen Stand zu sehen.

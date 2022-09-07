@@ -118,6 +118,7 @@
     vm.openFirstDeadline = openFirstDeadline;
     vm.openApplicationOpeningDate = openApplicationOpeningDate;
     vm.openOfferOpeningDate = openOfferOpeningDate;
+    vm.openSecondOfferOpeningDate = openSecondOfferOpeningDate;
     vm.openSecondDeadlineDate = openSecondDeadlineDate;
     vm.isLockedValue = isLockedValue;
     vm.setIsLocked = setIsLocked;
@@ -158,6 +159,7 @@
               vm.submission.applicationOpeningDate = null;
               vm.submission.secondDeadline = null;
               vm.submission.offerOpeningDate = new Date();
+              vm.submission.secondOfferOpeningDate = null;
               vm.submission.constructionPermit = vm.project.constructionPermit;
               vm.submission.gattTwo = vm.project.gattWto;
               vm.submission.loanApproval = vm.project.loanApproval;
@@ -226,6 +228,10 @@
       vm.openOfferOpeningDate.opened = !vm.openOfferOpeningDate.opened;
     }
 
+    function openSecondOfferOpeningDate() {
+      vm.openSecondOfferOpeningDate.opened = !vm.openSecondOfferOpeningDate.opened;
+    }
+
     function readStatusOfSubmission(id) {
       SubmissionService.getCurrentStatusOfSubmission(id)
         .success(function (data) {
@@ -240,7 +246,8 @@
         angular.isUndefined(vm.submission.firstDeadline) ||
         angular.isUndefined(vm.submission.applicationOpeningDate) ||
         angular.isUndefined(vm.submission.secondDeadline) ||
-        angular.isUndefined(vm.submission.offerOpeningDate)) {
+        angular.isUndefined(vm.submission.offerOpeningDate) ||
+        angular.isUndefined(vm.submission.secondOfferOpeningDate)) {
         vm.invalidDate = true;
         if (angular.isUndefined(vm.submission.firstDeadline)) {
           vm.invalidFirstDeadline = true;
@@ -262,6 +269,9 @@
         }
         if (angular.isUndefined(vm.submission.offerOpeningDate)) {
           vm.invalidOfferOpeningDate = true;
+        }
+        if (angular.isUndefined(vm.submission.secondOfferOpeningDate)) {
+          vm.invalidSecondOfferOpeningDate = true;
         }
       } else {
         vm.invalidDate = false;
@@ -501,6 +511,7 @@
         vm.submission.firstDeadline = null;
         vm.submission.applicationOpeningDate = null;
         vm.submission.firstLoggedBy = null;
+        vm.submission.secondOfferOpeningDate = null;
       }
     }
 

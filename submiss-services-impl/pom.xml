@@ -19,7 +19,7 @@
   <parent>
     <groupId>ch.bern.submiss</groupId>
     <artifactId>submiss</artifactId>
-    <version>1.11.3</version>
+    <version>1.12.0</version>
     <relativePath>../</relativePath>
   </parent>
 

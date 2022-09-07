@@ -254,9 +254,9 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
 
     if ((process.equals(Process.INVITATION) || process.equals(Process.OPEN)
       || process.equals(Process.SELECTIVE))
-      && Integer.valueOf(submissionService.getCurrentStatusOfSubmission(submissionId)).compareTo(
+      && (Integer.valueOf(submissionService.getCurrentStatusOfSubmission(submissionId)).compareTo(
       Integer.valueOf(TenderStatus.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED
-        .getValue())) >= 0) {
+        .getValue())) >= 0) && submissionService.getExclusionDeadlineOfSubmission(submissionId) != null) {
       // Retrieve excluded submittents
       List<SubmittentEntity> exclSubmittents = new JPAQueryFactory(em).selectFrom(qSubmittentEntity)
         .where(qSubmittentEntity

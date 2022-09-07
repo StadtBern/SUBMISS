@@ -949,6 +949,28 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * (non-Javadoc)
    *
    * @see
+   * ch.bern.submiss.services.api.administration.SubmissionService#getExclusionDeadlineOfSubmission(java.
+   * lang.String)
+   */
+  @Override
+  public Date getExclusionDeadlineOfSubmission(String submissionId) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method getExclusionDeadlineOfSubmission, Parameters: "
+        + "submissionId: {0}",
+      submissionId);
+
+    JPAQuery<Date> query = new JPAQuery<>(em);
+    return query.select(qSubmissionEntity.exclusionDeadline).from(qSubmissionEntity)
+      .where(qSubmissionEntity.id.eq(submissionId))
+      .fetchOne();
+
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see
    * ch.bern.submiss.services.api.administration.SubmissionService#getSubmissionByCompanyId(java.
    * lang.String)
    */
@@ -1702,11 +1724,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         messages.add(NULL_EXCLUSION_REASONS_NEGOTIATED);
       }
 
-      // Check if Rechtliches Gehor document has been generated for 2nd level selective process.
-      if (checkLegalHearingDocumentFormalAudit(submissionEntity, offer)) {
-        messages.add(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED);
-        break;
-      }
     }
 
     // If no issue has been found, check if proof documents need to be generated for the 2nd level
@@ -1862,28 +1879,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         mapProofProvidedValues(submissionId))) {
       existsExclusionReasons = true;
       results.add(PROOF_INCONSISTENCIES);
-    }
-
-    // If no exclusion reason exists yet, check if the legal hearing document needs to be created.
-    if (!existsExclusionReasons) {
-      for (SubmittentEntity submittent : submissionEntity.getSubmittents()) {
-        if (submissionEntity.getProcess().equals(Process.SELECTIVE)) {
-          if (!submittent.getOffer().getIsEmptyOffer()
-            && (submittent.getIsApplicant() != null && submittent.getIsApplicant())
-            && isLegalHearingDocumentRequired(submittent, submissionEntity)) {
-            existsExclusionReasons = true;
-            results.add(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED);
-            break;
-          }
-        } else {
-          if (!submittent.getOffer().getIsEmptyOffer()
-            && isLegalHearingDocumentRequired(submittent, submissionEntity)) {
-            existsExclusionReasons = true;
-            results.add(ValidationMessages.LEGAL_HEARING_DOCUMENT_SHOULD_BE_CREATED);
-            break;
-          }
-        }
-      }
     }
 
     // If generateProofDocuments returns false then we shouldn't change
@@ -2284,29 +2279,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
         .getSubmissionStatuses(submissionEntity.getId());
     }
 
-    for (SubmittentEntity submittent : submittentSet) {
-      if (submittent.getOffer().getIsEmptyOffer() == null
-        || !submittent.getOffer().getIsEmptyOffer()) {
-        if (submissionEntity.getProcess().equals(Process.SELECTIVE)
-          && !compareCurrentVsSpecificStatus(TenderStatus.fromValue(submissionEntity.getStatus()),
-          TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
-          if ((submittent.getIsApplicant() != null && submittent.getIsApplicant())
-            && isProofDocumentRequired(submittent, submissionEntity, template,
-              templateSub, allRecentStatuses)) {
-            existsExclusionReasons = true;
-            results.add(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED);
-            break;
-          }
-        } else {
-          if (isProofDocumentRequired(submittent, submissionEntity, template,
-            templateSub, allRecentStatuses)) {
-            existsExclusionReasons = true;
-            results.add(ValidationMessages.PROOF_DOCUMENT_SHOULD_BE_CREATED);
-            break;
-          }
-        }
-      }
-    }
+
     return existsExclusionReasons;
   }
 
@@ -3070,29 +3043,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     boolean requiredProofDocument =
       subDocumentService.createProofDocument(deadline, companyProofDTOs);
 
-    if (requiredProofDocument) {
-      attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(),
-        template.getMasterListValueId().getId());
-      attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentId);
-      attributesMap.put(DocumentAttributes.TENANT_ID.name(), template.getTenant().getId());
-      attributesMap.put(DocumentAttributes.COMPANY_ID.name(), companyEntity.getId());
-
-      VersionDTO latestNachweisbrief = versionService
-        .getFileLatestVersionByNodeAttributes(submissionId, attributesMap);
-      if (latestNachweisbrief == null) {
-        documentShoulBeCreated = true;
-      }
-      SubmissionDTO submissionDTO = getSubmissionById(submissionId);
-      if (submissionDTO != null && latestNachweisbrief != null
-        && submissionDTO.getProcess().equals(Process.SELECTIVE)
-        && submissionDTO.getStatus().equals(TenderStatus.FORMAL_EXAMINATION_STARTED.getValue())) {
-        if(checkNachweisbriefCreationDate(
-          Date.from(Instant.ofEpochMilli(latestNachweisbrief.getLastModifiedOn())),
-          companyProofDTOs, allRecentStatuses)){
-          documentShoulBeCreated = true;
-        }
-      }
-    }
     return documentShoulBeCreated;
   }
 
@@ -4251,40 +4201,6 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
     return submittentDTOs;
   }
 
-  @Override
-  public boolean submissionCancelNavigation(String submissionId) {
-
-    LOGGER.log(Level.CONFIG,
-      "Executing method submissionCancelNavigation, Parameters: submissionId: {0}",
-      submissionId);
-    // Check if Rechtliches Gehor (Abbruch) document has been generated.
-    HashMap<String, String> attributesMap = new HashMap<>();
-    SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
-    MasterListValueHistoryEntity templateId =
-      new JPAQueryFactory(em).select(qMasterListValueHistoryEntity)
-        .from(qMasterListValueHistoryEntity)
-        .where(qMasterListValueHistoryEntity.shortCode.eq(Template.RECHTLICHES_GEHOR)
-          .and(qMasterListValueHistoryEntity.toDate.isNull())
-          .and(qMasterListValueHistoryEntity.tenant.id
-            .eq(usersService.getUserById(getUser().getId()).getTenant().getId())))
-        .fetchOne();
-    attributesMap.put(DocumentAttributes.TENANT_ID.name(), templateId.getTenant().getId());
-    attributesMap.put(DocumentAttributes.TEMPLATE_ID.name(),
-      templateId.getMasterListValueId().getId());
-    attributesMap.put(DocumentAttributes.ADDITIONAL_INFO.name(), "CANCELATION");
-    for (SubmittentEntity submittentEntity : submissionEntity.getSubmittents()) {
-      // do not check empty offers and excluded applicants
-      if (Boolean.FALSE.equals(submittentEntity.getOffer().getIsEmptyOffer()) &&
-        Boolean.FALSE.equals(submittentEntity.getOffer().getExcludedFirstLevel())) {
-        attributesMap.put(DocumentAttributes.TENDER_ID.name(), submittentEntity.getId());
-        if (documentService.getNodeByAttributes(submissionEntity.getId(), attributesMap)
-          .isEmpty()) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
 
   /*
    * (non-Javadoc)

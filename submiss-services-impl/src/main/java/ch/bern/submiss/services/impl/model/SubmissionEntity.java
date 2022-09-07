@@ -171,6 +171,13 @@ public class SubmissionEntity extends AbstractEntity {
   @Column(name = "OFFER_OPENING")
   private Date offerOpeningDate;
 
+
+  /**
+   * The second offer opening date.
+   */
+  @Column(name = "OFFER_OPENING_2")
+  private Date secondOfferOpeningDate;
+
   /**
    * The first logged by.
    */
@@ -838,6 +845,13 @@ public class SubmissionEntity extends AbstractEntity {
   }
 
   /**
+   * Gets the second offer opening date.
+   *
+   * @return the second offer opening date
+   */
+  public Date getSecondOfferOpeningDate() {return secondOfferOpeningDate;}
+
+  /**
    * Sets the offer opening date.
    *
    * @param offerOpeningDate the new offer opening date
@@ -845,6 +859,15 @@ public class SubmissionEntity extends AbstractEntity {
   public void setOfferOpeningDate(Date offerOpeningDate) {
     this.offerOpeningDate = offerOpeningDate;
   }
+
+  /**
+   * Sets the second offer opening date.
+   *
+   * @param secondOfferOpeningDate the new second offer opening date
+   */
+
+
+  public void setSecondOfferOpeningDate(Date secondOfferOpeningDate) {this.secondOfferOpeningDate = secondOfferOpeningDate;}
 
   /**
    * Gets the first logged by.
@@ -1988,7 +2011,7 @@ public class SubmissionEntity extends AbstractEntity {
       + publicationDateAward + ",  pmDepartmentName=" + pmDepartmentName + ", isLocked="
       + isLocked + ", loanApproval=" + loanApproval + ", firstDeadline=" + firstDeadline
       + ", secondDeadline=" + secondDeadline + ", applicationOpeningDate="
-      + applicationOpeningDate + ", offerOpeningDate=" + offerOpeningDate + ", firstLoggedBy="
+      + applicationOpeningDate + ", offerOpeningDate=" + offerOpeningDate + ", secondOfferOpeningDate=" + secondOfferOpeningDate + ", firstLoggedBy="
       + firstLoggedBy + ", secondLoggedBy=" + secondLoggedBy + ", notes=" + notes
       + ", isServiceTender=" + isServiceTender + ", isGekoEntry=" + isGekoEntry + ", minGrade="
       + minGrade + ", maxGrade=" + maxGrade + ", aboveThreshold=" + aboveThreshold

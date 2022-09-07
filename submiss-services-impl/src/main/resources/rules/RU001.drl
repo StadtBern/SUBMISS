@@ -11,7 +11,6 @@ global String userRole;
 global java.util.List submissStatuses;
 global String tenantName;
 global Integer previousStatusId;
-global Boolean legalHearingTerminateDocumentExists;
 
 rule "RU001"
 	when
@@ -34,8 +33,7 @@ rule "RU001"
 	$isServiceTender: Boolean() from Boolean.TRUE.equals($submission.getIsServiceTender())
 	$isAboveThreshold: Boolean() from Boolean.TRUE.equals($submission.getAboveThreshold())
 	$isSGBDepartment: Boolean() from $submission.getProject().getDepartment().getShortName().equals("SGB")
-	$previousStatusId: Integer() from previousStatusId
-	$legalHearingTerminateDocumentExists: Boolean() from legalHearingTerminateDocumentExists;
+	$previousStatusId: Integer() from previousStatusId;
 	
 	if (($isRole_admin || $isRole_PL) && $isSGBDepartment && (($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("70")))
 	|| (!$isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("80")))) && ( $indexOfCurrentState.intValue() < LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("110")))) do[PT01]
@@ -43,7 +41,7 @@ rule "RU001"
 	&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("230"))) do[PT02]
 	if ($isRole_admin && ($isTenant_SB || $isTenant_EWB) && ($isVerfahren_SELECTIVE || $isVerfahren_INVITATION || $isVerfahren_OPEN || (($isVerfahren_NEGOTIATED || $isVerfahren_NEGOTIATED_WITH_COMPETITION) && $isAboveThreshold)) && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("240"))
 	&& $indexOfCurrentState.intValue() <  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("250"))) do[PT05]
-	if ($isRole_admin && !$isTenant_KB && $legalHearingTerminateDocumentExists && !$submission.getLegalHearingTerminate().isEmpty() &&
+	if ($isRole_admin && !$isTenant_KB  &&
 	(($isVerfahren_SELECTIVE && $indexOfCurrentState.intValue() >=  LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("20")))
 	|| (($isVerfahren_OPEN || $isVerfahren_INVITATION) &&
 	$indexOfCurrentState.intValue() != LookupValues.getSubmissstatuses().indexOf(TenderStatus.fromValue("280")))

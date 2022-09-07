@@ -154,6 +154,12 @@ public class SubmissionDTO extends AbstractDTO {
   private Date offerOpeningDate;
 
   /**
+   * The second offer opening date.
+   */
+  @JsonView(View.Internal.class)
+  private Date secondOfferOpeningDate;
+
+  /**
    * The first logged by.
    */
   @JsonView(View.Internal.class)
@@ -925,6 +931,13 @@ public class SubmissionDTO extends AbstractDTO {
   }
 
   /**
+   * Gets the second offer opening date.
+   *
+   * @return the second offer opening date
+   */
+  public Date getSecondOfferOpeningDate() {return secondOfferOpeningDate;}
+
+  /**
    * Sets the offer opening date.
    *
    * @param offerOpeningDate the new offer opening date
@@ -932,6 +945,13 @@ public class SubmissionDTO extends AbstractDTO {
   public void setOfferOpeningDate(Date offerOpeningDate) {
     this.offerOpeningDate = offerOpeningDate;
   }
+
+  /**
+   * Sets the second offer opening date.
+   *
+   * @param secondOfferOpeningDate the new second offer opening date
+   */
+  public void setSecondOfferOpeningDate(Date secondOfferOpeningDate) {this.secondOfferOpeningDate = secondOfferOpeningDate;}
 
   /**
    * Gets the first logged by.
@@ -2107,7 +2127,8 @@ public class SubmissionDTO extends AbstractDTO {
       + ", constructionPermit=" + constructionPermit + ", loanApproval=" + loanApproval
       + ", firstDeadline=" + firstDeadline + ", secondDeadline=" + secondDeadline
       + ", applicationOpeningDate=" + applicationOpeningDate + ", offerOpeningDate="
-      + offerOpeningDate + ", firstLoggedBy=" + firstLoggedBy + ", secondLoggedBy="
+      + offerOpeningDate + ", secondOfferOpeningDate=" + secondOfferOpeningDate
+      + ", firstLoggedBy=" + firstLoggedBy + ", secondLoggedBy="
       + secondLoggedBy + ", notes=" + notes + ", isServiceTender=" + isServiceTender
       + ", isGekoEntry=" + isGekoEntry + ", minGrade=" + minGrade + ", maxGrade=" + maxGrade
       + ", changeForSec=" + changeForSec + ", isLockedChanged=" + isLockedChanged

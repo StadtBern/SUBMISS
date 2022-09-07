@@ -363,6 +363,8 @@
               </div>
               <!-- /input-group -->
             </div>
+            <div style="height:62px">
+            </div>
             <div class="form-group">
               <label for="firstLoggedBy">Protokolliert durch</label> <input class="form-control" id="firstLoggedBy"
                 placeholder="" name="firstLoggedBy" data-ng-model="submissionCreateCtr.submission.firstLoggedBy"
@@ -398,7 +400,7 @@
             </div>
             <div class="form-group"
               ng-class="{'has-error': !submissionCreateCtr.submissionForm.offerOpeningDate.$valid || submissionCreateCtr.invalidOfferOpeningDate}">
-              <label for="offerOpeningDate">Offertöffnung</label>
+              <label for="offerOpeningDate">Offertöffnung 1</label>
               <div class="input-group">
                 <input class="form-control datepicker" id="offerOpeningDate" type="text"
                   uib-datepicker-popup="dd.MM.yyyy" name="offerOpeningDate"
@@ -414,8 +416,27 @@
                   </button>
                 </span>
               </div>
-
-
+              <!-- /input-group -->
+            </div>
+              <div class="form-group"
+                   ng-class="{'has-error': !submissionCreateCtr.submissionForm.secondOfferOpeningDate.$valid || submissionCreateCtr.invalidSecondOfferOpeningDate}">
+                <label for="offerOpeningDate">Offertöffnung 2</label>
+                <div class="input-group">
+                  <input class="form-control datepicker" id="secondOfferOpeningDate" type="text"
+                         uib-datepicker-popup="dd.MM.yyyy" name="secondOfferOpeningDate"
+                         is-open="submissionCreateCtr.openSecondOfferOpeningDate.opened"
+                         data-ng-model="submissionCreateCtr.submission.secondOfferOpeningDate"
+                         data-ng-click="submissionCreateCtr.openSecondOfferOpeningDate()"
+                         data-ng-disabled="(submissionCreateCtr.submission.process != 'INVITATION' && submissionCreateCtr.submission.process != 'OPEN' && submissionCreateCtr.submission.process != 'SELECTIVE') ||  (submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED)">
+                  <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"
+                          data-ng-disabled="(submissionCreateCtr.submission.process != 'INVITATION' && submissionCreateCtr.submission.process != 'OPEN' && submissionCreateCtr.submission.process != 'SELECTIVE') || (submissionCreateCtr.editSubmission && submissionCreateCtr.currentStatus >= submissionCreateCtr.status.OFFER_OPENING_CLOSED)"
+                          data-ng-click="submissionCreateCtr.openSecondOfferOpeningDate()">
+                    <span class="fa fa-calendar"></span>
+                  </button>
+                </span>
+                </div>
+                <!-- /input-group -->
             </div>
             <div class="form-group">
               <label for="secondLoggedBy">Protokolliert durch</label> <input class="form-control" id="secondLoggedBy"
