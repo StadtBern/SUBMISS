@@ -4265,7 +4265,7 @@ public class ImportExportFileServiceImpl extends BaseService implements ImportEx
 
         if (i == 1) {
           if (j == headerColumn) {
-            cell.setCellValue("Ausschlussgründe gem. Art 24, ÖBV");
+            cell.setCellValue("Ausschlussgründe gem. Art 44, IVöB");
             cell.setCellStyle(headersStyle);
           } else if (j > headerColumn && j < 4) {
             cell.setCellStyle(headersStyle);

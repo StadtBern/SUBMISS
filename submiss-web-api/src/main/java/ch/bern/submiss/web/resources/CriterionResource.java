@@ -570,7 +570,7 @@ public class CriterionResource {
           ValidationMessages.AWARD_MAXGRADE_ERROR_MESSAGE));
         errors.add(new ValidationError("awardMaxGradeErrorField",
           ValidationMessages.AWARD_MAXGRADE_ERROR_MESSAGE));
-      } else if (award.getAwardMaxGrade() != null && award.getAwardMaxGrade().doubleValue() > 5) {
+      } else if (award.getAwardMaxGrade() != null && award.getAwardMaxGrade().doubleValue() > 999) {
         errors.add(new ValidationError(AWARD_MAX_GRADE,
           ValidationMessages.AWARD_MAXGRADE_MAXIMUM_ERROR_MESSAGE));
         errors.add(new ValidationError("awardMaxGradeErrorField",

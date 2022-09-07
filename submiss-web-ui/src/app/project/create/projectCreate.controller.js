@@ -180,6 +180,7 @@
         })
         .error(function (response, status) {
           if (status === 400) { // Validation errors.
+            $scope.projectCreateCtr.saved = false ;
             QFormJSRValidation.markErrors($scope,
               $scope.projectCreateCtr.projectForm, response);
           }

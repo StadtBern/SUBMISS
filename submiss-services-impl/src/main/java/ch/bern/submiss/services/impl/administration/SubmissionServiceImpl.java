@@ -4461,9 +4461,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
    * of status AWARD_NOTICES_CREATED) having the Beschwerdeeingang field (in Verfügungen erstellt or
    * Verfahrensabbruch tab) not selected and if the counter for the automatic closure of the
    * submission is initiated (it gets initiated when the Beschwerdeeingang field gets selected and
-   * then deselected) then to be initiated more than 40 days ago without having a to do task to set
-   * the publicationDateAward field (this check is only for status AWARD_NOTICES_CREATED or
-   * CONTRACT_CREATED).
+   * then deselected) then to be initiated more than 40 days ago .
    *
    * @return a list of submission
    */
@@ -4503,11 +4501,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
                     .where(qSubmissionAwardInfoEntity.freezeCloseSubmission.isTrue()
                       .or(qSubmissionAwardInfoEntity.closeCountdownStart
                         .gt(Timestamp.valueOf(LocalDate.now()
-                          .minusDays(LookupValues.FORTY).atStartOfDay()))))))
-                // no to do task to set the publicationDateAward field
-                .and(qTenderStatusHistoryEntity.tenderId.id.notIn(JPAExpressions
-                  .select(qSubmissTask.submission.id).from(qSubmissTask).where(
-                    qSubmissTask.description.eq(TaskTypes.SET_SURCHARGE_PDATE))))))
+                          .minusDays(LookupValues.FORTY).atStartOfDay()))))))))
             // current status is PROCEDURE_CANCELED
             // and it is set more than 40 days ago
             .or(qSubmissionEntity.id.in(JPAExpressions

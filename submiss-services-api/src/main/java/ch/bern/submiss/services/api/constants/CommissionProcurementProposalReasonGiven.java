@@ -16,9 +16,9 @@ package ch.bern.submiss.services.api.constants;
 public enum CommissionProcurementProposalReasonGiven {
   REASON_GIVEN_DL("Das Preisgericht empfiehlt einstimmig das beantragte Team zur Weiterbearbeitung des Projekts."),
   REASON_GIVEN_NOT_DL("Die Angebote der geeigneten Anbieterinnen und Anbieter wurden nach den publizierten Zuschlagskriterien bewertet. "
-      + "Die beantragte Firma reichte das wirtschaftlich günstigste Angebot ein. "
+      + "Die beantragte Firma reichte das vorteilhafteste Angebot ein. "
       + "Nach Bewertungstabelle resultiert das Punktemaximum.");
-  
+
   private String value;
 
   private CommissionProcurementProposalReasonGiven(String value) {

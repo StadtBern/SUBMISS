@@ -219,7 +219,7 @@ public class SDProofServiceImpl extends BaseService implements SDProofService {
       // In case of updating an old entry, find the entry and set the current date to the toDate
       // property.
       proofHistEntity = em.find(ProofHistoryEntity.class, proofHistoryDTO.getId());
-      if (proofHistEntity.getVersion() == 1) {
+      if (proofHistEntity.getVersion() != proofHistoryDTO.getVersion()) {
         error
           .add(new ValidationError("optimisticLockErrorField", ValidationMessages.OPTIMISTIC_LOCK));
         return error;

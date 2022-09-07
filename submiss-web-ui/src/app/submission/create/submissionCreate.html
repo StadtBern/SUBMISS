@@ -11,7 +11,7 @@
   ~  under the Licence.
   -->
 
-<form name="submissionCreateCtr.submissionForm" data-ng-submit="submissionCreateCtr.save()" id="submissionForm"
+<form name="submissionCreateCtr.submissionForm" data-ng-submit="submissionCreateCtr.saved = true ; submissionCreateCtr.save()" id="submissionForm"
   shows-validation-errors>
   <div id='errorScroll' class="card-box">
     <fieldset data-ng-disabled="submissionCreateCtr.genericDisable()">
@@ -272,10 +272,10 @@
               uib-datepicker-popup="dd.MM.yyyy" name="publicationDateAward"
               is-open="submissionCreateCtr.openPublicationDateAward.opened"
               data-ng-model="submissionCreateCtr.submission.publicationDateAward"
-              data-ng-click="submissionCreateCtr.openPublicationDateAward()" data-ng-disabled="submissionCreateCtr.submission.gattTwo != true || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+              data-ng-click="submissionCreateCtr.openPublicationDateAward()" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED">
             <span class="input-group-btn">
-              <button class="btn btn-default" type="button" data-ng-disabled="submissionCreateCtr.submission.gattTwo != true || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+              <button class="btn btn-default" type="button" data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED"
                 data-ng-click="submissionCreateCtr.openPublicationDateAward()">
                 <span class="fa fa-calendar"></span>
@@ -307,7 +307,7 @@
         </div>
         <div class="form-group">
           <label for="reasonFreeAward">Begründung Freihandvergabe
-            nach Art. 7 ÖBV <span ng-if="submissionCreateCtr.submission.aboveThreshold" class="mandatory">*</span>
+            nach Art. 21 IVöB <span ng-if="submissionCreateCtr.submission.aboveThreshold" class="mandatory">*</span>
           </label>
           <ui-select name="reasonFreeAward" data-ng-model="submissionCreateCtr.submission.reasonFreeAward"
             data-ng-disabled="submissionCreateCtr.genericDisable()
@@ -464,7 +464,7 @@
       <div class="modal-footer">
         <div class="col-sm-12 col-md-12 btn-bar">
           <button type="submit" class="btn btn-primary"
-            data-ng-disabled="submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
+            data-ng-disabled="submissionCreateCtr.saved || submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_COMPLETED
 											|| submissionCreateCtr.currentStatus >= submissionCreateCtr.status.PROCEDURE_CANCELED || !(submissionCreateCtr.submissionForm.$dirty || submissionCreateCtr.pmExternalChanged)">Speichern</button>
           <button type="button" class="btn btn-default" data-dismiss="modal"
             ng-click="submissionCreateCtr.closeWindow()">Abbrechen</button>

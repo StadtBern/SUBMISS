@@ -1197,7 +1197,7 @@ public class OfferServiceImpl extends BaseService implements OfferService {
         }
         // Concat the all Lit. numbering of exlusion reasons in text string
         if(!exclusionReasons.isEmpty()){
-          bld.append("Ausschlussgründe Art. 24 Abs. 1 Lit. ");
+          bld.append("Ausschlussgründe Art. 44 Abs. 1 Lit. ");
           Collections.sort(exclusionReasons, ComparatorUtil.sortLegalHearingExclusionDTOsByLit);
           int counter = 0;
           for(ExclusionReasonDTO exclusionReasonDTO : exclusionReasons){
@@ -1211,10 +1211,10 @@ public class OfferServiceImpl extends BaseService implements OfferService {
             counter++;
           }
         }else{
-          bld.append("Ausschlussgründe Art. 24 ÖBV");
+          bld.append("Ausschlussgründe Art. 44 IVöB");
         }
       }else{
-        bld.append("Ausschlussgründe Art. 24 ÖBV");
+        bld.append("Ausschlussgründe Art. 44 IVöB");
       }
     }
     if (!offerDTO.getSubmittent().getFormalExaminationFulfilled()) {

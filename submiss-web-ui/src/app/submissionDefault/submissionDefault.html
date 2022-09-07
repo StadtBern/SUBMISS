@@ -120,7 +120,7 @@
 								   (submissionDefaultCtr.data.submission.process == 'OPEN' ||
 									submissionDefaultCtr.data.submission.process == 'INVITATION'))) &&
 								    submissionDefaultCtr.currentStatus < submissionDefaultCtr.status.OFFER_OPENING_CLOSED))"
-              ng-class="{'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===2}">
+              ng-class="{'status': submissionDefaultCtr.getStatusTab(submissionDefaultCtr.tabStatus)===2 || (submissionDefaultCtr.data.submission.process == 'OPEN' && submissionDefaultCtr.data.submission.isServiceTender && submissionDefaultCtr.data.submission.status == submissionDefaultCtr.status.SUITABILITY_AUDIT_COMPLETED_AND_AWARD_EVALUATION_STARTED) }">
               Offertübersicht
             </h>
           </a></li>

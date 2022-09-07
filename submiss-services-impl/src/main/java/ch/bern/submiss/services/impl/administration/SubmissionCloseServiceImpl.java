@@ -1150,7 +1150,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
 
     List<SubmissionEntity> submissionEntityList =
       new JPAQueryFactory(em).select(entity).from(entity)
-        .where(entity.gattTwo.isTrue().and(entity.publicationDateAward.isNull())
+        .where(entity.publicationDateAward.isNull()
           .and(entity.status.in(TenderStatus.AWARD_NOTICES_CREATED.getValue(),
             TenderStatus.CONTRACT_CREATED.getValue()))
           // check if the current status (or the one before the current in case current status

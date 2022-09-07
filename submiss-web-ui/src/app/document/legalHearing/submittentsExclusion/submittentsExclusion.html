@@ -33,11 +33,11 @@
             <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" id="inlineRadio1"
                 value="submissionTermination"
                 ui-sref="documentView.legalHearing({submissionId: documentViewCtrl.submission.id})">
-              ÖBV Abbruch
+              Abbruch
             </label> <label class="radio-inline"> <input type="radio" checked="checked" name="inlineRadioOptions"
                 id="inlineRadio2" value="submittentsExcluded"
                 ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">
-              ÖBV Ausschluss
+              Ausschluss
             </label>
           </div>
           <fieldset ng-disabled="submittentsExclusionCtrl.isFormDisabled()"
@@ -78,7 +78,7 @@
                           ng-click="submittentsExclusionCtrl.checkUncheckAll()" /></th>
                       <th colspan="2" style="width:90;">Submittent</th>
                       <th>Frist Anhörung</th>
-                      <th>Ausschlussgründe Art. 24 ÖBV</th>
+                      <th>Ausschlussgründe Art. 44 IVöB</th>
                       <th>Nachweise erbracht</th>
                       <th>MUSS Kriterien</th>
                     </tr>
@@ -108,7 +108,7 @@
                     <tr>
                       <td colspan="9" class="hiddenRow" ng-if="submittent.show"><br>
                         <div class="accordian-body collapse subTabs" is-open="close" style="display: block;">
-                          <label for="OBV">Ausschlussgründe nach Art. 24 ÖBV Abs. 1</label> <br>
+                          <label for="OBV">Ausschlussgründe nach Art. 44 IVöB Abs. 1</label> <br>
                           <br>
                           <div class="form-group" ng-repeat="terminationReason in submittent.exclusionReasons
 												| orderBy:'exclusionReason.value1'">
@@ -201,7 +201,7 @@
                                   ng-click="submittentsExclusionCtrl.checkUncheckAllFirst()" /></th>
                               <th colspan="2" style="width:90;">Bewerber</th>
                               <th>Frist Anhörung</th>
-                              <th>Ausschlussgründe Art. 24 ÖBV</th>
+                              <th>Ausschlussgründe Art. 44 IVöB</th>
                               <th>Nachweise erbracht</th>
                               <th>MUSS Kriterien</th>
                             </tr>
@@ -234,8 +234,7 @@
                             <tr>
                               <td colspan="9" class="hiddenRow" ng-if="submittent.show"><br>
                                 <div class="accordian-body collapse subTabs" is-open="close" style="display: block;">
-                                  <label for="OBV">Ausschlussgründe nach Art. 24
-                                    ÖBV Abs. 1</label> <br> <br>
+                                  <label for="OBV">Ausschlussgründe nach Art. 44 IVöB Abs. 1</label> <br> <br>
                                   <div class="form-group" ng-repeat="terminationReason in submittent.exclusionReasons
 												| orderBy:'exclusionReason.value1'">
                                     <label class="checkbox-inline"> <input type="checkbox" id="terminationReason"
@@ -315,7 +314,7 @@
                                     ng-click="submittentsExclusionCtrl.checkUncheckAll()" /></th>
                                 <th colspan="2" style="width:90;">Submittent</th>
                                 <th>Frist Anhörung</th>
-                                <th>Ausschlussgründe Art. 24 ÖBV</th>
+                                <th>Ausschlussgründe Art. 44 IVöB</th>
                                 <th>Nachweise erbracht</th>
                                 <th>MUSS Kriterien</th>
                               </tr>
@@ -348,8 +347,7 @@
                               <tr>
                                 <td colspan="9" class="hiddenRow" ng-if="submittent.show"><br>
                                   <div class="accordian-body collapse subTabs" is-open="close" style="display: block;">
-                                    <label for="OBV">Ausschlussgründe nach Art. 24
-                                      ÖBV Abs. 1</label> <br> <br>
+                                    <label for="OBV">Ausschlussgründe nach Art. 44 IVöB Abs. 1</label> <br> <br>
                                     <div class="form-group" ng-repeat="terminationReason in submittent.exclusionReasons
 																				| orderBy:'exclusionReason.value1'">
                                       <label class="checkbox-inline"> <input type="checkbox" id="terminationReason"

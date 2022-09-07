@@ -37,11 +37,7 @@ import ch.bern.submiss.services.api.util.SubmissConverter;
 import ch.bern.submiss.services.api.util.ValidationMessages;
 import ch.bern.submiss.services.impl.mappers.CustomSubmissionMapper;
 import ch.bern.submiss.services.impl.mappers.GeKoResultMapper;
-import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
-import ch.bern.submiss.services.impl.model.OfferEntity;
-import ch.bern.submiss.services.impl.model.QSubmissionEntity;
-import ch.bern.submiss.services.impl.model.SubmissionAwardInfoEntity;
-import ch.bern.submiss.services.impl.model.SubmissionEntity;
+import ch.bern.submiss.services.impl.model.*;
 import com.eurodyn.qlack2.util.jsr.validator.util.ValidationError;
 import com.google.common.collect.Table;
 import com.querydsl.core.BooleanBuilder;
@@ -490,10 +486,14 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
     if (checkIfNotEmpty(operationReportDTO.getAwardCompany())) {
 
       List<String> awardCompanySubmissionIds =
-        new JPAQueryFactory(em).select(qOfferEntity.submittent.submissionId.id).from(qOfferEntity)
-          .where(qOfferEntity.submittent.companyId.companyName
-            .in(operationReportDTO.getAwardCompany()).and(qOfferEntity.isAwarded.isTrue())
+        new JPAQueryFactory(em).select(qOfferEntity.submittent.submissionId.id).from(qOfferEntity,qJointVentureEntity)
+          .where((qOfferEntity.submittent.companyId.companyName.in(operationReportDTO.getAwardCompany())
+            .and(qOfferEntity.isAwarded.isTrue())
             .and(qOfferEntity.submittent.submissionId.id.isNotNull()))
+            .or(qJointVentureEntity.company.companyName.in(operationReportDTO.getAwardCompany())
+              .and(qOfferEntity.submittent.eq(qJointVentureEntity.submittent))
+              .and(qOfferEntity.isAwarded.isTrue())
+              .and(qOfferEntity.submittent.submissionId.id.isNotNull())))
           .fetch();
       whereClause.and(submission.id.in(awardCompanySubmissionIds)
         .and(submission.status.in(TenderStatus.AWARD_NOTICES_CREATED.getValue(),
@@ -1150,7 +1150,7 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
         .fetch();
       for (MasterListValueHistoryEntity masterListValueHistoryEntity : masterListValueEntities) {
         StringBuilder value = new StringBuilder();
-        value.append(" ").append(masterListValueHistoryEntity.getValue1()).append(" ÖBV");
+        value.append(" ").append(masterListValueHistoryEntity.getValue1()).append(" IVöB");
         names.add(value.toString());
       }
 

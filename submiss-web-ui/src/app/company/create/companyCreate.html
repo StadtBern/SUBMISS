@@ -18,7 +18,7 @@
 </div>
 <div class="row">
   <div class="card-box">
-    <form name="companyCreateCtr.companyForm" data-ng-submit="companyCreateCtr.save()" id="companyForm"
+    <form name="companyCreateCtr.companyForm" data-ng-submit="companyCreateCtr.saved = true ; companyCreateCtr.save()" id="companyForm"
       shows-validation-errors>
       <div class="col-sm-12">
         <div class="alert alert-danger" ng-if="companyCreateCtr.areErrorsPresent()" role="alert">
@@ -381,7 +381,7 @@
         </div>
       </div>
       <div class="col-sm-12 col-md-12 btn-bar">
-        <button type="submit" class="btn btn-primary" data-ng-disabled="!companyCreateCtr.companyForm.$dirty">Speichern
+        <button type="submit" class="btn btn-primary" data-ng-disabled="companyCreateCtr.saved || !companyCreateCtr.companyForm.$dirty">Speichern
         </button>
         <button type="button" class="btn btn-default"
           ng-click="companyCreateCtr.resetPage(companyCreateCtr.companyForm.$dirty)">Abbrechen</button>

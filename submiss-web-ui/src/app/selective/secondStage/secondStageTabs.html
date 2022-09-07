@@ -20,7 +20,7 @@
 					role="presentation" ui-sref-active="active">
 					<a aria-controls="subList" role="tab" data-toggle="tab"
             ui-sref="offerListView({id : secondStageTabsCtrl.submission.id})"
-            ng-class="{'status': secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===0}">
+            ng-class="{'status': secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===0 || (secondStageTabsCtrl.getStatusSubTab(secondStageTabsCtrl.tabStatus)===2 && secondStageTabsCtrl.submission.isServiceTender)} ">
 						<h ng-if="secondStageTabsCtrl.currentStatus < secondStageTabsCtrl.status.OFFER_OPENING_STARTED">Submittentenliste</h>
 						<h ng-if="secondStageTabsCtrl.offerTabVisible()">Offertübersicht</h>
 					</a>

@@ -34,7 +34,7 @@ import ch.bern.submiss.services.api.util.LookupValues;
 /**
  * The Class PublicationAwardDateCheckScheduler. This class implements a scheduler that runs every
  * night and checks for every submission with status AWARD_NOTICES_CREATED set more than 1 day ago if
- * the field publicationDateAward has been set (if the field gattTwo is set to true). If not then
+ * the field publicationDateAward has been set . If not then
  * a to do-task is created.
  */
 @Transactional
@@ -70,7 +70,6 @@ public class PublicationAwardDateCheckScheduler implements SchedulerJob {
     // current status is AWARD_NOTICES_CREATED or CONTRACT_CREATED
     // status AWARD_NOTICES_CREATED set more than 1 day ago
     // field publicationDateAward is null
-    // field gattTwo is set to true
     List<SubmissionDTO> submissionDTOList = submissionCloseService.getSubmissionsNoPublicationAwardDate();
     
     // for every one of them a to do-task needs to be created, if not already exists

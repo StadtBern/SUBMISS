@@ -23,7 +23,7 @@
         company_add_only_one_extern
       </div>
     </div>
-    <form name="projectCreateCtr.projectForm" data-ng-submit="projectCreateCtr.save()" id="projectForm"
+    <form name="projectCreateCtr.projectForm" data-ng-submit="projectCreateCtr.saved = true ; projectCreateCtr.save()" id="projectForm"
       shows-validation-errors>
       <div class="col-sm-12">
         <div class="alert alert-danger" ng-if="projectCreateCtr.projectForm.$invalid" role="alert">
@@ -164,7 +164,7 @@
           <label>Projektbemerkung</label> <input class="form-control" id="projektNotes"
             data-ng-model="projectCreateCtr.project.notes" name="projectNotes">
         </div>
-        <button type="submit" class="btn btn-primary" data-ng-disabled="!projectCreateCtr.projectForm.$dirty">Speichern
+        <button type="submit" class="btn btn-primary" data-ng-disabled="projectCreateCtr.saved || !projectCreateCtr.projectForm.$dirty">Speichern
         </button>
         <button type="button" class="btn btn-default"
           ng-click="projectCreateCtr.resetPage(projectCreateCtr.projectForm.$dirty)">

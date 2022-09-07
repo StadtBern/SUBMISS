@@ -249,6 +249,7 @@
         angular.isUndefined(vm.submission.offerOpeningDate) ||
         angular.isUndefined(vm.submission.secondOfferOpeningDate)) {
         vm.invalidDate = true;
+        submissionCreateCtr.saved = false ;
         if (angular.isUndefined(vm.submission.firstDeadline)) {
           vm.invalidFirstDeadline = true;
         }
@@ -294,6 +295,7 @@
             }).error(function (response, status) {
               if (status === 400) { // Validation
                 // errors.
+                $scope.submissionCreateCtr.saved = false ;
                 QFormJSRValidation
                   .markErrors(
                     $scope,
@@ -329,6 +331,7 @@
             .error(function (response, status) {
               if (status === 400) { // Validation
                 // errors.
+                $scope.submissionCreateCtr.saved = false ;
                 QFormJSRValidation
                   .markErrors(
                     $scope,

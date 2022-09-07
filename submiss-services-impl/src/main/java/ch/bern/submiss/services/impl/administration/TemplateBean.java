@@ -3197,28 +3197,7 @@ public class TemplateBean extends BaseService {
       }
     }
 
-    if (company.getApprenticeFactor() != null || company.getTlp() != null
-      || company.getFiftyPlusFactor() != null) {
-      if (company.getNotes() != null && !company.getNotes().isEmpty()) {
-        sbRemarks.append(LookupValues.SLASH).append(company.getNotes());
-      }
-    } else {
-      if (company.getNotes() != null && !company.getNotes().isEmpty()) {
-        sbRemarks.append(company.getNotes());
-      }
-    }
 
-    if (company.getNoteAdmin() != null && !company.getNoteAdmin().isEmpty()) {
-      if (company.getNotes() != null && !company.getNotes().isEmpty()) {
-        sbRemarks.append(LookupValues.COMMA).append(company.getNoteAdmin());
-      } else {
-        if (company.getApprenticeFactor() != null || company.getTlp() != null) {
-          sbRemarks.append(LookupValues.SLASH).append(company.getNoteAdmin());
-        } else {
-          sbRemarks.append(company.getNoteAdmin());
-        }
-      }
-    }
   }
 
   /**

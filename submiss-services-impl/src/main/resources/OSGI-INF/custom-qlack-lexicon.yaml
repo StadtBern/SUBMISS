@@ -1,3 +1,4 @@
+#When changing an old entry clear cookies and cache in the browser
 languages:
   - name: German (CH)
     locale: de-ch
@@ -103,7 +104,7 @@ translations:
       - company_Proof_Date_Invalid_Today_message: Ein Datum in der Zukunft darf nicht eingegeben werden.
       - company_participate_in_offer_message: Die Firma kann aufgrund ihrer Einbindung in einem Verfahren nicht gelöscht werden.
       - company_not_selected_error: Bitte selektieren Sie zuerst eine Firma aus der Liste.
-      - selective_formal_audit_empty_field: Um den Abschluss durchführen zu können, müssen die Ausschlussgründe Art. 24 ÖBV Felder der Formellen Prüfung vollständig befüllt worden sein.
+      - selective_formal_audit_empty_field: Um den Abschluss durchführen zu können, müssen die Ausschlussgründe Art. 44 IVöB Felder der Formellen Prüfung vollständig befüllt worden sein.
       - negotiated_procedure_formal_audit_empty_field: Um den Abschluss durchführen zu können, müssen die Prüfung erfüllt Felder der Formellen Prüfung vollständig befüllt worden sein.
       - close_examination_empty_field: Um den Abschluss durchführen zu können, müssen die Felder der Formellen Prüfung sowie Eignungsprüfung vollständig befüllt worden sein.
       - close_examination_invalid_grades: Um den Abschluss durchführen zu können, müssen die Noten innerhalb der eingegebenen Mindest- und Maximalnote liegen.
@@ -114,12 +115,12 @@ translations:
       - awardMinGrade_error_message: Die Mindestnote muss kleiner als die Maximalnote sein.
       - evaluationThrough_error_message: "Bewertung durch: Der Wert darf maximal 500 Zeichen lang sein."
       - addedAwardRecipients_error_message: "Mehrere Zuschlagsempfänger: Der Wert muss grösser oder gleich 0 sein und kleiner oder gleich der Summe der aktiv gesetzten (nicht ausgeschlossenen) Submittenten."
-      - awardMaxGrade_maximum_error_message: Die Maximalnote darf nicht grösser als 5 sein.
+      - awardMaxGrade_maximum_error_message: Die Maximalnote darf nicht grösser als 999 sein.
       - awardMinGrade_minimum_error_message: "Die Mindestnote darf nicht kleiner als -999 sein."
       - submittent_not_selected_error: Bitte wählen Sie mindestens einen Submittenten aus.
       - error_above_threshold_pl: Der Schwellenwert wurde überschritten. Sie haben keine Berechtigung in dieser Submission einen Zuschlag zu erteilen. Bitte wenden Sie sich an ihren Administrator.
       - manual_award_reopen_pl_error_message: Sie haben keine Berechtigung die Zuschlagserteilung aufzuheben, da der Schwellenwert überschritten wurde. Bitte wenden Sie sich an den Administrator.
-      - error_above_threshold_admin: 'Das Feld "Begründung Freihandvergabe nach Art. 7 ÖBV" muss befüllt werden, damit Sie eine manuelle Zuschlagserteilung durchführen können.'
+      - error_above_threshold_admin: 'Das Feld "Begründung Freihandvergabe nach Art. 21 IVöB" muss befüllt werden, damit Sie eine manuelle Zuschlagserteilung durchführen können.'
       - offer_operatingCostGrossError_message: 'Bitte geben Sie einen Betrag in das Feld "Bruttobetrag" ein.'
       - offer_operatingCostGrossCorrectedError_message: 'Bitte geben Sie einen Betrag in das Feld "korrigierter Bruttobetrag" ein.'
       - offer_dateError_message: 'Bitte geben Sie ein Datum in das Feld "Offertdatum" ein, um weiter fortfahren zu können.'

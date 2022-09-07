@@ -35,11 +35,11 @@
             <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" checked="checked"
                 id="inlineRadio1" value="submissionTermination"
                 ui-sref="documentView.legalHearing({submissionId: documentViewCtrl.submission.id})">
-              ÖBV Abbruch
+              Abbruch
             </label> <label class="radio-inline"> <input type="radio" name="inlineRadioOptions" id="inlineRadio2"
                 value="submittentsExcluded"
                 ui-sref="documentView.submittentsExclusion({submissionId: documentViewCtrl.submission.id})">
-              ÖBV Ausschluss
+              Ausschluss
             </label>
           </div>
           <fieldset ng-disabled="legalHearingCtrl.isFormDisabled()">
@@ -58,7 +58,7 @@
                   </span>
                 </div>
               </div>
-              <label for="OBV">Art. 29 ÖBV Abs.<span class="mandatory">*</span></label>
+              <label for="OBV">Art. 43 IVöB<span class="mandatory">*</span></label>
               <div class="form-group"
                 ng-repeat="terminationReason in legalHearingCtrl.terminationReasons track by terminationReason.id">
                 <label class="checkbox-inline"> <input type="checkbox" id="terminationReason"
