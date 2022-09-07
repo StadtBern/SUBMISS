@@ -1588,8 +1588,7 @@ public class TemplateBean extends BaseService {
     for (OfferDTO offer : notExcluded) {
       if (offer.getIsEmptyOffer() == null || !offer.getIsEmptyOffer()) {
         Collections.sort(offer.getOfferCriteria(), ComparatorUtil.offerCriteriaWithWeightings);
-        StringBuilder companyName = setCompanyNameOrArge(offer, placeholders,
-          DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue());
+        StringBuilder companyName = setExcludedCompanyNameOrArge(offer);
         int extraLinesNeeded = 0;
         for(int i=46; i < companyName.length(); i += 46){
           extraLinesNeeded++;
@@ -1704,6 +1703,35 @@ public class TemplateBean extends BaseService {
     placeholders.put("sum_of_excluded_submittents",
       String.valueOf(offerService.retrieveExcludedOffers((documentDTO.getFolderId())).size()));
     return tableList;
+  }
+
+  /**
+   * Sets the excluded company name or arge.
+   *
+   * @param offer the offer
+   */
+  public StringBuilder setExcludedCompanyNameOrArge(OfferDTO offer) {
+
+    LOGGER.log(Level.CONFIG,
+      "Executing method setExcludedCompanyNameOrArge, Parameters: offer: {0}",
+      new Object[]{offer});
+
+    StringBuilder companyName = new StringBuilder();
+    if (offer.getSubmittent().getJointVentures() == null
+      || offer.getSubmittent().getJointVentures().isEmpty()) {
+      companyName.append(TemplateConstants.COMPANY_DE
+          + offer.getSubmittent().getCompanyId().getCompanyName());
+    } else {
+      companyName.append(TemplateConstants.ARGE)
+        .append(offer.getSubmittent().getCompanyId().getCompanyName()).append(LookupValues.COMMA);
+      for (CompanyDTO jointVenture : offer.getSubmittent().getJointVentures()) {
+        companyName.append(jointVenture.getCompanyName()).append(LookupValues.COMMA);
+      }
+      if (companyName.length() > 1) {
+          companyName.setLength(companyName.length() - 2);
+      }
+    }
+    return companyName;
   }
 
   public void setAwardedValues(Map<String, String> placeholders, OfferDTO offer) {
@@ -2741,7 +2769,7 @@ public class TemplateBean extends BaseService {
    * @param placeholders the placeholders
    * @param placeholderName the placeholder name
    */
-  public StringBuilder setCompanyNameOrArge(OfferDTO offer, Map<String, String> placeholders,
+  public void setCompanyNameOrArge(OfferDTO offer, Map<String, String> placeholders,
     String placeholderName) {
 
     LOGGER.log(Level.CONFIG,
@@ -2753,14 +2781,12 @@ public class TemplateBean extends BaseService {
     if (offer.getSubmittent().getJointVentures() == null
       || offer.getSubmittent().getJointVentures().isEmpty()) {
       if (placeholderName.equals(DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue())) {
-        companyName.append(TemplateConstants.COMPANY_DE
-          + offer.getSubmittent().getCompanyId().getCompanyName()
-          + LookupValues.COMMA + offer.getSubmittent().getCompanyId().getLocation());
-        placeholders.put(placeholderName,companyName.toString());
+        placeholders.put(placeholderName,
+          TemplateConstants.COMPANY_DE + offer.getSubmittent().getCompanyId().getCompanyName()
+            + LookupValues.COMMA + offer.getSubmittent().getCompanyId().getLocation());
       } else {
-        companyName.append(TemplateConstants.COMPANY_DE
-          + offer.getSubmittent().getCompanyId().getCompanyName());
-        placeholders.put(placeholderName, companyName.toString());
+        placeholders.put(placeholderName,
+          TemplateConstants.COMPANY_DE + offer.getSubmittent().getCompanyId().getCompanyName());
       }
     } else {
       companyName.append(TemplateConstants.ARGE)
@@ -2769,16 +2795,14 @@ public class TemplateBean extends BaseService {
         companyName.append(jointVenture.getCompanyName()).append(LookupValues.COMMA);
       }
       if (placeholderName.equals(DocumentPlaceholders.AWARDED_COMPANY_NAME_OR_ARGE.getValue())) {
-        companyName.append(offer.getSubmittent().getCompanyId().getLocation());
-        placeholders.put(placeholderName, companyName.toString());
+        placeholders.put(placeholderName,
+          companyName.append(offer.getSubmittent().getCompanyId().getLocation()).toString());
       } else {
         if (companyName.length() > 1) {
-          companyName.setLength(companyName.length() - 2);
-          placeholders.put(placeholderName, companyName.toString());
+          placeholders.put(placeholderName, companyName.substring(0, companyName.length() - 2));
         }
       }
     }
-    return companyName;
   }
 
   /**
