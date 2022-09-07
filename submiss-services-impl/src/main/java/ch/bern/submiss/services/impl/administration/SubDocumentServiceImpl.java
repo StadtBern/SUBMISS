@@ -5538,10 +5538,9 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
       && !compareCurrentVsSpecificStatus(submission.getCurrentState(),
       TenderStatus.SUITABILITY_AUDIT_COMPLETED_S)) {
       offers.clear();
-    }
-    if (submission.getProcess().equals(Process.SELECTIVE)) {
       offers.addAll(submissionService.getApplicantsBySubmission(submission.getId()));
     }
+
     // remove empty offers or excluded applicants
     offers.removeIf(
       submittentOfferDTO -> submittentOfferDTO.getOffer().getIsEmptyOffer() ||

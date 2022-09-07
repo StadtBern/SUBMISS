@@ -206,6 +206,8 @@ public class TemplateConstants {
    * The Constant FRENCH_TEXT_ZERTIFIKAT.
    */
   public static final String FRENCH_TEXT_ZERTIFIKAT = "Le formulaire de déclaration spontanée dûment rempli et signé\n";
+
+  public static final String EXCLUSION_REASON = "Ausschlussgrund";
   
   public enum TEMPLATE_TABLE_HEADER {
     HEADER_COLUMN_DATE("Datum"),

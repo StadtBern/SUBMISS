@@ -27,10 +27,12 @@ import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import ch.bern.submiss.services.impl.model.*;
 import org.apache.commons.lang3.StringUtils;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.administration.SDService;
 import ch.bern.submiss.services.api.administration.SDVatService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
@@ -40,12 +42,6 @@ import ch.bern.submiss.services.api.dto.MasterListValueHistoryDTO;
 import ch.bern.submiss.services.api.dto.ProofHistoryDTO;
 import ch.bern.submiss.services.api.dto.SubmittentDTO;
 import ch.bern.submiss.services.impl.mappers.MasterListValueMapper;
-import ch.bern.submiss.services.impl.model.CompanyProofEntity;
-import ch.bern.submiss.services.impl.model.MasterListValueEntity;
-import ch.bern.submiss.services.impl.model.OfferEntity;
-import ch.bern.submiss.services.impl.model.QCompanyProofEntity;
-import ch.bern.submiss.services.impl.model.QOfferEntity;
-import ch.bern.submiss.services.impl.model.SubmittentEntity;
 
 /**
  * The Class ProjectBean.
@@ -95,6 +91,10 @@ public class ProjectBean {
 
   @Inject
   private SDVatService sDVatService;
+
+  @Inject
+  private BaseService baseService;
+
 
   /**
    * Creates the default offer.
@@ -415,11 +415,16 @@ public class ProjectBean {
      * set this Value for the following Processes 1.NEGOTIATED_PROCEDURE
      * 2.NEGOTIATED_PROCEDURE_WITH_COMPETITION
      */
-    if (submittent.getFormalExaminationFulfilled() != null
+    //missing "Nachweise" are no longer an automatic reason for exlusion in "Selektives Verfahren" 1. Stufe.
+    if ((submittent.getFormalExaminationFulfilled() != null
       && !submittent.getFormalExaminationFulfilled()
       && !processType.equals(Process.NEGOTIATED_PROCEDURE)
       && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)
-      && !forEignungspruefungDoc) {
+      && !forEignungspruefungDoc
+      && !processType.equals(Process.SELECTIVE))
+      ||(processType.equals(Process.SELECTIVE)
+      && baseService.compareCurrentVsSpecificStatus(TenderStatus.fromValue(submittent.getSubmissionId().getStatus()), TenderStatus.SUBMITTENT_LIST_CREATED)))
+    {
       submittent.setExistsExclusionReasons(Boolean.TRUE);
     }
 

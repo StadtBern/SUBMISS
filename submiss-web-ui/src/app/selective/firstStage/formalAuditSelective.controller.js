@@ -289,7 +289,6 @@
         return (!vm.secFormalAuditExecute || vm.currentStatus <
           vm.status.APPLICATION_OPENING_CLOSED ||
           vm.currentStatus >= vm.status.SUITABILITY_AUDIT_COMPLETED_S ||
-          !submittent.formalExaminationFulfilled ||
           vm.data.submission.examinationIsLocked);
       }
       return false;

@@ -1409,8 +1409,12 @@ public class SDServiceImpl extends BaseService implements SDService {
     for (String masterListValueId : masterListValueIds) {
       // For every master list value id, get the current master list value history entry for the
       // completed/cancelled submission.
-      entries.add(cacheBean.getValue(type, masterListValueId, cancellationOrCompletionDate,
-          creationDate, null));
+      MasterListValueHistoryDTO entry = cacheBean.getValue(type, masterListValueId, cancellationOrCompletionDate,
+        creationDate, null);
+      // Remove the entries that added after the cancellation or completion date.
+      if(entry!= null) {
+        entries.add(entry);
+      }
     }
     Collections.sort(entries, ComparatorUtil.sortMLVHistoryDTOsByValue1);
     return entries;

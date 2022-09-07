@@ -1489,11 +1489,20 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
 
     LOGGER.log(Level.CONFIG,
       "Executing method updateOfferExStatus, Parameters: offer: {0}", offer);
-
+// in "Selektives Verfahren" 1. Stufe. the Status should be "Nein" only when  "Ausschlussgründe" is "Yes"
     if (offer.getSubmittent().getFormalExaminationFulfilled() != null
       && offer.getSubmittent().getExistsExclusionReasons() != null
       && (!offer.getSubmittent().getFormalExaminationFulfilled()
-      || offer.getSubmittent().getExistsExclusionReasons())) {
+      || offer.getSubmittent().getExistsExclusionReasons())
+      &&  !offer.getSubmittent().getSubmissionId().getProcess().equals(Process.SELECTIVE)
+      || (offer.getSubmittent().getSubmissionId().getProcess().equals(Process.SELECTIVE)
+      && compareCurrentVsSpecificStatus(TenderStatus.fromValue(offer.getSubmittent().getSubmissionId().getStatus()), TenderStatus.SUBMITTENT_LIST_CREATED))) {
+      offer.setqExStatus(Boolean.FALSE);
+    } else if (offer.getSubmittent().getSubmissionId().getProcess().equals(Process.SELECTIVE)
+      &&  !compareCurrentVsSpecificStatus(TenderStatus.fromValue(offer.getSubmittent().getSubmissionId().getStatus()), TenderStatus.SUBMITTENT_LIST_CREATED)
+      && offer.getSubmittent().getFormalExaminationFulfilled() != null
+      && offer.getSubmittent().getExistsExclusionReasons() != null
+      && offer.getSubmittent().getExistsExclusionReasons()) {
       offer.setqExStatus(Boolean.FALSE);
     } else {
       offer.setqExStatus(Boolean.TRUE);

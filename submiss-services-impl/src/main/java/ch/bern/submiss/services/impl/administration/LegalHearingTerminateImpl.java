@@ -16,12 +16,8 @@ package ch.bern.submiss.services.impl.administration;
 import ch.bern.submiss.services.api.administration.LegalHearingService;
 import ch.bern.submiss.services.api.administration.SubmissionService;
 import ch.bern.submiss.services.api.administration.UserAdministrationService;
-import ch.bern.submiss.services.api.constants.CategorySD;
-import ch.bern.submiss.services.api.constants.DocumentAttributes;
+import ch.bern.submiss.services.api.constants.*;
 import ch.bern.submiss.services.api.constants.Process;
-import ch.bern.submiss.services.api.constants.SelectiveLevel;
-import ch.bern.submiss.services.api.constants.Template;
-import ch.bern.submiss.services.api.constants.TenderStatus;
 import ch.bern.submiss.services.api.dto.ExclusionReasonDTO;
 import ch.bern.submiss.services.api.dto.LegalHearingExclusionDTO;
 import ch.bern.submiss.services.api.dto.LegalHearingTerminateDTO;
@@ -132,6 +128,8 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
   private DocumentService documentService;
   @Inject
   private CacheBean cacheBean;
+  @Inject
+  private SDServiceImpl serv;
 
   @Override
   public Set<ValidationError> createLegalHearingTermination(
@@ -610,8 +608,7 @@ public class LegalHearingTerminateImpl extends BaseService implements LegalHeari
 
     List<LegalHearingExclusionDTO> dtos = new ArrayList<>();
 
-    List<MasterListValueHistoryDTO> exclusionReasonsDTOs =
-      MasterListValueHistoryMapper.INSTANCE.toMasterListValueHistoryDTO(getAllExclusionReasons());
+    List<MasterListValueHistoryDTO> exclusionReasonsDTOs = serv.getCurrentMLVHEntriesForSubmission(submissionId, TemplateConstants.EXCLUSION_REASON);
 
     /* historization part */
     List<MasterListValueHistoryDTO> historisedExclusionReasonDTOs = new ArrayList<>();

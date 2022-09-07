@@ -437,7 +437,7 @@ public class CacheBean {
    * Gets the value.
    *
    * @param departmentId the department id
-   * @param date the date
+   * @param closedOrCanceledDate the date
    * @return the value
    */
   public DepartmentHistoryDTO getValue(String departmentId, Timestamp closedOrCanceledDate) {
@@ -581,12 +581,14 @@ public class CacheBean {
       // referenceDate and is valid until now or was valid after the
       // referenceDate is sent as parameter.
       if (masterListValueHistoryDTO.getFromDate().compareTo(referenceDate) < 0
+        && masterListValueHistoryDTO.isActive()
         && (masterListValueHistoryDTO.getToDate() == null
         || masterListValueHistoryDTO.getToDate().compareTo(referenceDate) > 0)) {
         return masterListValueHistoryDTO;
       }
     }
-    // In case that the history data of a specific masteListValue entry are created
+    return null;
+//     In case that the history data of a specific masteListValue entry are created
     // after the reference date requested for historization,
     // there will not be a mastelistvalueHistory entry that fits the historization
     // criteria requested.In this case,the most updated history entry will be
@@ -596,12 +598,12 @@ public class CacheBean {
     // to this function,have reference to the same mastelistValue entry
     // and the same mastertList entry,so we can get these references randomly, from
     // the first object the list
-    String masterlistValueId = masterListValueHistoryList.get(0).getMasterListValueId().getId();
-    String categoryType = masterListValueHistoryList.get(0).getMasterListValueId().getMasterList()
-      .getCategoryType();
-    // After getting these references we can get the most updated history Entry
-    // using activeSd.
-    return activeSD.get(categoryType, masterlistValueId);
+//    String masterlistValueId = masterListValueHistoryList.get(0).getMasterListValueId().getId();
+//    String categoryType = masterListValueHistoryList.get(0).getMasterListValueId().getMasterList()
+//      .getCategoryType();
+//     After getting these references we can get the most updated history Entry
+//     using activeSd.
+//    return activeSD.get(categoryType, masterlistValueId);
   }
 
   /**

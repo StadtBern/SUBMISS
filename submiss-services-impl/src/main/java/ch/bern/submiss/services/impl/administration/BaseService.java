@@ -169,7 +169,7 @@ public abstract class BaseService {
    * @param specificStatus the specific status
    * @return true, if successful
    */
-  protected boolean compareCurrentVsSpecificStatus(TenderStatus submissionStatus,
+  public boolean compareCurrentVsSpecificStatus(TenderStatus submissionStatus,
     TenderStatus specificStatus) {
     LOGGER.log(Level.CONFIG,
       "Executing method compareCurrentVsSpecificStatus, Parameters: submissionStatus: {0}"

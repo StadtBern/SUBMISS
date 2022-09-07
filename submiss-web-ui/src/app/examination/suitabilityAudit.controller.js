@@ -717,11 +717,23 @@
      */
     function calculateStatus(existsExclusionReasons, formalExaminationFulfilled, mustCriterion) {
       var returnValue;
-      if (!formalExaminationFulfilled || existsExclusionReasons) {
-        returnValue = false;
+      // in "Selektives Verfahren" 1. Stufe. the Status should be "Nein" only when  "Ausschlussgründe" is "Yes"
+      if (vm.data.submission.process !== AppConstants.PROCESS.SELECTIVE ||
+        (vm.data.submission.process == AppConstants.PROCESS.SELECTIVE &&
+        vm.currentStatus >= vm.status.SUBMITTENT_LIST_CREATED)) {
+        if (!formalExaminationFulfilled || existsExclusionReasons) {
+          returnValue = false;
+        } else {
+          returnValue = true;
+        }
       } else {
-        returnValue = true;
-      }
+        if (existsExclusionReasons) {
+            returnValue = false;
+        } else {
+            returnValue = true;
+          }
+        }
+
       for (var i = 0; i < mustCriterion.length; i++) {
         if (mustCriterion[i].isFulfilled != null) {
           if (!mustCriterion[i].isFulfilled) {

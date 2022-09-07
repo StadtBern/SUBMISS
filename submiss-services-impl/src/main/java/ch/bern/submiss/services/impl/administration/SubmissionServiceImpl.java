@@ -2013,7 +2013,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
       int countExaminationIsFulfilled=0;
       List<OfferDTO> passingOfferDTOs = new ArrayList<>();
       for (OfferDTO offerDTO : offerDTOs) {
-        if(offerDTO.getqExExaminationIsFulfilled()){
+        if(offerDTO.getqExExaminationIsFulfilled() != null && offerDTO.getqExExaminationIsFulfilled()){
           countExaminationIsFulfilled++;
           passingOfferDTOs.add(offerDTO);
         }
@@ -4800,7 +4800,7 @@ public class SubmissionServiceImpl extends BaseService implements SubmissionServ
 
     SubmissionEntity submissionEntity = em.find(SubmissionEntity.class, submissionId);
     if (compareCurrentVsSpecificStatus(TenderStatus.fromValue(submissionEntity.getStatus()),
-      TenderStatus.PROCEDURE_CANCELED)) {
+      TenderStatus.PROCEDURE_COMPLETED)) {
       TenderStatusHistoryEntity cancelStatus = new TenderStatusHistoryEntity();
       for (Iterator<TenderStatusHistoryEntity> iterator =
         submissionEntity.getTenderStatusHistory().iterator(); iterator.hasNext(); ) {
