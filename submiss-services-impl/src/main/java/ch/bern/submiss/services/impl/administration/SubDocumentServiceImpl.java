@@ -1707,17 +1707,23 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
             setExclusionDate(submission, legal);
             StringBuilder cancelNumber = new StringBuilder();
             StringBuilder cancelDescr = new StringBuilder();
-            for (ExclusionReasonDTO exclusionReason : legal.getExclusionReasons()) {
+            List<ExclusionReasonDTO> exclusionReasons = new ArrayList<>();
+            for(ExclusionReasonDTO exclusionReasonDTO : legal.getExclusionReasons()){
+                exclusionReasons.add(exclusionReasonDTO);
+            }
+            Collections.sort(exclusionReasons, ComparatorUtil.sortLegalHearingExclusionDTOsByValue1);
+
+            for (ExclusionReasonDTO exclusionReason : exclusionReasons) {
               if (exclusionReason.getReasonExists()) {
                 cancelNumber.append(exclusionReason.getExclusionReason().getValue1())
-                  .append(" und Art. 24, Abs. 1 ");
+                  .append(", ");
                 cancelDescr.append(exclusionReason.getExclusionReason().getValue2())
                   .append(" und ");
               }
             }
             if (cancelNumber.length() > 1) {
               placeholders.put(DocumentPlaceholders.R_CANCEL_ART_NUMBER.getValue(),
-                cancelNumber.substring(0, cancelNumber.length() - 21));
+                cancelNumber.substring(0, cancelNumber.length() - 2));
               placeholders.put(DocumentPlaceholders.R_CANCEL_ART_DESCRIPTION.getValue(),
                 cancelDescr.substring(0, cancelDescr.length() - 5));
             } else {
@@ -1783,19 +1789,26 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
           if (!submission.getLegalHearingTerminate().isEmpty()) {
             StringBuilder cancelNumber = new StringBuilder();
             StringBuilder cancelDescr = new StringBuilder();
-            for (MasterListValueDTO cancel : submission.getLegalHearingTerminate().get(0)
-              .getTerminationReason()) {
+            List<MasterListValueHistoryEntity> cancelReasons = new ArrayList<>();
+            for(MasterListValueDTO cancelReasonDTO : submission.getLegalHearingTerminate().get(0)
+              .getTerminationReason()){
               MasterListValueHistoryEntity cancelEntity = new JPAQueryFactory(em)
                 .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-                .where(qMasterListValueHistoryEntity.masterListValueId.id.eq(cancel.getId())
+                .where(qMasterListValueHistoryEntity.masterListValueId.id.eq(cancelReasonDTO.getId())
                   .and(qMasterListValueHistoryEntity.toDate.isNull()))
                 .fetchOne();
-              cancelNumber.append(cancelEntity.getValue1()).append(" und Art. 29, Absatz ");
-              cancelDescr.append(cancelEntity.getValue2()).append(" und ");
+              cancelReasons.add(cancelEntity);
+            }
+            Collections.sort(cancelReasons, ComparatorUtil.sortMLVHistoryEntitiesByValue1);
+
+            for (MasterListValueHistoryEntity cancel : cancelReasons) {
+
+              cancelNumber.append(cancel.getValue1()).append(", Absatz ");
+              cancelDescr.append(cancel.getValue2()).append(" und ");
             }
             if (cancelNumber.length() > 1) {
               placeholders.put(DocumentPlaceholders.R_CANCEL_ART_NUMBER.getValue(),
-                cancelNumber.substring(0, cancelNumber.length() - 21));
+                cancelNumber.substring(0, cancelNumber.length() - 9));
               placeholders.put(DocumentPlaceholders.R_CANCEL_ART_DESCRIPTION.getValue(),
                 cancelDescr.substring(0, cancelDescr.length() - 5));
             } else {

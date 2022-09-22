@@ -1790,17 +1790,12 @@ public class TemplateBean extends BaseService {
     StringBuilder cancelNumber = new StringBuilder();
     StringBuilder cancelDescr = new StringBuilder();
     if (submission.getSubmissionCancel() != null && !submission.getSubmissionCancel().isEmpty()) {
-      for (MasterListValueDTO cancel : submission.getSubmissionCancel().get(0).getWorkTypes()) {
-        setCancelReason(cancelNumber, cancelDescr, cancel);
-      }
+      setCancelReason(cancelNumber, cancelDescr, submission.getSubmissionCancel().get(0).getWorkTypes());
       replaceCancelPlaceholder(placeholders, cancelNumber, cancelDescr);
       StringBuilder value = new StringBuilder();
       setHeaderPlaceholder(submission, placeholders, value);
     } else {
-      for (MasterListValueDTO cancel : submission.getLegalHearingTerminate().get(0)
-        .getTerminationReason()) {
-        setCancelReason(cancelNumber, cancelDescr, cancel);
-      }
+        setCancelReason(cancelNumber, cancelDescr, submission.getLegalHearingTerminate().get(0).getTerminationReason());
       replaceCancelPlaceholder(placeholders, cancelNumber, cancelDescr);
     }
   }
@@ -1864,7 +1859,7 @@ public class TemplateBean extends BaseService {
 
     if (cancelNumber.length() > 1) {
       placeholders.put(DocumentPlaceholders.S_CANCEL_ART_NUMBER.getValue(),
-        cancelNumber.substring(0, cancelNumber.length() - 21));
+        cancelNumber.substring(0, cancelNumber.length() - 9));
       placeholders.put(DocumentPlaceholders.S_CANCEL_ART_DESCRIPTION.getValue(),
         cancelDescr.substring(0, cancelDescr.length() - 5));
     } else {
@@ -1883,21 +1878,28 @@ public class TemplateBean extends BaseService {
    * @param cancel the cancel
    */
   private void setCancelReason(StringBuilder cancelNumber, StringBuilder cancelDescr,
-    MasterListValueDTO cancel) {
+    Set<MasterListValueDTO> cancel) {
 
     LOGGER.log(Level.CONFIG,
       "Executing method setCancelReason, Parameters: cancelNumber: {0}, cancelDescr: {1}, "
         + "cancel: {2}",
       new Object[]{cancelNumber, cancelDescr, cancel});
+    List<MasterListValueHistoryEntity> cancelReasons = new ArrayList<>();
 
-    MasterListValueHistoryEntity cancelEntity = new JPAQueryFactory(em)
-      .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
-      .where(qMasterListValueHistoryEntity.masterListValueId.id.eq(cancel.getId())
-        .and(qMasterListValueHistoryEntity.toDate.isNull()))
-      .fetchOne();
+    for(MasterListValueDTO cancelReasonDTO : cancel ){
+      MasterListValueHistoryEntity cancelEntity = new JPAQueryFactory(em)
+        .select(qMasterListValueHistoryEntity).from(qMasterListValueHistoryEntity)
+        .where(qMasterListValueHistoryEntity.masterListValueId.id.eq(cancelReasonDTO.getId())
+          .and(qMasterListValueHistoryEntity.toDate.isNull()))
+        .fetchOne();
+      cancelReasons.add(cancelEntity);
+    }
+    Collections.sort(cancelReasons, ComparatorUtil.sortMLVHistoryEntitiesByValue1);
 
-    cancelNumber.append(cancelEntity.getValue1()).append(" und Art. 29, Absatz ");
-    cancelDescr.append(cancelEntity.getValue2()).append(" und ");
+    for (MasterListValueHistoryEntity cancelReason : cancelReasons) {
+      cancelNumber.append(cancelReason.getValue1()).append(", Absatz ");
+      cancelDescr.append(cancelReason.getValue2()).append(" und ");
+    }
   }
 
   /**
@@ -2209,7 +2211,13 @@ public class TemplateBean extends BaseService {
     StringBuilder cancelNumber = new StringBuilder();
     StringBuilder cancelDescr = new StringBuilder();
     if (exclusionReasons != null && !exclusionReasons.isEmpty()) {
-      for (MasterListValueHistoryDTO exclusionReason : exclusionReasons) {
+      List<MasterListValueHistoryDTO> exReasons = new ArrayList<>();
+      for(MasterListValueHistoryDTO exclusionReasonDTO : exclusionReasons){
+        exReasons.add(exclusionReasonDTO);
+      }
+      Collections.sort(exReasons, ComparatorUtil.sortMLVHistoryDTOsByValue1);
+
+      for (MasterListValueHistoryDTO exclusionReason : exReasons) {
         if (exclusionReason.getToDate() == null) {
           cancelNumber.append(exclusionReason.getValue1()).append(LookupValues.COMMA);
           cancelDescr.append(exclusionReason.getValue2()).append(LookupValues.COMMA);

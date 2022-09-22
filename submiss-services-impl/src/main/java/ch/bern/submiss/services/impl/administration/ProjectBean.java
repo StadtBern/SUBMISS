@@ -414,16 +414,17 @@ public class ProjectBean {
      * If value formalExaminationFulfilled is false then set existsExclusionReasons to true. Don't
      * set this Value for the following Processes 1.NEGOTIATED_PROCEDURE
      * 2.NEGOTIATED_PROCEDURE_WITH_COMPETITION
+     * 3.SELECTIVE 1 STUFE
      */
     //missing "Nachweise" are no longer an automatic reason for exlusion in "Selektives Verfahren" 1. Stufe.
-    if ((submittent.getFormalExaminationFulfilled() != null
+    if (submittent.getFormalExaminationFulfilled() != null
       && !submittent.getFormalExaminationFulfilled()
       && !processType.equals(Process.NEGOTIATED_PROCEDURE)
       && !processType.equals(Process.NEGOTIATED_PROCEDURE_WITH_COMPETITION)
       && !forEignungspruefungDoc
-      && !processType.equals(Process.SELECTIVE))
-      ||(processType.equals(Process.SELECTIVE)
-      && baseService.compareCurrentVsSpecificStatus(TenderStatus.fromValue(submittent.getSubmissionId().getStatus()), TenderStatus.SUBMITTENT_LIST_CREATED)))
+      && (!processType.equals(Process.SELECTIVE)
+      || (processType.equals(Process.SELECTIVE)
+      && baseService.compareCurrentVsSpecificStatus(TenderStatus.fromValue(submittent.getSubmissionId().getStatus()), TenderStatus.SUBMITTENT_LIST_CREATED))))
     {
       submittent.setExistsExclusionReasons(Boolean.TRUE);
     }

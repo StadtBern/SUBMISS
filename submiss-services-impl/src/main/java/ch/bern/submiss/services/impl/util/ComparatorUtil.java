@@ -35,11 +35,14 @@ import ch.bern.submiss.services.api.dto.SubmissionOverviewDTO;
 import ch.bern.submiss.services.api.dto.SubmittentOfferDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.impl.model.CompanyEntity;
+import ch.bern.submiss.services.impl.model.MasterListValueHistoryEntity;
 import ch.bern.submiss.services.impl.model.OfferEntity;
 import com.eurodyn.qlack2.fuse.auditing.api.dto.AuditLogDTO;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class ComparatorUtil {
@@ -1057,10 +1060,28 @@ public class ComparatorUtil {
     };
 
   /**
+   * Comparator to sort LegalHearingExclusionDTOs by value1.
+   */
+  public static final Comparator<ExclusionReasonDTO> sortLegalHearingExclusionDTOsByValue1 =
+    (ExclusionReasonDTO s1, ExclusionReasonDTO s2) -> {
+      String substr1 = s1.getExclusionReason().getValue1();
+      String substr2 = s2.getExclusionReason().getValue1();
+      return substr1.compareTo(substr2);
+    };
+
+  /**
    * This function sorts master list value history DTOs by value1.
    */
   public static final Comparator<MasterListValueHistoryDTO> sortMLVHistoryDTOsByValue1 =
     (MasterListValueHistoryDTO m1, MasterListValueHistoryDTO m2) ->
+      // Compare by value1 and order alphabetically.
+      m1.getValue1().toLowerCase().compareTo(m2.getValue1().toLowerCase());
+
+  /**
+   * This function sorts master list value history Entities by value1.
+   */
+  public static final Comparator<MasterListValueHistoryEntity> sortMLVHistoryEntitiesByValue1 =
+    (MasterListValueHistoryEntity m1, MasterListValueHistoryEntity m2) ->
       // Compare by value1 and order alphabetically.
       m1.getValue1().toLowerCase().compareTo(m2.getValue1().toLowerCase());
 

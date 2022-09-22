@@ -733,20 +733,25 @@
             returnValue = true;
           }
         }
-
-      for (var i = 0; i < mustCriterion.length; i++) {
-        if (mustCriterion[i].isFulfilled != null) {
-          if (!mustCriterion[i].isFulfilled) {
-            returnValue = false;
-            break;
-          } else {
-            if (!formalExaminationFulfilled || existsExclusionReasons) {
-              returnValue = false;
-              break;
+      // in "Selektives Verfahren" 1. Stufe. the Status should be "Nein" only when  "Ausschlussgründe" is "Yes"
+      if (vm.data.submission.process !== AppConstants.PROCESS.SELECTIVE ||
+        (vm.data.submission.process == AppConstants.PROCESS.SELECTIVE &&
+          vm.currentStatus >= vm.status.SUBMITTENT_LIST_CREATED)) {
+           for (var i = 0; i < mustCriterion.length; i++) {
+             if (mustCriterion[i].isFulfilled != null) {
+              if (!mustCriterion[i].isFulfilled) {
+                returnValue = false;
+                break;
+              } else {
+                  if (!formalExaminationFulfilled || existsExclusionReasons) {
+                      returnValue = false;
+                       break;
+                  }
+                }
             }
+
           }
         }
-      }
       return returnValue;
     }
 
