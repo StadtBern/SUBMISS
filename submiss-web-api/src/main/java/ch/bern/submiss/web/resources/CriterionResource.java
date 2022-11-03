@@ -626,22 +626,6 @@ public class CriterionResource {
         errors.add(new ValidationError(GENERAL_ERROR_FIELD,
           ValidationMessages.MANDATORY_ERROR_MESSAGE));
       }
-      if ((award.getPriceFormula() == null
-        || award.getPriceFormula().getMasterListValueId() == null)
-        && award.getCustomPriceFormula() == null) {
-        errors.add(new ValidationError(PRICE_FORMULA,
-          ValidationMessages.MANDATORY_ERROR_MESSAGE));
-        errors.add(new ValidationError(GENERAL_ERROR_FIELD,
-          ValidationMessages.MANDATORY_ERROR_MESSAGE));
-      }
-      if ((award.getOperatingCostFormula() == null
-        || award.getOperatingCostFormula().getMasterListValueId() == null)
-        && award.getCustomOperatingCostFormula() == null) {
-        errors.add(new ValidationError(OPERATING_COST_FORMULA,
-          ValidationMessages.MANDATORY_ERROR_MESSAGE));
-        errors.add(new ValidationError(GENERAL_ERROR_FIELD,
-          ValidationMessages.MANDATORY_ERROR_MESSAGE));
-      }
       if (award.getCriterion() != null) {
         for (CriterionForm criterion : award.getCriterion()) {
           if (criterion.getCriterionText() == null || criterion.getCriterionText().length() == 0

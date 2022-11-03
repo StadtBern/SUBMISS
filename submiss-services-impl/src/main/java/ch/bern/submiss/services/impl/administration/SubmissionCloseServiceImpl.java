@@ -851,7 +851,9 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
     List<OfferEntity> offerEntities = new JPAQueryFactory(em).selectDistinct(qOfferEntity)
       .from(qOfferEntity).where(qOfferEntity.submittent.submissionId.id.eq(submissionId)
         .and(qOfferEntity.qExStatus.isFalse())
-        .and(qOfferEntity.excludedFirstLevel.isTrue()))
+        .and(qOfferEntity.excludedFirstLevel.isTrue())
+        .and(qOfferEntity.isExcludedByPassingApplicants.isNull()
+        .or(qOfferEntity.isExcludedByPassingApplicants.isFalse())))
       .fetch();
 
     List<AwardInfoOfferFirstLevelDTO> awardInfoOfferDTOs = new ArrayList<>();

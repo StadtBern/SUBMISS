@@ -151,9 +151,13 @@
               'orderBy')(filteredData,
               params.orderBy()) : filteredData;
 
-            $defer.resolve(orderedData.slice(
-              (params.page() - 1) * params.count(),
-              params.page() * params.count()));
+            if (params.count() === -1) {
+              $defer.resolve(orderedData);
+            } else {
+              $defer.resolve(orderedData.slice(
+                (params.page() - 1) * params.count(),
+                params.page() * params.count()));
+            }
             // count filtered results
             params.total(filteredData.length);
           }

@@ -733,7 +733,8 @@
             returnValue = true;
           }
         }
-      // in "Selektives Verfahren" 1. Stufe. the Status should be "Nein" only when  "Ausschlussgründe" is "Yes"
+      // in "Selektives Verfahren" 1. Stufe. the Status should be "Nein" only when  "Ausschlussgründe" is "Yes" or
+      // "Muss-Kriterium" = "Nicht erfüllt"
       if (vm.data.submission.process !== AppConstants.PROCESS.SELECTIVE ||
         (vm.data.submission.process == AppConstants.PROCESS.SELECTIVE &&
           vm.currentStatus >= vm.status.SUBMITTENT_LIST_CREATED)) {
@@ -751,7 +752,23 @@
             }
 
           }
+      } else {
+        for (var i = 0; i < mustCriterion.length; i++) {
+          if (mustCriterion[i].isFulfilled != null) {
+            if (!mustCriterion[i].isFulfilled) {
+              returnValue = false;
+              break;
+            } else {
+              if (existsExclusionReasons) {
+                returnValue = false;
+                break;
+              }
+            }
+          }
+
         }
+
+      }
       return returnValue;
     }
 

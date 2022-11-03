@@ -716,10 +716,10 @@ public class CriterionServiceImpl extends BaseService implements CriterionServic
        */
       String priceFormula =
         (awardDTO.getCustomPriceFormula() != null) ? awardDTO.getCustomPriceFormula()
-          : awardDTO.getPriceFormula().getValue2();
+          : (awardDTO.getPriceFormula() != null) ? awardDTO.getPriceFormula().getValue2() : null;
       String operatingCostFormula = (awardDTO.getCustomOperatingCostFormula() != null)
         ? awardDTO.getCustomOperatingCostFormula()
-        : awardDTO.getOperatingCostFormula().getValue2();
+        : (awardDTO.getOperatingCostFormula() != null) ? awardDTO.getOperatingCostFormula().getValue2() : null;
 
       /*
        * iterate the offers of the submission again 1) to set the grade of the price and operating
