@@ -1394,6 +1394,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
             templateBean.replaceExcludedPlaceholders(placeholders, offer.getExclusionReasons());
 
             List<LinkedHashMap<Map<String, String>, Map<String, String>>> offerCriteria = new ArrayList<>();
+            List<LinkedHashMap<Map<String, String>, Map<String, String>>> finalCriteria = new ArrayList<>();
 
             if (offer.getIsExcludedFromProcess() == null || !offer.getIsExcludedFromProcess()) {
               offerCriteria =
@@ -1471,6 +1472,14 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
                 attributesMap.put(LookupValues.WITH_VORBEHALT, "NO");
               }
             }
+            // In case of more than 1 winners the Zuschlags-Verfügung-Output of each winning
+            // company should show the correct points of each winning company.
+            if (offer.getIsExcludedFromProcess() == null || !offer.getIsExcludedFromProcess()
+              && (offer.getIsAwarded() != null && offer.getIsAwarded())) {
+              finalCriteria = offerCriteria ;
+            } else {
+              finalCriteria = awardCriteriaList;
+            }
 
             templateList = documentService.getNodeByAttributes(LookupValues.TEMPLATE_FOLDER_ID,
               attributesMap);
@@ -1484,7 +1493,7 @@ public class SubDocumentServiceImpl extends BaseService implements SubDocumentSe
                         .replacePlaceholderWithTable(inputStream1, offerCriteria,
                           "offer_criterion_name", tableIndentLeft)
                         .toByteArray()),
-                      awardCriteriaList, "award_criterion_name", tableIndentLeft)
+                      finalCriteria, "award_criterion_name", tableIndentLeft)
                     .toByteArray()),
                   SubmissConverter.replaceSpecialCharactersInPlaceholders(placeholders),
                   logo, logoWidth).toByteArray(),
