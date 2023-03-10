@@ -138,17 +138,15 @@
             disabled: false
           };
           // special conditions
-          if ((vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_B &&
+          if ((vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_A &&
               (vm.awardInfo.offers[io].existsExclusionReasons ||
                 !vm.awardInfo.offers[io].formalExaminationFulfilled)) ||
-            (vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_C &&
+            (vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_B &&
               (vm.awardInfo.offers[io].mustCriteriaFulfilled !== null && !vm.awardInfo.offers[io].mustCriteriaFulfilled))) {
             exclusionReason.selected = true;
-            exclusionReason.disabled = true;
-          } else if(vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_C &&
+          } else if(vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_B &&
             (vm.awardInfo.offers[io].mustCriteriaFulfilled !== null && !vm.awardInfo.offers[io].mustCriteriaFulfilled)){
             exclusionReason.selected = true;
-            exclusionReason.disabled = true;
           } else {
             for (var j = 0; j < vm.awardInfo.offers[io].exclusionReasons.length; j++) {
               if (exclusionReason.id === vm.awardInfo.offers[io].exclusionReasons[j].id) {

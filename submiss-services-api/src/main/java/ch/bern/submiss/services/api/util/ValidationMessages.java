@@ -179,6 +179,11 @@ public class ValidationMessages {
   public static final String CPP_REASON_GIVEN_ERROR_MESSAGE = "cpp_reasonGiven_error_message";
 
   /**
+   * The Constant LEGAL_HEARING_TEXT_ERROR_MESSAGE.
+   */
+  public static final String CPP_lEGAL_HEARING_ERROR_MESSAGE = "cpp_legalHearing_error_message";
+
+  /**
    * The Constant SUBMISSION_CANCEL_REASON_SELECT_ERROR_MESSAGE.
    */
   public static final String SUBMISSION_CANCEL_REASON_SELECT_ERROR_MESSAGE =

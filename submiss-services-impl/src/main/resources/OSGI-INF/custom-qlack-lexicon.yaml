@@ -151,6 +151,8 @@ translations:
       - cpp_reservation_error_message: "Vorbehalt: Der Wert darf maximal 1000 Zeichen lang sein."
       - cpp_freeTextField_error_message: Das Textfeld des Zuschlags darf maximal 1000 Zeichen enthalten.
       - cpp_reasonGiven_error_message: "Begründung: Der Wert darf maximal 10000 Zeichen lang sein."
+      - cpp_legalHearing_error_message: "Begründung: Der Wert darf maximal 9000 Zeichen lang sein."
+        forceUpdate: true
       - no_radiobutton_selected: Sie müssen mindestens eine Option auswählen.
         forceUpdate: true
       - technical_error: Ein technischer Fehler aufgetreten

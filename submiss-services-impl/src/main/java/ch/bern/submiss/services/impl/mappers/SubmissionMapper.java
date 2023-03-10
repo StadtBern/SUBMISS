@@ -515,7 +515,7 @@ public abstract class SubmissionMapper {
    * @param set the set
    * @return the sets the
    */
-  protected Set<MasterListValueDTO> masterListValueEntitySetToMasterListValueDTOSet(
+  public Set<MasterListValueDTO> masterListValueEntitySetToMasterListValueDTOSet(
       Set<MasterListValueEntity> set) {
     if (set == null) {
       return Collections.emptySet();

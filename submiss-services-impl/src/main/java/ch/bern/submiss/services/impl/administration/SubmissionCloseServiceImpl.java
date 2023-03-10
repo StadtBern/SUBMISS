@@ -32,11 +32,7 @@ import ch.bern.submiss.services.api.dto.SubmittentDTO;
 import ch.bern.submiss.services.api.util.LookupValues;
 import ch.bern.submiss.services.api.util.SubmissConverter;
 import ch.bern.submiss.services.api.util.ValidationMessages;
-import ch.bern.submiss.services.impl.mappers.AwardInfoDTOMapper;
-import ch.bern.submiss.services.impl.mappers.AwardInfoFirstLevelDTOMapper;
-import ch.bern.submiss.services.impl.mappers.AwardInfoOfferDTOMapper;
-import ch.bern.submiss.services.impl.mappers.AwardInfoOfferFirstLevelDTOMapper;
-import ch.bern.submiss.services.impl.mappers.SubmissionMapper;
+import ch.bern.submiss.services.impl.mappers.*;
 import ch.bern.submiss.services.impl.model.CompanyEntity;
 import ch.bern.submiss.services.impl.model.LegalHearingExclusionEntity;
 import ch.bern.submiss.services.impl.model.MasterListValueEntity;
@@ -85,6 +81,8 @@ import javax.inject.Singleton;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.RollbackException;
 import javax.transaction.Transactional;
+
+import org.mapstruct.factory.Mappers;
 import org.ops4j.pax.cdi.api.OsgiServiceProvider;
 
 /**
@@ -456,6 +454,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
               Date createdOn = null;
               String reason = null;
               boolean found = false;
+              Set<MasterListValueEntity> reasons = new HashSet<>();
               for (LegalHearingExclusionEntity legalHearingExclusion : legalHearingExclusionList) {
                 if (legalHearingExclusion.getSubmittent().getId()
                   .equals(offerEntity.getSubmittent().getId())
@@ -463,11 +462,12 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
                   && createdOn.before(legalHearingExclusion.getCreatedOn())))) {
                   createdOn = legalHearingExclusion.getCreatedOn();
                   reason = legalHearingExclusion.getExclusionReason();
+                  reasons = legalHearingExclusion.getExclusionReasons();
                   found = true;
                 }
               }
 
-              if (found) {
+              if (found && awardInfoOfferDTO.getFormalExaminationFulfilled()) {
                 exclusionReason = reason;
                 // else if Nachweise erbracht is No then construct a text
               } else if (!awardInfoOfferDTO.getFormalExaminationFulfilled()) {
@@ -511,9 +511,20 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
                 }else{
                   exclusionReason = null;
                 }
+                if (found && reason != null){
+                  exclusionReason = exclusionReason.concat("\n");
+                  exclusionReason = exclusionReason.concat(reason);
+                }
+
+
               }
 
               awardInfoOfferDTO.setExclusionReason(exclusionReason);
+              SubmissionMapper submissionMapper = Mappers.getMapper( SubmissionMapper.class );
+              if (found) {
+                awardInfoOfferDTO.setExclusionReasons(submissionMapper.masterListValueEntitySetToMasterListValueDTOSet(reasons));
+              }
+
             }
             // else if submittent added later and Nachweise erbracht is No then construct a text
             else if (!awardInfoOfferDTO.getFormalExaminationFulfilled() && awardInfoOfferDTO.getExclusionReason() == null) {
@@ -914,6 +925,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
         Date createdOn = null;
         String reason = null;
         boolean found = false;
+        Set<MasterListValueEntity> reasons = new HashSet<>();
         for (LegalHearingExclusionEntity legalHearingExclusion : legalHearingExclusionList) {
           if (legalHearingExclusion.getSubmittent().getId()
             .equals(offerEntity.getSubmittent().getId())
@@ -921,11 +933,12 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
             && createdOn.before(legalHearingExclusion.getCreatedOn())))) {
             createdOn = legalHearingExclusion.getCreatedOn();
             reason = legalHearingExclusion.getExclusionReason();
+            reasons = legalHearingExclusion.getExclusionReasons();
             found = true;
           }
         }
 
-        if (found) {
+        if (found && awardInfoOfferDTO.getFormalExaminationFulfilled()) {
           exclusionReason = reason;
           // else if Nachweise erbracht is No then construct a text
         } else if (!awardInfoOfferDTO.getFormalExaminationFulfilled()) {
@@ -959,8 +972,16 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
           }else{
             exclusionReason = null;
           }
+          if (found && reason != null){
+            exclusionReason = exclusionReason.concat("\n");
+            exclusionReason = exclusionReason.concat(reason);
+          }
         }
         awardInfoOfferDTO.setExclusionReasonFirstLevel(exclusionReason);
+        SubmissionMapper submissionMapper = Mappers.getMapper( SubmissionMapper.class );
+        if (found) {
+          awardInfoOfferDTO.setExclusionReasonsFirstLevel(submissionMapper.masterListValueEntitySetToMasterListValueDTOSet(reasons));
+        }
       }
       // else if submittent added later and Nachweise erbracht is No then construct a text
       else if (!awardInfoOfferDTO.getFormalExaminationFulfilled() && awardInfoOfferDTO.getExclusionReasonFirstLevel() == null) {

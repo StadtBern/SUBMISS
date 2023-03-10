@@ -1684,9 +1684,9 @@ public class SubmissionResource {
         break;
       }
       if (exclusion.getExclusionReason() != null
-        && exclusion.getExclusionReason().length() > LookupValues.MAX_REASON_TEXT_LENGTH) {
+        && exclusion.getExclusionReason().length() > LookupValues.MAX_LEGAL_HEARING_TEXT_LENGTH) {
         errors.add(new ValidationError(ValidationMessages.ERROR_FIELD,
-          ValidationMessages.CPP_REASON_GIVEN_ERROR_MESSAGE));
+          ValidationMessages.CPP_lEGAL_HEARING_ERROR_MESSAGE));
         break;
       }
     }

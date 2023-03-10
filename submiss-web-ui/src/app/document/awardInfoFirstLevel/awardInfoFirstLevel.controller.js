@@ -117,13 +117,12 @@
             disabled: false
           };
           // special conditions
-          if ((vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_B &&
+          if ((vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_A &&
               (vm.awardInfoFirstLevel.offers[io].existsExclusionReasons ||
                 !vm.awardInfoFirstLevel.offers[io].formalExaminationFulfilled)) ||
-            (vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_C &&
+            (vm.exclusionReasons[i].value1 === AppConstants.EXCLUSION_REASON_B &&
               (vm.awardInfoFirstLevel.offers[io].mustCriteriaFulfilled !== null && !vm.awardInfoFirstLevel.offers[io].mustCriteriaFulfilled))) {
             exclusionReason.selected = true;
-            exclusionReason.disabled = true;
           } else {
             for (var j = 0; j < vm.awardInfoFirstLevel.offers[io].exclusionReasonsFirstLevel.length; j++) {
               if (exclusionReason.id === vm.awardInfoFirstLevel.offers[io].exclusionReasonsFirstLevel[j].id) {

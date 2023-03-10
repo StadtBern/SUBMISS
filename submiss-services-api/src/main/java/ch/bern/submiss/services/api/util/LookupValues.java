@@ -143,6 +143,8 @@ public class LookupValues {
 
   public static final int MAX_REASON_TEXT_LENGTH = 10000;
 
+  public static final int MAX_LEGAL_HEARING_TEXT_LENGTH = 9000;
+
   /* Schedulers */
   public static final String COMPANY_PROOFS_SCHEDULER_NAME = "CompanyProofsValidityCheckScheduler";
   public static final String COMPANY_PROOFS_SCHEDULER_TRIGGER_NAME = "CompanyProofsValidityCheckSchedulerTrigger";
@@ -190,7 +192,7 @@ public class LookupValues {
       + "der Sozialversicherung sowie den Arbeitnehmerinnen und Arbeitnehmern "
       + "(Selbstdeklaration und weitere Bestätigungen, dass alle fälligen Prämien bezahlt sind) beizulegen. Die Nachweise wurden "
       + "der Offerte vom &2 nicht beigelegt. Mit Schreiben vom &3 wurde die Firma auf das Fehlen der Nachweise hingewiesen. Ihr "
-      + "wurde eine Frist zur Nachreichung der Unterlagen bis am &4 gewährt. Die Nachweise wurden bis heute nicht vollständig.";
+      + "wurde eine Frist zur Nachreichung der Unterlagen bis am &4 gewährt. Die Nachweise wurden bis heute nicht vollständig eingereicht.";
 
 
   /* Permitted expressions for calculation formulas */

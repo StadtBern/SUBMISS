@@ -369,8 +369,8 @@
       CANCELLED_MESSAGE_START: "Verfahren abgebrochen am ",
       CANCELLED_MESSAGE_INFO: "Verfahrensabbruch am ",
 
-      EXCLUSION_REASON_B: "Lit. b",
-      EXCLUSION_REASON_C: "Lit. c",
+      EXCLUSION_REASON_A: "Absatz 1 Lit. a",
+      EXCLUSION_REASON_B: "Absatz 1 Lit. b",
 
       TASK_TYPES: {},
 
