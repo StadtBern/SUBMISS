@@ -70,6 +70,7 @@ public class PublicationAwardDateCheckScheduler implements SchedulerJob {
     // current status is AWARD_NOTICES_CREATED or CONTRACT_CREATED
     // status AWARD_NOTICES_CREATED set more than 1 day ago
     // field publicationDateAward is null
+    // process is SELECTIVE or OPEN
     List<SubmissionDTO> submissionDTOList = submissionCloseService.getSubmissionsNoPublicationAwardDate();
     
     // for every one of them a to do-task needs to be created, if not already exists

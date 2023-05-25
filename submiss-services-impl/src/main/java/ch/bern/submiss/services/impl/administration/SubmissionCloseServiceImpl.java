@@ -512,8 +512,12 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
                   exclusionReason = null;
                 }
                 if (found && reason != null){
-                  exclusionReason = exclusionReason.concat("\n");
-                  exclusionReason = exclusionReason.concat(reason);
+                  if (exclusionReason != null) {
+                    exclusionReason = exclusionReason.concat("\n");
+                    exclusionReason = exclusionReason.concat(reason);
+                  } else {
+                    exclusionReason = reason ;
+                  }
                 }
 
 
@@ -972,9 +976,13 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
           }else{
             exclusionReason = null;
           }
-          if (found && reason != null){
-            exclusionReason = exclusionReason.concat("\n");
-            exclusionReason = exclusionReason.concat(reason);
+          if (found && reason != null) {
+            if (exclusionReason != null) {
+              exclusionReason = exclusionReason.concat("\n");
+              exclusionReason = exclusionReason.concat(reason);
+            } else {
+              exclusionReason = reason ;
+            }
           }
         }
         awardInfoOfferDTO.setExclusionReasonFirstLevel(exclusionReason);
@@ -1174,6 +1182,7 @@ public class SubmissionCloseServiceImpl extends BaseService implements Submissio
     List<SubmissionEntity> submissionEntityList =
       new JPAQueryFactory(em).select(entity).from(entity)
         .where(entity.publicationDateAward.isNull()
+          .and(entity.process.in(Process.SELECTIVE, Process.OPEN))
           .and(entity.status.in(TenderStatus.AWARD_NOTICES_CREATED.getValue(),
             TenderStatus.CONTRACT_CREATED.getValue()))
           // check if the current status (or the one before the current in case current status
