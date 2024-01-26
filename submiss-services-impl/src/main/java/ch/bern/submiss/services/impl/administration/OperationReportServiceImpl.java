@@ -2087,12 +2087,13 @@ public class OperationReportServiceImpl extends ReportBaseServiceImpl implements
       date);
 
     // get AWARD_NOTICES_CREATED or PROCEDURE_CANCELED latest status before the given date
-    // get max date of Status History, exclude the PROCEDURE_COMPLETED Status
+    // get max date of Status History, exclude the PROCEDURE_COMPLETED and CONTRACT_CREATED Status
     return qTenderStatusHistoryEntity.onDate.before(new java.sql.Timestamp(date))
       .and(qTenderStatusHistoryEntity.onDate
         .in(JPAExpressions.select(qTenderStatusHistoryEntity.onDate.max())
           .from(qTenderStatusHistoryEntity).where(
-            qTenderStatusHistoryEntity.statusId.notIn(TenderStatus.PROCEDURE_COMPLETED.getValue()))
+            qTenderStatusHistoryEntity.statusId.notIn(TenderStatus.CONTRACT_CREATED.getValue(),
+              TenderStatus.PROCEDURE_COMPLETED.getValue()))
           .groupBy(qTenderStatusHistoryEntity.tenderId)))
       .and(qTenderStatusHistoryEntity.statusId.in(TenderStatus.AWARD_NOTICES_CREATED.getValue(),
         TenderStatus.PROCEDURE_CANCELED.getValue()));
